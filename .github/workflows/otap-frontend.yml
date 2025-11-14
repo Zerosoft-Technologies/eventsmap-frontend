@@ -1,0 +1,108 @@
+name: Frontend CI/CD (OTAP)
+
+on:
+  push:
+    branches:
+      - dev
+      - test
+      - stage
+      - master
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: sathyazerosoft-creator/eventsmap-frontend
+
+jobs:
+  # Step 1: Build and Test
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Lint
+        run: npm run lint
+
+      - name: Build Project
+        run: npm run build
+
+  # Step 2: Deploy
+  deploy:
+    name: Conditional Deploy
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Decide tag based on branch
+      - name: Set image tag
+        id: vars
+        run: |
+          BRANCH="${GITHUB_REF##*/}"
+          if [[ "$BRANCH" == "dev" ]]; then echo "tag=dev" >> $GITHUB_OUTPUT; fi
+          if [[ "$BRANCH" == "test" ]]; then echo "tag=test" >> $GITHUB_OUTPUT; fi
+          if [[ "$BRANCH" == "stage" ]]; then echo "tag=stage" >> $GITHUB_OUTPUT; fi
+          if [[ "$BRANCH" == "master" ]]; then echo "tag=latest" >> $GITHUB_OUTPUT; fi
+
+      # Log in to GHCR
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build & Push Docker image
+      - name: Build & Push Image
+        run: |
+          IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }}
+          docker build -t $IMAGE .
+          docker push $IMAGE
+
+      # SSH to server & deploy using podman-compose
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+
+      - name: Deploy to VPS
+        run: |
+          BRANCH="${GITHUB_REF##*/}"
+
+          if [[ "$BRANCH" == "test" ]]; then
+            TARGET_DIR="eventsmap-test"
+            COMPOSE_FILE="podman-compose.test.yml"
+          elif [[ "$BRANCH" == "stage" ]]; then
+            TARGET_DIR="eventsmap-stage"
+            COMPOSE_FILE="podman-compose.stage.yml"
+          elif [[ "$BRANCH" == "master" ]]; then
+            TARGET_DIR="eventsmap-prod"
+            COMPOSE_FILE="podman-compose.prod.yml"
+          else
+            echo "Not deploying for dev branch."
+            exit 0
+          fi
+
+          # Copy compose file to server
+          scp -P ${{ secrets.DEPLOY_PORT }} $COMPOSE_FILE \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER }}:/home/minaxi/$TARGET_DIR/
+
+          # Deploy commands
+          ssh -p ${{ secrets.DEPLOY_PORT }} \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER }} "
+              cd /home/minaxi/$TARGET_DIR &&
+              podman pull ${REGISTRY}/${IMAGE_NAME}:${{ steps.vars.outputs.tag }} &&
+              podman-compose -f $COMPOSE_FILE up -d --force-recreate
+            "
