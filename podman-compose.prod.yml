@@ -5,6 +5,9 @@ services:
     image: ghcr.io/sathyazerosoft-creator/eventsmap-frontend:latest
     container_name: eventsmap-prod
     restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
     ports:
       - "3003:3000"
     env_file:
