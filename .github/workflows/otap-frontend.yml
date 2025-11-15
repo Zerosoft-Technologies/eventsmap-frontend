@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: Zerosoft-Technologies/eventsmap-frontend
+  IMAGE_NAME: zerosoft-technologies/eventsmap-frontend
 
 jobs:
   # Step 1: Build and Test
