@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   frontend:
-    image: ghcr.io/sathyazerosoft-creator/eventsmap-frontend:test
+    image: ghcr.io/Zerosoft-Technologies/eventsmap-frontend:test
     container_name: eventsmap-test
     restart: unless-stopped
     environment:
