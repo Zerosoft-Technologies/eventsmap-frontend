@@ -95,7 +95,7 @@ jobs:
             COMPOSE_FILE="podman-compose.prod.yml"
             TAG="latest"
           else
-            echo "Dev branch does not deploy."
+            echo "Dev branch does not deploy on the server."
             exit 0
           fi
 
