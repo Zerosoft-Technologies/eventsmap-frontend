@@ -1,4 +1,5 @@
 name: Frontend CI/CD (Secure OTAP)
+
 on:
   push:
     branches:
@@ -12,114 +13,155 @@ env:
   IMAGE_NAME: zerosoft-technologies/eventsmap-frontend
 
 jobs:
-  # Step 1: Build and Test
   build:
-    name: Build & Test
+    name: Build, Scan & SBOM
     runs-on: ubuntu-latest
     outputs:
       env: ${{ steps.envname.outputs.env }}
+      image_tag: ${{ steps.tag.outputs.image_tag }}
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # Load environment based on branch
+
+      # 1️⃣ Detect OTAP environment
       - name: Set environment name
         id: envname
         run: |
           BRANCH="${GITHUB_REF##*/}"
+
           if [[ "$BRANCH" == "dev" ]]; then echo "env=dev" >> $GITHUB_OUTPUT; fi
           if [[ "$BRANCH" == "test" ]]; then echo "env=test" >> $GITHUB_OUTPUT; fi
           if [[ "$BRANCH" == "stage" ]]; then echo "env=stage" >> $GITHUB_OUTPUT; fi
-          if [[ "$BRANCH" == "master" ]]; then echo "env=master" >> $GITHUB_OUTPUT; fi
-      # Export secrets to temporary env file for the build ONLY
+          if [[ "$BRANCH" == "master" ]]; then echo "env=production" >> $GITHUB_OUTPUT; fi
+
+      # 2️⃣ Generate tag: branch-SHA except prod (latest)
+      - name: Set image tag
+        id: tag
+        run: |
+          SHA=$(echo $GITHUB_SHA | cut -c1-8)
+          BRANCH="${GITHUB_REF##*/}"
+          if [[ "$BRANCH" == "master" ]]; then 
+              TAG="latest"
+          else 
+              TAG="${BRANCH}-${SHA}"
+          fi
+          echo "image_tag=$TAG" >> $GITHUB_OUTPUT
+
+      # 3️⃣ Prepare build-time .env.production (DO NOT REMOVE)
       - name: Create .env.production dynamically
         run: |
-          echo "NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}" >> .env.production
-          echo "NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" >> .env.production
+          echo "NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}" > .env.production
+          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> .env.production
+
+      # 4️⃣ Install & Build
       - name: Install dependencies
         run: npm ci
+
       - name: Run Lint
         run: npm run lint
+
       - name: Build Project
         run: npm run build
-  deploy:
-    name: Deploy with Podman
-    runs-on: ubuntu-latest
-    needs: build
-    environment: ${{ needs.build.outputs.env }}
-    steps:
-      - uses: actions/checkout@v4
-      # Set image tag per branch
-      - name: Set image tag
-        id: vars
-        run: |
-          BRANCH="${GITHUB_REF##*/}"
-          if [[ "$BRANCH" == "dev" ]]; then echo "tag=dev" >> $GITHUB_OUTPUT; fi
-          if [[ "$BRANCH" == "test" ]]; then echo "tag=test" >> $GITHUB_OUTPUT; fi
-          if [[ "$BRANCH" == "stage" ]]; then echo "tag=stage" >> $GITHUB_OUTPUT; fi
-          if [[ "$BRANCH" == "master" ]]; then echo "tag=latest" >> $GITHUB_OUTPUT; fi
+
+      # 5️⃣ Login & Push immutable image
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build & Push Image
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build & Push Docker image
         run: |
-          IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }}
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.image_tag }}"
           docker build \
             --build-arg NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}" \
             --build-arg NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
             -t $IMAGE .
           docker push $IMAGE
+
+      # 6️⃣ SBOM generation
+      - name: Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.image_tag }}
+
+      # 7️⃣ Trivy Security Scan
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.image_tag }}
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+
+  deploy:
+    name: Deploy to VPS via Podman
+    runs-on: ubuntu-latest
+    needs: build
+    environment: ${{ needs.build.outputs.env }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Select deployment vars
+      - name: Set Deployment Variables
+        id: dep
+        run: |
+          BRANCH="${GITHUB_REF##*/}"
+
+          if [[ "$BRANCH" == "test" ]]; then
+            echo "dir=eventsmap-test" >> $GITHUB_OUTPUT
+            echo "compose=podman-compose.test.yml" >> $GITHUB_OUTPUT
+            echo "tag=${{ needs.build.outputs.image_tag }}" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH" == "stage" ]]; then
+            echo "dir=eventsmap-stage" >> $GITHUB_OUTPUT
+            echo "compose=podman-compose.stage.yml" >> $GITHUB_OUTPUT
+            echo "tag=${{ needs.build.outputs.image_tag }}" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH" == "master" ]]; then
+            echo "dir=eventsmap-prod" >> $GITHUB_OUTPUT
+            echo "compose=podman-compose.prod.yml" >> $GITHUB_OUTPUT
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          else
+            echo "Dev branch: no deployment."
+            exit 0
+          fi
+
+      # Setup SSH
       - name: SSH Setup
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
-      - name: Deploy to VPS
+
+      # Upload compose file
+      - name: Upload Compose File
         run: |
-          BRANCH="${GITHUB_REF##*/}"
+          scp -P ${{ secrets.DEPLOY_PORT }} \
+            ${{ steps.dep.outputs.compose }} \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER }}:/home/minaxi/${{ steps.dep.outputs.dir }}/
 
-          if [[ "$BRANCH" == "test" ]]; then
-            TARGET_DIR="eventsmap-test"
-            COMPOSE_FILE="podman-compose.test.yml"
-            TAG="test"
-          elif [[ "$BRANCH" == "stage" ]]; then
-            TARGET_DIR="eventsmap-stage"
-            COMPOSE_FILE="podman-compose.stage.yml"
-            TAG="stage"
-          elif [[ "$BRANCH" == "master" ]]; then
-            TARGET_DIR="eventsmap-prod"
-            COMPOSE_FILE="podman-compose.prod.yml"
-            TAG="latest"
-          else
-            echo "Dev branch does not deploy on the server."
-            exit 0
-          fi
-
-          # Upload compose file
-          scp -P ${{ secrets.DEPLOY_PORT }} $COMPOSE_FILE \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER }}:/home/minaxi/$TARGET_DIR/
-
-          # Upload environment file
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER }} "
-            echo 'NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}' > /home/minaxi/$TARGET_DIR/.env &&
-            echo 'NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}' >> /home/minaxi/$TARGET_DIR/.env
-          "
-
-          # 🔐 LOGIN TO GHCR (IMPORTANT)
+      # Upload front-end env to server (keep as requested)
+      - name: Upload .env
+        run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER }} "
-              echo '${{ secrets.GHCR_PAT }}' | podman login ghcr.io \
-                -u ${{ github.actor }} --password-stdin
+              echo 'NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}' > /home/minaxi/${{ steps.dep.outputs.dir }}/.env &&
+              echo 'NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}' >> /home/minaxi/${{ steps.dep.outputs.dir }}/.env
             "
 
-          # 🚀 Deploy container
+      # Login + Deploy
+      - name: Deploy App
+        run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER }} "
-              cd /home/minaxi/$TARGET_DIR &&
-              podman pull ghcr.io/${{ env.IMAGE_NAME }}:$TAG &&
-              podman-compose -f $COMPOSE_FILE up -d --force-recreate
+              echo '${{ secrets.GHCR_PAT }}' | podman login ghcr.io -u ${{ github.actor }} --password-stdin &&
+              cd /home/minaxi/${{ steps.dep.outputs.dir }} &&
+              podman pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.dep.outputs.tag }} &&
+              podman-compose -f ${{ steps.dep.outputs.compose }} up -d --force-recreate
             "
