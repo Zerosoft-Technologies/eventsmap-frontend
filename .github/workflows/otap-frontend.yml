@@ -54,8 +54,7 @@ jobs:
       # 3️⃣ Prepare build-time .env.production (DO NOT REMOVE)
       - name: Create .env.production dynamically
         run: |
-          echo "NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}" > .env.production
-          echo "NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}" >> .env.production
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env.production
 
       # 4️⃣ Install & Build
       - name: Install dependencies
@@ -79,8 +78,7 @@ jobs:
         run: |
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.image_tag }}"
           docker build \
-            --build-arg NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}" \
-            --build-arg NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+            --build-arg VITE_API_URL="${{ secrets.VITE_API_URL }}" \
             -t $IMAGE .
           docker push $IMAGE
 
@@ -151,8 +149,7 @@ jobs:
         run: |
           ssh -p ${{ secrets.DEPLOY_PORT }} \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_SERVER }} "
-              echo 'NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}' > /home/minaxi/${{ steps.dep.outputs.dir }}/.env &&
-              echo 'NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}' >> /home/minaxi/${{ steps.dep.outputs.dir }}/.env
+              echo 'VITE_API_URL=${{ secrets.VITE_API_URL }}' > /home/minaxi/${{ steps.dep.outputs.dir }}/.env
             "
 
       # Login + Deploy
