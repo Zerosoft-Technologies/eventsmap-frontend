@@ -161,6 +161,6 @@ jobs:
               cd /home/minaxi/${{ steps.dep.outputs.dir }} &&
               TAG='${{ steps.dep.outputs.tag }}' &&
               podman pull ghcr.io/zerosoft-technologies/eventsmap-frontend-vue:'${{ steps.dep.outputs.tag }}' &&
-              podman-compose -f ${{ steps.dep.outputs.compose }} up -d --force-recreate
+              TAG='${{ steps.dep.outputs.tag }}' podman-compose -f ${{ steps.dep.outputs.compose }} up -d --force-recreate
           "
 
