@@ -8,7 +8,6 @@ RUN npm ci
 
 COPY . .
 
-# Vue build vars (must use VITE_*)
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
@@ -19,10 +18,13 @@ FROM node:24-alpine AS runner
 
 WORKDIR /app
 
-# Only copy built assets + node_modules needed for preview
+# Install static server
+RUN npm install -g serve
+
+# Copy built files only
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
-CMD ["npm", "run", "preview"]
+
+# Serve built production files
+CMD ["serve", "-s", "dist", "-l", "3000"]
