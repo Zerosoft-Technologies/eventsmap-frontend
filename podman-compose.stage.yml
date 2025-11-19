@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   frontend:
-    image: ghcr.io/zerosoft-technologies/eventsmap-frontend:stage
+    image: ghcr.io/zerosoft-technologies/eventsmap-frontend-vue:stage
     container_name: eventsmap-stage
     restart: unless-stopped
     environment:
