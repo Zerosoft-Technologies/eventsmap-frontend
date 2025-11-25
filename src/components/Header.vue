@@ -5,27 +5,27 @@
     </h1>
     <div class="hidden md:flex items-center gap-3">
       <div class="flex bg-white gap-6 items-center py-3 pr-3 pl-4 border border-[var(--secondary-color)] rounded-lg overflow-hidden" >
-        <div class="flex gap-2 cursor-pointer items-center"><img src="../assets/search.png" alt="Search Icon" /><p>Search for Talent...</p></div>
+        <div class="flex gap-2 cursor-pointer items-center  w-[169px]"><img src="../assets/search.png" alt="Search Icon" /><input type="text" class="outline-none placeholder-[var(--primary-color)]" placeholder="Search for Talent..."></div>
         <div class="w-px h-[22px] bg-[var(--primary-color)]"></div>
         <div class="flex gap-1 cursor-pointer items-center"><img src="../assets/location-01.png" alt="Location Icon" /><p>Amsterdam</p><img src="../assets/chevron-down.png" alt="Chevron Down" class="ml-1" /></div>        
       </div>
       <div class="overflow-hidden">
-        <button class="bg-white cursor-pointer py-3 hidden gap-2 items-center lg:flex px-4 border border-[var(--secondary-color)] rounded-lg"><img src="../assets/calendar.png" alt="Calendar Icon"/><span>Date of today</span></button>
+        <button class="bg-white py-3 hidden gap-2 items-center lg:flex px-4 border border-[var(--secondary-color)] rounded-lg"><img src="../assets/calendar.png" alt="Calendar Icon"/><span>Date of today</span></button>
       </div>
     </div>
     <button class="lg:hidden text-2xl" @click="menuOpen = !menuOpen">☰</button>
 
     <div class="hidden lg:flex items-center gap-4">
       <div>
-        <button class="bg-white cursor-pointer px-4 py-2 rounded-[6px] flex gap-1 items-center border border-[var(--secondary-color)]"><img src="../assets/favourite.png" alt="Favourite Icon"/><span>Link</span></button>
+        <button class="bg-white px-4 py-2 rounded-[6px] flex gap-1 items-center border border-[var(--secondary-color)]"><img src="../assets/favourite.png" alt="Favourite Icon"/><span>Link</span></button>
       </div>
       <div class="h-6 w-px bg-[var(--primary-color)]"></div>
       <div>
-        <button class="bg-white cursor-pointer px-4 py-2 rounded-[6px] flex items-center border gap-1 border-[var(--secondary-color)]"><img src="../assets/user.png" alt="User Icon"/><span>Create profile</span></button>
+        <button class="bg-white px-4 py-2 rounded-[6px] flex items-center border gap-1 border-[var(--secondary-color)]"><img src="../assets/user.png" alt="User Icon"/><span>Create profile</span></button>
       </div>
       <div class="h-6 w-px bg-[var(--primary-color)]"></div>
       <div>
-        <button @click="$emit('open-login')" class="bg-white cursor-pointer px-4 py-2 rounded-[6px] flex items-center border gap-1 border-[var(--secondary-color)]"><img src="../assets/login.png" alt="Login Icon"/><span>Login</span></button>
+        <button @click="$emit('open-login')" class="bg-white px-4 py-2 rounded-[6px] flex items-center border gap-1 border-[var(--secondary-color)]"><img src="../assets/login.png" alt="Login Icon"/><span>Login</span></button>
       </div>
     </div>
 

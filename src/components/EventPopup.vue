@@ -1,16 +1,19 @@
 <template>
     <div class="relative">
-        <div class="bg-white w-100 rounded-2xl p-4">  
+        <div class="bg-white rounded-2xl p-4">  
             <div class="p-3 bg-[#ECEEF4] rounded-xl">            
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between md:gap-5 flex-wrap items-center">
                     <div class="flex gap-[13px] items-center">
-                        <img :src="event.image" class="w-10 h-10 rounded-full object-cover" />
+                        <div class="border w-[40px] h-[40px] justify-center flex items-center border-[var(--secondary-color)] rounded-full">
+                            <p class="leading-[1.1] italic text-center tracking-[-8%] text-[8px]">THE<br>EVENTS<br>MAP</p>
+                        </div>
+                        <!-- <img :src="event.image" class="w-10 h-10 rounded-full object-cover" /> -->
                         <h4 class="text-[var(--primary-color)]-500 leading-[1.5]">{{ event.title }}</h4>
                     </div>
-                    <button class="py-1 px-2 text-[#EF4444] leading-[1.4] border border-[#EF4444] rounded-md" v-if="event.live">Live Now</button>                    
+                    <button class="py-1 px-2 gap-1 text-[#EF4444] leading-[1.4] flex items-center border border-[#EF4444] rounded-md" v-if="event.live"><img src="../assets/live-streaming.png" alt="Streaming Icon"><span>Live Now</span></button>                    
                 </div>
-                <div class="flex w-100 gap-4 mt-4">
-                    <img src="../assets/dummy-event.png" class="rounded-lg w-30 object-cover" />
+                <div class="flex md:gap-4 mt-4">
+                    <img src="../assets/dummy-event.png" class="rounded-lg w-30 object-cover hidden md:block" />
                     <div >
                         <div class="flex gap-6 text-center">
                             <div v-for="(v, k) in countdown" :key="k">

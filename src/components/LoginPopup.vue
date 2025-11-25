@@ -4,7 +4,7 @@
         <div class="w-full max-w-sm bg-white rounded-2xl shadow-xl p-3 md:p-6 animate-fade-in">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold text-[var(--primary-color)]">Login</h2>
-                <button @click="closePopup" class="text-gray-500 cursor-pointer hover:text-gray-700">
+                <button @click="closePopup" class="text-gray-500  hover:text-gray-700">
                     ✕
                 </button>
             </div>
@@ -25,7 +25,7 @@
                 </div>
 
                 <button type="submit"
-                    class="w-full bg-[var(--primary-color)] cursor-pointer text-white font-semibold py-2 rounded-lg transition">
+                    class="w-full bg-[var(--primary-color)] text-white font-semibold py-2 rounded-lg transition">
                     Login
                 </button>
             </form>

@@ -7,14 +7,14 @@ import * as turf from "@turf/turf";
 export function addEventMarker(map, event) {    
   const popupEl = document.createElement('div')  
   createApp(EventPopup, { event }).mount(popupEl)
-  const popup = new maplibregl.Popup({ closeButton: false, maxWidth: '435px', anchor: "bottom", offset: [0, -45] }).setDOMContent(popupEl)  
+  const popup = new maplibregl.Popup({ closeButton: false, maxWidth: "none", anchor: "bottom", offset: [0, -45] }).setDOMContent(popupEl)  
   const marker = new maplibregl.Marker({ color: "#0061FF" })
   .setLngLat([event.lat, event.lng])
   .setPopup(popup)
   .addTo(map)
    const circle = turf.circle(
     [event.lat, event.lng],
-    1000 / 1000, 
+    250 / 1000, 
     { steps: 64, units: "kilometers" }
   );
 
@@ -31,6 +31,17 @@ export function addEventMarker(map, event) {
       "fill-color": "#0061FF",    
       "fill-opacity": 0.4
     }
+  });
+
+  marker.getElement().addEventListener("click", (e) => {
+    const target = [event.lat, event.lng];
+
+    map.easeTo({
+      center: target,
+      zoom: Math.max(map.getZoom(), 12), 
+      offset: [0, 250], 
+      duration: 600
+    });
   });
 
   // marker.getElement().addEventListener("click", () => {
