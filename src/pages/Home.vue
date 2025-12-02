@@ -1,7 +1,7 @@
 <template>
   <Header @open-login="isLoginOpen = true"></Header>
   <LoginPopup :isOpen="isLoginOpen" @close="isLoginOpen = false" />
-  <div ref="mapContainer" class="map-container w-full h-screen"></div>
+  <div ref="mapContainer" class="map-container tw:w-full tw:h-screen"></div>
 </template>
 
 <script setup>

@@ -1,5 +1,5 @@
 @import "@fontsource/inter";
-@import "tailwindcss";
+@import "tailwindcss" prefix(tw);
 
 :root {
   --font-sans: "Inter";
@@ -44,4 +44,17 @@ button{
         max-width: 100%; 
         padding: 5px;
     }
+}
+
+.vtd-datepicker {
+  background-color: #F9FAFB;
+} 
+
+@media (min-width: 1024px) {
+  #headlessui-popover-panel-v-2 > div.absolute {
+      top: 4px;
+      right: auto;
+      left: 0;
+      transform: translateX(-50%);
+  }
 }

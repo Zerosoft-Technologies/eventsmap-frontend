@@ -1,5 +1,5 @@
 <template>
-<div class="flex items-center leading-[1.6] gap-2 text-[10px]">
+<div class="tw:flex tw:items-center tw:leading-[1.6] tw:gap-2 tw:text-[10px]">
 <img :src="iconUrl" :alt="`${icon} icon`">
 <a href="{{ link }}" v-if="link">{{ text }}</a>
 <span v-else>

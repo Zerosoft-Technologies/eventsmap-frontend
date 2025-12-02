@@ -1,31 +1,31 @@
 <template>
-    <div v-if="props.isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4"
+    <div v-if="props.isOpen" class="tw:fixed tw:inset-0 tw:z-9999 tw:flex tw:items-center tw:justify-center tw:bg-black/50 tw:p-4"
         @click.self="closePopup">
-        <div class="w-full max-w-sm bg-white rounded-2xl shadow-xl p-3 md:p-6 animate-fade-in">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold text-[var(--primary-color)]">Login</h2>
-                <button @click="closePopup" class="text-gray-500  hover:text-gray-700">
+        <div class="tw:w-full tw:max-w-sm tw:bg-white tw:rounded-2xl tw:shadow-xl tw:p-3 tw:md:p-6 animate-fade-in">
+            <div class="tw:flex tw:justify-between tw:items-center tw:mb-6">
+                <h2 class="tw:text-xl tw:font-semibold tw:text-(--primary-color)">Login</h2>
+                <button @click="closePopup" class="tw:text-gray-500 tw:hover:text-gray-700">
                     ✕
                 </button>
             </div>
             
-            <form @submit.prevent="submitLogin" class="space-y-5">
+            <form @submit.prevent="submitLogin" class="tw:space-y-5">
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Email</label>
+                    <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-1">Email</label>
                     <input type="email" v-model="email"
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[var(--secondary-color)] outline-none"
+                        class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
                         placeholder="Enter your email" required />
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Password</label>
+                    <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-1">Password</label>
                     <input type="password" v-model="password"
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[var(--secondary-color)] outline-none"
+                        class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
                         placeholder="Enter your password" required />
                 </div>
 
                 <button type="submit"
-                    class="w-full bg-[var(--primary-color)] text-white font-semibold py-2 rounded-lg transition">
+                    class="tw:w-full tw:bg-(--primary-color) tw:text-white tw:font-semibold tw:py-2 tw:rounded-lg tw:transition">
                     Login
                 </button>
             </form>
