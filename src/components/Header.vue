@@ -8,13 +8,13 @@
         <div class="tw:flex tw:gap-2 tw:relative tw:cursor-pointer tw:items-center  tw:w-[169px]"><img src="../assets/search.png" alt="Search Icon" /><input  @focus="showSuggestion = true" @blur="showSuggestion = false" type="text" class="tw:outline-none tw:placeholder-(--primary-color)" placeholder="Search for Talent...">        
         </div>
         <div class="tw:w-px tw:h-[22px] tw:bg-(--primary-color)"></div>
-        <div class="tw:flex tw:gap-1 tw:cursor-pointer tw:items-center" ref="locationToggler" @click="toggleLocation"><img src="../assets/location-01.png" alt="Location Icon" /><p>Amsterdam</p><img src="../assets/chevron-down.png" alt="Chevron Down" class="ml-1" /></div>   
+        <div class="tw:flex tw:gap-1 tw:cursor-pointer tw:items-center" ref="locationToggler" @click="toggleLocation"><img src="../assets/location-01.png" alt="Location Icon" /><p>{{ city || "Amsterdam" }}</p><img src="../assets/chevron-down.png" alt="Chevron Down" class="ml-1" /></div>   
         <transition name="fade">
           <div v-if="showLocation" v-click-outside="handleOutsideClick" class="tw:absolute tw:flex tw:flex-col tw:gap-2.5 tw:overflow-x-visible tw:mt-px tw:right-0 tw:top-full tw:rounded-2xl tw:p-4 tw:bg-(--gray-color) tw:z-10">
             <div class="tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-md">
               <img src="../assets/maps-search.png" alt="Map Icon" /><input type="text" class="tw:outline-none tw:placeholder-(--primary-color) tw:w-[15ch]" placeholder="Search any location"> 
             </div>   
-            <div class="tw:bg-white tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-md">
+            <div @click="getLocation" class="tw:bg-white tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-md">
               <img src="../assets/location-01.png" width="16" height="16" alt="Location Icon" />
               <p class="m-0">Current location</p>
             </div>          
@@ -78,25 +78,57 @@
       </div>
     </transition>
   </header>
+  <div v-if="showResults">
+    <AllEvents />
+  </div>
 </template>
 
 <script setup>
 import { useRoute } from 'vue-router'
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import DatePicker from "./DatePicker.vue";
+import AllEvents from './AllEvents.vue';
 
 const showSuggestion = ref(false)
 const menuOpen = ref(false);
-
+const showResults = ref(false);
 const route = useRoute()
+const suggestions = ref(['Talent', 'Nightlife', 'Dance', 'Theatre', 'Community', 'Music', 'Film'])
+const city = ref("");
 
-const fixedMenu = computed(() => {  
-  console.log(route.name)
-  console.log(route.name === 'Home')
+onMounted(() => {
+  getLocation();
+});
+
+const fixedMenu = computed(() => { 
   return route.name === 'Home'
 })
 
-const suggestions = ref(['Talent', 'Nightlife', 'Dance', 'Theatre', 'Community', 'Music', 'Film'])
+async function getLocation() {
+  if (!navigator.geolocation) {
+    city.value = "Geolocation not supported";
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(success, error);
+}
+
+async function success(position) {
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+    );
+    const data = await res.json();
+    city.value = data.address.city || data.address.town || data.address.village || "Amsterdam";
+  } catch (e) {
+    city.value = "Amsterdam";
+  }
+}
+
+function error() {
+  city.value = "Amsterdam";
+}
 
 </script>
 

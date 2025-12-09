@@ -1,7 +1,5 @@
 <template>
-  <form @submit.prevent="submit" class="tw:flex tw:m-auto tw:w-1/2 tw:flex-col tw:gap-4">
-
-    <!-- Title of Event -->
+  <form @submit.prevent="submit" class="tw:flex tw:m-auto tw:w-1/2 tw:flex-col tw:gap-4">    
     <div>
       <label class="tw:block tw:mb-2">Title of Event</label>
       <input 
@@ -10,9 +8,7 @@
         class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
         placeholder="Enter event title"
       />
-    </div>
-
-    <!-- Banner Images (max 5) -->
+    </div>    
     <div>
       <label class="tw:block tw:mb-2">Event Images / Banner (Max 5)</label>
       <input 
@@ -23,9 +19,7 @@
         class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
       />
       <p class="tw:text-sm tw:text-gray-500">You can upload up to 5 images.</p>
-    </div>
-    
-    <!-- <div class="tw:bg-gray-50 tw:p-4 tw:rounded-lg tw:border"> -->
+    </div>        
       <h3 class="tw:text-xl tw:font-bold tw:text-(--teritiary-color) tw:text-center tw:mb-4">Information Details</h3>
       
       <div class="tw:mb-4">
