@@ -1,7 +1,7 @@
 <template>
-  <header class="tw:fixed tw:top-0 tw:left-0 tw:w-full tw:z-50 tw:bg-transparent tw:py-2 tw:px-4 tw:md:py-3 tw:md:px-8 tw:flex tw:items-center tw:justify-between" >
+  <header :class="fixedMenu ? 'tw:fixed tw:top-0 tw:left-0 z-50': ''" class="tw:w-full tw:bg-transparent tw:py-2 tw:px-4 tw:md:py-3 tw:md:px-8 tw:flex tw:items-center tw:justify-between" >
     <h1 class="tw:font-bold tw:leading-[1.4] tw:tracking-[-0.5px] tw:text-lg">
-      The Events Map
+      <RouterLink to="/">The Events Map</RouterLink>
     </h1>
     <div class="tw:hidden tw:relative tw:md:flex tw:items-center tw:gap-3">
       <div class="tw:flex tw:relative tw:bg-white tw:gap-6 tw:items-center tw:py-3 tw:pr-3 tw:pl-4 tw:border tw:border-(--secondary-color) tw:rounded-lg" >
@@ -42,12 +42,10 @@
     <div class="tw:hidden tw:lg:flex tw:items-center tw:gap-4">
       <div>
         <button class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color)"><img src="../assets/favourite.png" alt="Favourite Icon"/><span>Link</span></button>
-      </div>
-      <div class="tw:h-6 tw:w-px tw:bg-(--primary-color)"></div>
-      <div>
-        <button class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>Create profile</span></button>
-      </div>
-      <div class="tw:h-6 tw:w-px tw:bg-(--primary-color)"></div>
+      </div>      
+      <div>        
+        <RouterLink to="/create-profile" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>Create profile</span></RouterLink>        
+      </div>      
       <div>
         <button @click="$emit('open-login')" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/login.png" alt="Login Icon"/><span>Login</span></button>
       </div>
@@ -83,13 +81,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import DatePicker from "./DatePicker.vue";
 
 const showSuggestion = ref(false)
 const menuOpen = ref(false);
 
+const route = useRoute()
 
+const fixedMenu = computed(() => {  
+  console.log(route.name)
+  console.log(route.name === 'Home')
+  return route.name === 'Home'
+})
 
 const suggestions = ref(['Talent', 'Nightlife', 'Dance', 'Theatre', 'Community', 'Music', 'Film'])
 

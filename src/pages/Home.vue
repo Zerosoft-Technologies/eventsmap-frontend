@@ -1,23 +1,14 @@
 <template>
-  <Header @open-login="isLoginOpen = true"></Header>
-  <LoginPopup :isOpen="isLoginOpen" @close="isLoginOpen = false" />
   <div ref="mapContainer" class="map-container tw:w-full tw:h-screen"></div>
 </template>
 
 <script setup>
-import Header from '../components/Header.vue'
-import LoginPopup from '../components/LoginPopup.vue'
 import maplibregl from 'maplibre-gl'
 import {addEventMarker} from '../utils/useMapPopup.js'
-import { ref, onMounted, createApp, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 
-const isLoginOpen = ref(false);
 const mapContainer = ref(null);
 let map;
-
-watch(isLoginOpen, (newVal, oldVal) => {
-  console.log('isLoginOpen changed:', oldVal, '=>', newVal)
-})
 
 const events = [
   {

@@ -8,31 +8,15 @@ export function addEventMarker(map, event) {
   const popupEl = document.createElement('div')  
   createApp(EventPopup, { event }).mount(popupEl)
   const popup = new maplibregl.Popup({ closeButton: false, maxWidth: "none", anchor: "bottom", offset: [0, -45] }).setDOMContent(popupEl)  
-  const marker = new maplibregl.Marker({ color: "#0061FF" })
+  const markerEl = document.createElement('div');
+  markerEl.style.backgroundImage = 'url(http://localhost:5173/marker.png)';
+  markerEl.style.width = '60px';
+  markerEl.style.height = '60px';
+  const marker = new maplibregl.Marker({element: markerEl})
   .setLngLat([event.lat, event.lng])
   .setPopup(popup)
   .addTo(map)
-   const circle = turf.circle(
-    [event.lat, event.lng],
-    250 / 1000, 
-    { steps: 64, units: "kilometers" }
-  );
-
-  map.addSource(`circle-${event.id}`, {
-    type: "geojson",
-    data: circle
-  });  
   
-  map.addLayer({
-    id: `circle-fill-${event.id}`,
-    type: "fill",
-    source: `circle-${event.id}`,
-    paint: {
-      "fill-color": "#0061FF",    
-      "fill-opacity": 0.4
-    }
-  });
-
   marker.getElement().addEventListener("click", (e) => {
     const target = [event.lat, event.lng];
 
