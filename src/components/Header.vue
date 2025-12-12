@@ -5,14 +5,17 @@
     </h1>
     <div class="tw:hidden tw:relative tw:md:flex tw:items-center tw:gap-3">
       <div class="tw:flex tw:relative tw:bg-white tw:gap-6 tw:items-center tw:py-3 tw:pr-3 tw:pl-4 tw:border tw:border-(--secondary-color) tw:rounded-lg" >
-        <div class="tw:flex tw:gap-2 tw:relative tw:cursor-pointer tw:items-center  tw:w-[169px]"><img src="../assets/search.png" alt="Search Icon" /><input  @focus="showSuggestion = true" @blur="showSuggestion = false" type="text" class="tw:outline-none tw:placeholder-(--primary-color)" placeholder="Search for Talent...">        
+        <div class="tw:flex tw:gap-2 tw:relative tw:cursor-pointer tw:items-center  tw:w-[169px]">
+          <img src="../assets/search.png" alt="Search Icon" />
+          <input ref="searchInput" @keyup.enter="filterBy('search')" v-model="searchTerm" @focus="showSuggestion = true" @blur="showSuggestion = false" type="text" class="tw:outline-none tw:placeholder-(--primary-color)" placeholder="Search for Talent...">        
         </div>
         <div class="tw:w-px tw:h-[22px] tw:bg-(--primary-color)"></div>
         <div class="tw:flex tw:gap-1 tw:cursor-pointer tw:items-center" ref="locationToggler" @click="toggleLocation"><img src="../assets/location-01.png" alt="Location Icon" /><p>{{ city || "Amsterdam" }}</p><img src="../assets/chevron-down.png" alt="Chevron Down" class="ml-1" /></div>   
         <transition name="fade">
           <div v-if="showLocation" v-click-outside="handleOutsideClick" class="tw:absolute tw:flex tw:flex-col tw:gap-2.5 tw:overflow-x-visible tw:mt-px tw:right-0 tw:top-full tw:rounded-2xl tw:p-4 tw:bg-(--gray-color) tw:z-10">
             <div class="tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-md">
-              <img src="../assets/maps-search.png" alt="Map Icon" /><input type="text" class="tw:outline-none tw:placeholder-(--primary-color) tw:w-[15ch]" placeholder="Search any location"> 
+              <img src="../assets/maps-search.png" alt="Map Icon" />
+              <input type="text" class="tw:outline-none tw:placeholder-(--primary-color) tw:w-[15ch]" placeholder="Search any location"> 
             </div>   
             <div @click="getLocation" class="tw:bg-white tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-md">
               <img src="../assets/location-01.png" width="16" height="16" alt="Location Icon" />
@@ -79,7 +82,7 @@
     </transition>
   </header>
   <div v-if="showResults">
-    <AllEvents />
+    <AllEvents @closeResults="handleClose"  @resetSearch="handleReset" :events="events" />
   </div>
 </template>
 
@@ -92,17 +95,35 @@ import AllEvents from './AllEvents.vue';
 const showSuggestion = ref(false)
 const menuOpen = ref(false);
 const showResults = ref(false);
+const searchInput = ref(null)
 const route = useRoute()
-const suggestions = ref(['Talent', 'Nightlife', 'Dance', 'Theatre', 'Community', 'Music', 'Film'])
 const city = ref("");
+const searchTerm = ref('')
+const suggestions = ref(['Talent', 'Nightlife', 'Dance', 'Theatre', 'Community', 'Music', 'Film'])
 
 onMounted(() => {
   getLocation();
 });
 
+function filterBy(action){
+  showResults.value = true
+  if(action == 'search'){
+    searchInput.value.blur()
+  }
+}
+
 const fixedMenu = computed(() => { 
   return route.name === 'Home'
 })
+
+function handleClose(){
+  showResults.value = false
+}
+
+function handleReset(){
+  showResults.value = false
+  searchTerm.value = ""  
+}
 
 async function getLocation() {
   if (!navigator.geolocation) {
@@ -126,9 +147,40 @@ async function success(position) {
   }
 }
 
-function error() {
+async function error() {
   city.value = "Amsterdam";
 }
+
+const events = [
+  {
+    id: "1",
+    title: "Amsterdam Night Party",
+    live: true,
+    image: "https://picsum.photos/300/200?1",
+    date: "Fri 12 Sept, 12:00 PM - 10:00 PM",
+    location: "De Melkweg, City Theater Zaal 7",
+    category: "EDM / House",
+    price: "From €25",
+    dresscode: "Smart Casual",
+    age: "18+",
+    lat: 4.88428,
+    lng: 52.32797
+  },
+  {
+    id: "2",
+    title: "Amsterdam Night Party",
+    live: true,
+    image: "https://picsum.photos/300/200?1",
+    date: "Fri 12 Sept, 12:00 PM - 10:00 PM",
+    location: "De Melkweg, City Theater Zaal 7",
+    category: "EDM / House",
+    price: "From €25",
+    dresscode: "Smart Casual",
+    age: "18+",
+    lat: 4.88428,
+    lng: 52.32797
+  }
+];
 
 </script>
 
@@ -193,3 +245,5 @@ export default {
 }
 /* Menu animation */
 </style>
+
+

@@ -6,26 +6,11 @@
 import maplibregl from 'maplibre-gl'
 import {addEventMarker} from '../utils/useMapPopup.js'
 import { ref, onMounted } from 'vue'
+import events from '../data/events.json'
 
 const mapContainer = ref(null);
 let map;
 
-const events = [
-  {
-    id: "1",
-    title: "Amsterdam Night Party",
-    live: true,
-    image: "https://picsum.photos/300/200?1",
-    date: "Fri 12 Sept, 12:00 PM - 10:00 PM",
-    location: "De Melkweg, City Theater Zaal 7",
-    category: "EDM / House",
-    price: "From €25",
-    dresscode: "Smart Casual",
-    age: "18+",
-    lat: 4.88428,
-    lng: 52.32797
-  }
-];
 
 const style = {
   version: 8,
@@ -57,7 +42,7 @@ onMounted(() => {
   });
 
   map.on("load", () => {    
-    events.forEach((event) => addEventMarker(map, event));
+    events.forEach((event) => {console.log(event); addEventMarker(map, event)});
   });
 });
 

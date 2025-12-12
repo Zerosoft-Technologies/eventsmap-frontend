@@ -1,6 +1,5 @@
-<template>
-    <div class="tw:relative">
-        <div class="tw:bg-white tw:rounded-2xl tw:p-4">  
+<template>    
+        <div>
             <div class="tw:p-3 tw:bg-[#ECEEF4] tw:rounded-xl">            
                 <div class="tw:flex tw:justify-between tw:md:gap-5 tw:flex-wrap tw:items-center">
                     <div class="tw:flex tw:gap-[13px] tw:items-center">
@@ -21,14 +20,14 @@
                     </button>                    
                 </div>
 
-                <div class="tw:flex tw:md:gap-4 tw:mt-4">
+                <div class="tw:flex tw:md:justify-start tw:justify-between tw:md:gap-4 tw:mt-4">
                     <img 
-                        src="../assets/dummy-event.png" 
-                        class="tw:rounded-lg tw:w-30 tw:object-cover tw:hidden tw:lg:block" 
+                        :src="event.image" 
+                        class="tw:rounded-lg tw:w-30 tw:object-cover" 
                     />
 
                     <div>
-                        <div class="tw:flex tw:gap-6 tw:text-center">
+                        <div class="tw:flex tw:gap-3 tw:md:gap-6 tw:text-center">
                             <div v-for="(v, k) in countdown" :key="k">
                                 <p class="tw:text-sm tw:leading-[1.2] tw:text-(--teritiary-color)">00</p>
                                 <p class="tw:text-[10px] tw:capitalize">{{ k }}</p>
@@ -66,10 +65,7 @@
                 </div>                            
             </div>  
         </div>
-
-        <div class="tw:absolute tw:left-1/2 tw:-translate-x-1/2 tw:-bottom-2 tw:w-0 tw:h-0 tw:border-l-10 tw:border-l-transparent tw:border-r-10 tw:border-r-transparent tw:border-t-12 tw:border-t-white tw:shadow-md">
-        </div> 
-    </div>
+            
 </template>
 
 
