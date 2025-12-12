@@ -6,7 +6,7 @@
 import maplibregl from 'maplibre-gl'
 import {addEventMarker} from '../utils/useMapPopup.js'
 import { ref, onMounted } from 'vue'
-import events from '../data/events.json'
+import events from '../assets/events.json'
 
 const mapContainer = ref(null);
 let map;
