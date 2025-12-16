@@ -15,14 +15,21 @@
           <div v-if="showLocation" v-click-outside="handleOutsideClick" class="tw:absolute tw:flex tw:flex-col tw:gap-2.5 tw:overflow-x-visible tw:mt-px tw:right-0 tw:top-full tw:rounded-2xl tw:p-4 tw:bg-(--gray-color) tw:z-10">
             <div class="tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-md">
               <img src="../assets/maps-search.png" alt="Map Icon" />
-              <input type="text" class="tw:outline-none tw:placeholder-(--primary-color) tw:w-[15ch]" placeholder="Search any location"> 
+              <input v-model="searchLocation" @keyup.enter="debouncedSearch" @input="debouncedSearch" type="text" class="tw:outline-none tw:placeholder-(--primary-color) tw:w-[15ch]" placeholder="Search any location"> 
             </div>   
             <div @click="getLocation" class="tw:bg-white tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-md">
               <img src="../assets/location-01.png" width="16" height="16" alt="Location Icon" />
               <p class="m-0">Current location</p>
             </div>          
           </div>
-        </transition>     
+        </transition> 
+        <transition name="fade">
+          <div v-if="searchResults.length > 0" class="tw:absolute tw:w-[400px] tw:flex tw:flex-col tw:overflow-x-visible tw:mt-px tw:top-full tw:left-full tw:z-10 tw:rounded-2xl tw:p-4 tw:bg-(--gray-color)">
+            <div v-for="(result, index) in searchResults" @click="selectCity(result)" :key="index" class="tw:cursor-pointer border-b tw:border-(--secondary-color) tw:text-sm tw:py-2.5">
+              <p class="m-0">{{ result.display_name }}</p>
+            </div>          
+          </div>
+        </transition>         
       </div>
       <div>
         <button class="tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg"><img src="../assets/calendar.png" alt="Calendar Icon"/><span>
@@ -85,7 +92,6 @@
     <AllEvents @closeResults="handleClose"  @resetSearch="handleReset" :events="events" />
   </div>
 </template>
-
 <script setup>
 import { useRoute } from 'vue-router'
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
@@ -98,7 +104,9 @@ const showResults = ref(false);
 const searchInput = ref(null)
 const route = useRoute()
 const city = ref("");
+const searchLocation = ref("")
 const searchTerm = ref('')
+const searchResults = ref([])
 const suggestions = ref(['Talent', 'Nightlife', 'Dance', 'Theatre', 'Community', 'Music', 'Film'])
 
 onMounted(() => {
@@ -181,6 +189,50 @@ const events = [
     lng: 52.32797
   }
 ];
+
+const searchCity = async () => {
+  if (!city.value) {
+    searchResults.value = [];
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        searchLocation.value
+      )}&addressdetails=1&limit=5`,
+      {
+        headers: {
+          "Accept": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+    searchResults.value = data;
+    error.value = "";
+  } catch (err) {
+    error.value = "Failed to fetch locations";
+  }
+};
+
+let timeout = null;
+
+const debouncedSearch = () => {
+  clearTimeout(timeout);
+  timeout = setTimeout(searchCity, 500);
+};
+
+const selectCity = (place) => {
+  city.value = place.name;
+  searchResults.value = [];
+
+  console.log("Selected City:", {
+    name: place.display_name,
+    lat: place.lat,
+    lon: place.lon,
+  });
+};
 
 </script>
 

@@ -9,8 +9,7 @@ import { ref, onMounted } from 'vue'
 import events from '../assets/events.json'
 
 const mapContainer = ref(null);
-let map;
-
+let map;  
 
 const style = {
   version: 8,
