@@ -37,7 +37,7 @@
                         <div class="tw:space-y-3 tw:mt-3">
                             <DetailRow icon="date-time" :text="event.date" />
                             <DetailRow icon="location-02" :text="event.location" />
-                            <DetailRow icon="music-note" :text="event.category['name']" />
+                            <DetailRow icon="music-note" :text="event.category?.name == null ? 'N/A' : event.category['name']" />
                             <DetailRow icon="bitcoin-bag" :text="event.price" />
                             <DetailRow icon="baby-boy-dress" :text="event.dresscode" />
                             <DetailRow icon="user-group" :text="event.age" />
