@@ -336,7 +336,7 @@ async function getLocation() {
   } else {
     // Location access failed or was denied
     if (locationError.value?.isPermissionDenied) {
-      city.value = "Location denied";
+      city.value = "Amsterdam";
       // Keep Amsterdam as default
       selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
     } else if (locationError.value) {
