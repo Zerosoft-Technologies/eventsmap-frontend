@@ -7,7 +7,7 @@
       <div class="tw:flex tw:relative tw:bg-white tw:gap-6 tw:items-center tw:py-3 tw:pr-3 tw:pl-4 tw:border tw:border-(--secondary-color) tw:rounded-lg" >
         <div class="tw:flex tw:gap-2 tw:relative tw:cursor-pointer tw:items-center  tw:w-[169px]">
           <img src="../assets/search.png" alt="Search Icon" />
-          <input ref="searchInput" @keyup.enter="filterBy('search')" v-model="searchTerm" @focus="showSuggestion = true" @blur="showSuggestion = false" type="text" class="tw:outline-none tw:placeholder-(--primary-color)" placeholder="Search for Talent...">        
+          <input ref="searchInput" @keyup.enter="filterBy('search')" v-model="searchTerm" @focus="showSuggestion = true" @blur="handleSuggestionBlur" type="text" class="tw:outline-none tw:placeholder-(--primary-color)" placeholder="Search for Talent...">        
         </div>
         <div class="tw:w-px tw:h-[22px] tw:bg-(--primary-color)"></div>
         <div class="tw:flex tw:gap-1 tw:cursor-pointer tw:items-center" ref="locationToggler" @click="toggleLocation"><img src="../assets/location-01.png" alt="Location Icon" /><p>{{ city || "Amsterdam" }}</p><img src="../assets/chevron-down.png" alt="Chevron Down" class="ml-1" /></div>   
@@ -33,17 +33,73 @@
       </div>
       <div>
         <button class="tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg"><img src="../assets/calendar.png" alt="Calendar Icon"/><span>
-          <DatePicker />
+          <DatePicker @update:dateRange="dateRange = $event" />
         </span></button>
       </div>      
       <transition name="fade">
-        <div v-if="showSuggestion" class="tw:absolute tw:flex tw:gap-2.5 tw:overflow-x-visible tw:left-0 tw:top-full tw:rounded-2xl tw:p-4 tw:bg-(--gray-color) tw:z-10">
-          <button 
-          class="tw:bg-white tw:text-sm tw:py-2 tw:px-6 tw:border tw:border-(--secondary-color) tw:rounded-md"
-          v-for="(suggestion, index) in suggestions" 
-          :key="index"            
-          >{{ suggestion }}
-          </button>
+        <div v-if="showSuggestion" @mousedown.prevent class="tw:absolute tw:left-0 tw:top-full tw:rounded-2xl tw:p-3 tw:bg-(--gray-color) tw:z-10 tw:w-[35vw]">
+          <div class="tw:flex tw:items-center tw:gap-2">
+            <button
+              type="button"
+              @click="scrollCategories('left')"
+              class="tw:bg-white tw:border tw:border-(--secondary-color) tw:rounded-md tw:p-2 tw:flex tw:items-center tw:justify-center"
+              aria-label="Scroll categories left"
+            >
+              <img src="../assets/arrow-right.png" alt="Left" class="tw:w-4 tw:h-4 tw:rotate-180" />
+            </button>
+
+            <!-- Categories loading skeleton -->
+            <div v-if="categoriesLoading" class="tw:flex tw:items-center tw:gap-2 tw:flex-1 tw:py-1">
+              <div v-for="i in 5" :key="i" class="tw:inline-flex tw:shrink-0 tw:animate-pulse">
+                <div class="tw:h-9 tw:bg-gray-300 tw:rounded-md" :style="{ width: `${80 + Math.random() * 40}px` }"></div>
+              </div>
+            </div>
+
+            <!-- Categories list -->
+            <div
+              v-else
+              ref="categoriesScrollEl"
+              class="cat-scroll tw:flex tw:items-center tw:gap-2 tw:overflow-x-auto tw:whitespace-nowrap tw:flex-1 tw:py-1"
+              :class="catIsDragging ? 'tw:cursor-grabbing' : 'tw:cursor-grab'"
+              @mousedown="onCatMouseDown"
+              @mousemove="onCatMouseMove"
+              @mouseup="stopCatDrag"
+              @mouseleave="stopCatDrag"
+            >
+              <button
+                v-for="category in categories"
+                :key="category.id"
+                type="button"
+                @click="selectCategory(category)"
+                :class="[
+                  'tw:inline-flex tw:shrink-0 tw:text-sm tw:py-2 tw:px-5 tw:border tw:rounded-md tw:transition-colors',
+                  selectedCategory?.id === category.id
+                    ? 'tw:bg-[var(--primary-color)] tw:text-white tw:border-[var(--primary-color)]'
+                    : 'tw:bg-white tw:border-(--secondary-color) hover:tw:bg-gray-50'
+                ]"
+              >
+                {{ category.name }}
+              </button>
+
+              <button
+                v-if="selectedCategory"
+                type="button"
+                @click="clearCategoryFilter"
+                class="tw:inline-flex tw:shrink-0 tw:text-sm tw:py-2 tw:px-4 tw:text-gray-500 hover:tw:text-gray-700"
+              >
+                Clear
+              </button>
+            </div>
+
+            <button
+              type="button"
+              @click="scrollCategories('right')"
+              class="tw:bg-white tw:border tw:border-(--secondary-color) tw:rounded-md tw:p-2 tw:flex tw:items-center tw:justify-center"
+              aria-label="Scroll categories right"
+            >
+              <img src="../assets/arrow-right.png" alt="Right" class="tw:w-4 tw:h-4" />
+            </button>
+          </div>
         </div>
       </transition>
     </div>
@@ -51,7 +107,7 @@
 
     <div class="tw:hidden tw:lg:flex tw:items-center tw:gap-4">
       <div>
-        <button class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color)"><img src="../assets/favourite.png" alt="Favourite Icon"/><span>Link</span></button>
+        <button @click="filterBy('suggestion')" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color)"><img src="../assets/favourite.png" alt="Favourite Icon"/><span>Events</span></button>
       </div>      
       <div>        
         <RouterLink to="/create-profile" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>Create profile</span></RouterLink>        
@@ -71,7 +127,7 @@
         </div>
 
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
-          <DatePicker />
+          <DatePicker @update:dateRange="dateRange = $event" @update:session="sessionFilter = $event" />
         </div>
 
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
@@ -88,8 +144,14 @@
       </div>
     </transition>
   </header>
+  <!-- Location permission prompt -->
+  <!-- <LocationPermissionPrompt
+    v-show="showManualEnablePrompt"
+    @dismiss="() => {}"
+    @continue-without="() => {}"
+  /> -->
   <div v-if="showResults">
-    <AllEvents @closeResults="handleClose"  @resetSearch="handleReset" :events="events" />
+    <AllEvents @closeResults="handleClose" @resetSearch="handleReset" :events="events" :loading="eventsLoading" />
   </div>
 </template>
 <script setup>
@@ -97,6 +159,8 @@ import { useRoute } from 'vue-router'
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import DatePicker from "./DatePicker.vue";
 import AllEvents from './AllEvents.vue';
+import LocationPermissionPrompt from './LocationPermissionPrompt.vue';
+import { useLocationPermission } from '../composables/useLocationPermission';
 
 const showSuggestion = ref(false)
 const menuOpen = ref(false);
@@ -107,16 +171,118 @@ const city = ref("");
 const searchLocation = ref("")
 const searchTerm = ref('')
 const searchResults = ref([])
-const suggestions = ref(['Talent', 'Nightlife', 'Dance', 'Theatre', 'Community', 'Music', 'Film'])
+const categories = ref([])
+const categoriesLoading = ref(false)
+const selectedCategory = ref(null)
+const categoriesScrollEl = ref(null)
+const catIsDragging = ref(false)
+const catDidDrag = ref(false)
+let catDragStartX = 0
+let catDragStartScrollLeft = 0
+const dateRange = ref([null, null])
+const sessionFilter = ref({
+  morning: false,
+  afternoon: false,
+  evening: false,
+  night: false
+})
+const selectedLocation = ref({ lat: 52.3676, lng: 4.9041, name: "Amsterdam" }) // Default to Amsterdam
+
+// Initialize location permission composable
+const { 
+  permissionStatus: locationPermissionStatus, 
+  coords: locationCoords, 
+  error: locationError, 
+  isLoading: locationLoading,
+  getLocation: getCurrentLocation,
+  showManualEnablePrompt
+} = useLocationPermission()
+
+function handleSuggestionBlur() {
+  setTimeout(() => {
+    showSuggestion.value = false
+  }, 150)
+}
+
+function scrollCategories(direction) {
+  const el = categoriesScrollEl.value
+  if (!el) return
+  const amount = 240
+  el.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' })
+}
+
+function onCatMouseDown(e) {
+  const el = categoriesScrollEl.value
+  if (!el) return
+  catIsDragging.value = true
+  catDidDrag.value = false
+  catDragStartX = e.clientX
+  catDragStartScrollLeft = el.scrollLeft
+}
+
+function onCatMouseMove(e) {
+  const el = categoriesScrollEl.value
+  if (!el || !catIsDragging.value) return
+  e.preventDefault()
+  const dx = e.clientX - catDragStartX
+  if (Math.abs(dx) > 5) catDidDrag.value = true
+  el.scrollLeft = catDragStartScrollLeft - dx
+}
+
+function stopCatDrag() {
+  if (!catIsDragging.value) return
+  catIsDragging.value = false
+  if (catDidDrag.value) {
+    setTimeout(() => {
+      catDidDrag.value = false
+    }, 0)
+  }
+}
+
+// Load categories from API
+async function loadCategories() {
+  categoriesLoading.value = true;
+  try {
+    const { fetchCategories } = await import('../api/categories');
+    categories.value = await fetchCategories();
+  } catch (e) {
+    console.error('Failed to load categories:', e);
+    categories.value = [];
+  } finally {
+    categoriesLoading.value = false;
+  }
+}
+
+// Handle category selection
+function selectCategory(category) {
+  if (catDidDrag.value) return
+  selectedCategory.value = category;
+  showSuggestion.value = false;
+  loadEventsFromApi(searchTerm.value.trim());
+  showResults.value = true;
+}
+
+function clearCategoryFilter() {
+  selectedCategory.value = null
+  loadEventsFromApi(searchTerm.value.trim())
+  showResults.value = true
+}
 
 onMounted(() => {
   getLocation();
+  loadCategories();
 });
 
 function filterBy(action){
-  showResults.value = true
   if(action == 'search'){
-    searchInput.value.blur()
+    // Load events from API and show in AllEvents panel
+    loadEventsFromApi(searchTerm.value.trim());
+    showResults.value = true;
+    searchInput.value.blur();
+  } else {
+    // Load events without search filter
+    loadEventsFromApi();
+    showResults.value = true;
   }
 }
 
@@ -131,64 +297,123 @@ function handleClose(){
 function handleReset(){
   showResults.value = false
   searchTerm.value = ""  
+  searchInput.value.blur();
+  city.value = "Amsterdam";
+  selectedCategory.value = null
+  selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
+  sessionFilter.value = {
+    morning: false,
+    afternoon: false,
+    evening: false,
+    night: false
+  }
 }
 
 async function getLocation() {
-  if (!navigator.geolocation) {
-    city.value = "Geolocation not supported";
-    return;
+  const location = await getCurrentLocation();
+  
+  if (location) {
+    // Successfully got location, now reverse geocode to get city name
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${location.latitude}&lon=${location.longitude}&format=json`
+      );
+      const data = await res.json();
+      const cityName = data.address.city || data.address.town || data.address.village || "Amsterdam";
+      city.value = cityName;
+      
+      // Store current location coordinates
+      selectedLocation.value = {
+        lat: location.latitude,
+        lng: location.longitude,
+        name: cityName
+      };
+    } catch (e) {
+      console.error('Failed to reverse geocode location:', e);
+      city.value = "Amsterdam";
+      selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
+    }
+  } else {
+    // Location access failed or was denied
+    if (locationError.value?.isPermissionDenied) {
+      city.value = "Location denied";
+      // Keep Amsterdam as default
+      selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
+    } else if (locationError.value) {
+      city.value = "Location unavailable";
+      selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
+    } else {
+      city.value = "Amsterdam";
+      selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
+    }
   }
-  navigator.geolocation.getCurrentPosition(success, error);
 }
 
-async function success(position) {
-  const lat = position.coords.latitude;
-  const lng = position.coords.longitude;
+const events = ref([]);
+const eventsLoading = ref(false);
+
+// Convert DD/MM/YYYY to YYYY-MM-DD
+function formatDateToApi(dateStr) {
+  if (!dateStr) return null;
+  const [day, month, year] = dateStr.split('/');
+  return `${year}-${month}-${day}`;
+}
+
+// Load events from API
+async function loadEventsFromApi(searchQuery = '') {
+  eventsLoading.value = true;
   try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
-    );
-    const data = await res.json();
-    city.value = data.address.city || data.address.town || data.address.village || "Amsterdam";
+    const { fetchEvents } = await import('../api/events');
+    const { transformApiEventsToUI } = await import('../utils/eventTransformer');
+    
+    const params = {
+      lat: selectedLocation.value.lat,
+      lng: selectedLocation.value.lng,
+      radius: 100,
+      per_page: 20
+    };
+    
+    // Add search param if provided
+    if (searchQuery) {
+      params.search = searchQuery;
+    }
+    
+    // Add category filter if selected
+    if (selectedCategory.value) {
+      params.category = selectedCategory.value.slug;
+    }
+    
+    // Add date range if selected
+    if (dateRange.value[0]) {
+      params.from_date = formatDateToApi(dateRange.value[0]);
+    }
+    if (dateRange.value[1]) {
+      params.to_date = formatDateToApi(dateRange.value[1]);
+    }
+    
+    // Add session filter if any sessions are selected
+    const activeSessions = Object.entries(JSON.parse(localStorage.getItem('datepicker-session')))
+    .filter(([key, value]) => value)
+    .map(([key]) => key);
+
+    if (activeSessions.length > 0) {
+      activeSessions.forEach(session => {
+        console.log('Session:', session);
+        params[session] = true
+      })
+    }
+
+    console.log('API params:', params);
+    
+    const result = await fetchEvents(params);
+    events.value = transformApiEventsToUI(result.data);
   } catch (e) {
-    city.value = "Amsterdam";
+    console.error('Failed to load events:', e);
+    events.value = [];
+  } finally {
+    eventsLoading.value = false;
   }
 }
-
-async function error() {
-  city.value = "Amsterdam";
-}
-
-const events = [
-  {
-    id: "1",
-    title: "Amsterdam Night Party",
-    live: true,
-    image: "https://picsum.photos/300/200?1",
-    date: "Fri 12 Sept, 12:00 PM - 10:00 PM",
-    location: "De Melkweg, City Theater Zaal 7",
-    category: "EDM / House",
-    price: "From €25",
-    dresscode: "Smart Casual",
-    age: "18+",
-    lat: 4.88428,
-    lng: 52.32797
-  },
-  {
-    id: "2",
-    title: "Amsterdam Night Party",
-    live: true,
-    image: "https://picsum.photos/300/200?1",
-    date: "Fri 12 Sept, 12:00 PM - 10:00 PM",
-    location: "De Melkweg, City Theater Zaal 7",
-    category: "EDM / House",
-    price: "From €25",
-    dresscode: "Smart Casual",
-    age: "18+",
-    lat: 4.88428,
-    lng: 52.32797
-  }
-];
 
 const searchCity = async () => {
   if (!city.value) {
@@ -224,8 +449,15 @@ const debouncedSearch = () => {
 };
 
 const selectCity = (place) => {
-  city.value = place.name;
+  city.value = place.display_name.split(',')[0]; // Get city name from full address
   searchResults.value = [];
+  
+  // Store selected location coordinates
+  selectedLocation.value = {
+    lat: parseFloat(place.lat),
+    lng: parseFloat(place.lon),
+    name: place.display_name.split(',')[0]
+  };
 
   console.log("Selected City:", {
     name: place.display_name,
@@ -272,6 +504,16 @@ export default {
 }
 /* Search suggestion animation */
 
+ .cat-scroll {
+   -ms-overflow-style: none;
+   scrollbar-width: none;
+   user-select: none;
+ }
+
+ .cat-scroll::-webkit-scrollbar {
+   display: none;
+ }
+
 /* Menu animation */
 .slide-right-enter-from {
   opacity: 0;
@@ -297,5 +539,3 @@ export default {
 }
 /* Menu animation */
 </style>
-
-

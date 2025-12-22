@@ -2,6 +2,15 @@ import { createApp } from 'vue'
 import Event from '../components/Event.vue'
 import maplibregl from 'maplibre-gl'
 
+// Store markers for cleanup
+let markers = []
+
+// Clear all markers from the map
+export function clearAllMarkers() {
+  markers.forEach(marker => marker.remove())
+  markers = []
+}
+
 export function addEventMarker(map, event) {    
   console.log(event)
   const popupEl = document.createElement('div')
@@ -17,15 +26,21 @@ export function addEventMarker(map, event) {
   // markerEl.style.backgroundImage = `url(${import.meta.env.VITE_APP_URL}/marker.png)`;
   markerEl.style.width = '60px';
   markerEl.style.height = '60px';
+  
+  // Support both lat/lng and latitude/longitude formats
+  const lng = event.lng ?? event.longitude
+  const lat = event.lat ?? event.latitude
+  
   const marker = new maplibregl.Marker({element: markerEl})
-  .setLngLat([event.lng, event.lat])
+  .setLngLat([lng, lat])
   .setPopup(popup)
   .addTo(map)
 
-  console.log(marker)
+  // Store marker for cleanup
+  markers.push(marker)
   
   marker.getElement().addEventListener("click", (e) => {
-    const target = [event.lng, event.lat];
+    const target = [lng, lat];
 
     map.easeTo({
       center: target,

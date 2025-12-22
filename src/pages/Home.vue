@@ -4,11 +4,15 @@
 
 <script setup>
 import maplibregl from 'maplibre-gl'
-import {addEventMarker} from '../utils/useMapPopup.js'
+import { addEventMarker, clearAllMarkers } from '../utils/useMapPopup.js'
 import { ref, onMounted } from 'vue'
-import events from '../assets/events.json'
+import { fetchEvents } from '../api/events'
+import { transformApiEventsToUI } from '../utils/eventTransformer'
 
 const mapContainer = ref(null);
+const events = ref([]);
+const loading = ref(false);
+const error = ref(null);
 let map;  
 
 const style = {
@@ -32,6 +36,40 @@ const style = {
   ]
 }
 
+// Load events from API with no filters (all events)
+async function loadEvents() {
+  loading.value = true;
+  error.value = null;
+  
+  try {
+    // Call API with no filters to get all events
+    const result = await fetchEvents({
+      per_page: 100 // Get more events for the map
+    });
+    
+    // Transform API data to UI format
+    events.value = transformApiEventsToUI(result.data);
+    
+    // Add markers to map if map is loaded
+    if (map && map.loaded()) {
+      addMarkersToMap();
+    }
+  } catch (e) {
+    console.error('Failed to load events:', e);
+    error.value = e.message;
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Add all event markers to the map
+function addMarkersToMap() {
+  clearAllMarkers();
+  events.value.forEach((event) => {
+    addEventMarker(map, event);
+  });
+}
+
 onMounted(() => {    
   map = new maplibregl.Map({
     container: mapContainer.value,
@@ -41,7 +79,8 @@ onMounted(() => {
   });
 
   map.on("load", () => {    
-    events.forEach((event) => {console.log(event); addEventMarker(map, event)});
+    // Load events from API when map is ready
+    loadEvents();
   });
 });
 

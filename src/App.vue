@@ -5,12 +5,11 @@
 </template>
 
 <script setup>
-  import Header from './components/Header.vue'
   import LoginPopup from './components/LoginPopup.vue'
+  import Header from './components/Header.vue'
   import { ref, watch } from 'vue';
   
   const isLoginOpen = ref(false);
   watch(isLoginOpen, (newVal, oldVal) => {
-    console.log('isLoginOpen changed:', oldVal, '=>', newVal)
   })
 </script>

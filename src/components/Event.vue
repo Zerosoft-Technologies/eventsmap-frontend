@@ -29,7 +29,7 @@
                     <div>
                         <div class="tw:flex tw:gap-3 tw:md:gap-6 tw:text-center">
                             <div v-for="(v, k) in countdown" :key="k">
-                                <p class="tw:text-sm tw:leading-[1.2] tw:text-(--teritiary-color)">00</p>
+                                <p class="tw:text-sm tw:leading-[1.2] tw:text-(--teritiary-color)">{{ String(v).padStart(2, '0') }}</p>
                                 <p class="tw:text-[10px] tw:capitalize">{{ k }}</p>
                             </div>
                         </div>
@@ -37,7 +37,7 @@
                         <div class="tw:space-y-3 tw:mt-3">
                             <DetailRow icon="date-time" :text="event.date" />
                             <DetailRow icon="location-02" :text="event.location" />
-                            <DetailRow icon="music-note" :text="event.category" />
+                            <DetailRow icon="music-note" :text="event.category['name']" />
                             <DetailRow icon="bitcoin-bag" :text="event.price" />
                             <DetailRow icon="baby-boy-dress" :text="event.dresscode" />
                             <DetailRow icon="user-group" :text="event.age" />
@@ -80,16 +80,17 @@ const countdown = ref({ days: 0, hours: 0, minutes: 0, seconds: 0 })
 let interval
 
 const updateCountdown = () => {
-  const target = new Date(props.event.date).getTime()
-  const now = Date.now()
-  const diff = Math.max(0, target - now)
+  // Use start_datetime for accurate countdown
+    const target = new Date(props.event.start_datetime).getTime()
+    const now = Date.now()
+    const diff = Math.max(0, target - now)
 
-  countdown.value = {
-    days: Math.floor(diff / 86400000),
-    hours: Math.floor((diff / 3600000) % 24),
-    minutes: Math.floor((diff / 60000) % 60),
-    seconds: Math.floor((diff / 1000) % 60),
-  }
+    countdown.value = {
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff / 3600000) % 24),
+        minutes: Math.floor((diff / 60000) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+    }
 }
 
 onMounted(() => {

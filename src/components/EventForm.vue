@@ -183,7 +183,6 @@ function handleEventImagesUpload(e) {
 }
 
 function submit() {
-  console.log("Event Form Data:", form)
   alert("Event registered successfully!")
 }
 </script>
