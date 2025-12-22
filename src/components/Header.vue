@@ -340,7 +340,7 @@ async function getLocation() {
       // Keep Amsterdam as default
       selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
     } else if (locationError.value) {
-      city.value = "Location unavailable";
+      city.value = "Amsterdam";
       selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
     } else {
       city.value = "Amsterdam";
