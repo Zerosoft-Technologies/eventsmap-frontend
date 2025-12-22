@@ -398,12 +398,9 @@ async function loadEventsFromApi(searchQuery = '') {
 
     if (activeSessions.length > 0) {
       activeSessions.forEach(session => {
-        console.log('Session:', session);
         params[session] = true
       })
     }
-
-    console.log('API params:', params);
     
     const result = await fetchEvents(params);
     events.value = transformApiEventsToUI(result.data);
@@ -435,9 +432,9 @@ const searchCity = async () => {
 
     const data = await response.json();
     searchResults.value = data;
-    error.value = "";
+    // error.value = "";
   } catch (err) {
-    error.value = "Failed to fetch locations";
+    // error.value = "Failed to fetch locations";
   }
 };
 
@@ -458,12 +455,6 @@ const selectCity = (place) => {
     lng: parseFloat(place.lon),
     name: place.display_name.split(',')[0]
   };
-
-  console.log("Selected City:", {
-    name: place.display_name,
-    lat: place.lat,
-    lon: place.lon,
-  });
 };
 
 </script>

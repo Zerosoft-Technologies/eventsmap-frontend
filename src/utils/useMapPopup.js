@@ -12,7 +12,6 @@ export function clearAllMarkers() {
 }
 
 export function addEventMarker(map, event) {    
-  console.log(event)
   const popupEl = document.createElement('div')
   popupEl.classList.add("tw:relative", "tw:bg-white", "tw:rounded-2xl", "tw:p-4")  
   createApp(Event, { event }).mount(popupEl)
