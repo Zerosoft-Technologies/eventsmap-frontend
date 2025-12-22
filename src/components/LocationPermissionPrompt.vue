@@ -74,7 +74,7 @@ interface Emits {
   (e: 'continue-without'): void
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const {

@@ -1,4 +1,9 @@
 /**
+ * Event category type
+ */
+export type EventCategory = string
+
+/**
  * Event entity from the API
  */
 export interface Event {

@@ -10,13 +10,18 @@ import type {
  * API Error class for handling non-200 responses
  */
 export class ApiError extends Error {
+  public status: number;
+  public response?: unknown;
+
   constructor(
     message: string,
-    public status: number,
-    public response?: unknown
+    status: number,
+    response?: unknown
   ) {
     super(message)
     this.name = 'ApiError'
+    this.status = status;
+    this.response = response;
   }
 }
 
