@@ -1,16 +1,16 @@
 <template>
   <form @submit.prevent="submit" class="tw:flex tw:m-auto tw:w-1/2 tw:flex-col tw:gap-4">    
     <div>
-      <label class="tw:block tw:mb-2">Title of Event</label>
+      <label class="tw:block tw:mb-2">{{ $t('forms.eventForm.title') }}</label>
       <input 
         type="text" 
         v-model="form.title" 
         class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
-        placeholder="Enter event title"
+        :placeholder="$t('forms.eventForm.titlePlaceholder')"
       />
     </div>    
     <div>
-      <label class="tw:block tw:mb-2">Event Images / Banner (Max 5)</label>
+      <label class="tw:block tw:mb-2">{{ $t('forms.eventForm.bannerImages') }}</label>
       <input 
         type="file" 
         multiple 
@@ -18,83 +18,83 @@
         @change="handleBannerUpload"
         class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
       />
-      <p class="tw:text-sm tw:text-gray-500">You can upload up to 5 images.</p>
+      <p class="tw:text-sm tw:text-gray-500">{{ $t('forms.eventForm.bannerImagesInfo') }}</p>
     </div>        
-      <h3 class="tw:text-xl tw:font-bold tw:text-(--teritiary-color) tw:text-center tw:mb-4">Information Details</h3>
+      <h3 class="tw:text-xl tw:font-bold tw:text-(--teritiary-color) tw:text-center tw:mb-4">{{ $t('forms.eventForm.informationDetails') }}</h3>
       
       <div class="tw:mb-4">
-        <label class="tw:block  tw:mb-2">Details Organisator</label>
+        <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.organizer') }}</label>
         <input 
           type="text" 
           v-model="form.organisator" 
           class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
-          placeholder="Organisator details"
+          :placeholder="$t('forms.eventForm.organizerPlaceholder')"
         />
       </div>
       
       <div class="tw:mb-4">
-        <label class="tw:block  tw:mb-2">Music Type</label>
+        <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.musicType') }}</label>
         <input 
           type="text" 
           v-model="form.musicType" 
           class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
-          placeholder="e.g., EDM, Hip-Hop, Techno"
+          :placeholder="$t('forms.eventForm.musicTypePlaceholder')"
         />
       </div>
       
       <div class="tw:mb-4">
-        <label class="tw:block  tw:mb-2">Entrance Fee</label>
+        <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.entranceFee') }}</label>
         <input 
           type="number" 
           v-model="form.entranceFee" 
           class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
-          placeholder="0 for free"
+          :placeholder="$t('forms.eventForm.entranceFeePlaceholder')"
         />
       </div>
       
       <div class="tw:mb-4">
-        <label class="tw:block  tw:mb-2">Dresscode</label>
+        <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.dresscode') }}</label>
         <input 
           type="text" 
           v-model="form.dresscode" 
           class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
-          placeholder="e.g., Casual, Formal, Party"
+          :placeholder="$t('forms.eventForm.dresscodePlaceholder')"
         />
       </div>
       
       <div class="tw:mb-4">
-        <label class="tw:block  tw:mb-2">Minimum Age</label>
+        <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.minimumAge') }}</label>
         <input 
           type="number" 
           v-model="form.minAge" 
           class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
-          placeholder="e.g., 18, 21"
+          :placeholder="$t('forms.eventForm.minimumAgePlaceholder')"
         />
       </div>
       
       <div class="tw:mb-4">
-        <label class="tw:block  tw:mb-2">Artists Joining the Event</label>
+        <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.artists') }}</label>
         <input 
           type="text" 
           v-model="form.artists" 
           class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
-          placeholder="Comma-separated names"
+          :placeholder="$t('forms.eventForm.artistsPlaceholder')"
         />
       </div>
       
       <div class="tw:mb-4">
-        <label class="tw:block  tw:mb-2">Talents Joining the Event</label>
+        <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.talents') }}</label>
         <input 
           type="text" 
           v-model="form.talents" 
           class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
-          placeholder="Comma-separated names"
+          :placeholder="$t('forms.eventForm.talentsPlaceholder')"
         />
       </div>
     
     
     <div>
-      <label class="tw:block  tw:mb-2">Event Images (2 Required)</label>
+      <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.eventImages') }}</label>
       <input 
         type="file" 
         multiple 
@@ -102,12 +102,12 @@
         @change="handleEventImagesUpload"
         class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
       />
-      <p class="tw:text-sm tw:text-gray-500">Upload exactly 2 images.</p>
+      <p class="tw:text-sm tw:text-gray-500">{{ $t('forms.eventForm.eventImagesInfo') }}</p>
     </div>
     
     <div class="tw:grid tw:grid-cols-1 md:tw:grid-cols-2 tw:gap-4">
       <div>
-        <label class="tw:block  tw:mb-2">Event Date</label>
+        <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.eventDate') }}</label>
         <input 
           type="date" 
           v-model="form.date" 
@@ -116,22 +116,22 @@
       </div>
 
       <div>
-        <label class="tw:block  tw:mb-2">Event Location</label>
+        <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.eventLocation') }}</label>
         <input 
           type="text" 
           v-model="form.location" 
           class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
-          placeholder="City, Venue, Address"
+          :placeholder="$t('forms.eventForm.eventLocationPlaceholder')"
         />
       </div>
     </div>
     
     <div>
-      <label class="tw:block  tw:mb-2">About the Event</label>
+      <label class="tw:block  tw:mb-2">{{ $t('forms.eventForm.aboutEvent') }}</label>
       <textarea 
         v-model="form.about" 
         class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none tw:min-h-[120px]"
-        placeholder="Describe your event..."
+        :placeholder="$t('forms.eventForm.aboutEventPlaceholder')"
       ></textarea>
     </div>
     
@@ -139,7 +139,7 @@
       type="submit" 
       class="tw:w-full tex tw:border tw:border-(--secondary-color) tw:rounded-lg tw:py-2 tw:hover:bg-(--secondary-color) tw:hover:text-white tw:outline-none tw:transition"
     >
-      Submit Event
+      {{ $t('forms.eventForm.submitEvent') }}
     </button>
 
   </form>
@@ -147,6 +147,9 @@
 
 <script setup>
 import { reactive } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const form = reactive({
   title: "",
@@ -167,7 +170,7 @@ const form = reactive({
 function handleBannerUpload(e) {
   const files = Array.from(e.target.files)
   if (files.length > 5) {
-    alert("You can upload a maximum of 5 images.")
+    alert($t('forms.eventForm.maxImagesError'))
     return
   }
   form.bannerImages = files
@@ -176,14 +179,14 @@ function handleBannerUpload(e) {
 function handleEventImagesUpload(e) {
   const files = Array.from(e.target.files)
   if (files.length !== 2) {
-    alert("Please upload exactly 2 images.")
+    alert($t('forms.eventForm.exactImagesError'))
     return
   }
   form.eventImages = files
 }
 
 function submit() {
-  alert("Event registered successfully!")
+  alert($t('forms.eventForm.eventRegisteredSuccess'))
 }
 </script>
 

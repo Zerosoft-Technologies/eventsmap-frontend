@@ -1,0 +1,133 @@
+{
+  "header": {
+    "search": {
+      "placeholder": "Search events..."
+    },
+    "location": {
+      "placeholder": "Enter location..."
+    },
+    "login": "Login",
+    "createProfile": "Create Profile",
+    "resetSearch": "Reset Search",
+    "currentLocation": "Current location",
+    "defaultLocation": "Amsterdam"
+  },
+  "eventCard": {
+    "liveNow": "Live Now",
+    "date": "Date",
+    "location": "Location",
+    "category": "Category",
+    "dresscode": "Dresscode",
+    "minimumAge": "Minimum Age",
+    "viewEvent": "View Event",
+    "route": "Route",
+    "link": "Link"
+  },
+  "forms": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "requiredField": "This field is required",
+    "successMessage": "Success! Your changes have been saved.",
+    "eventForm": {
+      "title": "Title of Event",
+      "titlePlaceholder": "Enter event title",
+      "bannerImages": "Event Images / Banner (Max 5)",
+      "bannerImagesInfo": "You can upload up to 5 images.",
+      "informationDetails": "Information Details",
+      "organizer": "Details Organisator",
+      "organizerPlaceholder": "Organisator details",
+      "musicType": "Music Type",
+      "musicTypePlaceholder": "e.g., EDM, Hip-Hop, Techno",
+      "entranceFee": "Entrance Fee",
+      "entranceFeePlaceholder": "0 for free",
+      "dresscode": "Dresscode",
+      "dresscodePlaceholder": "e.g., Casual, Formal, Party",
+      "minimumAge": "Minimum Age",
+      "minimumAgePlaceholder": "e.g., 18, 21",
+      "artists": "Artists Joining the Event",
+      "artistsPlaceholder": "Comma-separated names",
+      "talents": "Talents Joining the Event",
+      "talentsPlaceholder": "Comma-separated names",
+      "eventImages": "Event Images (2 Required)",
+      "eventImagesInfo": "Upload exactly 2 images.",
+      "eventDate": "Event Date",
+      "eventLocation": "Event Location",
+      "eventLocationPlaceholder": "City, Venue, Address",
+      "aboutEvent": "About the Event",
+      "aboutEventPlaceholder": "Describe your event...",
+      "submitEvent": "Submit Event",
+      "maxImagesError": "You can upload a maximum of 5 images.",
+      "exactImagesError": "Please upload exactly 2 images.",
+      "eventRegisteredSuccess": "Event registered successfully!"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "close": "Close",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "clear": "Clear",
+    "clearFilters": "Clear Filters"
+  },
+  "allEvents": {
+    "title": "All Events",
+    "noEventsFound": "No Events Found",
+    "noEventsMessage": "We couldn't find any events matching your search criteria. Try adjusting your filters or location."
+  },
+  "auth": {
+    "loginTitle": "Login to your account",
+    "registerTitle": "Create a new account",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "signUp": "Sign Up",
+    "signIn": "Sign In"
+  },
+  "event": {
+    "title": "Event",
+    "description": "Description",
+    "organizer": "Organizer",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "price": "Price",
+    "free": "Free",
+    "tickets": "Tickets",
+    "getTickets": "Get Tickets",
+    "fullDetails": "Full Details",
+    "share": "Share",
+    "addToCalendar": "Add to Calendar"
+  },
+  "filters": {
+    "allCategories": "All Categories",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This Week",
+    "thisWeekend": "This Weekend",
+    "nextWeek": "Next Week",
+    "thisMonth": "This Month",
+    "freeEvents": "Free Events",
+    "onlineEvents": "Online Events"
+  },
+  "map": {
+    "searchThisArea": "Search this area",
+    "centerOnLocation": "Center on my location",
+    "showList": "Show List",
+    "showMap": "Show Map"
+  },
+  "errors": {
+    "networkError": "Network error. Please check your connection.",
+    "notFound": "Page not found",
+    "serverError": "Server error. Please try again later.",
+    "unauthorized": "You are not authorized to view this page",
+    "generic": "Something went wrong"
+  }
+}

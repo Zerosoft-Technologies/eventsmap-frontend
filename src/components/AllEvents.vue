@@ -2,7 +2,7 @@
     <transition name="fade">
       <div class="tw:fixed tw:p-4 tw:bg-white tw:rounded-lg tw:md:left-7 tw:bottom-2 tw:z-50 tw:lg:z-10 tw:max-w-[500px]">   
         <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
-          <h3 class="tw:font-semibold tw:text-2xl tw:leading-[1.35] tw:tracking-[-0.006em]">All Events</h3>
+          <h3 class="tw:font-semibold tw:text-2xl tw:leading-[1.35] tw:tracking-[-0.006em]">{{ $t('allEvents.title') }}</h3>
           <img class="tw:cursor-pointer" @click="close" src="../assets/cancel.png" alt="Close icon">
         </div>        
         <div class="tw:max-h-[80vh] tw:lg:max-h-[60vh] tw:space-y-4 tw:pr-2 tw:overflow-y-auto">
@@ -69,15 +69,15 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <h4 class="tw:text-xl tw:font-semibold tw:text-gray-800 tw:mb-2 tw:text-center">No Events Found</h4>
+            <h4 class="tw:text-xl tw:font-semibold tw:text-gray-800 tw:mb-2 tw:text-center">{{ $t('allEvents.noEventsFound') }}</h4>
             <p class="tw:text-gray-500 tw:text-center tw:mb-6 tw:max-w-xs">
-              We couldn't find any events matching your search criteria. Try adjusting your filters or location.
+              {{ $t('allEvents.noEventsMessage') }}
             </p>
             <button 
               @click="reset" 
               class="tw:bg-[var(--primary-color)] tw:text-white tw:px-6 tw:py-2.5 tw:rounded-lg tw:text-sm tw:font-medium tw:transition-all hover:tw:opacity-90"
             >
-              Clear Filters
+              {{ $t('common.clearFilters') }}
             </button>
           </div>
           
@@ -90,7 +90,7 @@
           
           <div v-if="!loading && events.length > 0" class="tw:text-center">
             <button @click="reset" class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)">                
-                Reset Search
+                {{ $t('header.resetSearch') }}
             </button>
           </div>
         </div>
@@ -98,7 +98,13 @@
     </transition>  
 </template>
 <script setup>
-import Event from './Event.vue';
+import { useI18n } from 'vue-i18n'
+import { defineAsyncComponent } from 'vue'
+
+// Lazy load Event to avoid circular import issue
+const Event = defineAsyncComponent(() => import('./Event.vue'))
+
+const { t } = useI18n()
 
 defineProps({
   events: {

@@ -1,0 +1,92 @@
+{
+  "header": {
+    "search": {
+      "placeholder": "Zoek evenementen..."
+    },
+    "location": {
+      "placeholder": "Voer locatie in..."
+    },
+    "login": "Inloggen",
+    "createProfile": "Profiel Aanmaken",
+    "resetSearch": "Zoekopdracht Resetten"
+  },
+  "eventCard": {
+    "liveNow": "Live Nu",
+    "date": "Datum",
+    "location": "Locatie",
+    "category": "Categorie",
+    "dresscode": "Dresscode",
+    "minimumAge": "Minimum Leeftijd",
+    "viewEvent": "Bekijk Evenement",
+    "route": "Route",
+    "link": "Link"
+  },
+  "forms": {
+    "submit": "Versturen",
+    "cancel": "Annuleren",
+    "requiredField": "Dit veld is verplicht",
+    "successMessage": "Succes! Uw wijzigingen zijn opgeslagen."
+  },
+  "common": {
+    "loading": "Laden...",
+    "error": "Er is een fout opgetreden",
+    "retry": "Opnieuw proberen",
+    "close": "Sluiten",
+    "save": "Opslaan",
+    "edit": "Bewerken",
+    "delete": "Verwijderen",
+    "confirm": "Bevestigen",
+    "yes": "Ja",
+    "no": "Nee"
+  },
+  "auth": {
+    "loginTitle": "Log in op uw account",
+    "registerTitle": "Maak een nieuw account",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "forgotPassword": "Wachtwoord vergeten?",
+    "rememberMe": "Onthoud mij",
+    "alreadyHaveAccount": "Heeft u al een account?",
+    "dontHaveAccount": "Heeft u geen account?",
+    "signUp": "Aanmelden",
+    "signIn": "Inloggen"
+  },
+  "event": {
+    "title": "Evenement",
+    "description": "Beschrijving",
+    "organizer": "Organisator",
+    "startTime": "Starttijd",
+    "endTime": "Eindtijd",
+    "price": "Prijs",
+    "free": "Gratis",
+    "tickets": "Tickets",
+    "getTickets": "Tickets Krijgen",
+    "fullDetails": "Volledige Details",
+    "share": "Delen",
+    "addToCalendar": "Toevoegen aan Kalender"
+  },
+  "filters": {
+    "allCategories": "Alle Categorieën",
+    "today": "Vandaag",
+    "tomorrow": "Morgen",
+    "thisWeek": "Deze Week",
+    "thisWeekend": "Dit Weekend",
+    "nextWeek": "Volgende Week",
+    "thisMonth": "Deze Maand",
+    "freeEvents": "Gratis Evenementen",
+    "onlineEvents": "Online Evenementen"
+  },
+  "map": {
+    "searchThisArea": "Zoek in dit gebied",
+    "centerOnLocation": "Centreer op mijn locatie",
+    "showList": "Toon Lijst",
+    "showMap": "Toon Kaart"
+  },
+  "errors": {
+    "networkError": "Netwerkfout. Controleer uw verbinding.",
+    "notFound": "Pagina niet gevonden",
+    "serverError": "Serverfout. Probeer het later opnieuw.",
+    "unauthorized": "U bent niet geautoriseerd om deze pagina te bekijken",
+    "generic": "Er is iets misgegaan"
+  }
+}

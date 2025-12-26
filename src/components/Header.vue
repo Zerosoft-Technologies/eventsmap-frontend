@@ -7,19 +7,19 @@
       <div class="tw:flex tw:relative tw:bg-white tw:gap-6 tw:items-center tw:py-3 tw:pr-3 tw:pl-4 tw:border tw:border-(--secondary-color) tw:rounded-lg" >
         <div class="tw:flex tw:gap-2 tw:relative tw:cursor-pointer tw:items-center  tw:w-[169px]">
           <img src="../assets/search.png" alt="Search Icon" />
-          <input ref="searchInput" @keyup.enter="filterBy('search')" v-model="searchTerm" @focus="showSuggestion = true" @blur="handleSuggestionBlur" type="text" class="tw:outline-none tw:placeholder-(--primary-color)" placeholder="Search for Talent...">        
+          <input ref="searchInput" @keyup.enter="filterBy('search')" v-model="searchTerm" @focus="showSuggestion = true" @blur="handleSuggestionBlur" type="text" class="tw:outline-none tw:placeholder-(--primary-color)" :placeholder="$t('header.search.placeholder')">        
         </div>
         <div class="tw:w-px tw:h-[22px] tw:bg-(--primary-color)"></div>
-        <div class="tw:flex tw:gap-1 tw:cursor-pointer tw:items-center" ref="locationToggler" @click="toggleLocation"><img src="../assets/location-01.png" alt="Location Icon" /><p>{{ city || "Amsterdam" }}</p><img src="../assets/chevron-down.png" alt="Chevron Down" class="ml-1" /></div>   
+        <div class="tw:flex tw:gap-1 tw:cursor-pointer tw:items-center" ref="locationToggler" @click="toggleLocation"><img src="../assets/location-01.png" alt="Location Icon" /><p>{{ city || $t('header.defaultLocation') }}</p><img src="../assets/chevron-down.png" alt="Chevron Down" class="ml-1" /></div>   
         <transition name="fade">
           <div v-if="showLocation" v-click-outside="handleOutsideClick" class="tw:absolute tw:flex tw:flex-col tw:gap-2.5 tw:overflow-x-visible tw:mt-px tw:right-0 tw:top-full tw:rounded-2xl tw:p-4 tw:bg-(--gray-color) tw:z-10">
             <div class="tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-md">
               <img src="../assets/maps-search.png" alt="Map Icon" />
-              <input v-model="searchLocation" @keyup.enter="debouncedSearch" @input="debouncedSearch" type="text" class="tw:outline-none tw:placeholder-(--primary-color) tw:w-[15ch]" placeholder="Search any location"> 
+              <input v-model="searchLocation" @keyup.enter="debouncedSearch" @input="debouncedSearch" type="text" class="tw:outline-none tw:placeholder-(--primary-color) tw:w-[15ch]" :placeholder="$t('header.location.placeholder')"> 
             </div>   
             <div @click="getLocation" class="tw:bg-white tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-md">
               <img src="../assets/location-01.png" width="16" height="16" alt="Location Icon" />
-              <p class="m-0">Current location</p>
+              <p class="m-0">{{ $t('header.currentLocation') }}</p>
             </div>          
           </div>
         </transition> 
@@ -87,7 +87,7 @@
                 @click="clearCategoryFilter"
                 class="tw:inline-flex tw:shrink-0 tw:text-sm tw:py-2 tw:px-4 tw:text-gray-500 hover:tw:text-gray-700"
               >
-                Clear
+                {{ $t('common.clear') }}
               </button>
             </div>
 
@@ -110,17 +110,17 @@
         <button @click="filterBy('suggestion')" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color)"><img src="../assets/favourite.png" alt="Favourite Icon"/><span>Events</span></button>
       </div>      
       <div>        
-        <RouterLink to="/create-profile" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>Create profile</span></RouterLink>        
+        <RouterLink to="/create-profile" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>{{ $t('header.createProfile') }}</span></RouterLink>        
       </div>      
       <div>
-        <button @click="$emit('open-login')" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/login.png" alt="Login Icon"/><span>Login</span></button>
+        <button @click="$emit('open-login')" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/login.png" alt="Login Icon"/><span>{{ $t('header.login') }}</span></button>
       </div>
     </div>
 
     <transition name="slide-right">
       <div v-if="menuOpen" class="tw:absolute tw:top-full tw:left-0 tw:md:left-auto tw:md:right-0 tw:w-full tw:md:w-1/2 tw:bg-transparent tw:shadow-md tw:p-4 tw:flex tw:flex-col tw:gap-3 tw:lg:hidden tw:transition-all tw:duration-300">
         <div class="tw:flex tw:bg-white tw:md:hidden tw:gap-4 tw:items-center tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
-          <p>Search for Talent...</p>
+          <p>{{ $t('header.search.placeholder') }}</p>
         </div>
         <div class="tw:bg-white tw:md:hidden tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
           <p>Amsterdam</p>
@@ -135,11 +135,11 @@
         </div>
 
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
-          <p>Create profile</p>
+          <p>{{ $t('header.createProfile') }}</p>
         </div>
 
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
-          <p>Login</p>
+          <p>{{ $t('header.login') }}</p>
         </div>
       </div>
     </transition>
@@ -156,11 +156,16 @@
 </template>
 <script setup>
 import { useRoute } from 'vue-router'
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, defineAsyncComponent } from 'vue'
+import { useI18n } from 'vue-i18n'
 import DatePicker from "./DatePicker.vue";
-import AllEvents from './AllEvents.vue';
 import LocationPermissionPrompt from './LocationPermissionPrompt.vue';
 import { useLocationPermission } from '../composables/useLocationPermission';
+
+// Lazy load AllEvents to avoid circular import issue
+const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
+
+const { t } = useI18n()
 
 const showSuggestion = ref(false)
 const menuOpen = ref(false);
@@ -457,11 +462,6 @@ const selectCity = (place) => {
   };
 };
 
-</script>
-
-<script>
-import clickOutside from "../directives/click-outside.js";
-
 const showLocation = ref(false)
 const locationToggler = ref(null);
 
@@ -469,16 +469,20 @@ const toggleLocation = () => {
   showLocation.value = !showLocation.value  
 }
 
+const handleOutsideClick = (e) => {
+  if (locationToggler.value.contains(e.target)) {        
+    return;
+  }
+  showLocation.value = false
+}
+</script>
+
+<script>
+import clickOutside from "../directives/click-outside.js";
+
 export default {
   directives: { clickOutside },
-  methods: {
-    handleOutsideClick(e) {
-      if (locationToggler.value.contains(e.target)) {        
-        return;
-      }
-      showLocation.value = false
-    }
-  }
+  inheritAttrs: false
 };
 </script>
 

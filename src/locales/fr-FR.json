@@ -1,0 +1,92 @@
+{
+  "header": {
+    "search": {
+      "placeholder": "Rechercher des événements..."
+    },
+    "location": {
+      "placeholder": "Entrez la localisation..."
+    },
+    "login": "Connexion",
+    "createProfile": "Créer un Profil",
+    "resetSearch": "Réinitialiser la Recherche"
+  },
+  "eventCard": {
+    "liveNow": "En Direct",
+    "date": "Date",
+    "location": "Lieu",
+    "category": "Catégorie",
+    "dresscode": "Code Vestimentaire",
+    "minimumAge": "Âge Minimum",
+    "viewEvent": "Voir l'Événement",
+    "route": "Itinéraire",
+    "link": "Lien"
+  },
+  "forms": {
+    "submit": "Soumettre",
+    "cancel": "Annuler",
+    "requiredField": "Ce champ est requis",
+    "successMessage": "Succès ! Vos modifications ont été enregistrées."
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "auth": {
+    "loginTitle": "Connectez-vous à votre compte",
+    "registerTitle": "Créer un nouveau compte",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Se souvenir de moi",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "dontHaveAccount": "Vous n'avez pas de compte ?",
+    "signUp": "S'inscrire",
+    "signIn": "Se Connecter"
+  },
+  "event": {
+    "title": "Événement",
+    "description": "Description",
+    "organizer": "Organisateur",
+    "startTime": "Heure de Début",
+    "endTime": "Heure de Fin",
+    "price": "Prix",
+    "free": "Gratuit",
+    "tickets": "Billets",
+    "getTickets": "Obtenir des Billets",
+    "fullDetails": "Détails Complets",
+    "share": "Partager",
+    "addToCalendar": "Ajouter au Calendrier"
+  },
+  "filters": {
+    "allCategories": "Toutes les Catégories",
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain",
+    "thisWeek": "Cette Semaine",
+    "thisWeekend": "Ce Week-end",
+    "nextWeek": "Semaine Prochaine",
+    "thisMonth": "Ce Mois",
+    "freeEvents": "Événements Gratuits",
+    "onlineEvents": "Événements en Ligne"
+  },
+  "map": {
+    "searchThisArea": "Rechercher dans cette zone",
+    "centerOnLocation": "Centrer sur ma position",
+    "showList": "Afficher la Liste",
+    "showMap": "Afficher la Carte"
+  },
+  "errors": {
+    "networkError": "Erreur réseau. Veuillez vérifier votre connexion.",
+    "notFound": "Page non trouvée",
+    "serverError": "Erreur serveur. Veuillez réessayer plus tard.",
+    "unauthorized": "Vous n'êtes pas autorisé à voir cette page",
+    "generic": "Quelque chose s'est mal passé"
+  }
+}

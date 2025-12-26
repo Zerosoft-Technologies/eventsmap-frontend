@@ -16,7 +16,7 @@
                         v-if="event.live"
                     >
                         <img src="../assets/live-streaming.png" alt="Streaming Icon">
-                        <span>Live Now</span>
+                        <span>{{ $t('eventCard.liveNow') }}</span>
                     </button>                    
                 </div>
 
@@ -48,17 +48,17 @@
                 <div class="tw:flex tw:justify-between tw:items-center tw:mt-4">
                     <div class="tw:flex tw:gap-1 tw:items-center">
                         <img src="../assets/favourite.png" alt="Favourite Icon">
-                        <a href="#" class="tw:leading-[1.2]">Link</a>
+                        <a href="#" class="tw:leading-[1.2]">{{ $t('eventCard.link') }}</a>
                     </div>
 
                     <div class="tw:flex tw:gap-3">
                         <button class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)">
                             <img src="../assets/location-03.png" alt="Location Icon">
-                            <span>Route</span>
+                            <span>{{ $t('eventCard.route') }}</span>
                         </button>
 
                         <button class="tw:bg-white tw:px-3 tw:py-2 tw:flex tw:items-center tw:gap-1 tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)">
-                            <span>View event</span>
+                            <span>{{ $t('eventCard.viewEvent') }}</span>
                             <img src="../assets/arrow-right.png" alt="Arrow Icon">
                         </button>
                     </div>
@@ -72,7 +72,10 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import DetailRow from './DetailedRow.vue'
+
+const { t } = useI18n()
 
 const props = defineProps({ event: Object })
 

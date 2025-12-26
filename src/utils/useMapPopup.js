@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
-import Event from '../components/Event.vue'
 import maplibregl from 'maplibre-gl'
+import i18n from '../i18n'
 
 // Store markers for cleanup
 let markers = []
@@ -14,7 +14,13 @@ export function clearAllMarkers() {
 export function addEventMarker(map, event) {    
   const popupEl = document.createElement('div')
   popupEl.classList.add("tw:relative", "tw:bg-white", "tw:rounded-2xl", "tw:p-4")  
-  createApp(Event, { event }).mount(popupEl)
+  
+  // Dynamic import to avoid circular import issue
+  import('../components/Event.vue').then(({ default: Event }) => {
+    const app = createApp(Event, { event })
+    app.use(i18n)
+    app.mount(popupEl)
+  })
   const popup = new maplibregl.Popup({ closeButton: false, maxWidth: "none", anchor: "bottom", offset: [0, -45] }).setDOMContent(popupEl)  
   const triangleDiv = document.createElement('div');
   triangleDiv.className = "tw:absolute tw:left-1/2 tw:-translate-x-1/2 tw:-bottom-2 tw:w-0 tw:h-0 tw:border-l-10 tw:border-l-transparent tw:border-r-10 tw:border-r-transparent tw:border-t-12 tw:border-t-white tw:shadow-md";
