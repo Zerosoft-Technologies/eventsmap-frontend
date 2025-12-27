@@ -119,7 +119,7 @@
           @click="toggleLanguageDropdown"
           class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-2 tw:border-(--secondary-color) tw:cursor-pointer"
         >
-          <img :src="currentLanguage.flag" :alt="currentLanguage.name + ' flag'" class="tw:w-6 tw:h-4 tw-object-cover tw-rounded-sm" />
+          <img :src="currentLanguage.flag" :alt="currentLanguage.name + ' flag'" class="tw:w-4 tw:h-4 tw-object-cover tw-rounded-sm" />
           <span class="tw:text-sm">{{ currentLanguage.name }}</span>
           <img src="../assets/chevron-down.png" alt="Chevron Down" class="tw:w-3 tw:h-3 tw-ml-1" />
         </button>
@@ -137,7 +137,7 @@
               class="tw:w-full tw:px-4 tw:py-2 tw:flex tw:items-center tw:gap-3 tw:hover:bg-gray-50 tw-transition-colors tw:text-left"
               :class="{ 'tw:bg-gray-100': lang.code === currentLocale }"
             >
-              <img :src="lang.flag" :alt="lang.name + ' flag'" class="tw:w-6 tw:h-4 tw-object-cover tw-rounded-sm" />
+              <img :src="lang.flag" :alt="lang.name + ' flag'" class="tw:w-4 tw:h-4 tw-object-cover tw-rounded-sm" />
               <span class="tw-text-sm">{{ lang.name }}</span>
               <svg 
                 v-if="lang.code === currentLocale" 

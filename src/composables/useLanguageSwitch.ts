@@ -29,9 +29,9 @@ export function useLanguageSwitch() {
   // Get available languages
   const getAvailableLanguages = () => {
     return [
-      { code: 'en-GB', name: 'English (UK)', flag: '/src/assets/flags/en.png' },
-      { code: 'nl-NL', name: 'Nederlands', flag: '/src/assets/flags/nl.png' },
-      { code: 'fr-FR', name: 'Français', flag: '/src/assets/flags/fr.png' }
+      { code: 'en-GB', name: 'English (UK)', flag: new URL('../assets/flags/en.png', import.meta.url).href },
+      { code: 'nl-NL', name: 'Nederlands', flag: new URL('../assets/flags/nl.png', import.meta.url).href },
+      { code: 'fr-FR', name: 'Français', flag: new URL('../assets/flags/fr.png', import.meta.url).href }
     ]
   }
   

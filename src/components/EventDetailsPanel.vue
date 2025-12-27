@@ -2,27 +2,12 @@
   <!-- Panel -->
   <transition name="slide">
     <div 
-      v-if="visible"
-      class="tw:fixed tw:p-0 tw:bg-white tw:rounded-2xl tw:left-4 tw:bottom-4 tw:z-50 tw:w-[420px] tw:max-w-[calc(100vw-2rem)] tw:shadow-xl tw:flex tw:flex-col tw:overflow-hidden"
+    v-if="visible"
+    class="tw:fixed tw:p-0 tw:bg-white tw:rounded-2xl tw:bottom-4 tw:z-50 tw:w-[420px] tw:max-w-[calc(100vw-2rem)] tw:shadow-xl tw:flex tw:flex-col tw:overflow-hidden"
+    style="left: 480px;"
     >
-      <!-- Collapsible close button on right edge -->
-      <button 
-        @click="close"
-        class="tw:absolute -tw:right-3 tw:top-1/2 -tw:translate-y-1/2 tw:w-6 tw:h-12 tw:bg-white tw:rounded-full tw:shadow-md tw:flex tw:items-center tw:justify-center tw:hover:tw:shadow-lg tw:transition-all tw:duration-200 tw:z-10"
-        :aria-label="$t('common.close')"
-      >
-        <div class="tw:w-1 tw:h-4 tw:bg-gray-400 tw:rounded-full tw:transition-all tw:duration-200 hover:tw:bg-gray-600" />
-      </button>
-
-      <!-- Event Title -->
-      <div class="tw:px-4 tw:py-4">
-        <h2 class="tw:text-xl tw:font-semibold tw:text-gray-900 tw:leading-tight">
-          {{ event?.title || $t('eventDetails.untitled') }}
-        </h2>
-      </div>
-
       <!-- Filter Chips -->
-      <div class="tw:px-4 tw:pb-4">
+      <div class="tw:fixed tw:z-[60] tw:px-4 tw:pb-4" style="top: 90px;">
         <div class="tw:flex tw:gap-2">
           <span class="tw:px-3 tw:py-1.5 tw:bg-gray-100 tw:text-gray-600 tw:text-xs tw:rounded-lg tw:whitespace-nowrap tw:font-medium">
             Openingstijden
@@ -30,10 +15,17 @@
           <span class="tw:px-3 tw:py-1.5 tw:bg-gray-100 tw:text-gray-600 tw:text-xs tw:rounded-lg tw:whitespace-nowrap tw:font-medium">
             Price
           </span>
-          <span class="tw:px-3 tw:py-1.5 tw:bg-red-500 tw:text-white tw:text-xs tw:rounded-lg tw:whitespace-nowrap tw:font-medium">
+          <span class="tw:px-3 tw:py-1.5 tw:bg-red-500 tw:text-white tw:text-xs tw:rounded-lg tw:whitespace-nowrap tw:font-medium tw:flex tw:items-center tw:gap-1">
+            <img src="../assets/live-streaming.png" alt="Live Icon" class="tw:w-3 tw:h-3">
             LIVE NOW
           </span>
         </div>
+      </div>
+      <!-- Event Title -->
+      <div class="tw:px-4 tw:py-4">
+        <h2 class="tw:text-xl tw:font-semibold tw:text-gray-900 tw:leading-tight">
+          {{ event?.title || $t('eventDetails.untitled') }}
+        </h2>
       </div>
 
       <!-- Scrollable content area -->
@@ -44,7 +36,8 @@
           <img 
             :src="currentImage" 
             :alt="event?.title"
-            class="tw:w-full tw:h-full tw:object-cover"
+            class="tw:h-full tw:object-cover tw:w-85"
+            style="border-radius: 20px;"
           />
           
           <!-- Left arrow -->
@@ -215,7 +208,15 @@
           </div>
         </div>
       </div>
+      <button 
+        @click="close"
+        class="tw:fixed tw:z-[60] tw:-translate-y-1/2 tw:w-8 tw:h-16 tw:bg-white tw:rounded-full tw:shadow-md tw:flex tw:items-center tw:justify-center hover:tw:shadow-lg tw:transition-all"
+        style="left: 900px; top: 450px; width: 25px; height: 42px; border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px;"
+      >
+        <img src="../assets/chevron-bold-left.png" alt="Close" class="tw:w-4 tw:h-4 tw:text-white" style="width: 10px; height: 10px;" />
+      </button>
     </div>
+
   </transition>
 </template>
 
