@@ -57,7 +57,10 @@
                             <span>{{ $t('eventCard.route') }}</span>
                         </button>
 
-                        <button class="tw:bg-white tw:px-3 tw:py-2 tw:flex tw:items-center tw:gap-1 tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)">
+                        <button 
+                            @click="emit('viewEvent', event)"
+                            class="tw:bg-white tw:px-3 tw:py-2 tw:flex tw:items-center tw:gap-1 tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)"
+                        >
                             <span>{{ $t('eventCard.viewEvent') }}</span>
                             <img src="../assets/arrow-right.png" alt="Arrow Icon">
                         </button>
@@ -78,6 +81,8 @@ import DetailRow from './DetailedRow.vue'
 const { t } = useI18n()
 
 const props = defineProps({ event: Object })
+
+const emit = defineEmits(['viewEvent'])
 
 const countdown = ref({ days: 0, hours: 0, minutes: 0, seconds: 0 })
 let interval

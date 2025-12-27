@@ -84,7 +84,7 @@
           <!-- Events list -->
           <template v-else>
             <div v-for="event in events" :key="event.id">
-              <Event :event="event"></Event>
+              <Event :event="event" @viewEvent="handleViewEvent"></Event>
             </div>
           </template>
           
@@ -117,7 +117,7 @@ defineProps({
   }
 });
 
-const emit = defineEmits(['closeResults', 'resetSearch']);
+const emit = defineEmits(['closeResults', 'resetSearch', 'viewEvent']);
 
 function reset (){
   emit('resetSearch')
@@ -125,6 +125,14 @@ function reset (){
 
 function close(){  
   emit('closeResults')
+}
+
+/**
+ * Handle view event - emit to parent to open the details panel
+ * @param {Object} event - The event object to display in the panel
+ */
+function handleViewEvent(event) {
+  emit('viewEvent', event)
 }
 </script>
 

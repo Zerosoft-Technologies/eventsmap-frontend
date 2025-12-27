@@ -8,7 +8,10 @@
     },
     "login": "Inloggen",
     "createProfile": "Profiel Aanmaken",
-    "resetSearch": "Zoekopdracht Resetten"
+    "resetSearch": "Zoekopdracht resetten",
+    "currentLocation": "Huidige locatie",
+    "defaultLocation": "Amsterdam",
+    "language": "Taal"
   },
   "eventCard": {
     "liveNow": "Live Nu",
@@ -88,5 +91,29 @@
     "serverError": "Serverfout. Probeer het later opnieuw.",
     "unauthorized": "U bent niet geautoriseerd om deze pagina te bekijken",
     "generic": "Er is iets misgegaan"
+  },
+  "eventDetails": {
+    "untitled": "Naamloos Evenement",
+    "previousImage": "Vorige afbeelding",
+    "nextImage": "Volgende afbeelding",
+    "image": "Afbeelding",
+    "noDescription": "Geen beschrijving beschikbaar voor dit evenement.",
+    "organizer": "Details organisator",
+    "musicCategory": "Muziek Categorie",
+    "price": "Prijs",
+    "dresscode": "Dresscode",
+    "ageRequirement": "Leeftijdsvereiste",
+    "allAges": "Alle leeftijden welkom",
+    "notSpecified": "Niet gespecificeerd",
+    "dateTime": "Datum & Tijd",
+    "location": "Locatie",
+    "tabContentComingSoon": "Inhoud binnenkort beschikbaar...",
+    "tabs": {
+      "overview": "Overzicht",
+      "about": "Over",
+      "dateLocation": "Datum & Locatie",
+      "talents": "Talenten",
+      "community": "Community"
+    }
   }
 }

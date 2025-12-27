@@ -5,7 +5,7 @@ const SUPPORTED_LOCALES = ['en-GB', 'nl-NL', 'fr-FR'] as const
 type SupportedLocale = typeof SUPPORTED_LOCALES[number]
 
 export function useLanguageSwitch() {
-  const { setLocale } = useI18n()
+  const { locale } = useI18n()
   
   // Get saved language from localStorage or use default
   const savedLocale = localStorage.getItem('locale') as SupportedLocale
@@ -18,7 +18,7 @@ export function useLanguageSwitch() {
       return
     }
     
-    setLocale(newLocale)
+    locale.value = newLocale
     currentLocale.value = newLocale
     localStorage.setItem('locale', newLocale)
     
@@ -29,9 +29,9 @@ export function useLanguageSwitch() {
   // Get available languages
   const getAvailableLanguages = () => {
     return [
-      { code: 'en-GB', name: 'English (UK)', flag: '🇬🇧' },
-      { code: 'nl-NL', name: 'Nederlands', flag: '🇳🇱' },
-      { code: 'fr-FR', name: 'Français', flag: '🇫🇷' }
+      { code: 'en-GB', name: 'English (UK)', flag: '/src/assets/flags/en.png' },
+      { code: 'nl-NL', name: 'Nederlands', flag: '/src/assets/flags/nl.png' },
+      { code: 'fr-FR', name: 'Français', flag: '/src/assets/flags/fr.png' }
     ]
   }
   

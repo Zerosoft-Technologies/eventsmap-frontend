@@ -10,7 +10,8 @@
     "createProfile": "Create Profile",
     "resetSearch": "Reset Search",
     "currentLocation": "Current location",
-    "defaultLocation": "Amsterdam"
+    "defaultLocation": "Amsterdam",
+    "language": "Language"
   },
   "eventCard": {
     "liveNow": "Live Now",
@@ -129,5 +130,29 @@
     "serverError": "Server error. Please try again later.",
     "unauthorized": "You are not authorized to view this page",
     "generic": "Something went wrong"
+  },
+  "eventDetails": {
+    "untitled": "Untitled Event",
+    "previousImage": "Previous image",
+    "nextImage": "Next image",
+    "image": "Image",
+    "noDescription": "No description available for this event.",
+    "organizer": "Details organisator",
+    "musicCategory": "Music Category",
+    "price": "Price",
+    "dresscode": "Dresscode",
+    "ageRequirement": "Age Requirement",
+    "allAges": "All ages welcome",
+    "notSpecified": "Not specified",
+    "dateTime": "Date & Time",
+    "location": "Location",
+    "tabContentComingSoon": "Content coming soon...",
+    "tabs": {
+      "overview": "Overview",
+      "about": "About",
+      "dateLocation": "Date & Location",
+      "talents": "Talents",
+      "community": "Community"
+    }
   }
 }

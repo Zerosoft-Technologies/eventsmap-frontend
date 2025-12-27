@@ -5,7 +5,7 @@
     </h1>
     <div class="tw:hidden tw:relative tw:md:flex tw:items-center tw:gap-3">
       <div class="tw:flex tw:relative tw:bg-white tw:gap-6 tw:items-center tw:py-3 tw:pr-3 tw:pl-4 tw:border tw:border-(--secondary-color) tw:rounded-lg" >
-        <div class="tw:flex tw:gap-2 tw:relative tw:cursor-pointer tw:items-center  tw:w-[169px]">
+        <div class="tw:flex tw:gap-2 tw:relative tw:cursor-pointer tw:items-center tw:w-[169px] overflow-hidden">
           <img src="../assets/search.png" alt="Search Icon" />
           <input ref="searchInput" @keyup.enter="filterBy('search')" v-model="searchTerm" @focus="showSuggestion = true" @blur="handleSuggestionBlur" type="text" class="tw:outline-none tw:placeholder-(--primary-color)" :placeholder="$t('header.search.placeholder')">        
         </div>
@@ -112,6 +112,45 @@
       <div>        
         <RouterLink to="/create-profile" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>{{ $t('header.createProfile') }}</span></RouterLink>        
       </div>      
+      <!-- Language Switcher -->
+      <div class="tw:relative">
+        <button 
+          ref="languageToggler"
+          @click="toggleLanguageDropdown"
+          class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-2 tw:border-(--secondary-color) tw:cursor-pointer"
+        >
+          <img :src="currentLanguage.flag" :alt="currentLanguage.name + ' flag'" class="tw:w-6 tw:h-4 tw-object-cover tw-rounded-sm" />
+          <span class="tw:text-sm">{{ currentLanguage.name }}</span>
+          <img src="../assets/chevron-down.png" alt="Chevron Down" class="tw:w-3 tw:h-3 tw-ml-1" />
+        </button>
+        
+        <transition name="fade">
+          <div 
+            v-if="showLanguageDropdown" 
+            v-click-outside="handleLanguageDropdownOutsideClick"
+            class="tw:absolute tw:right-0 tw:top-full tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-(--secondary-color) tw:overflow-hidden tw:z-20"
+          >
+            <button
+              v-for="lang in availableLanguages"
+              :key="lang.code"
+              @click="switchLanguage(lang.code)"
+              class="tw:w-full tw:px-4 tw:py-2 tw:flex tw:items-center tw:gap-3 tw:hover:bg-gray-50 tw-transition-colors tw:text-left"
+              :class="{ 'tw:bg-gray-100': lang.code === currentLocale }"
+            >
+              <img :src="lang.flag" :alt="lang.name + ' flag'" class="tw:w-6 tw:h-4 tw-object-cover tw-rounded-sm" />
+              <span class="tw-text-sm">{{ lang.name }}</span>
+              <svg 
+                v-if="lang.code === currentLocale" 
+                class="tw:w-4 tw:h-4 tw:ml-auto tw:text-green-600" 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </transition>
+      </div>
       <div>
         <button @click="$emit('open-login')" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/login.png" alt="Login Icon"/><span>{{ $t('header.login') }}</span></button>
       </div>
@@ -141,6 +180,23 @@
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
           <p>{{ $t('header.login') }}</p>
         </div>
+
+        <!-- Mobile Language Switcher -->
+        <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
+          <p class="tw-mb-2 tw-font-medium">{{ $t('header.language') }}</p>
+          <div class="tw-flex tw-flex-col tw-gap-2">
+            <button
+              v-for="lang in availableLanguages"
+              :key="lang.code"
+              @click="switchLanguage(lang.code)"
+              class="tw:flex tw-items-center tw-gap-2 tw:text-sm tw-py-1"
+              :class="{ 'tw-font-semibold': lang.code === currentLocale }"
+            >
+              <img :src="lang.flag" :alt="lang.name + ' flag'" class="tw:w-6 tw:h-4 tw-object-cover tw-rounded-sm" />
+              <span>{{ lang.name }}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </transition>
   </header>
@@ -151,8 +207,15 @@
     @continue-without="() => {}"
   /> -->
   <div v-if="showResults">
-    <AllEvents @closeResults="handleClose" @resetSearch="handleReset" :events="events" :loading="eventsLoading" />
+    <AllEvents @closeResults="handleClose" @resetSearch="handleReset" @viewEvent="handleViewEvent" :events="events" :loading="eventsLoading" />
   </div>
+  
+  <!-- Event Details Panel -->
+  <EventDetailsPanel 
+    :visible="showEventDetailsPanel" 
+    :event="selectedEvent"
+    @close="closeEventDetailsPanel"
+  />
 </template>
 <script setup>
 import { useRoute } from 'vue-router'
@@ -161,11 +224,25 @@ import { useI18n } from 'vue-i18n'
 import DatePicker from "./DatePicker.vue";
 import LocationPermissionPrompt from './LocationPermissionPrompt.vue';
 import { useLocationPermission } from '../composables/useLocationPermission';
+import { useLanguageSwitch } from '../composables/useLanguageSwitch';
 
 // Lazy load AllEvents to avoid circular import issue
 const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
 
-const { t } = useI18n()
+// Lazy load EventDetailsPanel for event details side panel
+const EventDetailsPanel = defineAsyncComponent(() => import('./EventDetailsPanel.vue'))
+
+const { t, locale } = useI18n()
+const { switchLanguage, getAvailableLanguages, initializeLanguage } = useLanguageSwitch()
+
+// Language switcher state
+const showLanguageDropdown = ref(false)
+const languageToggler = ref(null)
+const availableLanguages = getAvailableLanguages()
+const currentLocale = computed(() => locale.value)
+const currentLanguage = computed(() => 
+  availableLanguages.find(lang => lang.code === locale.value) || availableLanguages[0]
+)
 
 const showSuggestion = ref(false)
 const menuOpen = ref(false);
@@ -193,6 +270,10 @@ const sessionFilter = ref({
 })
 const selectedLocation = ref({ lat: 52.3676, lng: 4.9041, name: "Amsterdam" }) // Default to Amsterdam
 
+// Event Details Panel state
+const showEventDetailsPanel = ref(false)
+const selectedEvent = ref(null)
+
 // Initialize location permission composable
 const { 
   permissionStatus: locationPermissionStatus, 
@@ -202,6 +283,18 @@ const {
   getLocation: getCurrentLocation,
   showManualEnablePrompt
 } = useLocationPermission()
+
+// Language switcher functions
+function toggleLanguageDropdown() {
+  showLanguageDropdown.value = !showLanguageDropdown.value
+}
+
+function handleLanguageDropdownOutsideClick(e) {
+  if (languageToggler.value && languageToggler.value.contains(e.target)) {
+    return
+  }
+  showLanguageDropdown.value = false
+}
 
 function handleSuggestionBlur() {
   setTimeout(() => {
@@ -474,6 +567,23 @@ const handleOutsideClick = (e) => {
     return;
   }
   showLocation.value = false
+}
+
+/**
+ * Handle view event - opens the event details panel
+ * @param {Object} event - The event object to display
+ */
+function handleViewEvent(event) {
+  selectedEvent.value = event
+  showEventDetailsPanel.value = true
+}
+
+/**
+ * Close the event details panel
+ */
+function closeEventDetailsPanel() {
+  showEventDetailsPanel.value = false
+  selectedEvent.value = null
 }
 </script>
 
