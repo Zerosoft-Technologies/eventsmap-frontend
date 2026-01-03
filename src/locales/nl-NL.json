@@ -22,7 +22,11 @@
     "minimumAge": "Minimum Leeftijd",
     "viewEvent": "Bekijk Evenement",
     "route": "Route",
-    "link": "Link"
+    "link": "Link",
+    "comingSoon": "Binnenkort",
+    "pastEvent": "Verleden Evenement",
+    "upcomingEvent": "Aankomend Evenement",
+    "openingHours": "Openingstijden"
   },
   "forms": {
     "submit": "Versturen",
@@ -107,7 +111,21 @@
     "notSpecified": "Niet gespecificeerd",
     "dateTime": "Datum & Tijd",
     "location": "Locatie",
-    "tabContentComingSoon": "Inhoud binnenkort beschikbaar...",
+    "tabContentComingSoon": "Inhoud komt binnenkort...",
+    "eventDescription": "Evenement Beschrijving",
+    "dateAndTime": "Datum & Tijd",
+    "eventRules": "Evenement Regels",
+    "rule1": "Geen eten of drinken van buiten toegestaan",
+    "rule2": "Geldig ID vereist voor leeftijdsverificatie",
+    "rule3": "Roken is alleen toegestaan in aangewezen gebieden",
+    "rule4": "Respecteer de locatie en andere bezoekers",
+    "rule5": "Volg altijd de instructies van het personeel",
+    "additionalInfo": "Aanvullende Informatie",
+    "ticketType": "Ticket Type",
+    "standardEntry": "Standaard Toegang",
+    "entryFee": "Toegangsprijs",
+    "free": "Gratis",
+    "ageLimit": "Leeftijdslimiet",
     "tabs": {
       "overview": "Overzicht",
       "about": "Over",
@@ -115,5 +133,20 @@
       "talents": "Talenten",
       "community": "Community"
     }
+  },
+  "about": {
+    "accessibility": "Toegankelijkheid",
+    "wheelchairToilet": "Rolstoeltoegankelijk toilet",
+    "wheelchairEntrance": "Rolstoeltoegankelijke ingang",
+    "wheelchairParking": "Rolstoeltoegankelijke parking",
+    "serviceOptions": "Serviceopties",
+    "onSiteServices": "Services op bedrijfslocatie",
+    "amenities": "Voorzieningen",
+    "restaurants": "Restaurants",
+    "planning": "Planning",
+    "recommendTickets": "Aanbevolen om van tevoren tickets te kopen",
+    "children": "Kinderen",
+    "suitableForChildren": "Geschikt voor kinderen",
+    "babyChangingTable": "Heeft een of meer babyverschoontafels"
   }
 }

@@ -3,67 +3,98 @@
   <transition name="slide">
     <div 
     v-if="visible"
-    class="tw:fixed tw:p-0 tw:bg-white tw:rounded-2xl tw:bottom-4 tw:z-50 tw:w-[420px] tw:max-w-[calc(100vw-2rem)] tw:shadow-xl tw:flex tw:flex-col tw:overflow-hidden"
-    style="left: 480px;"
+    class="tw:fixed tw:p-0 tw:bg-white tw:rounded-2xl tw:bottom-4 tw:z-50 tw:w-[420px] tw:max-w-[calc(100vw-2rem)] tw:shadow-xl tw:flex tw:flex-col tw:overflow-visible"
+    style="left: 470px; height: 620px;"
     >
       <!-- Filter Chips -->
-      <div class="tw:fixed tw:z-[60] tw:px-4 tw:pb-4" style="top: 90px;">
+      <div class="tw:absolute tw:z-[60] tw:z-10" style="bottom: 630px;">
         <div class="tw:flex tw:gap-2">
-          <span class="tw:px-3 tw:py-1.5 tw:bg-gray-100 tw:text-gray-600 tw:text-xs tw:rounded-lg tw:whitespace-nowrap tw:font-medium">
-            Openingstijden
-          </span>
-          <span class="tw:px-3 tw:py-1.5 tw:bg-gray-100 tw:text-gray-600 tw:text-xs tw:rounded-lg tw:whitespace-nowrap tw:font-medium">
-            Price
-          </span>
-          <span class="tw:px-3 tw:py-1.5 tw:bg-red-500 tw:text-white tw:text-xs tw:rounded-lg tw:whitespace-nowrap tw:font-medium tw:flex tw:items-center tw:gap-1">
-            <img src="../assets/live-streaming.png" alt="Live Icon" class="tw:w-3 tw:h-3">
-            LIVE NOW
-          </span>
+          <!-- Opening Hours Chip -->
+          <button 
+            v-if="event?.start_datetime"
+            class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)" 
+            style="border-radius: 30px;"
+          >
+            <img src="../assets/timer.png" alt="Opening Hours" class="tw:w-3 tw:h-3">
+            <span class="tw:text-xs">{{ openingHours }}</span>
+          </button>
+          
+          <!-- Price Chip -->
+          <button 
+            v-if="event?.price || event?.min_price || event?.max_price"
+            class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)" 
+            style="border-radius: 30px;"
+          >
+            <img src="../assets/sack-doller.png" alt="Price" class="tw:w-3 tw:h-3">
+            <span class="tw:text-xs">{{ formattedPrice }}</span>
+          </button>
+          
+          <!-- Event Status Chip -->
+          <button 
+            v-if="eventStatus"
+            class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)" 
+            style="border-radius: 30px;"
+          >
+            <img src="../assets/live-streaming-blue.png" :alt="eventStatus.text" class="tw:w-3 tw:h-3" >
+            <span class="tw:text-xs"> {{ eventStatus.text }}</span>
+          </button>
+          
         </div>
       </div>
       <!-- Event Title -->
       <div class="tw:px-4 tw:py-4">
-        <h2 class="tw:text-xl tw:font-semibold tw:text-gray-900 tw:leading-tight">
+        <h2 class="tw:text-xl tw:font-semibold tw:leading-tight">
           {{ event?.title || $t('eventDetails.untitled') }}
         </h2>
       </div>
+      
+      <div class="tw:h-px tw:bg-gray-200 tw:mb-3"></div>
 
       <!-- Scrollable content area -->
-      <div class="tw:max-h-[60vh] tw:overflow-y-auto tw:pr-2">
+      <div class="tw:flex-1 tw:overflow-y-auto tw:pr-2">
         <!-- Gallery Slider -->
-        <div class="tw:relative tw:h-48 tw:overflow-hidden tw:rounded-t-2xl">
-          <!-- Main image -->
-          <img 
-            :src="currentImage" 
-            :alt="event?.title"
-            class="tw:h-full tw:object-cover tw:w-85"
-            style="border-radius: 20px;"
-          />
+        <div class="tw:relative tw:h-48 tw:overflow-hidden tw:rounded-t-2xl tw:mb-2">
+          <div class="tw:flex tw:transition-transform tw:duration-300 tw:ease-in-out tw:h-full" :style="{ transform: `translateX(-${currentImageIndex * 100}%)` }">
+            <div 
+              v-for="(image, index) in images" 
+              :key="index"
+              class="tw:w-full tw:flex-shrink-0 tw:h-full tw:px-4"
+            >
+              <img 
+                :src="image" 
+                :alt="`${event?.title} - Image ${index + 1}`"
+                class="tw:w-full tw:h-full tw:object-cover"
+                style="border-radius: 20px;"
+              />
+            </div>
+          </div>
           
           <!-- Left arrow -->
           <button 
             v-if="images.length > 1"
             @click="prevImage"
-            class="tw:absolute tw:left-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-10 tw:h-10 tw:bg-black/20 tw:backdrop-blur-sm tw:rounded-full tw:flex tw:items-center tw:justify-center tw:transition-all tw:duration-200 hover:tw:bg-black/30"
+            class="tw:absolute tw:left-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-10 tw:h-10 tw:bg-black/20 tw:backdrop-blur-sm tw:rounded-full tw:flex tw:items-center tw:justify-center tw:transition-all tw:duration-200 hover:tw:bg-black/30 tw:z-10"
             :aria-label="$t('eventDetails.previousImage')"
+            style="background: white; box-shadow: 0px 0px 2px 0px black;"
           >
-            <ChevronLeftIcon class="tw:w-5 tw:h-5 tw:text-white" />
+            <ChevronLeftIcon class="tw:w-5 tw:h-5 tw:text-black" />
           </button>
           
           <!-- Right arrow -->
           <button 
             v-if="images.length > 1"
             @click="nextImage"
-            class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-10 tw:h-10 tw:bg-black/20 tw:backdrop-blur-sm tw:rounded-full tw:flex tw:items-center tw:justify-center tw:transition-all tw:duration-200 hover:tw:bg-black/30"
+            class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-10 tw:h-10 tw:bg-black/20 tw:backdrop-blur-sm tw:rounded-full tw:flex tw:items-center tw:justify-center tw:transition-all tw:duration-200 hover:tw:bg-black/30 tw:z-10"
             :aria-label="$t('eventDetails.nextImage')"
+            style="background: white; box-shadow: 0px 0px 2px 0px black;"
           >
-            <ChevronRightIcon class="tw:w-5 tw:h-5 tw:text-white" />
+            <ChevronRightIcon class="tw:w-5 tw:h-5 tw:text-black" />
           </button>
 
           <!-- Image counter -->
           <div 
             v-if="images.length > 1"
-            class="tw:absolute tw:bottom-4 tw:right-4 tw:px-2 tw:py-1 tw:bg-black/50 tw:backdrop-blur-sm tw:rounded-full"
+            class="tw:absolute tw:bottom-4 tw:right-4 tw:px-2 tw:py-1 tw:bg-black/50 tw:backdrop-blur-sm tw:rounded-full tw:z-10"
           >
             <span class="tw:text-xs tw:text-white font-medium">
               {{ currentImageIndex + 1 }} / {{ images.length }}
@@ -72,18 +103,19 @@
         </div>
 
         <!-- Tabs Navigation -->
-        <div class="tw:px-4 tw:py-2">
-          <div class="tw:flex tw:bg-gray-100 tw:rounded-lg tw:p-1">
+        <div class="tw:px-4 tw:pb-4">
+          <div class="tw:flex tw:overflow-x-auto tw:scrollbar-hide tw:border-b tw:border-gray-200">
             <button
               v-for="tab in tabs"
               :key="tab.id"
               @click="activeTab = tab.id"
               :class="[
-                'tw:flex-1 tw:px-3 tw:py-2 tw:text-sm tw:font-medium tw:transition-all tw:duration-200 tw:whitespace-nowrap tw:rounded-md',
+                'tw:px-0 tw:py-3 tw:text-sm tw:font-medium tw:transition-all tw:duration-200 tw:whitespace-nowrap tw:mr-8 tw:relative tw:border-b-2 tw:flex-shrink-0',
                 activeTab === tab.id 
-                  ? 'tw:bg-white tw:text-gray-900 tw:shadow-sm' 
-                  : 'tw:text-gray-600 hover:tw:text-gray-900'
+                  ? 'tw:border-[var(--primary-color)] tw:text-[var(--primary-color)]' 
+                  : 'tw:border-transparent tw:text-gray-500 hover:tw:text-gray-700'
               ]"
+              style="margin: 0 5px;"
             >
               {{ $t(tab.labelKey) }}
             </button>
@@ -124,7 +156,7 @@
             </div>
 
             <!-- Description -->
-            <p class="tw:text-gray-700 tw:text-sm tw:leading-relaxed tw:mb-6">
+            <p class="tw:text-sm tw:leading-relaxed tw:mb-6">
               {{ event?.description || $t('eventDetails.noDescription') }}
             </p>
 
@@ -133,11 +165,10 @@
               <!-- Organisator -->
               <div class="tw:flex tw:items-center tw:gap-3 tw:pb-4 tw:pt-4 tw:border-b tw:border-t tw:border-gray-100">
                 <div class="tw:w-8 tw:h-8 tw:bg-blue-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center">
-                  <UserIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
+                  <img src="../assets/filecircle.png" alt="Organizer Icon" class="tw:w-4 tw:h-4 tw:text-blue-500">
                 </div>
                 <div>
-                  <p class="tw:text-xs tw:text-gray-500 tw:mb-1">{{ $t('eventDetails.organizer') }}</p>
-                  <p class="tw:text-sm tw:font-medium tw:text-gray-900">{{ event?.organizer_name || $t('eventDetails.notSpecified') }}</p>
+                  <p class="tw:text-sm tw:font-medium">{{ event?.organizer_name || $t('eventDetails.notSpecified') }}</p>
                 </div>
               </div>
 
@@ -147,19 +178,17 @@
                   <MusicIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
                 </div>
                 <div>
-                  <p class="tw:text-xs tw:text-gray-500 tw:mb-1">{{ $t('eventDetails.musicCategory') }}</p>
-                  <p class="tw:text-sm tw:font-medium tw:text-gray-900">{{ event?.category || $t('eventDetails.notSpecified') }}</p>
+                  <p class="tw:text-sm tw:font-medium">{{ event?.category ? event?.category['name'] : $t('eventDetails.notSpecified') }}</p>
                 </div>
               </div>
 
               <!-- Price -->
               <div class="tw:flex tw:items-center tw:gap-3 tw:pb-4 tw:border-b tw:border-gray-100">
                 <div class="tw:w-8 tw:h-8 tw:bg-blue-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center">
-                  <TicketIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
+                  <img src="../assets/sack-doller.png" alt="Price Icon" class="tw:w-4 tw:h-4 tw:text-blue-500">
                 </div>
                 <div>
-                  <p class="tw:text-xs tw:text-gray-500 tw:mb-1">{{ $t('eventDetails.price') }}</p>
-                  <p class="tw:text-sm tw:font-medium tw:text-gray-900">{{ formattedPrice || $t('eventDetails.notSpecified') }}</p>
+                  <p class="tw:text-sm tw:font-medium">{{ formattedPrice || $t('eventDetails.notSpecified') }}</p>
                 </div>
               </div>
 
@@ -169,51 +198,41 @@
                   <ShirtIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
                 </div>
                 <div>
-                  <p class="tw:text-xs tw:text-gray-500 tw:mb-1">{{ $t('eventDetails.dresscode') }}</p>
-                  <p class="tw:text-sm tw:font-medium tw:text-gray-900 tw:capitalize">{{ event?.dresscode || $t('eventDetails.notSpecified') }}</p>
+                  <p class="tw:text-sm tw:font-medium tw:capitalize">{{ event?.dresscode || $t('eventDetails.notSpecified') }}</p>
                 </div>
               </div>
 
               <!-- Age Requirement -->
               <div class="tw:flex tw:items-center tw:gap-3">
                 <div class="tw:w-8 tw:h-8 tw:bg-blue-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center">
-                  <UsersIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
+                  <img src="../assets/users-group.png" alt="Age Icon" class="tw:w-4 tw:h-4 tw:text-blue-500">
                 </div>
                 <div>
-                  <p class="tw:text-xs tw:text-gray-500 tw:mb-1">{{ $t('eventDetails.ageRequirement') }}</p>
-                  <p class="tw:text-sm tw:font-medium tw:text-gray-900">{{ ageRequirement || $t('eventDetails.allAges') }}</p>
+                  <p class="tw:text-sm tw:font-medium">{{ ageRequirement || $t('eventDetails.allAges') }}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- About Tab (placeholder) -->
-          <div v-else-if="activeTab === 'about'" class="tw:p-4">
-            <p class="tw:text-gray-500 tw:text-sm">{{ $t('eventDetails.tabContentComingSoon') }}</p>
-          </div>
+          <!-- About Tab -->
+          <AboutTab v-else-if="activeTab === 'about'" />
 
-          <!-- Date & Location Tab (placeholder) -->
-          <div v-else-if="activeTab === 'dateLocation'" class="tw:p-4">
-            <p class="tw:text-gray-500 tw:text-sm">{{ $t('eventDetails.tabContentComingSoon') }}</p>
-          </div>
+          <!-- Date & Location Tab -->
+          <DateLocationTab v-else-if="activeTab === 'dateLocation'" />
 
-          <!-- Talents Tab (placeholder) -->
-          <div v-else-if="activeTab === 'talents'" class="tw:p-4">
-            <p class="tw:text-gray-500 tw:text-sm">{{ $t('eventDetails.tabContentComingSoon') }}</p>
-          </div>
+          <!-- Talents Tab -->
+          <TalentsTab v-else-if="activeTab === 'talents'" :talents="event?.talents || mockTalents" />
 
-          <!-- Community Tab (placeholder) -->
-          <div v-else-if="activeTab === 'community'" class="tw:p-4">
-            <p class="tw:text-gray-500 tw:text-sm">{{ $t('eventDetails.tabContentComingSoon') }}</p>
-          </div>
+          <!-- Community Tab -->
+          <CommunityTab v-else-if="activeTab === 'community'" :community="event?.community || mockCommunity" />
         </div>
       </div>
       <button 
         @click="close"
-        class="tw:fixed tw:z-[60] tw:-translate-y-1/2 tw:w-8 tw:h-16 tw:bg-white tw:rounded-full tw:shadow-md tw:flex tw:items-center tw:justify-center hover:tw:shadow-lg tw:transition-all"
-        style="left: 900px; top: 450px; width: 25px; height: 42px; border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px;"
+        class="tw:absolute tw:z-[60] tw:top-1/2 tw:-translate-y-1/2 tw:-right-3 tw:w-7 tw:h-12 tw:bg-white tw:shadow-md tw:flex tw:items-center tw:justify-center hover:tw:shadow-lg tw:transition-all hover:tw:-right-4"
+        style="border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; right: -24px;"
       >
-        <img src="../assets/chevron-bold-left.png" alt="Close" class="tw:w-4 tw:h-4 tw:text-white" style="width: 10px; height: 10px;" />
+        <img src="../assets/chevron-bold-left.png" class="tw:w-3 tw:h-3" />
       </button>
     </div>
 
@@ -230,14 +249,18 @@ import {
   HeartIcon, 
   MapPinIcon, 
   Share2Icon,
-  UserIcon,
   MusicIcon,
   TicketIcon,
   ShirtIcon,
   UsersIcon,
   CalendarIcon,
-  LinkIcon
+  LinkIcon,
+  UserIcon
 } from 'lucide-vue-next'
+import AboutTab from './AboutTab.vue'
+import DateLocationTab from './DateLocationTab.vue'
+import TalentsTab from './TalentsTab.vue'
+import CommunityTab from './CommunityTab.vue'
 
 const { t } = useI18n()
 
@@ -276,6 +299,52 @@ const tabs = [
   { id: 'community', labelKey: 'eventDetails.tabs.community' }
 ]
 
+const mockTalents = [
+    { name: "DJ Shadow", image: "https://picsum.photos/seed/talent1/200/200.jpg" },
+    { name: "Luna Nova", image: "https://picsum.photos/seed/talent2/200/200.jpg" },
+    { name: "The Vibes", image: "https://picsum.photos/seed/talent3/200/200.jpg" },
+    { name: "Electric Dreams", image: "https://picsum.photos/seed/talent4/200/200.jpg" },
+    { name: "Jazz Masters", image: "https://picsum.photos/seed/talent5/200/200.jpg" },
+    { name: "Neon Lights", image: "https://picsum.photos/seed/talent6/200/200.jpg" },
+    { name: "Rhythm Kings", image: "https://picsum.photos/seed/talent7/200/200.jpg" },
+    { name: "Soul Train", image: "https://picsum.photos/seed/talent8/200/200.jpg" },
+    { name: "Funk Factory", image: "https://picsum.photos/seed/talent9/200/200.jpg" },
+    { name: "Beat Makers", image: "https://picsum.photos/seed/talent10/200/200.jpg" },
+    { name: "Groove City", image: "https://picsum.photos/seed/talent11/200/200.jpg" },
+    { name: "Sound Wave", image: "https://picsum.photos/seed/talent12/200/200.jpg" },
+    { name: "Pulse Party", image: "https://picsum.photos/seed/talent13/200/200.jpg" },
+    { name: "Jazz Jam", image: "https://picsum.photos/seed/talent14/200/200.jpg" },
+    { name: "Electro Edge", image: "https://picsum.photos/seed/talent15/200/200.jpg" },
+    { name: "Techno Tunes", image: "https://picsum.photos/seed/talent16/200/200.jpg" },
+    { name: "Rave Revolution", image: "https://picsum.photos/seed/talent17/200/200.jpg" },
+    { name: "Punk Parade", image: "https://picsum.photos/seed/talent18/200/200.jpg" },
+    { name: "Metal Madness", image: "https://picsum.photos/seed/talent19/200/200.jpg" },
+    { name: "Hip Hop Heat", image: "https://picsum.photos/seed/talent20/200/200.jpg" },
+    {name: "Pop Culture", image: "https://picsum.photos/seed/talent21/200/200.jpg"},
+    { name: "R&B Revolution", image: "https://picsum.photos/seed/talent22/200/200.jpg" }
+  ]
+
+const mockCommunity = [
+    { name: "Alex Johnson", image: "https://picsum.photos/seed/user1/200/200.jpg" },
+    { name: "Sarah Williams", image: "https://picsum.photos/seed/user2/200/200.jpg" },
+    { name: "Mike Chen", image: "https://picsum.photos/seed/user3/200/200.jpg" },
+    { name: "Emma Davis", image: "https://picsum.photos/seed/user4/200/200.jpg" },
+    { name: "John Smith", image: "https://picsum.photos/seed/user5/200/200.jpg" },
+    { name: "Lisa Anderson", image: "https://picsum.photos/seed/user6/200/200.jpg" },
+    { name: "David Brown", image: "https://picsum.photos/seed/user7/200/200.jpg" },
+    { name: "Maria Garcia", image: "https://picsum.photos/seed/user8/200/200.jpg" },
+    { name: "Tom Wilson", image: "https://picsum.photos/seed/user9/200/200.jpg" },
+    { name: "Anna Martinez", image: "https://picsum.photos/seed/user10/200/200.jpg" },
+    { name: "Chris Taylor", image: "https://picsum.photos/seed/user11/200/200.jpg" },
+    { name: "Julia White", image: "https://picsum.photos/seed/user12/200/200.jpg" },
+    { name: "Ryan Lee", image: "https://picsum.photos/seed/user13/200/200.jpg" },
+    { name: "Sophie Turner", image: "https://picsum.photos/seed/user14/200/200.jpg" },
+    { name: "Mark Harris", image: "https://picsum.photos/seed/user15/200/200.jpg" },
+    { name: "Nina Patel", image: "https://picsum.photos/seed/user16/200/200.jpg" },
+    { name: "Oliver Jones", image: "https://picsum.photos/seed/user17/200/200.jpg" },
+    { name: "Grace Kim", image: "https://picsum.photos/seed/user18/200/200.jpg" }
+  ]
+
 // Reset state when event changes
 watch(() => props.event, () => {
   currentImageIndex.value = 0
@@ -311,6 +380,65 @@ const ageRequirement = computed(() => {
     return t('eventDetails.allAges')
   }
   return `${props.event.min_age}+`
+})
+
+// Computed: Event status (upcoming/live/past)
+const eventStatus = computed(() => {
+  if (!props.event?.start_datetime) {
+    return null
+  }
+  
+  const now = new Date()
+  const start = new Date(props.event.start_datetime)
+  const end = props.event.end_datetime ? new Date(props.event.end_datetime) : start
+  
+  if (now < start) {
+    // Upcoming event
+    return {
+      type: 'upcoming',
+      text: t('eventCard.upcomingEvent'),
+      icon: '../assets/calendar-upcoming.png'
+    }
+  } else if (now >= start && now <= end) {
+    // Live event
+    return {
+      type: 'live',
+      text: t('eventCard.liveNow'),
+      icon: '../assets/live-streaming.png'
+    }
+  } else {
+    // Past event
+    return {
+      type: 'past',
+      text: t('eventCard.pastEvent'),
+      icon: '../assets/calendar-past.png'
+    }
+  }
+})
+
+// Computed: Opening hours
+const openingHours = computed(() => {
+  if (!props.event?.start_datetime) {
+    return t('eventDetails.notSpecified')
+  }
+  
+  const start = new Date(props.event.start_datetime)
+  const end = props.event.end_datetime ? new Date(props.event.end_datetime) : null
+  
+  const timeOpts = { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: false
+  }
+  
+  const startTime = start.toLocaleTimeString('en-US', timeOpts)
+  
+  if (end) {
+    const endTime = end.toLocaleTimeString('en-US', timeOpts)
+    return `${startTime} - ${endTime}`
+  }
+  
+  return startTime
 })
 
 // Computed: Formatted date and time

@@ -574,6 +574,7 @@ const handleOutsideClick = (e) => {
  * @param {Object} event - The event object to display
  */
 function handleViewEvent(event) {
+  console.log('View event:', event)
   selectedEvent.value = event
   showEventDetailsPanel.value = true
 }

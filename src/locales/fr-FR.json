@@ -22,7 +22,11 @@
     "minimumAge": "Âge Minimum",
     "viewEvent": "Voir l'Événement",
     "route": "Itinéraire",
-    "link": "Lien"
+    "link": "Lien",
+    "comingSoon": "Bientôt",
+    "pastEvent": "Événement Passé",
+    "upcomingEvent": "Événement Avenir",
+    "openingHours": "Horaires d'ouverture"
   },
   "forms": {
     "submit": "Soumettre",
@@ -108,12 +112,41 @@
     "dateTime": "Date & Heure",
     "location": "Lieu",
     "tabContentComingSoon": "Contenu à venir...",
+    "eventDescription": "Description de l'Événement",
+    "dateAndTime": "Date & Heure",
+    "eventRules": "Règles de l'Événement",
+    "rule1": "Aucune nourriture ou boisson extérieure autorisée",
+    "rule2": "Une pièce d'identité valide est requise pour la vérification de l'âge",
+    "rule3": "Le tabac est uniquement autorisé dans les zones désignées",
+    "rule4": "Respectez le lieu et les autres participants",
+    "rule5": "Suivez toujours les instructions du personnel",
+    "additionalInfo": "Informations Additionnelles",
+    "ticketType": "Type de Billet",
+    "standardEntry": "Entrée Standard",
+    "entryFee": "Frais d'Entrée",
+    "free": "Gratuit",
+    "ageLimit": "Limite d'Âge",
     "tabs": {
       "overview": "Aperçu",
-      "about": "À Propos",
+      "about": "À propos",
       "dateLocation": "Date & Lieu",
       "talents": "Talents",
       "community": "Communauté"
     }
+  },
+  "about": {
+    "accessibility": "Accessibilité",
+    "wheelchairToilet": "Toilettes accessibles en fauteuil roulant",
+    "wheelchairEntrance": "Entrée accessible en fauteuil roulant",
+    "wheelchairParking": "Parking accessible en fauteuil roulant",
+    "serviceOptions": "Options de service",
+    "onSiteServices": "Services sur place",
+    "amenities": "Équipements",
+    "restaurants": "Restaurants",
+    "planning": "Planification",
+    "recommendTickets": "Il est recommandé d'acheter les billets à l'avance",
+    "children": "Enfants",
+    "suitableForChildren": "Adapté aux enfants",
+    "babyChangingTable": "Dispose d'une ou plusieurs tables à langer"
   }
 }

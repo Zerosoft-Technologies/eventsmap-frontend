@@ -9,6 +9,7 @@ export interface UIEvent {
   live: boolean
   image: string
   date: string
+  description: string
   location: string
   category: string
   price: string
@@ -60,6 +61,7 @@ export function transformApiEventToUI(apiEvent: ApiEvent): UIEvent {
     location: apiEvent.address || apiEvent.city,
     category: apiEvent.category,
     price: apiEvent.price || 'Free',
+    description: apiEvent.description || '',
     dresscode: apiEvent.dresscode || 'Any',
     age: apiEvent.min_age ? `${apiEvent.min_age}+` : 'All',
     lat: apiEvent.latitude || 0,

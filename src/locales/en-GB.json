@@ -22,7 +22,11 @@
     "minimumAge": "Minimum Age",
     "viewEvent": "View Event",
     "route": "Route",
-    "link": "Link"
+    "link": "Link",
+    "comingSoon": "Coming Soon",
+    "pastEvent": "Past Event",
+    "upcomingEvent": "Upcoming Event",
+    "openingHours": "Opening Hours"
   },
   "forms": {
     "submit": "Submit",
@@ -147,6 +151,20 @@
     "dateTime": "Date & Time",
     "location": "Location",
     "tabContentComingSoon": "Content coming soon...",
+    "eventDescription": "Event Description",
+    "dateAndTime": "Date & Time",
+    "eventRules": "Event Rules",
+    "rule1": "No outside food or drinks allowed",
+    "rule2": "Valid ID required for age verification",
+    "rule3": "Smoking is only permitted in designated areas",
+    "rule4": "Respect the venue and other attendees",
+    "rule5": "Follow all staff instructions at all times",
+    "additionalInfo": "Additional Information",
+    "ticketType": "Ticket Type",
+    "standardEntry": "Standard Entry",
+    "entryFee": "Entry Fee",
+    "free": "Free",
+    "ageLimit": "Age Limit",
     "tabs": {
       "overview": "Overview",
       "about": "About",
@@ -154,5 +172,20 @@
       "talents": "Talents",
       "community": "Community"
     }
+  },
+  "about": {
+    "accessibility": "Accessibility",
+    "wheelchairToilet": "Wheelchair-accessible toilet",
+    "wheelchairEntrance": "Wheelchair-accessible entrance",
+    "wheelchairParking": "Wheelchair-accessible parking",
+    "serviceOptions": "Service Options",
+    "onSiteServices": "On-site services available",
+    "amenities": "Amenities",
+    "restaurants": "Restaurants",
+    "planning": "Planning",
+    "recommendTickets": "It is recommended to purchase tickets in advance",
+    "children": "Children",
+    "suitableForChildren": "Suitable for children",
+    "babyChangingTable": "Includes one or more baby changing stations"
   }
 }
