@@ -224,7 +224,7 @@
           <TalentsTab v-else-if="activeTab === 'talents'" :talents="event?.talents || mockTalents" />
 
           <!-- Community Tab -->
-          <CommunityTab v-else-if="activeTab === 'community'" :community="event?.community || mockCommunity" />
+          <!-- <CommunityTab v-else-if="activeTab === 'community'" :community="event?.community || mockCommunity" /> -->
         </div>
       </div>
       <button 
@@ -296,7 +296,7 @@ const tabs = [
   { id: 'about', labelKey: 'eventDetails.tabs.about' },
   { id: 'dateLocation', labelKey: 'eventDetails.tabs.dateLocation' },
   { id: 'talents', labelKey: 'eventDetails.tabs.talents' },
-  { id: 'community', labelKey: 'eventDetails.tabs.community' }
+  // { id: 'community', labelKey: 'eventDetails.tabs.community' }
 ]
 
 const mockTalents = [
