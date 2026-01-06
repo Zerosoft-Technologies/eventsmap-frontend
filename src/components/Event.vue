@@ -1,12 +1,10 @@
 <template>    
         <div>
-            <div class="tw:p-3 tw:bg-[#ECEEF4] tw:rounded-xl">            
+            <div class="tw:p-3 tw:bg-[#F4F1EA] tw:rounded-xl">            
                 <div class="tw:flex tw:justify-between tw:md:gap-5 tw:flex-wrap tw:items-center">
                     <div class="tw:flex tw:gap-[13px] tw:items-center">
                         <div class="tw:border tw:w-10 tw:h-10 tw:justify-center tw:flex tw:items-center tw:border-(--secondary-color) tw:rounded-full">
-                            <p class="tw:leading-[1.1] tw:italic tw:text-center tw:tracking-[-8%] tw:text-[8px]">
-                                THE<br>EVENTS<br>MAP
-                            </p>
+                            <img src="../assets/logo.png" alt="Logo" />
                         </div>
                         <h4 class="tw:text-[var(--primary-color)]-500 tw:leading-normal">{{ event.title }}</h4>
                     </div>
@@ -23,7 +21,7 @@
                 <div class="tw:flex tw:md:justify-start tw:justify-between tw:md:gap-4 tw:mt-4">
                     <img 
                         :src="event.image" 
-                        class="tw:rounded-lg tw:w-30 tw:object-cover" 
+                        class="tw:rounded-lg tw:w-40 tw:object-cover" 
                     />
 
                     <div>

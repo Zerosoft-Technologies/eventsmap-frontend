@@ -28,7 +28,7 @@ export function addEventMarker(map, event) {
 
   const markerEl = document.createElement('div');    
   markerEl.style.backgroundImage = `url(http://185.133.88.194:3001/marker.png)`;
-  // markerEl.style.backgroundImage = `url(${import.meta.env.VITE_APP_URL}/marker.png)`;
+  // markerEl.style.backgroundImage = `url(${import.meta.env.VITE_APP_BASE_URL}/marker.png)`;
   markerEl.style.width = '60px';
   markerEl.style.height = '60px';
   

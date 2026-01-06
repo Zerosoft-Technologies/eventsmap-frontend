@@ -1,7 +1,9 @@
 <template>
   <header :class="fixedMenu ? 'tw:fixed tw:top-0 tw:left-0 z-50': ''" class="tw:w-full tw:bg-transparent tw:py-2 tw:px-4 tw:md:py-3 tw:md:px-8 tw:flex tw:items-center tw:justify-between" >
     <h1 class="tw:font-bold tw:leading-[1.4] tw:tracking-[-0.5px] tw:text-lg">
-      <RouterLink to="/">The Events Map</RouterLink>
+      <RouterLink to="/">
+        <img src="../assets/logo.png" alt="Logo" style="width: 80px;" />
+      </RouterLink>
     </h1>
     <div class="tw:hidden tw:relative tw:md:flex tw:items-center tw:gap-3">
       <div class="tw:flex tw:relative tw:bg-white tw:gap-6 tw:items-center tw:py-3 tw:pr-3 tw:pl-4 tw:border tw:border-(--secondary-color) tw:rounded-lg" >
@@ -10,7 +12,10 @@
           <input ref="searchInput" @keyup.enter="filterBy('search')" v-model="searchTerm" @focus="showSuggestion = true" @blur="handleSuggestionBlur" type="text" class="tw:outline-none tw:placeholder-(--primary-color)" :placeholder="$t('header.search.placeholder')">        
         </div>
         <div class="tw:w-px tw:h-[22px] tw:bg-(--primary-color)"></div>
-        <div class="tw:flex tw:gap-1 tw:cursor-pointer tw:items-center" ref="locationToggler" @click="toggleLocation"><img src="../assets/location-01.png" alt="Location Icon" /><p>{{ city || $t('header.defaultLocation') }}</p><img src="../assets/chevron-down.png" alt="Chevron Down" class="ml-1" /></div>   
+        <div class="tw:flex tw:gap-1 tw:cursor-pointer tw:items-center" ref="locationToggler" @click="toggleLocation"><img src="../assets/location-01.png" alt="Location Icon" />
+          <p>{{ city || $t('header.defaultLocation') }}</p>
+          <img src="../assets/chevron-down.png" alt="Chevron Down" class="ml-1" />
+        </div>   
         <transition name="fade">
           <div v-if="showLocation" v-click-outside="handleOutsideClick" class="tw:absolute tw:flex tw:flex-col tw:gap-2.5 tw:overflow-x-visible tw:mt-px tw:right-0 tw:top-full tw:rounded-2xl tw:p-4 tw:bg-(--gray-color) tw:z-10">
             <div class="tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-md">
@@ -107,21 +112,24 @@
 
     <div class="tw:hidden tw:lg:flex tw:items-center tw:gap-4">
       <div>
-        <button @click="filterBy('suggestion')" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color)"><img src="../assets/favourite.png" alt="Favourite Icon"/><span>Events</span></button>
+        <button @click="filterBy('suggestion')" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color)">
+          <img src="../assets/favourite.png" alt="Favourite Icon"/><span>{{ $t('header.link') }}</span>
+        </button>
       </div>      
       <div>        
-        <RouterLink to="/create-profile" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>{{ $t('header.createProfile') }}</span></RouterLink>        
+        <RouterLink to="/create-profile" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>{{ $t('header.createProfile') }}</span></RouterLink>        
       </div>      
       <!-- Language Switcher -->
       <div class="tw:relative">
         <button 
           ref="languageToggler"
           @click="toggleLanguageDropdown"
+          style="height: 50px;"
           class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-2 tw:border-(--secondary-color) tw:cursor-pointer"
         >
           <img :src="currentLanguage.flag" :alt="currentLanguage.name + ' flag'" class="tw:w-4 tw:h-4 tw-object-cover tw-rounded-sm" />
-          <span class="tw:text-sm">{{ currentLanguage.name }}</span>
-          <img src="../assets/chevron-down.png" alt="Chevron Down" class="tw:w-3 tw:h-3 tw-ml-1" />
+          <!-- <span class="tw:text-sm">{{ currentLanguage.name }}</span> -->
+          <img src="../assets/chevron-down.png" alt="Chevron Down" class="tw:w-3 tw:h-3 tw-ml-1" style="height: 8px;" />
         </button>
         
         <transition name="fade">
@@ -138,21 +146,21 @@
               :class="{ 'tw:bg-gray-100': lang.code === currentLocale }"
             >
               <img :src="lang.flag" :alt="lang.name + ' flag'" class="tw:w-4 tw:h-4 tw-object-cover tw-rounded-sm" />
-              <span class="tw-text-sm">{{ lang.name }}</span>
-              <svg 
+              <!-- <span class="tw-text-sm">{{ lang.name }}</span> -->
+              <!-- <svg 
                 v-if="lang.code === currentLocale" 
                 class="tw:w-4 tw:h-4 tw:ml-auto tw:text-green-600" 
                 fill="currentColor" 
                 viewBox="0 0 20 20"
               >
                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-              </svg>
+              </svg> -->
             </button>
           </div>
         </transition>
       </div>
       <div>
-        <button @click="$emit('open-login')" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/login.png" alt="Login Icon"/><span>{{ $t('header.login') }}</span></button>
+        <button @click="$emit('open-login')" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/login.png" alt="Login Icon"/><span>{{ $t('header.login') }}</span></button>
       </div>
     </div>
 

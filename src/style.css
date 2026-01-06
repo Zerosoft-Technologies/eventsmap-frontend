@@ -4,9 +4,10 @@
 :root {
   --font-sans: "Inter";
   --primary-color: #0061FF;
-  --secondary-color: #FF7700;  
+  --secondary-color: #FF7700;
   --teritiary-color: #1E3A8A;
   --gray-color: #F9FAFB;
+  --hover-color: #ECEEF4;
 }
 
 body {
@@ -14,109 +15,153 @@ body {
   font-family: var(--font-sans);
 }
 
-.maplibregl-map{
-  font: inherit !important; 
+.maplibregl-map {
+  font: inherit !important;
 }
 
-h1{
-    font-size: 26px;
+h1 {
+  font-size: 26px;
 }
 
-h4{
+h4 {
   font-size: 18px;
 }
 
-button{
+button, 
+[role="button"],
+a,
+input[type="button"],
+input[type="submit"],
+.tw-button,
+.tw-btn,
+.clickable,
+[onclick],
+[data-clickable] {
   cursor: pointer;
   outline: none;
+  transition: background-color 0.2s ease;
+}
+
+body.hover-enabled button:not(.no-hover):hover, 
+body.hover-enabled [role="button"]:not(.no-hover):hover,
+body.hover-enabled a:not(.no-hover):hover,
+body.hover-enabled input[type="button"]:not(.no-hover):hover,
+body.hover-enabled input[type="submit"]:not(.no-hover):hover,
+body.hover-enabled .tw-button:not(.no-hover):hover,
+body.hover-enabled .tw-btn:not(.no-hover):hover,
+body.hover-enabled .clickable:not(.no-hover):hover,
+body.hover-enabled [onclick]:not(.no-hover):hover,
+body.hover-enabled [data-clickable]:not(.no-hover):hover {
+  background-color: var(--hover-color);
+}
+
+/* .no-hover-container *,
+.maplibregl-map *,
+.mapboxgl-marker,
+.mapboxgl-popup {
+  background-color: transparent !important;
+} */
+
+.no-hover-container button:hover,
+.no-hover-container [role="button"]:hover,
+.no-hover-container a:hover,
+.no-hover-container input[type="button"]:hover,
+.no-hover-container input[type="submit"]:hover,
+.no-hover-container .tw-button:hover,
+.no-hover-container .tw-btn:hover,
+.no-hover-container .clickable:hover,
+.no-hover-container [onclick]:hover,
+.no-hover-container [data-clickable]:hover,
+.maplibregl-map button:hover,
+.maplibregl-map [role="button"]:hover,
+.maplibregl-map a:hover,
+.maplibregl-map input[type="button"]:hover,
+.maplibregl-map input[type="submit"]:hover,
+.maplibregl-map .tw-button:hover,
+.maplibregl-map .tw-btn:hover,
+.maplibregl-map .clickable:hover,
+.maplibregl-map [onclick]:hover,
+.maplibregl-map [data-clickable]:hover,
+.mapboxgl-marker button:hover,
+.mapboxgl-marker [role="button"]:hover,
+.mapboxgl-marker a:hover,
+.mapboxgl-marker input[type="button"]:hover,
+.mapboxgl-marker input[type="submit"]:hover,
+.mapboxgl-marker .tw-button:hover,
+.mapboxgl-marker .tw-btn:hover,
+.mapboxgl-marker .clickable:hover,
+.mapboxgl-marker [onclick]:hover,
+.mapboxgl-marker [data-clickable]:hover,
+.mapboxgl-popup button:hover,
+.mapboxgl-popup [role="button"]:hover,
+.mapboxgl-popup a:hover,
+.mapboxgl-popup input[type="button"]:hover,
+.mapboxgl-popup input[type="submit"]:hover,
+.mapboxgl-popup .tw-button:hover,
+.mapboxgl-popup .tw-btn:hover,
+.mapboxgl-popup .clickable:hover,
+.mapboxgl-popup [onclick]:hover,
+.mapboxgl-popup [data-clickable]:hover {
+  background-color: transparent !important;
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
 
- @media (max-width: 600px) {
-    .maplibregl-popup-content {
-        max-width: 100%; 
-        padding: 5px;
-    }
+@media (max-width: 600px) {
+  .maplibregl-popup-content {
+    max-width: 100%;
+    padding: 5px;
+  }
 }
 
 .vtd-datepicker {
   background-color: #F9FAFB;
-} 
+}
 
 @media (min-width: 1024px) {
-  #headlessui-popover-panel-v-2 > div.absolute {
-      top: 4px;
-      right: auto;
-      left: 0;
-      transform: translateX(-50%);
+  #headlessui-popover-panel-v-2>div.absolute {
+    top: 4px;
+    right: auto;
+    left: 0;
+    transform: translateX(-50%);
   }
 }
-@import "@fontsource/inter";
-@import "tailwindcss" prefix(tw);
 
-:root {
-  --font-sans: "Inter";
-  --primary-color: #0061FF;
-  --secondary-color: #FF7700;  
-  --teritiary-color: #1E3A8A;
-  --gray-color: #F9FAFB;
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-body {
-  color: var(--primary-color);
-  font-family: var(--font-sans);
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.maplibregl-map{
-  font: inherit !important; 
+::-webkit-scrollbar-thumb {
+  background-color: #B3BDD7;
+  border-radius: 10px;
 }
 
-h1{
-    font-size: 26px;
+::-webkit-scrollbar-thumb:hover {
+  background-color: #9FAAC8;
 }
 
-h4{
-  font-size: 18px;
-}
-
-button{
-  cursor: pointer;
-  outline: none;
-}
-
-@keyframes fade-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.2s ease-out;
-}
-
- @media (max-width: 600px) {
-    .maplibregl-popup-content {
-        max-width: 100%; 
-        padding: 5px;
-    }
-}
-
-.vtd-datepicker {
-  background-color: #F9FAFB;
-} 
-
-@media (min-width: 1024px) {
-  #headlessui-popover-panel-v-2 > div.absolute {
-      top: 4px;
-      right: auto;
-      left: 0;
-      transform: translateX(-50%);
-  }
+/* Firefox */
+* {
+  scrollbar-width: inherit;
+  scrollbar-color: #B3BDD7 transparent;
 }

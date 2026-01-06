@@ -11,7 +11,8 @@
     "resetSearch": "Zoekopdracht resetten",
     "currentLocation": "Huidige locatie",
     "defaultLocation": "Amsterdam",
-    "language": "Taal"
+    "language": "Taal",
+    "link": "Link"
   },
   "eventCard": {
     "liveNow": "Live Nu",

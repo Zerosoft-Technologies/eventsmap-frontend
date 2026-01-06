@@ -4,6 +4,9 @@ import App from './App.vue'
 import router from './router'
 import i18n from './i18n'
 
+// Add hover-enabled class to body for system-wide hover effects
+document.body.classList.add('hover-enabled')
+
 const app = createApp(App)
 app.use(router)
 app.use(i18n)

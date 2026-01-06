@@ -11,7 +11,8 @@
     "resetSearch": "Réinitialiser la recherche",
     "currentLocation": "Localisation actuelle",
     "defaultLocation": "Amsterdam",
-    "language": "Langue"
+    "language": "Langue",
+    "link": "Lien"
   },
   "eventCard": {
     "liveNow": "En Direct",

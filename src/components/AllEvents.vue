@@ -1,11 +1,58 @@
 <template>
+    <!-- CTA Button when minimized -->
+    <transition name="slide-left">
+      <button 
+        v-if="!visible && events.length > 0"
+        @click="expand"
+        class="tw:fixed tw:top-1/2 tw:-translate-y-1/2 tw:left-0 tw:z-50 tw:bg-white tw:px-4 tw:py-3 tw:rounded-r-lg tw:shadow-lg tw:border tw:border-(--secondary-color) tw:flex tw:items-center tw:gap-2 tw:transition-all hover:tw:translate-x-1"
+      >
+        <span class="tw:font-medium">Events</span>
+        <img src="../assets/arrow-right.png" alt="Expand" class="tw:w-4 tw:h-4">
+      </button>
+    </transition>
+
+    <!-- Events Panel -->
     <transition name="fade">
-      <div class="tw:fixed tw:p-4 tw:bg-white tw:rounded-lg tw:md:left-7 tw:bottom-2 tw:z-50 tw:lg:z-10 tw:max-w-[500px]">   
-        <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
-          <h3 class="tw:font-semibold tw:text-2xl tw:leading-[1.35] tw:tracking-[-0.006em]">{{ $t('allEvents.title') }}</h3>
-          <img class="tw:cursor-pointer" @click="close" src="../assets/cancel.png" alt="Close icon">
-        </div>        
-        <div class="tw:max-h-[80vh] tw:lg:max-h-[60vh] tw:space-y-4 tw:pr-2 tw:overflow-y-auto">
+      <div v-if="visible" 
+        :class="[
+          isMinimized 
+            ? 'tw:w-16 tw:h-16 tw:p-2 tw:cursor-pointer' 
+            : 'tw:p-4 tw:max-w-[500px]'
+        , 
+          'tw:fixed tw:bg-white tw:rounded-lg tw:md:left-7 tw:bottom-2 tw:z-50 tw:lg:z-10 tw:transition-all tw:duration-300'
+        ]"   
+        @click="isMinimized && expand()"
+      >
+        <!-- Minimized State -->
+        <div v-if="isMinimized" class="tw:flex tw:items-center tw:justify-center tw:h-full">
+          <span class="tw:font-semibold tw:text-lg">Events</span>
+        </div>
+        
+        <!-- Expanded State -->
+        <div v-else>
+          <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
+            <h3 class="tw:font-semibold tw:text-2xl tw:leading-[1.35] tw:tracking-[-0.006em]">{{ $t('allEvents.title') }}</h3>
+            <div class="tw:flex tw:gap-2" style="align-items: center;">
+              <img 
+                class="tw:cursor-pointer" 
+                @click.stop="minimize" 
+                src="../assets/chevron-bold-left.png" 
+                alt="Minimize icon"
+                title="Minimize"
+                style="width: 13px; height: 15px;"
+              >
+              <img 
+                class="tw:cursor-pointer" 
+                @click.stop="close" 
+                src="../assets/cancel.png" 
+                alt="Close icon"
+              >
+            </div>
+          </div>        
+          <div 
+            v-if="!isMinimized" 
+            class="tw:max-h-[80vh] tw:lg:max-h-[60vh] tw:space-y-4 tw:pr-2 tw:overflow-y-auto"
+          >
           <!-- Loading state with skeleton -->
           <div v-if="loading" class="tw:space-y-4">
             <div v-for="i in 3" :key="i" class="tw:p-3 tw:bg-[#ECEEF4] tw:rounded-xl tw:animate-pulse">            
@@ -93,13 +140,14 @@
                 {{ $t('header.resetSearch') }}
             </button>
           </div>
+          </div>
         </div>
       </div>
     </transition>  
 </template>
 <script setup>
 import { useI18n } from 'vue-i18n'
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, ref } from 'vue'
 
 // Lazy load Event to avoid circular import issue
 const Event = defineAsyncComponent(() => import('./Event.vue'))
@@ -119,12 +167,26 @@ defineProps({
 
 const emit = defineEmits(['closeResults', 'resetSearch', 'viewEvent']);
 
+// Component state
+const visible = ref(true);
+const isMinimized = ref(false);
+
 function reset (){
   emit('resetSearch')
 }
 
 function close(){  
+  visible.value = false;
   emit('closeResults')
+}
+
+function minimize() {
+  isMinimized.value = true;
+}
+
+function expand() {
+  isMinimized.value = false;
+  visible.value = true;
 }
 
 /**
@@ -144,6 +206,30 @@ function handleViewEvent(event) {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Slide animation for CTA button */
+.slide-left-enter-from {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+.slide-left-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+.slide-left-enter-active {
+  transition: all 0.3s ease;
+}
+.slide-left-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+.slide-left-leave-to {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+.slide-left-leave-active {
+  transition: all 0.3s ease;
 }
 
 /* Modern scrollbar styling */

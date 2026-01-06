@@ -4,7 +4,7 @@
     <div 
     v-if="visible"
     class="tw:fixed tw:p-0 tw:bg-white tw:rounded-2xl tw:bottom-4 tw:z-50 tw:w-[420px] tw:max-w-[calc(100vw-2rem)] tw:shadow-xl tw:flex tw:flex-col tw:overflow-visible"
-    style="left: 470px; height: 620px;"
+    style="left: 510px; height: 620px;"
     >
       <!-- Filter Chips -->
       <div class="tw:absolute tw:z-[60] tw:z-10" style="bottom: 630px;">
@@ -230,7 +230,7 @@
       <button 
         @click="close"
         class="tw:absolute tw:z-[60] tw:top-1/2 tw:-translate-y-1/2 tw:-right-3 tw:w-7 tw:h-12 tw:bg-white tw:shadow-md tw:flex tw:items-center tw:justify-center hover:tw:shadow-lg tw:transition-all hover:tw:-right-4"
-        style="border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; right: -24px;"
+        style="border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; right: -26px;"
       >
         <img src="../assets/chevron-bold-left.png" class="tw:w-3 tw:h-3" />
       </button>
