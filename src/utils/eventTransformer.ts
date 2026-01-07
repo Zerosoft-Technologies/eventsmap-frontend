@@ -1,4 +1,4 @@
-import type { Event as ApiEvent } from '../types/events'
+import type { Event as ApiEvent, EventCategoryObject, EventSubcategory } from '../types/events'
 
 /**
  * Transform API event data to the format expected by existing UI components
@@ -12,6 +12,7 @@ export interface UIEvent {
   description: string
   location: string
   category: string
+  subcategory?: string
   price: string
   dresscode: string
   age: string
@@ -19,12 +20,42 @@ export interface UIEvent {
   lng: number
   start_datetime: string // ISO datetime for countdown
   end_datetime: string // ISO datetime for live calculation
+  // Additional fields from API
+  venue_name?: string
+  country?: string
+  organizer_name?: string
+  cover_image?: string
+  video_url?: string
+  tags?: string[]
+  talents?: any[]
+  view_count?: number
+  timezone?: string
+  currency?: string
+  min_price?: string | number | null
+  max_price?: string | number | null
+  is_featured?: boolean
+  is_cancelled?: boolean
+  is_postponed?: boolean
+  distance_km?: number
+  category_id?: number
+  subcategory_id?: number
+  contact_info?: {
+    email?: string
+    phone?: string
+    website?: string
+  }
+  about?: any
+  location_details?: any
+  booking?: any
+  social_links?: any
+  images?: string[]
+  event_images?: any[]
 }
 
 /**
  * Format datetime to readable string
  */
-function formatEventDate(startDatetime: string, endDatetime: string): string {
+function formatEventDate(startDatetime: string, endDatetime: string, timezone?: string): string {
   const start = new Date(startDatetime)
   const end = new Date(endDatetime)
   
@@ -45,29 +76,106 @@ function formatEventDate(startDatetime: string, endDatetime: string): string {
     return `${hours}:${minuteStr} ${ampm}`
   }
   
-  return `${dayName} ${day} ${month}, ${formatTime(start)} - ${formatTime(end)}`
+  // Add timezone if available
+  const tzString = timezone ? ` (${timezone})` : ''
+  
+  return `${dayName} ${day} ${month}, ${formatTime(start)} - ${formatTime(end)}${tzString}`
+}
+
+/**
+ * Extract category name from category object or string
+ */
+function getCategoryName(category: EventCategoryObject | string): string {
+  if (typeof category === 'string') {
+    return category
+  }
+  if (category && typeof category === 'object' && 'name' in category) {
+    return category.name
+  }
+  return 'Unknown'
+}
+
+/**
+ * Format price range
+ */
+function formatPrice(event: ApiEvent): string {
+  if (!event.price && !event.min_price && !event.max_price) {
+    return 'Free'
+  }
+  
+  if (event.min_price && event.max_price) {
+    const currency = event.currency || 'USD'
+    const min = typeof event.min_price === 'string' ? parseFloat(event.min_price) : event.min_price
+    const max = typeof event.max_price === 'string' ? parseFloat(event.max_price) : event.max_price
+    return `${currency} ${min} - ${max}`
+  }
+  
+  if (event.price) {
+    const currency = event.currency || 'USD'
+    return `${currency} ${event.price}`
+  }
+  
+  return 'Price varies'
 }
 
 /**
  * Transform a single API event to UI format
  */
 export function transformApiEventToUI(apiEvent: ApiEvent): UIEvent {
+  const locationParts = []
+  if (apiEvent.venue_name) locationParts.push(apiEvent.venue_name)
+  if (apiEvent.address) locationParts.push(apiEvent.address)
+  if (apiEvent.city) locationParts.push(apiEvent.city)
+  if (apiEvent.country) locationParts.push(apiEvent.country)
+  
+  // Extract subcategory name if available
+  const subcategoryName = apiEvent.subcategory && typeof apiEvent.subcategory === 'object' 
+    ? (apiEvent.subcategory as EventSubcategory).name 
+    : undefined
+  
   return {
     id: String(apiEvent.id),
     title: apiEvent.title,
     live: apiEvent.is_live_now,
-    image: `https://picsum.photos/300/200?random=${apiEvent.id}`, // Placeholder image
-    date: formatEventDate(apiEvent.start_datetime, apiEvent.end_datetime),
-    location: apiEvent.address || apiEvent.city,
-    category: apiEvent.category,
-    price: apiEvent.price || 'Free',
+    image: apiEvent.cover_image || apiEvent.images?.[0] || `https://picsum.photos/300/200?random=${apiEvent.id}`,
+    date: formatEventDate(apiEvent.start_datetime, apiEvent.end_datetime, apiEvent.timezone),
+    location: locationParts.join(', ') || apiEvent.city,
+    category: getCategoryName(apiEvent.category),
+    subcategory: subcategoryName,
+    price: formatPrice(apiEvent),
     description: apiEvent.description || '',
     dresscode: apiEvent.dresscode || 'Any',
     age: apiEvent.min_age ? `${apiEvent.min_age}+` : 'All',
     lat: apiEvent.latitude || 0,
     lng: apiEvent.longitude || 0,
-    start_datetime: apiEvent.start_datetime, // Include for countdown
-    end_datetime: apiEvent.end_datetime // Include for live calculation
+    start_datetime: apiEvent.start_datetime,
+    end_datetime: apiEvent.end_datetime,
+    // Additional fields
+    venue_name: apiEvent.venue_name,
+    country: apiEvent.country,
+    organizer_name: apiEvent.organizer_name,
+    cover_image: apiEvent.cover_image,
+    video_url: apiEvent.video_url,
+    tags: apiEvent.tags,
+    talents: apiEvent.talents,
+    view_count: apiEvent.view_count,
+    timezone: apiEvent.timezone,
+    currency: apiEvent.currency,
+    min_price: apiEvent.min_price,
+    max_price: apiEvent.max_price,
+    is_featured: apiEvent.is_featured,
+    is_cancelled: apiEvent.is_cancelled,
+    is_postponed: apiEvent.is_postponed,
+    distance_km: typeof apiEvent.distance_km === 'number' ? apiEvent.distance_km : parseFloat(apiEvent.distance_km || '0'),
+    category_id: apiEvent.category_id,
+    subcategory_id: apiEvent.subcategory_id,
+    contact_info: apiEvent.contact_info,
+    about: apiEvent.about,
+    location_details: apiEvent.location_details,
+    booking: apiEvent.booking,
+    social_links: apiEvent.social_links,
+    images: apiEvent.images,
+    event_images: apiEvent.event_images
   }
 }
 

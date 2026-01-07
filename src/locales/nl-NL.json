@@ -146,8 +146,36 @@
     "restaurants": "Restaurants",
     "planning": "Planning",
     "recommendTickets": "Aanbevolen om van tevoren tickets te kopen",
+    "ticketRequired": "Ticket vereist",
+    "wifi": "WiFi beschikbaar",
+    "bar": "Bar",
+    "merchandise": "Merchandise",
     "children": "Kinderen",
     "suitableForChildren": "Geschikt voor kinderen",
-    "babyChangingTable": "Heeft een of meer babyverschoontafels"
+    "babyChangingTable": "Heeft een of meer babyverschoontafels",
+    "rules": "Regels",
+    "tips": "Tips",
+    "noInfoAvailable": "Geen informatie beschikbaar"
+  },
+  "dateLocation": {
+    "addToCalendar": "Toevoegen aan agenda",
+    "publicTransport": "Openbaar vervoer",
+    "subway": "Metro",
+    "bus": "Bus",
+    "tram": "Tram",
+    "train": "Trein",
+    "trainStation": "Treinstation",
+    "parking": "Parkeren",
+    "parkingAvailable": "Parkeren beschikbaar",
+    "viewOnMap": "Bekijk op kaart",
+    "route": "Route",
+    "visitVenueWebsite": "Bezoek locatie website",
+    "notSpecified": "Niet gespecificeerd"
+  },
+  "talents": {
+    "title": "Talents doen mee aan het evenement",
+    "noTalents": "Nog geen talents toegevoegd voor dit evenement.",
+    "more": "meer",
+    "close": "Sluiten"
   }
 }

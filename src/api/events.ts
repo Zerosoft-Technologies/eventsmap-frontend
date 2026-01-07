@@ -3,7 +3,15 @@ import type {
   Event, 
   EventsResponse, 
   EventResponse, 
-  EventFilters 
+  EventFilters,
+  Talent,
+  EventTalentsResponse,
+  EventAbout,
+  EventAboutResponse,
+  EventLocationDetails,
+  EventLocationResponse,
+  EventImage,
+  EventImagesResponse
 } from '../types/events'
 
 /**
@@ -201,6 +209,190 @@ export async function fetchEventById(id: number): Promise<Event> {
     }
 
     const result: EventResponse = await response.json()
+    
+    if (!result.success) {
+      throw new ApiError('API returned success: false', 400, result)
+    }
+
+    return result.data
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error
+    }
+    
+    throw new ApiError(
+      error instanceof Error ? error.message : 'Network error',
+      0
+    )
+  }
+}
+
+/**
+ * Fetch talents for a specific event
+ * 
+ * @example
+ * const talents = await fetchEventTalents(123)
+ */
+export async function fetchEventTalents(id: number): Promise<Talent[]> {
+  const url = getApiUrl(`/events/${id}/talents`)
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new ApiError(
+        `Failed to fetch event talents: ${response.statusText}`,
+        response.status,
+        errorData
+      )
+    }
+
+    const result: EventTalentsResponse = await response.json()
+    
+    if (!result.success) {
+      throw new ApiError('API returned success: false', 400, result)
+    }
+
+    return result.data
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error
+    }
+    
+    throw new ApiError(
+      error instanceof Error ? error.message : 'Network error',
+      0
+    )
+  }
+}
+
+/**
+ * Fetch about information for a specific event
+ * 
+ * @example
+ * const about = await fetchEventAbout(123)
+ */
+export async function fetchEventAbout(id: number): Promise<EventAbout> {
+  const url = getApiUrl(`/events/${id}/about`)
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new ApiError(
+        `Failed to fetch event about info: ${response.statusText}`,
+        response.status,
+        errorData
+      )
+    }
+
+    const result: EventAboutResponse = await response.json()
+    
+    if (!result.success) {
+      throw new ApiError('API returned success: false', 400, result)
+    }
+
+    return result.data
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error
+    }
+    
+    throw new ApiError(
+      error instanceof Error ? error.message : 'Network error',
+      0
+    )
+  }
+}
+
+/**
+ * Fetch location details for a specific event
+ * 
+ * @example
+ * const location = await fetchEventLocation(123)
+ */
+export async function fetchEventLocation(id: number): Promise<EventLocationDetails> {
+  const url = getApiUrl(`/events/${id}/location`)
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new ApiError(
+        `Failed to fetch event location: ${response.statusText}`,
+        response.status,
+        errorData
+      )
+    }
+
+    const result: EventLocationResponse = await response.json()
+    
+    if (!result.success) {
+      throw new ApiError('API returned success: false', 400, result)
+    }
+
+    return result.data
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error
+    }
+    
+    throw new ApiError(
+      error instanceof Error ? error.message : 'Network error',
+      0
+    )
+  }
+}
+
+/**
+ * Fetch images for a specific event
+ * 
+ * @example
+ * const images = await fetchEventImages(123)
+ */
+export async function fetchEventImages(id: number): Promise<EventImage[]> {
+  const url = getApiUrl(`/events/${id}/images`)
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new ApiError(
+        `Failed to fetch event images: ${response.statusText}`,
+        response.status,
+        errorData
+      )
+    }
+
+    const result: EventImagesResponse = await response.json()
     
     if (!result.success) {
       throw new ApiError('API returned success: false', 400, result)

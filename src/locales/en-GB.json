@@ -176,6 +176,7 @@
   },
   "about": {
     "accessibility": "Accessibility",
+    "wheelchairAccessible": "Wheelchair accessible",
     "wheelchairToilet": "Wheelchair-accessible toilet",
     "wheelchairEntrance": "Wheelchair-accessible entrance",
     "wheelchairParking": "Wheelchair-accessible parking",
@@ -185,8 +186,36 @@
     "restaurants": "Restaurants",
     "planning": "Planning",
     "recommendTickets": "It is recommended to purchase tickets in advance",
+    "ticketRequired": "Ticket required",
+    "wifi": "WiFi available",
+    "bar": "Bar",
+    "merchandise": "Merchandise",
     "children": "Children",
     "suitableForChildren": "Suitable for children",
-    "babyChangingTable": "Includes one or more baby changing stations"
+    "babyChangingTable": "Includes one or more baby changing stations",
+    "rules": "Rules",
+    "tips": "Tips",
+    "noInfoAvailable": "No information available"
+  },
+  "dateLocation": {
+    "addToCalendar": "Add to Calendar",
+    "publicTransport": "Public Transport",
+    "subway": "Subway",
+    "bus": "Bus",
+    "tram": "Tram",
+    "train": "Train",
+    "trainStation": "Train Station",
+    "parking": "Parking",
+    "parkingAvailable": "Parking available",
+    "viewOnMap": "View on map",
+    "route": "Route",
+    "visitVenueWebsite": "Visit venue website",
+    "notSpecified": "Not specified"
+  },
+  "talents": {
+    "title": "Talents join the event",
+    "noTalents": "No talents added for this event yet.",
+    "more": "more",
+    "close": "Close"
   }
 }

@@ -146,8 +146,36 @@
     "restaurants": "Restaurants",
     "planning": "Planification",
     "recommendTickets": "Il est recommandé d'acheter les billets à l'avance",
+    "ticketRequired": "Billet requis",
+    "wifi": "WiFi disponible",
+    "bar": "Bar",
+    "merchandise": "Marchandises",
     "children": "Enfants",
     "suitableForChildren": "Adapté aux enfants",
-    "babyChangingTable": "Dispose d'une ou plusieurs tables à langer"
+    "babyChangingTable": "Dispose d'une ou plusieurs tables à langer",
+    "rules": "Règles",
+    "tips": "Conseils",
+    "noInfoAvailable": "Aucune information disponible"
+  },
+  "dateLocation": {
+    "addToCalendar": "Ajouter au calendrier",
+    "publicTransport": "Transports en commun",
+    "subway": "Métro",
+    "bus": "Bus",
+    "tram": "Tramway",
+    "train": "Train",
+    "trainStation": "Gare",
+    "parking": "Parking",
+    "parkingAvailable": "Parking disponible",
+    "viewOnMap": "Voir sur la carte",
+    "route": "Itinéraire",
+    "visitVenueWebsite": "Visiter le site du lieu",
+    "notSpecified": "Non spécifié"
+  },
+  "talents": {
+    "title": "Talents participant à l'événement",
+    "noTalents": "Aucun talent ajouté à cet événement pour le moment.",
+    "more": "plus",
+    "close": "Fermer"
   }
 }

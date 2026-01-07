@@ -4,7 +4,7 @@
     <div 
     v-if="visible"
     class="tw:fixed tw:p-0 tw:bg-white tw:rounded-2xl tw:bottom-4 tw:z-50 tw:w-[420px] tw:max-w-[calc(100vw-2rem)] tw:shadow-xl tw:flex tw:flex-col tw:overflow-visible"
-    style="left: 510px; height: 620px;"
+    style="left: 540px; height: 620px;"
     >
       <!-- Filter Chips -->
       <div class="tw:absolute tw:z-[60] tw:z-10" style="bottom: 630px;">
@@ -178,7 +178,7 @@
                   <MusicIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
                 </div>
                 <div>
-                  <p class="tw:text-sm tw:font-medium">{{ event?.category ? event?.category['name'] : $t('eventDetails.notSpecified') }}</p>
+                  <p class="tw:text-sm tw:font-medium">{{ event?.category ? event?.category : $t('eventDetails.notSpecified') }}</p>
                 </div>
               </div>
 
@@ -215,13 +215,21 @@
           </div>
 
           <!-- About Tab -->
-          <AboutTab v-else-if="activeTab === 'about'" />
+          <AboutTab 
+            v-else-if="activeTab === 'about'" 
+            :about="event?.about"
+            :description="event?.about?.description || event?.description"
+          />
 
           <!-- Date & Location Tab -->
-          <DateLocationTab v-else-if="activeTab === 'dateLocation'" />
+          <DateLocationTab 
+            v-else-if="activeTab === 'dateLocation'" 
+            :event="event"
+            :location-details="event?.location_details"
+          />
 
           <!-- Talents Tab -->
-          <TalentsTab v-else-if="activeTab === 'talents'" :talents="event?.talents || mockTalents" />
+          <TalentsTab v-else-if="activeTab === 'talents'" :talents="event?.talents || []" />
 
           <!-- Community Tab -->
           <!-- <CommunityTab v-else-if="activeTab === 'community'" :community="event?.community || mockCommunity" /> -->
@@ -230,7 +238,7 @@
       <button 
         @click="close"
         class="tw:absolute tw:z-[60] tw:top-1/2 tw:-translate-y-1/2 tw:-right-3 tw:w-7 tw:h-12 tw:bg-white tw:shadow-md tw:flex tw:items-center tw:justify-center hover:tw:shadow-lg tw:transition-all hover:tw:-right-4"
-        style="border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; right: -26px;"
+        style="border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; right: -28px;"
       >
         <img src="../assets/chevron-bold-left.png" class="tw:w-3 tw:h-3" />
       </button>
@@ -298,6 +306,8 @@ const tabs = [
   { id: 'talents', labelKey: 'eventDetails.tabs.talents' },
   // { id: 'community', labelKey: 'eventDetails.tabs.community' }
 ]
+
+console.log(props.event)
 
 const mockTalents = [
     { name: "DJ Shadow", image: "https://picsum.photos/seed/talent1/200/200.jpg" },
