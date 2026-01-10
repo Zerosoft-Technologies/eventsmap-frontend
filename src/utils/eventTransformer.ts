@@ -98,25 +98,25 @@ function getCategoryName(category: EventCategoryObject | string): string {
 /**
  * Format price range
  */
-function formatPrice(event: ApiEvent): string {
-  if (!event.price && !event.min_price && !event.max_price) {
-    return 'Free'
-  }
+// function formatPrice(event: ApiEvent): string {
+//   if (!event.price && !event.min_price && !event.max_price) {
+//     return 'Free'
+//   }
   
-  // if (event.min_price && event.max_price) {
-  //   const currency = event.currency || 'USD'
-  //   const min = typeof event.min_price === 'string' ? parseFloat(event.min_price) : event.min_price
-  //   const max = typeof event.max_price === 'string' ? parseFloat(event.max_price) : event.max_price
-  //   return `${currency} ${min} - ${max}`
-  // }
+//   // if (event.min_price && event.max_price) {
+//   //   const currency = event.currency || 'USD'
+//   //   const min = typeof event.min_price === 'string' ? parseFloat(event.min_price) : event.min_price
+//   //   const max = typeof event.max_price === 'string' ? parseFloat(event.max_price) : event.max_price
+//   //   return `${currency} ${min} - ${max}`
+//   // }
   
-  if (event.price) {
-    const currency = event.currency || 'USD'
-    return `${currency} ${event.price}`
-  }
+//   if (event.price) {
+//     const currency = event.currency || 'USD'
+//     return `${currency} ${event.price}`
+//   }
   
-  return 'Price varies'
-}
+//   return 'Price varies'
+// }
 
 /**
  * Transform a single API event to UI format
