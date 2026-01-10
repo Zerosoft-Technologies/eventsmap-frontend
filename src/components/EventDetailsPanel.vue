@@ -135,7 +135,7 @@
                   class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)"
                 >
                   <img src="../assets/favourite.png" alt="Favourite Icon">
-                  <span class="tw:leading-[1.2]">{{ $t('eventCard.link') }}</span>
+                  <!-- <span class="tw:leading-[1.2]">{{ $t('eventCard.link') }}</span> -->
                 </button>
                 <button 
                   @click="handleRoute"

@@ -1,13 +1,13 @@
 {
   "header": {
     "search": {
-      "placeholder": "Search events..."
+      "placeholder": "Search"
     },
     "location": {
       "placeholder": "Enter location..."
     },
     "login": "Login",
-    "createProfile": "Create Profile",
+    "createProfile": "Register",
     "resetSearch": "Reset Search",
     "currentLocation": "Current location",
     "defaultLocation": "Amsterdam",
@@ -15,6 +15,7 @@
     "link": "Link"
   },
   "eventCard": {
+    "finished": "Event is Finished",
     "liveNow": "Live Now",
     "date": "Date",
     "location": "Location",

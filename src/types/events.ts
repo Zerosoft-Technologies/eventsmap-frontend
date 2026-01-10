@@ -253,20 +253,23 @@ export interface Event {
   created_at: string
   updated_at: string
   published_at?: string
-  
+
   // Time of day flags
   morning?: boolean
   afternoon?: boolean
   evening?: boolean
   night?: boolean
-  
+
   // Added by query scope withCoordinates()
   latitude: number | null
   longitude: number | null
-  
+
   // Only present if geo filter is used
   distance_meters?: number | string
   distance_km?: number
+  formatted_date: string
+  formatted_price?: string
+  formatted_dresscode?: string
 }
 
 /**
@@ -334,29 +337,29 @@ export interface EventImagesResponse {
 export interface EventFilters {
   // Search filter
   search?: string | null
-  
+
   // Geo filters
   lat?: number | null
   lng?: number | null
   radius?: number | null // in km
-  
+
   // Date filters
   from_date?: string | null // YYYY-MM-DD
   to_date?: string | null   // YYYY-MM-DD
-  
+
   // Price filters
   min_price?: number | null
   max_price?: number | null
-  
+
   // Category filter (use slug from categories API)
   category?: string | null
-  
+
   // Subcategory filter (use slug from categories API)
   subcategory?: string | null
-  
+
   // Live now filter
   live_now?: boolean
-  
+
   // Pagination
   page?: number
   per_page?: number

@@ -8,6 +8,7 @@
   --teritiary-color: #1E3A8A;
   --gray-color: #F9FAFB;
   --hover-color: #ECEEF4;
+  --grey-color: #9CA3AF;
 }
 
 body {
@@ -164,4 +165,8 @@ body.hover-enabled [data-clickable]:not(.no-hover):hover {
 * {
   scrollbar-width: inherit;
   scrollbar-color: #B3BDD7 transparent;
+}
+
+details.maplibregl-ctrl.maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-compact-show {
+    display: none;
 }

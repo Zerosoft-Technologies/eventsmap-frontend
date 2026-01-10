@@ -8,9 +8,9 @@ export interface UIEvent {
   title: string
   live: boolean
   image: string
-  date: string
+  date: string 
   description: string
-  location: string
+  location: string | undefined
   category: string
   subcategory?: string
   price: string
@@ -55,32 +55,32 @@ export interface UIEvent {
 /**
  * Format datetime to readable string
  */
-function formatEventDate(startDatetime: string, endDatetime: string, timezone?: string): string {
-  const start = new Date(startDatetime)
-  const end = new Date(endDatetime)
+// function formatEventDate(startDatetime: string, endDatetime: string, timezone?: string): string {
+//   const start = new Date(startDatetime)
+//   const end = new Date(endDatetime)
   
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
+//   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+//   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
   
-  const dayName = dayNames[start.getDay()]
-  const day = start.getDate()
-  const month = monthNames[start.getMonth()]
+//   const dayName = dayNames[start.getDay()]
+//   const day = start.getDate()
+//   const month = monthNames[start.getMonth()]
   
-  const formatTime = (date: Date) => {
-    let hours = date.getHours()
-    const minutes = date.getMinutes()
-    const ampm = hours >= 12 ? 'PM' : 'AM'
-    hours = hours % 12
-    hours = hours ? hours : 12
-    const minuteStr = minutes < 10 ? '0' + minutes : minutes
-    return `${hours}:${minuteStr} ${ampm}`
-  }
+//   const formatTime = (date: Date) => {
+//     let hours = date.getHours()
+//     const minutes = date.getMinutes()
+//     const ampm = hours >= 12 ? 'PM' : 'AM'
+//     hours = hours % 12
+//     hours = hours ? hours : 12
+//     const minuteStr = minutes < 10 ? '0' + minutes : minutes
+//     return `${hours}:${minuteStr} ${ampm}`
+//   }
   
-  // Add timezone if available
-  const tzString = timezone ? ` (${timezone})` : ''
+//   // Add timezone if available
+//   const tzString = timezone ? ` (${timezone})` : ''
   
-  return `${dayName} ${day} ${month}, ${formatTime(start)} - ${formatTime(end)}${tzString}`
-}
+//   return `${dayName} ${day} ${month}, ${formatTime(start)} - ${formatTime(end)}${tzString}`
+// }
 
 /**
  * Extract category name from category object or string
@@ -103,12 +103,12 @@ function formatPrice(event: ApiEvent): string {
     return 'Free'
   }
   
-  if (event.min_price && event.max_price) {
-    const currency = event.currency || 'USD'
-    const min = typeof event.min_price === 'string' ? parseFloat(event.min_price) : event.min_price
-    const max = typeof event.max_price === 'string' ? parseFloat(event.max_price) : event.max_price
-    return `${currency} ${min} - ${max}`
-  }
+  // if (event.min_price && event.max_price) {
+  //   const currency = event.currency || 'USD'
+  //   const min = typeof event.min_price === 'string' ? parseFloat(event.min_price) : event.min_price
+  //   const max = typeof event.max_price === 'string' ? parseFloat(event.max_price) : event.max_price
+  //   return `${currency} ${min} - ${max}`
+  // }
   
   if (event.price) {
     const currency = event.currency || 'USD'
@@ -138,13 +138,16 @@ export function transformApiEventToUI(apiEvent: ApiEvent): UIEvent {
     title: apiEvent.title,
     live: apiEvent.is_live_now,
     image: apiEvent.cover_image || apiEvent.images?.[0] || `https://picsum.photos/300/200?random=${apiEvent.id}`,
-    date: formatEventDate(apiEvent.start_datetime, apiEvent.end_datetime, apiEvent.timezone),
-    location: locationParts.join(', ') || apiEvent.city,
+    // date: formatEventDate(apiEvent.start_datetime, apiEvent.end_datetime, apiEvent.timezone),
+    date: apiEvent.formatted_date,
+    // location: locationParts.join(', ') || apiEvent.city,
+    location: apiEvent.venue_name,
     category: getCategoryName(apiEvent.category),
     subcategory: subcategoryName,
-    price: formatPrice(apiEvent),
+    // price: formatPrice(apiEvent),
+    price: apiEvent.formatted_price ?? 'Free',
     description: apiEvent.description || '',
-    dresscode: apiEvent.dresscode || 'Any',
+    dresscode: apiEvent.formatted_dresscode || 'Any',
     age: apiEvent.min_age ? `${apiEvent.min_age}+` : 'All',
     lat: apiEvent.latitude || 0,
     lng: apiEvent.longitude || 0,
