@@ -1,26 +1,21 @@
 <template>
   <div class="tw:px-4 tw:py-4">
     <!-- Date & Time Section -->
-    <div class="tw:mb-2">
+    <!-- <div class="tw:mb-2">
       <div class="tw:flex tw:items-start tw:gap-3">
-        <!-- Calendar Icon -->
         <div class="tw:mt-0.5">
           <img src="../assets/calendar.png" alt="Calendar Icon">
         </div>
         
-        <!-- Date & Time Content -->
         <div class="tw:flex-1">
-          <!-- Primary Date & Time Text -->
           <p class="tw-text-base tw-font-medium tw:text-gray-900 tw:mb-4" style="font-size: 14px;">
             {{ formattedDateTime }}
           </p>
           
-          <!-- Secondary Address Text -->
           <p v-if="fullAddress" class="tw:text-sm tw:text-gray-600 tw:mb-4">
             {{ fullAddress }}
           </p>
           
-          <!-- Add to Calendar Link -->
           <button 
             @click="addToCalendar"
             class="tw:flex tw:items-center tw:gap-1 tw:text-sm tw:text-blue-600 hover:tw:text-blue-700 tw-transition-colors tw:mb-4"
@@ -32,7 +27,7 @@
           </button>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Location Section -->
     <div class="tw:mb-2">

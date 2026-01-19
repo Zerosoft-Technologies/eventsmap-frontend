@@ -41,7 +41,7 @@
       <div
         v-if="remainingCount > 0"
         @click="toggleExpanded"
-        class="tw:w-16 tw:h-16 tw:rounded-xl tw:bg-gray-100 tw:flex tw:flex-col tw:items-center tw:justify-center tw:cursor-pointer tw-transition-colors hover:tw:bg-gray-200 tw:flex-shrink-0"
+        class="tw:w-16 tw:h-16 tw:rounded-xl tw:bg-[#F4F1EA] tw:flex tw:flex-col tw:items-center tw:justify-center tw:cursor-pointer tw-transition-colors hover:tw:bg-[#EAE6DC] tw:flex-shrink-0"
       >
         <span class="tw-text-sm tw-font-medium tw:text-gray-700">{{ remainingCount }}+</span>
         <span class="tw-xs tw:text-gray-500">{{ t('talents.more') }}</span>
