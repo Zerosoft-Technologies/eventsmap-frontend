@@ -145,42 +145,42 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits(['route', 'viewMap'])
 
 // Computed: Formatted date and time
-const formattedDateTime = computed(() => {
-  if (!props.event?.start_datetime) {
-    return t('dateLocation.notSpecified')
-  }
+// const formattedDateTime = computed(() => {
+//   if (!props.event?.start_datetime) {
+//     return t('dateLocation.notSpecified')
+//   }
   
-  const start = new Date(props.event.start_datetime)
-  const end = props.event.end_datetime ? new Date(props.event.end_datetime) : null
+//   const start = new Date(props.event.start_datetime)
+//   const end = props.event.end_datetime ? new Date(props.event.end_datetime) : null
   
-  const dateOpts: Intl.DateTimeFormatOptions = { 
-    weekday: 'short', 
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  }
-  const timeOpts: Intl.DateTimeFormatOptions = { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: true
-  }
+//   const dateOpts: Intl.DateTimeFormatOptions = { 
+//     weekday: 'short', 
+//     day: 'numeric',
+//     month: 'short',
+//     year: 'numeric'
+//   }
+//   const timeOpts: Intl.DateTimeFormatOptions = { 
+//     hour: '2-digit', 
+//     minute: '2-digit',
+//     hour12: true
+//   }
   
-  const startDateStr = start.toLocaleDateString('en-US', dateOpts)
-  const startTime = start.toLocaleTimeString('en-US', timeOpts)
+//   const startDateStr = start.toLocaleDateString('en-US', dateOpts)
+//   const startTime = start.toLocaleTimeString('en-US', timeOpts)
   
-  if (end) {
-    const endDateStr = end.toLocaleDateString('en-US', dateOpts)
-    const endTime = end.toLocaleTimeString('en-US', timeOpts)
+//   if (end) {
+//     const endDateStr = end.toLocaleDateString('en-US', dateOpts)
+//     const endTime = end.toLocaleTimeString('en-US', timeOpts)
     
-    // Check if same day
-    if (startDateStr === endDateStr) {
-      return `${startDateStr} at ${startTime} - ${endTime}`
-    }
-    return `${startDateStr} at ${startTime} - ${endDateStr} at ${endTime}`
-  }
+//     // Check if same day
+//     if (startDateStr === endDateStr) {
+//       return `${startDateStr} at ${startTime} - ${endTime}`
+//     }
+//     return `${startDateStr} at ${startTime} - ${endDateStr} at ${endTime}`
+//   }
   
-  return `${startDateStr} at ${startTime}`
-})
+//   return `${startDateStr} at ${startTime}`
+// })
 
 // Computed: Venue name
 const venueName = computed(() => {
@@ -217,18 +217,18 @@ const hasParkingInfo = computed(() => {
 })
 
 // Methods
-function addToCalendar() {
-  if (!props.event?.start_datetime) return
+// function addToCalendar() {
+//   if (!props.event?.start_datetime) return
   
-  const start = new Date(props.event.start_datetime)
-  const end = props.event.end_datetime ? new Date(props.event.end_datetime) : new Date(start.getTime() + 2 * 60 * 60 * 1000)
+//   const start = new Date(props.event.start_datetime)
+//   const end = props.event.end_datetime ? new Date(props.event.end_datetime) : new Date(start.getTime() + 2 * 60 * 60 * 1000)
   
-  const formatDate = (date: Date) => date.toISOString().replace(/-|:|\.\d\d\d/g, '')
+//   const formatDate = (date: Date) => date.toISOString().replace(/-|:|\.\d\d\d/g, '')
   
-  const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(props.event.title || '')}&dates=${formatDate(start)}/${formatDate(end)}&location=${encodeURIComponent(fullAddress.value || '')}&details=${encodeURIComponent(props.event.description || '')}`
+//   const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(props.event.title || '')}&dates=${formatDate(start)}/${formatDate(end)}&location=${encodeURIComponent(fullAddress.value || '')}&details=${encodeURIComponent(props.event.description || '')}`
   
-  window.open(googleCalendarUrl, '_blank')
-}
+//   window.open(googleCalendarUrl, '_blank')
+// }
 
 function viewOnMap() {
   const lat = props.locationDetails?.latitude || props.event?.latitude
