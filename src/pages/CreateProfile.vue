@@ -132,10 +132,17 @@ const selectedProfile = ref(null)
 
 function handleProceed() {
   if (selectedProfile.value) {
-    // Navigate to the next step with the selected profile type
-    // This can be customized based on the onboarding flow
-    console.log('Proceeding with profile type:', selectedProfile.value)
-    // Example: router.push({ name: 'ProfileSetup', params: { type: selectedProfile.value } })
+    const routes = {
+      'event': '/create-event-free',
+      'event-organiser': '/create-event-organiser-free',
+      'talent': '/create-talents-free',
+      'venue': '/create-venue-free'
+    }
+    
+    const targetRoute = routes[selectedProfile.value]
+    if (targetRoute) {
+      router.push(targetRoute)
+    }
   }
 }
 </script>
