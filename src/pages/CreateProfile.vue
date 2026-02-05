@@ -1,46 +1,148 @@
 <template>
-  <div class="tw:min-h-screen tw:p-6 tw:bg-gray-100">    
-    <div class="tw:mb-8 tw:text-center">
-      <h1 class="tw:font-bold tw:text-xl tw:text-(--teritiary-color) tw:mb-2">Select profile type</h1>
-      <p class="tw:text-gray-600 tw:text-lg">To continue, select the type of profile you want to create</p>
-    </div>
-    <div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-2 tw:md:grid-cols-3 tw:gap-6 tw:mb-8">
-      <div
-        v-for="profile in profiles"
-        :key="profile.type"
-        @click="selectedProfile = profile.type"
-        :class="['tw:cursor-pointer tw:bg-white tw:p-6 tw:rounded-lg tw:shadow-xl tw:text-center tw:flex tw:flex-col tw:items-center tw:transition tw:border', selectedProfile === profile.type ? 'tw:border-(--secondary-color)' : 'tw:border-transparent']"
-      >
-        <div class="tw:text-5xl tw:mb-4">{{ profile.icon }}</div>   
-        <h2 class="tw:font-bold tw:text-(--teritiary-color) tw:text-xl tw:mb-2">{{ profile.title }}</h2>
-        <p class="tw:text-gray-600">{{ profile.description }}</p>
+  <div class="tw:min-h-screen tw:bg-gray-50">
+    <div class="tw:max-w-4xl tw:mx-auto tw:py-12 tw:px-4 tw:sm:px-6 tw:lg:px-8">
+      <!-- Header Section -->
+      <div class="tw:text-center tw:mb-10">
+        <h1 class="tw:text-2xl tw:sm:text-3xl tw:font-semibold tw:text-[var(--primary-color)] tw:mb-3">
+          Select profile type
+        </h1>
+        <p class="tw:text-gray-500 tw:text-base tw:sm:text-lg tw:max-w-xl tw:mx-auto">
+          To continue, select the type of profile you want to create. You can add more profiles later.
+        </p>
       </div>
-    </div>    
-    <div v-if="selectedProfile">
-      <h2 class="tw:text-2xl tw:text-center tw:text-(--teritiary-color) tw:font-semibold tw:mb-4">{{ selectedProfile.charAt(0).toUpperCase() + selectedProfile.slice(1) }} profile</h2>
-      <component :is="currentComponent" />
+
+      <!-- Profile Cards Grid -->
+      <div class="tw:grid tw:grid-cols-1 tw:sm:grid-cols-2 tw:gap-5 tw:mb-10">
+        <div
+          v-for="profile in profiles"
+          :key="profile.type"
+          @click="selectedProfile = profile.type"
+          :class="[
+            'tw:relative tw:bg-white tw:p-6 tw:rounded-xl tw:cursor-pointer tw:transition-all tw:duration-200',
+            'tw:flex tw:flex-col tw:items-center tw:text-center',
+            'tw:border-2',
+            selectedProfile === profile.type 
+              ? 'tw:border-[var(--primary-color)] tw:shadow-lg tw:ring-2 tw:ring-[var(--primary-color)]/20' 
+              : 'tw:border-gray-200 tw:shadow-sm hover:tw:border-gray-300 hover:tw:shadow-md'
+          ]"
+        >
+          <!-- Selection Indicator -->
+          <div 
+            v-if="selectedProfile === profile.type"
+            class="tw:absolute tw:top-3 tw:right-3 tw:w-6 tw:h-6 tw:bg-[var(--primary-color)] tw:rounded-full tw:flex tw:items-center tw:justify-center"
+          >
+            <Check class="tw:w-4 tw:h-4 tw:text-white" />
+          </div>
+
+          <!-- Icon -->
+          <div 
+            :class="[
+              'tw:w-16 tw:h-16 tw:rounded-full tw:flex tw:items-center tw:justify-center tw:mb-4 tw:transition-colors tw:duration-200',
+              selectedProfile === profile.type 
+                ? 'tw:bg-[var(--primary-color)]/10' 
+                : 'tw:bg-gray-100'
+            ]"
+          >
+            <component 
+              :is="profile.icon" 
+              :class="[
+                'tw:w-8 tw:h-8 tw:transition-colors tw:duration-200',
+                selectedProfile === profile.type 
+                  ? 'tw:text-[var(--primary-color)]' 
+                  : 'tw:text-gray-500'
+              ]"
+            />
+          </div>
+
+          <!-- Title -->
+          <h2 
+            :class="[
+              'tw:font-semibold tw:text-lg tw:mb-2 tw:transition-colors tw:duration-200',
+              selectedProfile === profile.type 
+                ? 'tw:text-[var(--primary-color)]' 
+                : 'tw:text-gray-900'
+            ]"
+          >
+            {{ profile.title }}
+          </h2>
+
+          <!-- Subtitle -->
+          <p class="tw:text-gray-500 tw:text-sm">
+            {{ profile.subtitle }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Proceed Button -->
+      <div class="tw:flex tw:justify-center">
+        <button
+          @click="handleProceed"
+          :disabled="!selectedProfile"
+          :class="[
+            'tw:px-8 tw:py-2.5 tw:rounded-lg tw:font-medium tw:text-base tw:transition-all tw:duration-200',
+            'tw:flex tw:items-center tw:gap-2',
+            selectedProfile
+              ? 'tw:bg-[var(--primary-color)] tw:text-white hover:tw:bg-[var(--primary-color)]/90 tw:shadow-md hover:tw:shadow-lg'
+              : 'tw:bg-gray-200 tw:text-gray-400 tw:cursor-not-allowed'
+          ]"
+        >
+          Continue
+          <ArrowRight class="tw:w-5 tw:h-5" />
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import ArtistForm from '../components/ArtistForm.vue'
-import EventForm from '../components/EventForm.vue'
-import OrganisatorForm from '../components/OrganisatorForm.vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { Calendar, Users, Mic2, MapPin, Check, ArrowRight } from 'lucide-vue-next'
+
+const router = useRouter()
 
 const profiles = [
-  { type: 'artist', title: 'Artist', description: 'Showcase your talents', icon: '🎨' },
-  { type: 'event', title: 'Event', description: 'Create and manage events', icon: '🎉' },
-  { type: 'organisator', title: 'Organisator', description: 'Manage events efficiently', icon: '🛠️' },
+  { 
+    type: 'event', 
+    title: 'Event', 
+    subtitle: 'Create and manage events',
+    icon: Calendar
+  },
+  { 
+    type: 'event-organiser', 
+    title: 'Event Organiser', 
+    subtitle: 'Manage and promote your events',
+    icon: Users
+  },
+  { 
+    type: 'talent', 
+    title: 'Talent', 
+    subtitle: 'Showcase your talent and get booked for events',
+    icon: Mic2
+  },
+  { 
+    type: 'venue', 
+    title: 'Venue', 
+    subtitle: 'List and manage event locations',
+    icon: MapPin
+  },
 ]
 
 const selectedProfile = ref(null)
 
-const currentComponent = computed(() => {
-  if (selectedProfile.value === 'artist') return ArtistForm
-  if (selectedProfile.value === 'event') return EventForm
-  if (selectedProfile.value === 'organisator') return OrganisatorForm
-  return null
-})
+function handleProceed() {
+  if (selectedProfile.value) {
+    const routes = {
+      'event': '/create-event-free',
+      'event-organiser': '/create-event-organiser-free',
+      'talent': '/create-talents-free',
+      'venue': '/create-venue-free'
+    }
+    
+    const targetRoute = routes[selectedProfile.value]
+    if (targetRoute) {
+      router.push(targetRoute)
+    }
+  }
+}
 </script>
