@@ -10,7 +10,7 @@
                         'tw:pb-3 tw:text-sm tw:font-normal tw:transition-colors tw:relative',
                         activeTab === tab.id
                             ? 'tw:text-[#2563eb]'
-                            : 'tw:text-gray-600 hover:tw:text-[#2563eb]'
+                            : 'tw:text-[#1E3A8A] hover:tw:text-[#2563eb]'
                     ]" @click="activeTab = tab.id">
                         {{ tab.label }}
                         <span v-if="activeTab === tab.id"

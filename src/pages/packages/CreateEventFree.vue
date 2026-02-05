@@ -9,22 +9,33 @@
         <!-- Sidebar -->
         <div
           class="tw:w-[90px] tw:bg-[#FFFFFF] tw:flex tw:flex-col tw:items-center tw:py-8 tw:space-y-6 tw:rounded-l-lg tw:border-r tw:border-gray-200">
+          <div v-for="item in menuItems" :key="item.id" class="tw:relative tw:group">
+            <button @click="handleMenuClick(item)" :class="[
+              'tw:flex tw:items-center tw:justify-center tw:transition-all',
+              isActive(item)
+                ? 'tw:bg-white tw:text-gray-700'
+                : 'tw:text-gray-400 hover:tw:bg-white'
+            ]" class="tw:border tw:border-[#DFE1E7] tw:rounded-[6px] tw:px-[12px] tw:py-[9px]">
+              <component :is="item.icon" class="tw:w-5 tw:h-5" />
+            </button>
 
-          <button v-for="item in menuItems" :key="item.id" @click="handleMenuClick(item)" :class="[
-            'tw:w-11 tw:h-11 tw:flex tw:items-center tw:justify-center tw:rounded-xl tw:transition-all',
-            isActive(item)
-              ? 'tw:bg-white tw:text-gray-700 tw:shadow-sm'
-              : 'tw:text-gray-400 hover:tw:bg-white'
-          ]">
-            <component :is="item.icon" class="tw:w-5 tw:h-5" />
-          </button>
+            <!-- Tooltip -->
+            <div class="tw:absolute tw:left-16 tw:top-1/2 tw:-translate-y-1/2
+         tw:bg-white tw:text-gray-700 tw:text-xs
+         tw:px-3 tw:py-1 tw:rounded-md
+         tw:border tw:border-[#DFE1E7]
+         tw:opacity-0 tw:group-hover:opacity-100
+         tw:transition tw:whitespace-nowrap tw:shadow-sm">
+              {{ item.label }}
+            </div>
+          </div>
         </div>
 
         <!-- Event Summary -->
         <div class="tw:flex-1 tw:bg-[#FFFFFF] tw:rounded-r-lg tw:overflow-hidden">
 
           <!-- Header Section -->
-          <div class="tw:px-6 tw:py-4 tw:border-b tw:border-gray-300">
+          <div class="tw:px-6 tw:py-6 tw:border-b tw:border-gray-300">
             <button
               class="tw:inline-flex tw:items-center tw:gap-2 tw:text-sm tw:text-[#0061FF] hover:tw:text-black tw:font-medium">
               <ChevronLeft class="tw:w-4 tw:h-4" />
@@ -47,7 +58,7 @@
               </div>
 
               <button
-                class="tw:inline-flex tw:items-center tw:gap-2 tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:bg-white tw:text-[#0061FF] tw:rounded-lg tw:border tw:border-gray-300 hover:tw:bg-gray-50 tw:transition">
+                class="tw:inline-flex tw:items-center tw:gap-2 tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:bg-white tw:text-[#0061FF] tw:rounded-md tw:border tw:border-[#FF7700] hover:tw:bg-gray-50 tw:transition">
                 Draft
                 <ChevronDown class="tw:w-4 tw:h-4" />
               </button>
@@ -163,6 +174,58 @@
           </div>
         </div>
 
+        <!-- ORGANISER SECTION -->
+        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+          <div class="tw:flex tw:justify-between tw:items-center">
+            <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+              Organiser
+            </h3>
+            <button
+              class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
+              <Plus class="tw:w-5 tw:h-5" />
+            </button>
+          </div>
+
+          <div class="tw:relative">
+            <select v-model="selectedOrganiser"
+              class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+              <option value="">Select organiser</option>
+              <option value="org1">Organiser A</option>
+              <option value="org2">Organiser B</option>
+              <option value="new">Create new organiser</option>
+            </select>
+
+            <ChevronDown
+              class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
+          </div>
+        </div>
+
+        <!-- TALENT SECTION -->
+        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+          <div class="tw:flex tw:justify-between tw:items-center">
+            <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+              Talent
+            </h3>
+            <button
+              class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
+              <Plus class="tw:w-5 tw:h-5" />
+            </button>
+          </div>
+
+          <div class="tw:relative">
+            <select v-model="selectedTalent"
+              class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+              <option value="">Select talent</option>
+              <option value="talent1">DJ Alex</option>
+              <option value="talent2">Band XYZ</option>
+              <option value="new">Add new talent</option>
+            </select>
+
+            <ChevronDown
+              class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
+          </div>
+        </div>
+
         <!-- EVENT DATE & TIME SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
 
@@ -214,27 +277,24 @@
 
           <!-- Address Search Input with Loading Spinner -->
           <div class="tw:relative tw:mb-4">
-            <input 
-              v-model="searchAddress" 
-              @input="onSearchInput"
-              type="text" 
-              placeholder="Search Address..."
+            <input v-model="searchAddress" @input="onSearchInput" type="text" placeholder="Search Address..."
               class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-            
+
             <!-- Loading Spinner -->
             <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
-              <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
                 <circle class="tw:opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="tw:opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <path class="tw:opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
               </svg>
             </div>
 
             <!-- Suggestions Dropdown -->
-            <div v-if="suggestions.length > 0" class="tw:absolute tw-top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
-              <button 
-                v-for="(suggestion, index) in suggestions" 
-                :key="index"
-                @click="selectSuggestion(suggestion)"
+            <div v-if="suggestions.length > 0"
+              class="tw:absolute tw-top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
+              <button v-for="(suggestion, index) in suggestions" :key="index" @click="selectSuggestion(suggestion)"
                 class="tw:w-full tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors tw:border-b tw:border-gray-100 last:tw:border-b-0">
                 {{ suggestion.display_name }}
               </button>
@@ -249,11 +309,7 @@
             <label class="tw:block tw:text-sm tw:text-gray-600">
               Selected Address
             </label>
-            <input 
-              v-model="selectedAddress" 
-              type="text" 
-              readonly
-              placeholder="Address Will Auto Fill Here"
+            <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
               class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
           </div>
         </div>
@@ -386,198 +442,202 @@
 </template>
 
 <script setup>
-  import {
-    Home,
-    FileText,
-    BarChart3,
-    Settings,
-    Calendar,
-    ChevronDown,
-    ChevronLeft,
-    Upload,
-    Plus,
-    MapPin,
-    User,
-    SkipBackIcon,
-    Clock,
-  } from "lucide-vue-next"
+import {
+  Home,
+  FileText,
+  BarChart3,
+  Settings,
+  Calendar,
+  ChevronDown,
+  ChevronLeft,
+  Upload,
+  Plus,
+  MapPin,
+  User,
+  SkipBackIcon,
+  Clock,
+} from "lucide-vue-next"
 
-  import { ref, computed, onMounted } from "vue"
-  import { useRouter, useRoute } from "vue-router"
-  import maplibregl from "maplibre-gl"
-  import "maplibre-gl/dist/maplibre-gl.css"
+import { ref, computed, onMounted } from "vue"
+import { useRouter, useRoute } from "vue-router"
+import maplibregl from "maplibre-gl"
+import "maplibre-gl/dist/maplibre-gl.css"
 
-  const router = useRouter()
-  const route = useRoute()
+const router = useRouter()
+const route = useRoute()
 
-  const activeTab = ref("home")
-  const eventTitle = ref("")
-  const selectedVenue = ref("")
-  const selectedGenre = ref("")
-  const dressCode = ref("")
-  const ageLimit = ref("")
-  const entranceFee = ref("")
-  const eventDate = ref("")
-  const eventTime = ref("")
+const activeTab = ref("home")
+const eventTitle = ref("")
+const selectedVenue = ref("")
+const selectedGenre = ref("")
+const dressCode = ref("")
+const ageLimit = ref("")
+const entranceFee = ref("")
+const eventDate = ref("")
+const eventTime = ref("")
 
-  // Event Location refs
-  const searchAddress = ref("")
-  const selectedAddress = ref("")
-  const map = ref(null)
-  const marker = ref(null)
-  const suggestions = ref([])
-  const isLoading = ref(false)
-  const debounceTimer = ref(null)
+// Event Location refs
+const searchAddress = ref("")
+const selectedAddress = ref("")
+const map = ref(null)
+const marker = ref(null)
+const suggestions = ref([])
+const isLoading = ref(false)
+const debounceTimer = ref(null)
 
-  const menuItems = [
-    { id: "home", icon: Home },
-    { id: "details", icon: FileText },
-    { id: "analytics", icon: BarChart3, route: "/create-event-free/report" },
-    { id: "settings", icon: Settings, route: "/create-event-free/settings" },
-    { id: "calendar", icon: Calendar },
-  ]
+const selectedOrganiser = ref("")
+const selectedTalent = ref("")
 
-  function handleMenuClick(item) {
-    if (item.route) {
-      console.log("Navigating to:", item.route);
-      router.push(item.route)
-    } else {
-      activeTab.value = item.id
-    }
+
+const menuItems = [
+  { id: "home", icon: Home, label: "Home" },
+  { id: "details", icon: FileText, label: "Details" },
+  { id: "analytics", icon: BarChart3, route: "/create-event-free/report", label: "Analytics" },
+  { id: "settings", icon: Settings, route: "/create-event-free/settings", label: "Settings" },
+  { id: "calendar", icon: Calendar, label: "Calendar" },
+]
+
+function handleMenuClick(item) {
+  if (item.route) {
+    console.log("Navigating to:", item.route);
+    router.push(item.route)
+  } else {
+    activeTab.value = item.id
   }
+}
 
-  function isActive(item) {
-    if (item.route) {
-      return route.path === item.route
-    }
-    return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
+function isActive(item) {
+  if (item.route) {
+    return route.path === item.route
   }
+  return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
+}
 
-  function saveEvent() {
-    console.log("Saving event...");
-    alert("Event saved successfully!");
+function saveEvent() {
+  console.log("Saving event...");
+  alert("Event saved successfully!");
+}
+
+// Debounce function
+function debounce(func, delay) {
+  return function (...args) {
+    clearTimeout(debounceTimer.value)
+    debounceTimer.value = setTimeout(() => func.apply(this, args), delay)
   }
+}
 
-  // Debounce function
-  function debounce(func, delay) {
-    return function(...args) {
-      clearTimeout(debounceTimer.value)
-      debounceTimer.value = setTimeout(() => func.apply(this, args), delay)
-    }
-  }
-
-  // Handle search input with debouncing
-  const onSearchInput = debounce(async () => {
-    if (!searchAddress.value.trim()) {
-      suggestions.value = []
-      return
-    }
-
-    isLoading.value = true
-    
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress.value)}&limit=5&addressdetails=1`,
-        {
-          headers: {
-            "User-Agent": "EventMap App"
-          }
-        }
-      )
-
-      if (response.ok) {
-        const data = await response.json()
-        suggestions.value = data
-      }
-    } catch (error) {
-      console.error("Error fetching suggestions:", error)
-      suggestions.value = []
-    } finally {
-      isLoading.value = false
-    }
-  }, 400)
-
-  // Select a suggestion from dropdown
-  function selectSuggestion(suggestion) {
-    const { lat, lon, display_name } = suggestion
-    
-    // Update search input and clear suggestions
-    searchAddress.value = display_name
+// Handle search input with debouncing
+const onSearchInput = debounce(async () => {
+  if (!searchAddress.value.trim()) {
     suggestions.value = []
-    
-    // Update selected address
-    selectedAddress.value = display_name
-    
-    // Center map and add marker
-    if (map.value) {
-      map.value.flyTo({
-        center: [lon, lat],
-        zoom: 15,
-        essential: true
-      })
-      
-      updateMarker(lon, lat)
-    }
+    return
   }
 
-  // Update or add marker
-  function updateMarker(lng, lat) {
-    // Remove existing marker
-    if (marker.value) {
-      marker.value.remove()
-    }
+  isLoading.value = true
 
-    // Add new marker
-    marker.value = new maplibregl.Marker({ color: "#0061FF" })
-      .setLngLat([lng, lat])
-      .addTo(map.value)
-  }
-
-  // Reverse geocode function
-  async function reverseGeocode(lng, lat) {
-    isLoading.value = true
-    
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-        {
-          headers: {
-            "User-Agent": "EventMap App"
-          }
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress.value)}&limit=5&addressdetails=1`,
+      {
+        headers: {
+          "User-Agent": "EventMap App"
         }
-      )
-      
-      if (response.ok) {
-        const data = await response.json()
-        selectedAddress.value = data.display_name || "Address not found"
       }
-    } catch (error) {
-      console.error("Error reverse geocoding:", error)
-      selectedAddress.value = "Error fetching address"
-    } finally {
-      isLoading.value = false
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      suggestions.value = data
     }
+  } catch (error) {
+    console.error("Error fetching suggestions:", error)
+    suggestions.value = []
+  } finally {
+    isLoading.value = false
+  }
+}, 400)
+
+// Select a suggestion from dropdown
+function selectSuggestion(suggestion) {
+  const { lat, lon, display_name } = suggestion
+
+  // Update search input and clear suggestions
+  searchAddress.value = display_name
+  suggestions.value = []
+
+  // Update selected address
+  selectedAddress.value = display_name
+
+  // Center map and add marker
+  if (map.value) {
+    map.value.flyTo({
+      center: [lon, lat],
+      zoom: 15,
+      essential: true
+    })
+
+    updateMarker(lon, lat)
+  }
+}
+
+// Update or add marker
+function updateMarker(lng, lat) {
+  // Remove existing marker
+  if (marker.value) {
+    marker.value.remove()
   }
 
-  // Initialize map on component mount
-  onMounted(() => {
-    // Initialize map centered on Amsterdam
-    map.value = new maplibregl.Map({
-      container: "event-map",
-      style: "https://api.maptiler.com/maps/streets-v2/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL",
-      center: [4.895168, 52.370216], // Amsterdam coordinates
-      zoom: 12
-    })
+  // Add new marker
+  marker.value = new maplibregl.Marker({ color: "#0061FF" })
+    .setLngLat([lng, lat])
+    .addTo(map.value)
+}
 
-    // Add click handler to map
-    map.value.on("click", async (e) => {
-      const { lng, lat } = e.lngLat
-      
-      // Update marker location
-      updateMarker(lng, lat)
+// Reverse geocode function
+async function reverseGeocode(lng, lat) {
+  isLoading.value = true
 
-      // Reverse geocode to get address
-      await reverseGeocode(lng, lat)
-    })
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
+      {
+        headers: {
+          "User-Agent": "EventMap App"
+        }
+      }
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      selectedAddress.value = data.display_name || "Address not found"
+    }
+  } catch (error) {
+    console.error("Error reverse geocoding:", error)
+    selectedAddress.value = "Error fetching address"
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Initialize map on component mount
+onMounted(() => {
+  // Initialize map centered on Amsterdam
+  map.value = new maplibregl.Map({
+    container: "event-map",
+    style: "https://api.maptiler.com/maps/streets-v2/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL",
+    center: [4.895168, 52.370216], // Amsterdam coordinates
+    zoom: 12
   })
+
+  // Add click handler to map
+  map.value.on("click", async (e) => {
+    const { lng, lat } = e.lngLat
+
+    // Update marker location
+    updateMarker(lng, lat)
+
+    // Reverse geocode to get address
+    await reverseGeocode(lng, lat)
+  })
+})
 </script>
