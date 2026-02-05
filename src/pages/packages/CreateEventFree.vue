@@ -624,7 +624,7 @@ onMounted(() => {
   // Initialize map centered on Amsterdam
   map.value = new maplibregl.Map({
     container: "event-map",
-    style: "https://api.maptiler.com/maps/streets-v2/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL",
+    style: "https://api.maptiler.com/maps/streets-v2/style.json?key=4Rm2OIdojZoTFcWWjJPY",
     center: [4.895168, 52.370216], // Amsterdam coordinates
     zoom: 12
   })
