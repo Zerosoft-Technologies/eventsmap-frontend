@@ -227,7 +227,7 @@
         </div>
 
         <!-- EVENT DATE & TIME SECTION -->
-        <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
+        <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
 
           <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
             Event Date & Time
@@ -236,33 +236,35 @@
           <!-- Horizontal Layout -->
           <div class="tw:flex tw:gap-6">
 
-            <!-- Event Date -->
+            <!-- EVENT DATE -->
             <div class="tw:flex-1">
               <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                 Event Date
               </label>
 
               <div class="tw:relative">
-                <input v-model="eventDate" type="date"
-                  class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:cursor-pointer focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent" />
+                <input ref="dateInput" placeholder="MM/DD/YYYY"
+                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
 
+                <!-- Custom Calendar Icon -->
                 <Calendar
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
               </div>
             </div>
 
-            <!-- Event Time -->
+            <!-- EVENT TIME -->
             <div class="tw:flex-1">
               <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                 Event Time
               </label>
 
               <div class="tw:relative">
-                <input v-model="eventTime" type="time"
-                  class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:cursor-pointer focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent" />
+                <input ref="timeInput" placeholder="-- -- --"
+                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
 
+                <!-- Custom Clock Icon -->
                 <Clock
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
               </div>
             </div>
 
@@ -463,6 +465,9 @@ import { useRouter, useRoute } from "vue-router"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
+import flatpickr from "flatpickr"
+import "flatpickr/dist/flatpickr.css"
+
 const router = useRouter()
 const route = useRoute()
 
@@ -473,8 +478,12 @@ const selectedGenre = ref("")
 const dressCode = ref("")
 const ageLimit = ref("")
 const entranceFee = ref("")
+
+// Event Date and Time
 const eventDate = ref("")
 const eventTime = ref("")
+const dateInput = ref(null)
+const timeInput = ref(null)
 
 // Event Location refs
 const searchAddress = ref("")
@@ -638,6 +647,19 @@ onMounted(() => {
 
     // Reverse geocode to get address
     await reverseGeocode(lng, lat)
+  })
+
+  /* ------------------ DATE PICKER ------------------ */
+  flatpickr(dateInput.value, {
+    dateFormat: "m/d/Y",
+  })
+
+
+  /* ------------------ TIME PICKER ------------------ */
+  flatpickr(timeInput.value, {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "h:i K",
   })
 })
 </script>

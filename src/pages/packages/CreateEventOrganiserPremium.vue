@@ -779,8 +779,8 @@ onBeforeUnmount(() => {
 const menuItems = [
     { id: "home", icon: Home, label: "Home" },
     { id: "details", icon: FileText, label: "Details" },
-    { id: "analytics", icon: BarChart3, route: "/create-event-premium/report", label: "Analytics" },
-    { id: "settings", icon: Settings, route: "/create-event-premium/settings", label: "Settings" },
+    { id: "analytics", icon: BarChart3, route: "/create-event-organiser-premium/report", label: "Analytics" },
+    { id: "settings", icon: Settings, route: "/create-event-organiser-premium/settings", label: "Settings" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
 ]
