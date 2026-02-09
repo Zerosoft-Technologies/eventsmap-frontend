@@ -275,8 +275,31 @@
 
                             <div v-if="billingTab === 'invoices'"
                                 class="tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:p-6">
-                                <p class="tw:text-center tw:text-gray-500 tw:text-sm tw:py-4">No invoices available
-                                </p>
+                                <div class="tw:flex tw:flex-row tw:justify-between md:tw:items-center tw:gap-4">
+                                    <div class="tw:flex tw:gap-3 tw:items-center">
+                                        <svg class="tw:w-10 tw:h-10 tw:text-gray-400 tw:flex-shrink-0"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <div>
+                                            <h4 class="tw:text-sm tw:font-semibold tw:text-gray-900 tw:mb-0.5">
+                                                Download your Invoices</h4>
+                                            <p class="tw:text-xs tw:text-gray-500">View And Download All Your Previous
+                                                Invoices</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        class="tw:flex tw:items-center tw:gap-2 tw:bg-white tw:text-[#2563eb] tw:border tw:border-orange-500 tw:px-4 tw:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:transition hover:tw:bg-blue-50 tw:whitespace-nowrap"
+                                        @click="downloadBillingHistory">
+                                        <svg class="tw:w-4 tw:h-4" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        Download
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
