@@ -39,7 +39,7 @@
             <button
               class="tw:inline-flex tw:items-center tw:gap-2 tw:text-sm tw:text-[#0061FF] hover:tw:text-black tw:font-medium">
               <ChevronLeft class="tw:w-4 tw:h-4" />
-              Back to events
+              Back To Events
             </button>
           </div>
 
@@ -54,7 +54,7 @@
 
               <div class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2">
                 <Calendar class="tw:w-4 tw:h-4" />
-                <span>05 March 2026, 24-Hour</span>
+                <span>05.03.2026, 18:30 CET</span>
               </div>
 
               <button
@@ -83,7 +83,7 @@
             </button>
           </div>
 
-          <input v-model="eventTitle" type="text" placeholder="Enter event title"
+          <input v-model="eventTitle" type="text" placeholder="Enter Event Title"
             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
         </div>
 
@@ -108,12 +108,12 @@
 
             <!-- Choose File -->
             <span class="tw:px-4 tw:py-2 tw:bg-[#F6F1E7] tw:text-sm tw:text-gray-700 tw:border-r tw:border-[#E8E1D5]">
-              Choose file
+              Choose File
             </span>
 
             <!-- No file chosen -->
             <span id="file-name" class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-              No file chosen
+              No File Chosen
             </span>
 
             <input type="file" accept="image/*" class="tw:hidden"
@@ -127,10 +127,10 @@
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Genre
             </h3>
-            <button
+            <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button>
+            </button> -->
           </div>
 
           <div class="tw:relative">
@@ -138,11 +138,12 @@
               class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
               <option value="">Music Event</option>
               <option value="dance">Dance Event</option>
+              <option value="film">Film Event</option>
               <option value="nightlife">Nightlife Event</option>
               <option value="theatre">Theatre Event</option>
               <option value="community">Community Event</option>
               <option value="venue">Venue Event</option>
-              <option value="other">Other Event</option>
+              <!-- <option value="other">Other Event</option> -->
             </select>
             <ChevronDown
               class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
@@ -155,10 +156,10 @@
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Venue
             </h3>
-            <button
+            <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button>
+            </button> -->
           </div>
 
           <div class="tw:relative">
@@ -167,7 +168,7 @@
               <option value="">Venue</option>
               <option value="venue1">Venue A</option>
               <option value="venue2">Venue B</option>
-              <option value="venue3">Create new venue</option>
+              <option value="venue3">Create New Venue</option>
             </select>
             <ChevronDown
               class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
@@ -180,19 +181,19 @@
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Organiser
             </h3>
-            <button
+            <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button>
+            </button> -->
           </div>
 
           <div class="tw:relative">
             <select v-model="selectedOrganiser"
               class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-              <option value="">Select organiser</option>
+              <option value="">Select Organiser</option>
               <option value="org1">Organiser A</option>
               <option value="org2">Organiser B</option>
-              <option value="new">Create new organiser</option>
+              <option value="new">Create New Organiser</option>
             </select>
 
             <ChevronDown
@@ -201,7 +202,7 @@
         </div>
 
         <!-- TALENT SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Talent
@@ -215,16 +216,16 @@
           <div class="tw:relative">
             <select v-model="selectedTalent"
               class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-              <option value="">Select talent</option>
+              <option value="">Select Talent</option>
               <option value="talent1">DJ Alex</option>
               <option value="talent2">Band XYZ</option>
-              <option value="new">Add new talent</option>
+              <option value="new">Add New Talent</option>
             </select>
 
             <ChevronDown
               class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
           </div>
-        </div>
+        </div> -->
 
         <!-- EVENT DATE & TIME SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
@@ -322,10 +323,10 @@
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Overview
             </h3>
-            <button
+            <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button>
+            </button> -->
           </div>
 
           <div class="tw:grid tw:grid-cols-3 tw:gap-4">
@@ -366,7 +367,7 @@
 
             <!-- Entrance Fee -->
             <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Fee</label>
+              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status</label>
               <div class="tw:relative">
                 <select v-model="entranceFee"
                   class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
@@ -388,10 +389,10 @@
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Invite
             </h3>
-            <button
+            <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button>
+            </button> -->
           </div>
 
           <p class="tw:text-sm tw:text-gray-600">
@@ -406,7 +407,7 @@
                 <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
                   <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
                 </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite talent</span>
+                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Talent</span>
               </div>
               <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
                 + Add
@@ -419,7 +420,7 @@
                 <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
                   <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
                 </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite organiser</span>
+                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organiser</span>
               </div>
               <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
                 + Add
@@ -429,12 +430,13 @@
         </div>
 
         <!-- SAVE EVENT BUTTON -->
-        <div class="tw:flex tw:justify-start tw:pt-4">
+        <div class="tw:flex tw:flex-col tw:items-start tw:pt-4 tw:w-full">
           <button @click="saveEvent" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                tw:border tw:border-orange-500 tw:text-[#0061FF]
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
             Buy Tickets
           </button>
+          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full tw:ml-11">Soon</span>
         </div>
 
       </div>

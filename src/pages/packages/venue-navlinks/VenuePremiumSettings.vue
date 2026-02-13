@@ -25,7 +25,7 @@
                         <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-6">Event Profile</h2>
 
                         <div class="tw:grid tw:grid-cols-2 tw:gap-x-6 tw:gap-y-4 tw:mb-6">
-                            <div class="tw:flex tw:flex-col tw:gap-2">
+                            <!-- <div class="tw:flex tw:flex-col tw:gap-2">
                                 <label for="username"
                                     class="tw:text-sm tw:font-medium tw:text-gray-900">Username</label>
                                 <input id="username" v-model="profileForm.username" type="text" placeholder="Username"
@@ -37,7 +37,7 @@
                                     Name</label>
                                 <input id="lastname" v-model="profileForm.lastName" type="text" placeholder="Full name"
                                     class="tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition" />
-                            </div>
+                            </div> -->
 
                             <div class="tw:flex tw:flex-col tw:gap-2">
                                 <label for="email" class="tw:text-sm tw:font-medium tw:text-gray-900">Email</label>
@@ -46,7 +46,7 @@
                                     class="tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition" />
                             </div>
 
-                            <div class="tw:flex tw:flex-col tw:gap-2">
+                            <!-- <div class="tw:flex tw:flex-col tw:gap-2">
                                 <label for="phone" class="tw:text-sm tw:font-medium tw:text-gray-900">Phone</label>
                                 <input id="phone" v-model="profileForm.phone" type="tel" placeholder="+880..."
                                     class="tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition" />
@@ -79,7 +79,7 @@
                                     <option value="au">Australia</option>
                                     <option value="in">India</option>
                                 </select>
-                            </div>
+                            </div> -->
 
                             <div class="tw:flex tw:flex-col tw:gap-2">
                                 <label for="password" class="tw:text-sm tw:font-medium tw:text-gray-900">
@@ -175,9 +175,9 @@
                             <!-- Cards in Grid with Headers Outside -->
                             <div class="tw:grid tw:grid-cols-12 tw:gap-6">
                                 <!-- Plan Management Section - Takes 9/12 (3/4) -->
-                                <div class="tw:col-span-8">
+                                <div class="tw:col-span-7">
                                     <!-- Header Outside -->
-                                    <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Plan management
+                                    <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Event Package
                                     </h2>
                                     <!-- Card -->
                                     <div
@@ -201,9 +201,9 @@
                                 </div>
 
                                 <!-- Upgrade Plan Section - Takes 3/12 (1/4) -->
-                                <div class="tw:col-span-4">
+                                <div class="tw:col-span-5">
                                     <!-- Header Outside -->
-                                    <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Upgrade plan</h2>
+                                    <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Upgrade to Premium Package</h2>
                                     <!-- Card -->
                                     <div
                                         class="tw:bg-[#F6F1E7] tw:border tw:border-gray-200 tw:rounded-lg tw:p-6 tw:flex tw:items-center tw:justify-center tw:min-h-[200px]">
@@ -253,11 +253,8 @@
                                         </svg>
                                         <div>
                                             <h4 class="tw:text-sm tw:font-semibold tw:text-gray-900 tw:mb-0.5">
-                                                Download
-                                                your billing history</h4>
-                                            <p class="tw:text-xs tw:text-gray-500">View all recent charges for fees
-                                                and
-                                                subscriptions</p>
+                                                Download Your Billing History</h4>
+                                            <p class="tw:text-xs tw:text-gray-500">View all recent charges for fees and subscriptions</p>
                                         </div>
                                     </div>
                                     <button
@@ -284,7 +281,7 @@
                                         </svg>
                                         <div>
                                             <h4 class="tw:text-sm tw:font-semibold tw:text-gray-900 tw:mb-0.5">
-                                                Download your Invoices</h4>
+                                                Download Your Invoices</h4>
                                             <p class="tw:text-xs tw:text-gray-500">View And Download All Your Previous
                                                 Invoices</p>
                                         </div>
@@ -319,7 +316,7 @@ const billingTab = ref('history');
 const tabs = [
     { id: 'profile', label: 'Event profile' },
     { id: 'notification', label: 'Notification' },
-    { id: 'plan', label: 'Plan management' }
+    { id: 'plan', label: 'Plan Management' }
 ];
 
 

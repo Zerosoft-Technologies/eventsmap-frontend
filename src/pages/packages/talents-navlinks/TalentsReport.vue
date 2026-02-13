@@ -9,10 +9,10 @@
 
         <!-- Header -->
         <h1 class="tw:text-3xl tw:font-bold tw:text-[#1E5EFF]">
-          Profile Views
+          Event Views
         </h1>
         <p class="tw:text-sm tw:text-gray-600 tw:mt-2">
-          Monthly overview of profile visits
+          Monthly overview of Event visits
         </p>
 
         <!-- Stats Container -->
