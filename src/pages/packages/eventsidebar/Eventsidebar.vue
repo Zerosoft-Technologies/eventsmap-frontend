@@ -8,10 +8,11 @@
       <div v-for="item in menuItems" :key="item.id" class="tw:relative tw:group">
         <button @click="handleMenuClick(item)" :class="[
           'tw:flex tw:items-center tw:justify-center tw:transition-all',
+          'tw:border tw:border-[#DFE1E7] tw:rounded-[6px] tw:px-[12px] tw:py-[9px]',
           isActive(item)
-            ? 'tw:bg-white tw:text-gray-700'
-            : 'tw:text-gray-400 hover:tw:bg-white'
-        ]" class="tw:border tw:border-[#DFE1E7] tw:rounded-[6px] tw:px-[12px] tw:py-[9px]">
+            ? 'tw:bg-[#0061FF] tw:text-white'
+            : 'tw:bg-white tw:text-gray-400 hover:tw:bg-gray-50'
+        ]">
           <component :is="item.icon" class="tw:w-5 tw:h-5" />
         </button>
 
@@ -116,9 +117,39 @@ function handleMenuClick(item) {
 }
 
 function isActive(item) {
-  if (item.route) {
-    return route.path === item.route
+  if (!item.route) return false
+  
+  const currentPath = route.path
+  
+  // Check if current route exactly matches the item route
+  if (currentPath === item.route) {
+    // For home and details on the same route, only activate home
+    if (item.id === 'details' && currentPath === item.route) {
+      return false
+    }
+    return true
   }
+  
+  // For home: active only on base route (not /report or /settings)
+  if (item.id === 'home') {
+    const basePath = item.route
+    return currentPath === basePath || 
+           (currentPath.startsWith(basePath + '/') && 
+            !currentPath.includes('/report') && 
+            !currentPath.includes('/settings') &&
+            !currentPath.includes('/calendar'))
+  }
+  
+  // For details: never active by default (unless you want to add specific logic)
+  if (item.id === 'details') {
+    return false
+  }
+  
+  // For analytics/settings/other routes with sub-paths
+  if (item.id === 'analytics' || item.id === 'settings') {
+    return currentPath === item.route || currentPath.startsWith(item.route + '/')
+  }
+  
   return false
 }
 
