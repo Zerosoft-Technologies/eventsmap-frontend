@@ -3,7 +3,7 @@
         <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
 
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-            <EventSidebar :eventTitle="eventTitle" :eventDate="eventDate" :eventStatus="eventStatus"
+            <EventSidebar :eventTitle="eventTitle" :eventDate="eventDate" :eventStatus="eventStatus" :menuItems="menuItems"
                 @back="handleBack" />
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6">
@@ -273,6 +273,7 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { useRouter } from "vue-router"
+import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
 import EventSidebar from '../eventsidebar/Eventsidebar.vue'
 import { Eye, EyeOff } from 'lucide-vue-next'
 
@@ -303,6 +304,15 @@ const notifications = reactive({
     receiveEmail: true,
     receiveUpdates: false
 });
+
+// Menu items for CreateEventFree (you can change this based on your route)
+const menuItems = [
+  { id: "home", icon: Home, label: "Home", route: "/create-event-free" },
+  { id: "details", icon: FileText, label: "Details", route: "/create-event-free" },
+  { id: "analytics", icon: BarChart3, route: "/create-event-free/report", label: "Analytics" },
+  { id: "settings", icon: Settings, route: "/create-event-free/settings", label: "Settings" },
+  { id: "calendar", icon: Calendar, label: "Calendar" },
+]
 
 const saveProfile = () => {
     console.log('Saving profile...', profileForm);

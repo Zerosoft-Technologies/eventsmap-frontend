@@ -7,6 +7,7 @@
         :eventTitle="eventTitle"
         :eventDate="eventDate"
         :eventStatus="eventStatus"
+        :menuItems="menuItems"
         @back="handleBack"
       />
 
@@ -54,6 +55,7 @@
 <script setup>
 import { ref } from "vue"
 import { useRouter } from "vue-router"
+import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
 import EventSidebar from "../eventsidebar/Eventsidebar.vue"
 
 const router = useRouter()
@@ -69,6 +71,15 @@ const monthlyViews = ref([
   { month: "March 2026", views: 310 },
   { month: "April 2026", views: 180 },
 ])
+
+// Menu items for CreateEventFree (you can change this based on your route)
+const menuItems = [
+  { id: "home", icon: Home, label: "Home", route: "/create-event-free" },
+  { id: "details", icon: FileText, label: "Details", route: "/create-event-free" },
+  { id: "analytics", icon: BarChart3, route: "/create-event-free/report", label: "Analytics" },
+  { id: "settings", icon: Settings, route: "/create-event-free/settings", label: "Settings" },
+  { id: "calendar", icon: Calendar, label: "Calendar" },
+]
 
 function handleBack() {
   router.push('/events') // Navigate to events list or wherever you need

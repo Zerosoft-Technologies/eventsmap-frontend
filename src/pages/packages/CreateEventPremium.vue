@@ -1,12 +1,10 @@
 <template>
     <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-10 tw:px-6">
         <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
-
             <!-- ================= LEFT CARD ================= -->
-            <div
+            <!-- <div
                 class="tw:w-[400px] tw:bg-[#F3F2EE] tw:rounded-lg tw:border-[10px] tw:border-[#F6F1E7] tw:flex tw:max-h-[85vh] tw:sticky tw:top-10">
 
-                <!-- Sidebar -->
                 <div
                     class="tw:w-[90px] tw:bg-[#FFFFFF] tw:flex tw:flex-col tw:items-center tw:py-8 tw:space-y-6 tw:rounded-l-lg tw:border-r tw:border-gray-200">
                     <div v-for="item in menuItems" :key="item.id" class="tw:relative tw:group">
@@ -19,7 +17,6 @@
                             <component :is="item.icon" class="tw:w-5 tw:h-5" />
                         </button>
 
-                        <!-- Tooltip -->
                         <div class="tw:absolute tw:left-16 tw:top-1/2 tw:-translate-y-1/2
          tw:bg-white tw:text-gray-700 tw:text-xs
          tw:px-3 tw:py-1 tw:rounded-md
@@ -31,10 +28,10 @@
                     </div>
                 </div>
 
-                <!-- Event Summary -->
+                
                 <div class="tw:flex-1 tw:bg-[#FFFFFF] tw:rounded-r-lg tw:overflow-hidden">
 
-                    <!-- Header Section -->
+                    
                     <div class="tw:px-6 tw:py-6 tw:border-b tw:border-gray-300">
                         <button
                             class="tw:inline-flex tw:items-center tw:gap-2 tw:text-sm tw:text-[#0061FF] hover:tw:text-black tw:font-medium">
@@ -43,9 +40,9 @@
                         </button>
                     </div>
 
-                    <!-- Content Section -->
+                    
                     <div class="tw:p-6">
-                        <!-- Event Card -->
+                        
                         <div class="tw:bg-[#F6F1E7] tw:rounded-2xl tw:p-5 tw:space-y-4 tw:border tw:border-gray-200">
 
                             <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF]">
@@ -67,10 +64,13 @@
                     </div>
 
                 </div>
-            </div>
+            </div> -->
+            <!-- ================= LEFT CARD (Sidebar Component) ================= -->
+            <EventSidebar :eventTitle="eventTitle" :eventDate="eventDate" :eventStatus="eventStatus" :menuItems="menuItems"
+                @back="handleBack" />
 
             <!-- ================= RIGHT CARD ================= -->
-            <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-8 tw:space-y-6">
+            <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6 tw:space-y-6">
 
                 <!-- IMAGE UPLOAD SECTION -->
                 <!-- <div
@@ -694,6 +694,7 @@ import {
 
 import { ref, onMounted, onBeforeUnmount, computed } from "vue"
 import { useRouter, useRoute } from "vue-router"
+import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -703,10 +704,17 @@ import "flatpickr/dist/flatpickr.css"
 const router = useRouter()
 const route = useRoute()
 
+// Event data
+const eventTitle = ref("Event Title")
+const eventDate = ref("05.03.2026, 18:30 CET")
+const eventStatus = ref("Draft")
+
+
 const activeTab = ref("home")
-const eventTitle = ref("")
+// const eventTitle = ref("")
 const eventDescription = ref("")
 const selectedVenue = ref("")
+const fileName = ref("")
 const selectedGenre = ref("")
 const dressCode = ref("")
 const ageLimit = ref("")
@@ -730,7 +738,7 @@ const tiktokUrl = ref("")
 const entranceFee = ref("")
 
 // Event Date and Time
-const eventDate = ref("")
+// const eventDate = ref("")
 const eventTime = ref("")
 const dateInput = ref(null)
 const timeInput = ref(null)
@@ -777,13 +785,14 @@ onBeforeUnmount(() => {
 })
 
 
+// Menu items specific to CreateEventPremium
 const menuItems = [
-    { id: "home", icon: Home, label: "Home" },
-    { id: "details", icon: FileText, label: "Details" },
-    { id: "analytics", icon: BarChart3, route: "/create-event-premium/report", label: "Analytics" },
-    { id: "settings", icon: Settings, route: "/create-event-premium/settings", label: "Settings" },
-    { id: "calendar", icon: Calendar, label: "Calendar" },
-    { id: "back", icon: SkipBackIcon, label: "Back" },
+  { id: "home", icon: Home, label: "Home", route: "/create-event-premium" },
+  { id: "details", icon: FileText, label: "Details", route: "/create-event-premium" },
+  { id: "analytics", icon: BarChart3, route: "/create-event-premium/report", label: "Analytics" },
+  { id: "settings", icon: Settings, route: "/create-event-premium/settings", label: "Settings" },
+  { id: "calendar", icon: Calendar, label: "Calendar" },
+  { id: "back", icon: SkipBackIcon, label: "Back" },
 ]
 
 function handleMenuClick(item) {
@@ -945,4 +954,12 @@ onMounted(() => {
         dateFormat: "h:i K",
     })
 })
+function handleFileChange(event) {
+    const file = event.target.files[0]
+    fileName.value = file ? file.name : 'No File Chosen'
+}
+
+function handleBack() {
+    router.push('/events') // Navigate to events list
+}
 </script>

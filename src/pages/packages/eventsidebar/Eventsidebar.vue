@@ -93,6 +93,10 @@ const props = defineProps({
   eventStatus: {
     type: String,
     default: 'Draft'
+  },
+  menuItems: {
+    type: Array,
+    required: true
   }
 })
 
@@ -102,18 +106,12 @@ const emit = defineEmits(['back'])
 const router = useRouter()
 const route = useRoute()
 
-const menuItems = [
-  { id: "home", icon: Home, label: "Home", route: "/create-event-free" },
-  { id: "details", icon: FileText, label: "Details", route: "/create-event-free" },
-  { id: "analytics", icon: BarChart3, route: "/create-event-free/report", label: "Analytics" },
-  { id: "settings", icon: Settings, route: "/create-event-free/settings", label: "Settings" },
-  { id: "calendar", icon: Calendar, label: "Calendar" },
-]
-
 function handleMenuClick(item) {
   if (item.route) {
     console.log("Navigating to:", item.route)
     router.push(item.route)
+  } else if (item.id === 'back') {
+    emit('back')
   }
 }
 
