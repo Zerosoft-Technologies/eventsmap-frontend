@@ -214,7 +214,7 @@
     v-show="showManualEnablePrompt"
     @dismiss="() => {}"
     @continue-without="() => {}"
-  /> -->
+      /> -->
   <div v-if="showResults">
     <AllEvents @closeResults="handleClose" @resetSearch="handleReset" @viewEvent="handleViewEvent" :events="events" :loading="eventsLoading" />
   </div>
@@ -583,8 +583,26 @@ const handleOutsideClick = (e) => {
  * @param {Object} event - The event object to display
  */
 function handleViewEvent(event) {
-  console.log('View event:', event)
-  selectedEvent.value = event
+  console.log('[Header] handleViewEvent called with:', event)
+  console.log('[Header] Event ID:', event?.id)
+  console.log('[Header] Event title:', event?.title)
+  console.log('[Header] latitude:', event?.latitude, 'type:', typeof event?.latitude)
+  console.log('[Header] longitude:', event?.longitude, 'type:', typeof event?.longitude)
+  console.log('[Header] address:', event?.address)
+  
+  // Ensure we're setting a proper event object with coordinates
+  if (event) {
+    selectedEvent.value = {
+      ...event,
+      // Ensure coordinates are numbers
+      latitude: event.latitude !== undefined ? Number(event.latitude) : null,
+      longitude: event.longitude !== undefined ? Number(event.longitude) : null
+    }
+    console.log('[Header] selectedEvent set to:', selectedEvent.value)
+  } else {
+    selectedEvent.value = null
+  }
+  
   showEventDetailsPanel.value = true
 }
 

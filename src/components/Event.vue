@@ -49,7 +49,7 @@
 
                     <div class="tw:space-y-3 tw:mt-3">
                         <DetailRow icon="date-time" :text="event.date" />
-                        <DetailRow icon="location-02" :text="event.location" />
+                        <DetailRow icon="location-02" :text="event.location_name" />
                         <DetailRow icon="music-note" :text="event.category == null ? 'N/A' : event.category" />
                         <DetailRow icon="bitcoin-bag" :text="event.price" />
                         <DetailRow icon="baby-boy-dress" :text="event.dresscode" />
@@ -129,7 +129,9 @@ import DetailRow from './DetailedRow.vue'
 const { t } = useI18n()
 
 const props = defineProps({ event: Object })
-console.log("2.props:", props)
+console.log("Event data:", props.event)
+console.log("location_name:", props.event?.location_name)
+console.log("location:", props.event?.location)
 const emit = defineEmits(['viewEvent'])
 
 /* ------------------ TIME VALUES ------------------ */

@@ -206,6 +206,7 @@ export interface EventImage {
  * Event entity from the API
  */
 export interface Event {
+  location_name: string | undefined
   id: number
   title: string
   description: string | null

@@ -11,6 +11,7 @@ export interface UIEvent {
   date: string 
   description: string
   location: string | undefined
+  location_name: string | undefined
   category: string
   subcategory?: string
   price: string
@@ -18,6 +19,8 @@ export interface UIEvent {
   age: string
   lat: number
   lng: number
+  latitude: number
+  longitude: number
   start_datetime: string // ISO datetime for countdown
   end_datetime: string // ISO datetime for live calculation
   // Additional fields from API
@@ -142,6 +145,7 @@ export function transformApiEventToUI(apiEvent: ApiEvent): UIEvent {
     date: apiEvent.formatted_date,
     // location: locationParts.join(', ') || apiEvent.city,
     location: apiEvent.venue_name,
+    location_name: apiEvent.location_name,
     category: getCategoryName(apiEvent.category),
     subcategory: subcategoryName,
     // price: formatPrice(apiEvent),
@@ -151,6 +155,8 @@ export function transformApiEventToUI(apiEvent: ApiEvent): UIEvent {
     age: apiEvent.min_age ? `${apiEvent.min_age}+` : 'All',
     lat: apiEvent.latitude || 0,
     lng: apiEvent.longitude || 0,
+    latitude: apiEvent.latitude || 0,
+    longitude: apiEvent.longitude || 0,
     start_datetime: apiEvent.start_datetime,
     end_datetime: apiEvent.end_datetime,
     // Additional fields

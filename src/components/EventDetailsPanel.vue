@@ -226,6 +226,10 @@
           <DateLocationTab v-else-if="activeTab === 'dateLocation'" :event="event"
             :location-details="event?.location_details" />
 
+          <!-- Venue Tab -->
+          <VenueTab v-else-if="activeTab === 'venue'" :event="event"
+            :location-details="event?.location_details" />
+
           <!-- Talents Tab -->
           <TalentsTab v-else-if="activeTab === 'talents'" :talents="event?.talents || []" />
           <!-- <TalentsTab v-else-if="activeTab === 'talents'" :talents="mockTalents" /> -->
@@ -264,6 +268,7 @@ import {
 } from 'lucide-vue-next'
 import AboutTab from './AboutTab.vue'
 import DateLocationTab from './DateLocationTab.vue'
+import VenueTab from './VenueTab.vue'
 import TalentsTab from './TalentsTab.vue'
 import CommunityTab from './CommunityTab.vue'
 
@@ -300,11 +305,22 @@ const tabs = [
   { id: 'overview', labelKey: 'eventDetails.tabs.overview' },
   { id: 'about', labelKey: 'eventDetails.tabs.about' },
   { id: 'dateLocation', labelKey: 'eventDetails.tabs.dateLocation' },
+  { id: 'venue', labelKey: 'eventDetails.tabs.venue' },
   { id: 'talents', labelKey: 'eventDetails.tabs.talents' },
   // { id: 'community', labelKey: 'eventDetails.tabs.community' }
 ]
 
-console.log(props.event)
+// Debug: Log event prop and coordinates
+watch(() => props.event, (newEvent) => {
+  console.log('[EventDetailsPanel] Event prop received:', newEvent)
+  if (newEvent) {
+    console.log('[EventDetailsPanel] Event ID:', newEvent.id)
+    console.log('[EventDetailsPanel] Event title:', newEvent.title)
+    console.log('[EventDetailsPanel] latitude:', newEvent.latitude, 'type:', typeof newEvent.latitude)
+    console.log('[EventDetailsPanel] longitude:', newEvent.longitude, 'type:', typeof newEvent.longitude)
+    console.log('[EventDetailsPanel] address:', newEvent.address)
+  }
+}, { immediate: true, deep: true })
 
 const mockTalents = [
   { name: "DJ Shadow", image: "https://picsum.photos/seed/talent1/200/200.jpg" },
