@@ -93,11 +93,11 @@
                     </div>
                 </div> -->
 
-                <!-- EVENT TITLE SECTION -->
+                <!-- Talent TITLE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Create Premium Event
+                            Create Premium Talent
                         </h3>
                         <!-- <button
                             class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -105,122 +105,23 @@
                         </button> -->
                     </div>
 
-                    <input v-model="eventTitle" type="text" placeholder="Enter Event Title"
+                    <input v-model="eventTitle" type="text" placeholder="Enter Talent Title"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
                     <!-- Description -->
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:text-gray-700">Description</label>
-                        <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Event..."
+                        <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Talent..."
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
                 </div>
 
-                <!-- ================= CATEGORY SECTION ================= -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-6">
-
-                    <!-- Header -->
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Category
-                    </h3>
-
-                    <!-- Category Select -->
-                    <div class="tw:relative">
-                        <select v-model="selectedCategory" class="tw:w-full tw:bg-white tw:border tw:border-[#DFE1E7] 
-             tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 
-             focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 
-             focus:tw:border-transparent tw:appearance-none tw:cursor-pointer">
-                            <option value="">Select Category</option>
-                            <option value="music">Music</option>
-                            <option value="film">Film</option>
-                            <option value="theatre">Theatre</option>
-                        </select>
-
-                        <ChevronDown class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 
-             tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
-                    </div>
-
-                    <!-- CATEGORY SPECIFIC DETAILS -->
-                    <div class="tw:space-y-6">
-
-                        <!-- Music Section -->
-                        <div class="tw:space-y-4">
-                            <h4 class="tw:text-md tw:font-normal tw:text-gray-800">
-                                Category Specific Details
-                            </h4>
-
-                            <div class="tw:flex tw:items-center tw:gap-6">
-                                <label class="tw:w-44 tw:text-sm tw:text-gray-700">
-                                    Music, Lineup:
-                                </label>
-                                <input type="text" placeholder="Artist / Band Names" class="tw:flex-1 tw:bg-gray-50 tw:border tw:border-[#DFE1E7] 
-                 tw:rounded-lg tw:px-4 tw:py-2 tw:text-sm" />
-                            </div>
-
-                            <div class="tw:flex tw:items-center tw:gap-6">
-                                <label class="tw:w-44 tw:text-sm tw:text-gray-700">
-                                    Music, Headliner:
-                                </label>
-                                <input type="text" placeholder="Main Performer" class="tw:flex-1 tw:bg-gray-50 tw:border tw:border-[#DFE1E7] 
-                 tw:rounded-lg tw:px-4 tw:py-2 tw:text-sm" />
-                            </div>
-                        </div>
-
-                        <!-- Film Section -->
-                        <div class="tw:space-y-4">
-                            <h4 class="tw:text-md tw:font-normal tw:text-gray-800">
-                                Film Details
-                            </h4>
-
-                            <div class="tw:flex tw:items-center tw:gap-6">
-                                <label class="tw:w-44 tw:text-sm tw:text-gray-700">
-                                    Director:
-                                </label>
-                                <input type="text" placeholder="Director Name" class="tw:flex-1 tw:bg-gray-50 tw:border tw:border-[#DFE1E7] 
-                 tw:rounded-lg tw:px-4 tw:py-2 tw:text-sm" />
-                            </div>
-
-                            <div class="tw:flex tw:items-center tw:gap-6">
-                                <label class="tw:w-44 tw:text-sm tw:text-gray-700">
-                                    Duration:
-                                </label>
-                                <input type="text" placeholder="E.G 120 Minutes" class="tw:flex-1 tw:bg-gray-50 tw:border tw:border-[#DFE1E7] 
-                 tw:rounded-lg tw:px-4 tw:py-2 tw:text-sm" />
-                            </div>
-                        </div>
-
-                        <!-- Theatre Section -->
-                        <div class="tw:space-y-4">
-                            <h4 class="tw:text-md tw:font-normal tw:text-gray-800">
-                                Theatre Details
-                            </h4>
-
-                            <div class="tw:flex tw:items-center tw:gap-6">
-                                <label class="tw:w-44 tw:text-sm tw:text-gray-700">
-                                    Cast:
-                                </label>
-                                <input type="text" placeholder="Main Cast Members" class="tw:flex-1 tw:bg-gray-50 tw:border tw:border-[#DFE1E7] 
-                 tw:rounded-lg tw:px-4 tw:py-2 tw:text-sm" />
-                            </div>
-
-                            <div class="tw:flex tw:items-center tw:gap-6">
-                                <label class="tw:w-44 tw:text-sm tw:text-gray-700">
-                                    Act Structure:
-                                </label>
-                                <input type="text" placeholder="E.G 3 Acts" class="tw:flex-1 tw:bg-gray-50 tw:border tw:border-[#DFE1E7] 
-                 tw:rounded-lg tw:px-4 tw:py-2 tw:text-sm" />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- EVENT IMAGE SECTION -->
+                <!-- Talent IMAGE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-6">
 
                     <!-- Header -->
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
                         <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-                            Event Image
+                            Talent Image
                         </h3>
 
                         <!-- <button type="button"
@@ -313,15 +214,15 @@
 
 
                 <!-- VENUE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                             Venue
                         </h3>
-                        <!-- <button
+                        <button
                             class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
                             <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
+                        </button>
                     </div>
 
                     <div class="tw:relative">
@@ -335,22 +236,22 @@
                         <ChevronDown
                             class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
                     </div>
-                </div>
+                </div> -->
 
-                <!-- EVENT DATE & TIME SECTION -->
+                <!-- Talent DATE & TIME SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
 
                     <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Event Date & Time
+                        Talent Date & Time
                     </h3>
 
                     <!-- Horizontal Layout -->
                     <div class="tw:flex tw:gap-6">
 
-                        <!-- EVENT DATE -->
+                        <!-- Talent DATE -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                Event Date
+                                Talent Date
                             </label>
 
                             <div class="tw:relative">
@@ -363,10 +264,10 @@
                             </div>
                         </div>
 
-                        <!-- EVENT TIME -->
+                        <!-- Talent TIME -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                Event Time
+                                Talent Time
                             </label>
 
                             <div class="tw:relative">
@@ -382,10 +283,10 @@
                     </div>
                 </div>
 
-                <!-- EVENT LOCATION SECTION -->
+                <!-- Talent LOCATION SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
                     <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Event Location
+                        Talent Location
                     </h3>
 
                     <!-- Address Search Input with Loading Spinner -->
@@ -488,7 +389,7 @@
                                     <option value="">Free Entrance</option>
                                     <option value="paid">Paid Entrance</option>
                                     <option value="donation">Sold Out</option>
-                                    <option value="cancelled">Event is Cancelled</option>
+                                    <option value="cancelled">Talent is Cancelled</option>
                                 </select>
                                 <ChevronDown
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
@@ -513,23 +414,23 @@
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
 
                     <!-- SHOW CHATBOX TOGGLE -->
-                    <div class="tw:flex tw:justify-between tw:items-center tw:pt-2">
+                    <!-- <div class="tw:flex tw:justify-between tw:items-center tw:pt-2">
                         <span class="tw:text-sm tw:text-gray-900">Show Chatbox</span>
 
                         <label class="tw:relative tw:inline-flex tw:items-center tw:w-12 tw:h-6 tw:cursor-pointer">
                             <input type="checkbox" v-model="showChatbox" class="tw:sr-only tw:peer" />
 
-                            <!-- Background -->
+                            
                             <div
                                 class="tw:w-12 tw:h-6 tw:bg-gray-300 tw:rounded-full tw:transition tw:peer-checked:bg-orange-500">
                             </div>
 
-                            <!-- Circle -->
+                            
                             <div
                                 class="tw:absolute tw:left-1 tw:top-1 tw:w-4 tw:h-4 tw:bg-white tw:rounded-full tw:transition tw:peer-checked:translate-x-6">
                             </div>
                         </label>
-                    </div>
+                    </div> -->
                 </div>
 
                 <!-- SOCIAL MEDIA LINKS SECTION -->
@@ -548,10 +449,10 @@
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
                 </div>
 
-                <!-- EVENT CONDITIONS SECTION -->
+                <!-- Talent CONDITIONS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Event Conditions (Optional)
+                        Talent Conditions (Optional)
                     </h3>
 
                     <input type="text" placeholder="Entrance Fee (If Different)"
@@ -638,40 +539,57 @@
                                 + Add
                             </button>
                         </div>
+
+                        <!-- Invite venue -->
+                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
+                            <div class="tw:flex tw:items-center tw:gap-3">
+                                <div
+                                    class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
+                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
+                                </div>
+                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
+                            </div>
+                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
+                                + Add
+                            </button>
+                        </div>
+
                     </div>
                 </div>
 
-                <!-- EVENT OPTIONS SECTION -->
+                <!-- Talent OPTIONS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Event Options
+                        Talent Options
                     </h3>
 
                     <div class="tw:flex tw:gap-6 tw:items-center">
-                        <!-- Copy Event -->
+                        <!-- Copy Talent -->
                         <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
                             <input type="radio" value="copy" v-model="eventOption"
                                 class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500" />
-                            <span class="tw:text-sm tw:text-gray-700">Copy Event</span>
+                            <span class="tw:text-sm tw:text-gray-700">Copy Talent</span>
                         </label>
 
-                        <!-- Recurring Event -->
+                        <!-- Recurring Talent -->
                         <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
                             <input type="radio" value="recurring" v-model="eventOption"
                                 class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500" />
-                            <span class="tw:text-sm tw:text-gray-700">Recurring Event</span>
+                            <span class="tw:text-sm tw:text-gray-700">Recurring Talent</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- SAVE EVENT BUTTON -->
+                <!-- SAVE Talent BUTTON -->
                 <div class="tw:flex tw:flex-col tw:items-start tw:pt-4 tw:w-full">
                     <button @click="saveEvent" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                tw:border tw:border-orange-500 tw:text-[#0061FF]
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
                         Buy Tickets
                     </button>
-                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full tw:ml-11">Soon</span>
+                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full">Soon you can show this button in
+                        your event description or event info window when appropriate. This is still under
+                        consideration.”</span>
                 </div>
 
             </div>
@@ -763,7 +681,7 @@ const genres = [
 
 const selectedGenres = ref([])
 
-const eventTitle = ref("Event Title")
+const eventTitle = ref("Talent Title")
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Premium")
 

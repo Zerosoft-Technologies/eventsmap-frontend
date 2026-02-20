@@ -109,8 +109,8 @@ const profiles = [
     icon: Calendar
   },
   { 
-    type: 'event-organiser', 
-    title: 'Event Organiser', 
+    type: 'organiser', 
+    title: 'Organiser', 
     subtitle: 'Manage and promote your events',
     icon: Users
   },
@@ -134,7 +134,7 @@ function handleProceed() {
   if (selectedProfile.value) {
     const routes = {
       'event': '/create-event-free',
-      'event-organiser': '/create-event-organiser-free',
+      'organiser': '/create-organiser-free',
       'talent': '/create-talents-free',
       'venue': '/create-venue-free'
     }

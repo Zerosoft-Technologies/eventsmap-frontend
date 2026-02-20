@@ -335,7 +335,7 @@ const eventTitle = ref("Event Title")
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Draft")
 
-const activeTab = ref('plan');
+const activeTab = ref('profile');
 const billingTab = ref('history');
 
 const tabs = [

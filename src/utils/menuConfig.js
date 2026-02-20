@@ -30,19 +30,19 @@ export const menuConfigs = {
 
   // Event Organiser Free
   createEventOrganiserFree: [
-    { id: "home", icon: Home, label: "Home", route: "/create-event-organiser-free" },
-    { id: "details", icon: FileText, label: "Details", route: "/create-event-organiser-free" },
-    { id: "analytics", icon: BarChart3, route: "/create-event-organiser-free/report", label: "Analytics" },
-    { id: "settings", icon: Settings, route: "/create-event-organiser-free/settings", label: "Settings" },
+    { id: "home", icon: Home, label: "Home", route: "/create-organiser-free" },
+    { id: "details", icon: FileText, label: "Details", route: "/create-organiser-free" },
+    { id: "analytics", icon: BarChart3, route: "/create-organiser-free/report", label: "Analytics" },
+    { id: "settings", icon: Settings, route: "/create-organiser-free/settings", label: "Settings" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
   ],
 
   // Event Organiser Premium
   createEventOrganiserPremium: [
-    { id: "home", icon: Home, label: "Home", route: "/create-event-organiser-premium" },
-    { id: "details", icon: FileText, label: "Details", route: "/create-event-organiser-premium" },
-    { id: "analytics", icon: BarChart3, route: "/create-event-organiser-premium/report", label: "Analytics" },
-    { id: "settings", icon: Settings, route: "/create-event-organiser-premium/settings", label: "Settings" },
+    { id: "home", icon: Home, label: "Home", route: "/create-organiser-premium" },
+    { id: "details", icon: FileText, label: "Details", route: "/create-organiser-premium" },
+    { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
+    { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
   ],

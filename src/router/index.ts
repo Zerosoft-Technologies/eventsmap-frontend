@@ -47,17 +47,17 @@ const routes: RouteRecordRaw[] = [
 
   { path: '/create-event-premium/settings', name: 'EventPremiumSettings', component: EventPremiumSettings },
 
-  { path: '/create-event-organiser-free', name: 'CreateEventOrganiserFree', component: CreateEventOrganiserFree },
+  { path: '/create-organiser-free', name: 'CreateEventOrganiserFree', component: CreateEventOrganiserFree },
 
-  { path: '/create-event-organiser-free/report', name: 'EventOrganiserReport', component: EventOrganiserReport },
+  { path: '/create-organiser-free/report', name: 'EventOrganiserReport', component: EventOrganiserReport },
 
-  { path: '/create-event-organiser-free/settings', name: 'EventOrganiserSettings', component: EventOrganiserSettings },
+  { path: '/create-organiser-free/settings', name: 'EventOrganiserSettings', component: EventOrganiserSettings },
 
-  { path: '/create-event-organiser-premium', name: 'CreateEventOrganiserPremium', component: CreateEventOrganiserPremium },
+  { path: '/create-organiser-premium', name: 'CreateEventOrganiserPremium', component: CreateEventOrganiserPremium },
 
-  { path: '/create-event-organiser-premium/report', name: 'EventOrganiserPremiumReport', component: EventOrganiserPremiumReport },
+  { path: '/create-organiser-premium/report', name: 'EventOrganiserPremiumReport', component: EventOrganiserPremiumReport },
 
-  { path: '/create-event-organiser-premium/settings', name: 'EventOrganiserPremiumSettings', component: EventOrganiserPremiumSettings },
+  { path: '/create-organiser-premium/settings', name: 'EventOrganiserPremiumSettings', component: EventOrganiserPremiumSettings },
 
   { path: '/create-talents-free', name: 'CreateTalentsFree', component: CreateTalentsFree },
 

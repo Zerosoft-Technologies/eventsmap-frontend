@@ -9,7 +9,7 @@
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6">
                 <div class="tw:bg-white tw:rounded-2xl tw:p-8 md:tw:p-12">
-                    <h1 class="tw:text-3xl tw:font-bold tw:text-[#2563eb] tw:mb-6">Event Settings</h1>
+                    <h1 class="tw:text-3xl tw:font-bold tw:text-[#2563eb] tw:mb-6">Venue Settings</h1>
 
                     <!-- Tab Navigation -->
                     <div class="tw:flex tw:gap-8 tw:border-b tw:border-gray-200 tw:mb-6">
@@ -27,9 +27,9 @@
 
                     <!-- Tab Content -->
                     <div class="tw:transition-opacity tw:duration-300">
-                        <!-- Event Profile Tab -->
+                        <!-- Venue Profile Tab -->
                         <div v-if="activeTab === 'profile'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-8">
-                            <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-6">Event Profile</h2>
+                            <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-6">Venue Profile</h2>
 
                             <div class="tw:grid tw:grid-cols-2 tw:gap-x-6 tw:gap-y-4 tw:mb-6">
                                 <div class="tw:flex tw:flex-col tw:gap-2">
@@ -135,7 +135,7 @@
                                     <!-- Plan Management Section - Takes 9/12 (3/4) -->
                                     <div class="tw:col-span-7">
                                         <!-- Header Outside -->
-                                        <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Event Package
+                                        <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Venue Package
                                         </h2>
                                         <!-- Card -->
                                         <div
@@ -280,16 +280,16 @@ import EventSidebar from '../eventsidebar/Eventsidebar.vue'
 
 const router = useRouter()
 
-// Event data (you can fetch this from API or store)
-const eventTitle = ref("Event Title")
+// Venue data (you can fetch this from API or store)
+const eventTitle = ref("Venue Title")
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Draft")
 
-const activeTab = ref('plan');
+const activeTab = ref('profile');
 const billingTab = ref('history');
 
 const tabs = [
-    { id: 'profile', label: 'Event profile' },
+    { id: 'profile', label: 'Venue profile' },
     { id: 'notification', label: 'Notification' },
     { id: 'plan', label: 'Plan Management' }
 ];

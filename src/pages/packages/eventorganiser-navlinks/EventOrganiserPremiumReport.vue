@@ -19,10 +19,10 @@
 
           <!-- Header -->
           <h1 class="tw:text-3xl tw:font-bold tw:text-[#1E5EFF]">
-            Event Views
+            Organiser Views
           </h1>
           <p class="tw:text-sm tw:text-gray-600 tw:mt-2">
-            Monthly overview of Event visits
+            Monthly overview of Organiser visits
           </p>
 
           <!-- Stats Container -->
@@ -61,7 +61,7 @@ import EventSidebar from "../eventsidebar/Eventsidebar.vue"
 const router = useRouter()
 
 // Event data (you can fetch this from API or store)
-const eventTitle = ref("Event Title")
+const eventTitle = ref("Organiser Title")
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Draft")
 
@@ -74,10 +74,10 @@ const monthlyViews = ref([
 
 // Menu items for CreateEventFree (you can change this based on your route)
 const menuItems = [
-  { id: "home", icon: Home, label: "Home", route: "/create-event-organiser-premium" },
-  { id: "details", icon: FileText, label: "Details", route: "/create-event-organiser-premium" },
-  { id: "analytics", icon: BarChart3, route: "/create-event-organiser-premium/report", label: "Analytics" },
-  { id: "settings", icon: Settings, route: "/create-event-organiser-premium/settings", label: "Settings" },
+  { id: "home", icon: Home, label: "Home", route: "/create-organiser-premium" },
+  { id: "details", icon: FileText, label: "Details", route: "/create-organiser-premium" },
+  { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
+  { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
   { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
 

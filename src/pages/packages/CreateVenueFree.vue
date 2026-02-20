@@ -74,11 +74,11 @@
 
       <!-- ================= RIGHT CARD ================= -->
       <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6 tw:space-y-6">
-        <!-- EVENT TITLE SECTION -->
+        <!-- Venue TITLE SECTION -->
         <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-              Event Title
+              Venue Title
             </h3>
             <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -86,17 +86,17 @@
             </button> -->
           </div>
 
-          <input v-model="eventTitle" type="text" placeholder="Enter Event Title"
+          <input v-model="eventTitle" type="text" placeholder="Enter Venue Title"
             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
         </div>
 
-        <!-- EVENT IMAGE SECTION -->
+        <!-- Venue IMAGE SECTION -->
         <div class="tw:bg-white tw:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-6">
 
           <!-- Header -->
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
             <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-              Event Image (Max 1)
+              Venue Image (Max 1)
             </h3>
 
             <!-- <button type="button"
@@ -179,15 +179,15 @@
         </div> -->
 
         <!-- ORGANISER SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Organiser
             </h3>
-            <!-- <button
+            <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
+            </button>
           </div>
 
           <div class="tw:relative">
@@ -202,18 +202,18 @@
             <ChevronDown
               class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
           </div>
-        </div>
+        </div> -->
 
         <!-- TALENT SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Talent
             </h3>
-            <!-- <button
+            <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
+            </button>
           </div>
 
           <div class="tw:relative">
@@ -228,22 +228,22 @@
             <ChevronDown
               class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
           </div>
-        </div>
+        </div> -->
 
-        <!-- EVENT DATE & TIME SECTION -->
+        <!-- Venue DATE & TIME SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
 
           <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-            Event Date & Time
+            Venue Date & Time
           </h3>
 
           <!-- Horizontal Layout -->
           <div class="tw:flex tw:gap-6">
 
-            <!-- EVENT DATE -->
+            <!-- Venue DATE -->
             <div class="tw:flex-1">
               <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                Event Date
+                Venue Date
               </label>
 
               <div class="tw:relative">
@@ -256,10 +256,10 @@
               </div>
             </div>
 
-            <!-- EVENT TIME -->
+            <!-- Venue TIME -->
             <div class="tw:flex-1">
               <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                Event Time
+                Venue Time
               </label>
 
               <div class="tw:relative">
@@ -275,10 +275,10 @@
           </div>
         </div>
 
-        <!-- EVENT LOCATION SECTION -->
+        <!-- Venue LOCATION SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
           <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-            Event Location
+            Venue Location
           </h3>
 
           <!-- Address Search Input with Loading Spinner -->
@@ -377,7 +377,7 @@
                   <option value="">Free Entrance</option>
                   <option value="paid">Paid Entrance</option>
                   <option value="donation">Sold Out</option>
-                  <option value="cancelled">Event is Cancelled</option>
+                  <option value="cancelled">Venue is Cancelled</option>
                 </select>
                 <ChevronDown
                   class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
@@ -429,17 +429,32 @@
                 + Add
               </button>
             </div>
+
+            <!-- Invite venue -->
+            <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
+              <div class="tw:flex tw:items-center tw:gap-3">
+                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
+                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
+                </div>
+                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
+              </div>
+              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
+                + Add
+              </button>
+            </div>
+
           </div>
         </div>
 
-        <!-- SAVE EVENT BUTTON -->
+        <!-- SAVE Venue BUTTON -->
         <div class="tw:flex tw:flex-col tw:items-start tw:pt-4 tw:w-full">
           <button @click="saveEvent" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                tw:border tw:border-orange-500 tw:text-[#0061FF]
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
             Buy Tickets
           </button>
-          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full tw:ml-11">Soon</span>
+          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full">Soon you can show this button in your
+            event description or event info window when appropriate. This is still under consideration.”</span>
         </div>
 
       </div>
@@ -505,7 +520,7 @@ const selectedTalent = ref("")
 
 
 // Event data
-const eventTitle = ref("Event Title")
+const eventTitle = ref("Venue Title")
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Draft")
 

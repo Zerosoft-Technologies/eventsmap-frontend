@@ -3,13 +3,8 @@
     <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
 
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-      <EventSidebar 
-        :eventTitle="eventTitle"
-        :eventDate="eventDate"
-        :eventStatus="eventStatus"
-        :menuItems="menuItems"
-        @back="handleBack"
-      />
+      <EventSidebar :eventTitle="eventTitle" :eventDate="eventDate" :eventStatus="eventStatus" :menuItems="menuItems"
+        @back="handleBack" />
 
       <!-- ================= RIGHT CARD ================= -->
       <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6 tw:space-y-6">
@@ -93,15 +88,15 @@
         </div>
 
         <!-- VENUE SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Venue
             </h3>
-            <!-- <button
+            <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
+            </button>
           </div>
 
           <div class="tw:relative">
@@ -115,18 +110,18 @@
             <ChevronDown
               class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
           </div>
-        </div>
+        </div> -->
 
         <!-- ORGANISER SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Organiser
             </h3>
-            <!-- <button
+            <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
+            </button>
           </div>
 
           <div class="tw:relative">
@@ -141,18 +136,18 @@
             <ChevronDown
               class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
           </div>
-        </div>
+        </div> -->
 
         <!-- TALENT SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Talent
             </h3>
-            <!-- <button
+            <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
+            </button>
           </div>
 
           <div class="tw:relative">
@@ -167,7 +162,7 @@
             <ChevronDown
               class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
           </div>
-        </div>
+        </div> -->
 
         <!-- EVENT DATE & TIME SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
@@ -368,6 +363,20 @@
                 + Add
               </button>
             </div>
+
+            <!-- Invite venue -->
+            <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
+              <div class="tw:flex tw:items-center tw:gap-3">
+                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
+                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
+                </div>
+                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
+              </div>
+              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
+                + Add
+              </button>
+            </div>
+
           </div>
         </div>
 
@@ -378,7 +387,8 @@
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
             Buy Tickets
           </button>
-          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full tw:ml-11">Soon</span>
+          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full">Soon you can show this button in your
+            event description or event info window when appropriate. This is still under consideration.”</span>
         </div>
 
       </div>

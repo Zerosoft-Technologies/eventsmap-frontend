@@ -19,10 +19,10 @@
 
           <!-- Header -->
           <h1 class="tw:text-3xl tw:font-bold tw:text-[#1E5EFF]">
-            Event Views
+            Venue Views
           </h1>
           <p class="tw:text-sm tw:text-gray-600 tw:mt-2">
-            Monthly overview of Event visits
+            Monthly overview of Venue visits
           </p>
 
           <!-- Stats Container -->
@@ -60,8 +60,8 @@ import EventSidebar from "../eventsidebar/Eventsidebar.vue"
 
 const router = useRouter()
 
-// Event data (you can fetch this from API or store)
-const eventTitle = ref("Event Title")
+// Venue data (you can fetch this from API or store)
+const eventTitle = ref("Venue Title")
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Draft")
 
