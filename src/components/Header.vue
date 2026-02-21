@@ -352,6 +352,7 @@ async function loadCategories() {
   try {
     const { fetchCategories } = await import('../api/categories');
     categories.value = await fetchCategories();
+    console.log('Categories loaded:', categories.value);
   } catch (e) {
     console.error('Failed to load categories:', e);
     categories.value = [];
