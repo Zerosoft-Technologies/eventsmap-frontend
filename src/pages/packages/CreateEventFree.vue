@@ -12,7 +12,7 @@
         <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-              Event Title
+              Event Title <span class="tw:text-red-500">*</span>
             </h3>
             <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -21,7 +21,8 @@
           </div>
 
           <input v-model="eventTitle" type="text" placeholder="Enter Event Title"
-            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" @input="clearFieldError('eventTitle')" />
+          <p v-if="errors.eventTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">Event title is required</p>
         </div>
 
         <!-- EVENT IMAGE SECTION -->
@@ -30,7 +31,7 @@
           <!-- Header -->
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
             <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-              Event Image (Max 1)
+              Event Image (Max 1) <span class="tw:text-red-500">*</span>
             </h3>
 
             <!-- <button type="button"
@@ -50,19 +51,33 @@
 
             <!-- No file chosen -->
             <span id="file-name" class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-              No File Chosen
+              {{ fileName || 'No File Chosen' }}
             </span>
 
-            <input type="file" accept="image/*" class="tw:hidden"
-              onchange="document.getElementById('file-name').innerText = this.files[0]?.name || 'No file chosen'" />
+            <input type="file" accept="image/*" class="hidden" @change="handleFileChange" />
           </label>
+
+          <!-- Image Preview -->
+          <div v-if="imagePreview" class="tw:relative tw:mt-4 tw:w-full">
+            <img :src="imagePreview" alt="Event image preview" 
+                 class="tw:w-full tw:h-auto tw:rounded-lg tw:border tw:border-gray-200 tw:object-cover" />
+            <!-- Remove button -->
+            <button @click="removeImage" type="button"
+                    class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-600 tw:transition-colors">
+              <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+          </div>
+
+          <p v-if="errors.eventImage" class="tw:text-red-500 tw:text-sm tw:mt-1">Event image is required</p>
         </div>
 
         <!-- GENRE SECTION -->
         <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-              Genre
+              Genre <span class="tw:text-red-500">*</span>
             </h3>
             <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -74,10 +89,13 @@
           <div v-if="categoriesError" class="tw:bg-red-50 tw:border tw:border-red-200 tw:rounded-lg tw:p-4 tw:mb-4">
             <div class="tw:flex tw:items-center">
               <svg class="tw:w-5 tw:h-5 tw:text-red-400 tw:mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                <path fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clip-rule="evenodd"></path>
               </svg>
               <p class="tw:text-red-800 tw:text-sm">{{ categoriesError }}</p>
-              <button @click="fetchCategories" class="tw:ml-auto tw:text-red-600 tw:text-sm tw:font-medium hover:tw:text-red-700">
+              <button @click="fetchCategories"
+                class="tw:ml-auto tw:text-red-600 tw:text-sm tw:font-medium hover:tw:text-red-700">
                 Retry
               </button>
             </div>
@@ -88,21 +106,17 @@
             <!-- Category Dropdown -->
             <div class="tw:flex-1">
               <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                Category
+                Category <span class="tw:text-red-500">*</span>
               </label>
               <div class="tw:relative">
-                <select 
-                  v-model="selectedCategory"
-                  @change="handleCategoryChange"
-                  :disabled="isLoadingCategories || categoriesError"
-                  :class="[
+                <select v-model="selectedCategory" @change="handleCategoryChangeWithValidation"
+                  :disabled="isLoadingCategories || categoriesError" :class="[
                     'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                     categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
                     (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
-                  ]"
-                >
+                  ]">
                   <option value="">
-                    {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'Select Category') }}
+                    {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'SelectCategory') }}
                   </option>
                   <option v-for="category in categories" :key="category.id" :value="category.name">
                     {{ category.name }}
@@ -117,68 +131,51 @@
             <!-- Subcategory Multi-Select -->
             <div class="tw:flex-1">
               <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                Subcategories (Max 5)
+                Subcategories (Max 5) <span class="tw:text-red-500">*</span>
               </label>
-              
+
               <!-- Multi-Select Input Field -->
               <div class="subcategory-dropdown-container" ref="dropdownContainer">
-                <div 
-                  @click="toggleSubcategoryDropdown"
-                  :class="[
-                    'subcategory-input',
-                    (!selectedCategory || categoriesError) ? 'disabled' : '',
-                    subcategoryError ? 'error' : ''
-                  ]"
-                >
+                <div @click="toggleSubcategoryDropdown" :class="[
+                  'subcategory-input',
+                  (!selectedCategory || categoriesError) ? 'disabled' : '',
+                  subcategoryError ? 'error' : ''
+                ]">
                   <div class="subcategory-input-content">
                     <span class="subcategory-input-text">
-                      {{ selectedSubcategories.length > 0 
-                        ? `${selectedSubcategories.length} selected` 
-                        : (selectedCategory ? 'Select Subcategories' : 'Select Category First') 
+                      {{ selectedSubcategories.length > 0
+                        ? `${selectedSubcategories.length} selected`
+                        : (selectedCategory ? 'Select Subcategories' : 'Select Category First')
                       }}
                     </span>
-                    <ChevronDown
-                      :class="[
-                        'dropdown-chevron',
-                        showSubcategoryDropdown ? 'rotated' : ''
-                      ]"
-                    />
+                    <ChevronDown :class="[
+                      'dropdown-chevron',
+                      showSubcategoryDropdown ? 'rotated' : ''
+                    ]" />
                   </div>
                 </div>
 
                 <!-- Dropdown Options -->
-                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError" 
-                     class="subcategory-dropdown"
-                     ref="dropdownMenu">
+                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError" class="subcategory-dropdown"
+                  ref="dropdownMenu">
                   <div class="dropdown-content">
-                    <div v-for="subcategory in availableSubcategories" :key="subcategory" 
-                         class="dropdown-option"
-                         :class="{
-                           'selected': selectedSubcategories.includes(subcategory),
-                           'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5
-                         }"
-                         @click="toggleSubcategory(subcategory)">
-                      <input 
-                        type="checkbox" 
-                        :id="`subcategory-${subcategory}`"
-                        :value="subcategory"
+                    <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
+                      :class="{
+                        'selected': selectedSubcategories.includes(subcategory),
+                        'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5
+                      }" @click="toggleSubcategory(subcategory)">
+                      <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
                         v-model="selectedSubcategories"
                         :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5"
-                        @change="handleSubcategoryChange"
-                        @click.stop
-                        class="option-checkbox"
-                      >
-                      <label :for="`subcategory-${subcategory}`" 
-                             class="option-label"
-                             @click.stop>
+                        @change="handleSubcategoryChange" @click.stop class="option-checkbox">
+                      <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
                         {{ subcategory }}
                       </label>
                     </div>
                   </div>
-                  
+
                   <!-- Max selection notice -->
-                  <div v-if="selectedSubcategories.length >= 5" 
-                       class="max-selection-notice">
+                  <div v-if="selectedSubcategories.length >= 5" class="max-selection-notice">
                     Maximum 5 subcategories selected
                   </div>
                 </div>
@@ -186,18 +183,18 @@
 
               <!-- Selected Tags Display -->
               <div v-if="selectedSubcategories.length > 0" class="selected-tags">
-                <span v-for="subcategory in selectedSubcategories" :key="subcategory"
-                      class="selected-tag">
+                <span v-for="subcategory in selectedSubcategories" :key="subcategory" class="selected-tag">
                   {{ subcategory }}
-                  <button @click="removeSubcategory(subcategory)" 
-                          class="tag-remove">
+                  <button @click="removeSubcategory(subcategory)" class="tag-remove">
                     <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                      <path fill-rule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clip-rule="evenodd"></path>
                     </svg>
                   </button>
                 </span>
               </div>
-              
+
               <!-- Validation Message -->
               <p v-if="subcategoryValidationError" class="validation-error">
                 You can select maximum 5 subcategories only.
@@ -288,7 +285,7 @@
         <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
 
           <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-            Event Date & Time
+            Event Date & Time <span class="tw:text-red-500">*</span>
           </h3>
 
           <!-- Horizontal Layout -->
@@ -297,33 +294,35 @@
             <!-- EVENT DATE -->
             <div class="tw:flex-1">
               <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                Event Date
+                Event Date <span class="tw:text-red-500">*</span>
               </label>
 
               <div class="tw:relative">
-                <input ref="dateInput" placeholder="MM/DD/YYYY"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
+                <input ref="dateInput" v-model="eventDate" placeholder="MM/DD/YYYY"
+                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" @input="clearFieldError('eventDate')" />
 
                 <!-- Custom Calendar Icon -->
                 <Calendar
                   class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
               </div>
+              <p v-if="errors.eventDate" class="tw:text-red-500 tw:text-sm tw:mt-1">Event date is required</p>
             </div>
 
             <!-- EVENT TIME -->
             <div class="tw:flex-1">
               <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                Event Time
+                Event Time <span class="tw:text-red-500">*</span>
               </label>
 
               <div class="tw:relative">
-                <input ref="timeInput" placeholder="-- -- --"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
+                <input ref="timeInput" v-model="eventTime" placeholder="-- -- --"
+                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" @input="clearFieldError('eventTime')" />
 
                 <!-- Custom Clock Icon -->
                 <Clock
                   class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
               </div>
+              <p v-if="errors.eventTime" class="tw:text-red-500 tw:text-sm tw:mt-1">Event time is required</p>
             </div>
 
           </div>
@@ -332,7 +331,7 @@
         <!-- EVENT LOCATION SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
           <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-            Event Location
+            Event Location <span class="tw:text-red-500">*</span>
           </h3>
 
           <!-- Address Search Input with Loading Spinner -->
@@ -353,7 +352,7 @@
 
             <!-- Suggestions Dropdown -->
             <div v-if="suggestions.length > 0"
-              class="tw:absolute tw-top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
+              class="tw:absolute tw:top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
               <button v-for="(suggestion, index) in suggestions" :key="index" @click="selectSuggestion(suggestion)"
                 class="tw:w-full tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors tw:border-b tw:border-gray-100 last:tw:border-b-0">
                 {{ suggestion.display_name }}
@@ -371,6 +370,7 @@
             </label>
             <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
               class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+            <p v-if="errors.address" class="tw:text-red-500 tw:text-sm tw:mt-1">Address is required</p>
           </div>
         </div>
 
@@ -389,9 +389,9 @@
           <div class="tw:grid tw:grid-cols-3 tw:gap-4">
             <!-- Dress Code -->
             <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code</label>
+              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code <span class="tw:text-red-500">*</span></label>
               <div class="tw:relative">
-                <select v-model="dressCode"
+                <select v-model="dressCode" @change="clearFieldError('dressCode')"
                   class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
                   <option value="">No Dress Code</option>
                   <option value="casual">Dress Code</option>
@@ -399,13 +399,14 @@
                 <ChevronDown
                   class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
+              <p v-if="errors.dressCode" class="tw:text-red-500 tw:text-sm tw:mt-1">Dress code is required</p>
             </div>
 
             <!-- Age Limit -->
             <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit</label>
+              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit <span class="tw:text-red-500">*</span></label>
               <div class="tw:relative">
-                <select v-model="ageLimit"
+                <select v-model="ageLimit" @change="clearFieldError('ageLimit')"
                   class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
                   <option value="">4+</option>
                   <option value="8">8+</option>
@@ -420,13 +421,14 @@
                 <ChevronDown
                   class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
+              <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm tw:mt-1">Age limit is required</p>
             </div>
 
             <!-- Entrance Fee -->
             <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status</label>
+              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status <span class="tw:text-red-500">*</span></label>
               <div class="tw:relative">
-                <select v-model="entranceFee"
+                <select v-model="entranceFee" @change="clearFieldError('entranceFee')"
                   class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
                   <option value="">Free Entrance</option>
                   <option value="paid">Paid Entrance</option>
@@ -436,6 +438,7 @@
                 <ChevronDown
                   class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
+              <p v-if="errors.entranceFee" class="tw:text-red-500 tw:text-sm tw:mt-1">Entrance fee is required</p>
             </div>
           </div>
         </div>
@@ -501,14 +504,30 @@
         </div>
 
         <!-- SAVE EVENT BUTTON -->
-        <div class="tw:flex tw:flex-col tw:items-start tw:pt-4 tw:w-full">
-          <button @click="saveEvent" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-               tw:border tw:border-orange-500 tw:text-[#0061FF]
-               tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
-            Buy Tickets
-          </button>
-          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full">Soon you can show this button in your
-            event description or event info window when appropriate. This is still under consideration.”</span>
+        <div class="tw:w-full tw:pt-4">
+
+          <div class="tw:flex tw:w-full tw:items-center tw:justify-between">
+
+            <button @click="saveEvent" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+             tw:border tw:border-orange-500 tw:text-[#0061FF]
+             tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
+              Buy Tickets
+            </button>
+
+            <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+             tw:border tw:border-blue-500 tw:text-blue-600
+             tw:bg-white hover:tw:bg-blue-50 tw:transition-all
+             disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
+              {{ isSubmitting ? 'Creating...' : 'Create Event' }}
+            </button>
+
+          </div>
+
+          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">
+            Soon you can show this button in your event description or event info window when appropriate.
+            This is still under consideration.
+          </span>
+
         </div>
 
       </div>
@@ -534,7 +553,7 @@ import {
   Clock,
 } from "lucide-vue-next"
 
-import { ref, computed, onMounted, onUnmounted } from "vue"
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import axios from "axios"
@@ -551,6 +570,42 @@ const route = useRoute()
 const activeTab = ref("home")
 const eventTitle = ref("")
 const selectedVenue = ref("")
+
+// Form validation state
+const errors = ref({
+  eventTitle: false,
+  eventImage: false,
+  category: false,
+  subcategories: false,
+  eventDate: false,
+  eventTime: false,
+  address: false,
+  dressCode: false,
+  ageLimit: false,
+  entranceFee: false
+})
+
+// Form submission state
+const isSubmitting = ref(false)
+const selectedImageFile = ref(null)
+const imagePreview = ref(null)
+
+// Form validation computed property
+const isFormValid = computed(() => {
+  return (
+    eventTitle.value.trim() !== '' &&
+    selectedImageFile.value !== null &&
+    selectedCategory.value !== '' &&
+    selectedSubcategories.value.length > 0 &&
+    eventDate.value !== '' &&
+    eventTime.value !== '' &&
+    selectedAddress.value !== '' &&
+    dressCode.value !== '' &&
+    ageLimit.value !== '' &&
+    entranceFee.value !== ''
+  )
+})
+
 // Genre state
 const selectedCategory = ref("")
 const selectedSubcategories = ref([])  // Multi-select array for subcategories
@@ -578,9 +633,9 @@ async function fetchCategories() {
   try {
     isLoadingCategories.value = true
     categoriesError.value = null
-    
+
     const response = await axios.get('http://localhost:8001/api/v1/categories')
-    
+
     if (response.data.success) {
       categories.value = response.data.data
     } else {
@@ -594,13 +649,22 @@ async function fetchCategories() {
   }
 }
 
-// Handle category change
-function handleCategoryChange() {
+// Handle category change with validation clearing
+function handleCategoryChangeWithValidation() {
   selectedSubcategories.value = []  // Reset array when category changes
   subcategoryError.value = false
   subcategoryValidationError.value = false  // Clear validation error
   categoryError.value = false
   showSubcategoryDropdown.value = false  // Close dropdown
+  
+  // Clear field errors
+  clearFieldError('category')
+  clearFieldError('subcategories')
+}
+
+// Handle category change
+function handleCategoryChange() {
+  handleCategoryChangeWithValidation()
 }
 
 // Toggle subcategory dropdown
@@ -614,14 +678,14 @@ function toggleSubcategory(subcategory) {
   if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
     return // Prevent selection if already at max 5
   }
-  
+
   const index = selectedSubcategories.value.indexOf(subcategory)
   if (index > -1) {
     selectedSubcategories.value.splice(index, 1)
   } else {
     selectedSubcategories.value.push(subcategory)
   }
-  
+
   handleSubcategoryChange()
 }
 
@@ -636,16 +700,19 @@ function handleClickOutside(event) {
 function handleSubcategoryChange() {
   subcategoryError.value = false
   
+  // Clear field errors
+  clearFieldError('subcategories')
+
   // Maximum 5 subcategories selection logic
   // Prevent selection if trying to add more than 5 items
   if (selectedSubcategories.value.length > 5) {
     // Remove the last added item to maintain the limit
     const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
     selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
-    
+
     // Show validation error
     subcategoryValidationError.value = true
-    
+
     // Auto-hide validation message after 3 seconds
     setTimeout(() => {
       subcategoryValidationError.value = false
@@ -670,7 +737,7 @@ function removeSubcategory(subcategoryToRemove) {
 function validateGenre() {
   categoryError.value = !selectedCategory.value
   subcategoryError.value = selectedSubcategories.value.length === 0
-  
+
   return selectedCategory.value && selectedSubcategories.value.length > 0
 }
 const dressCode = ref("")
@@ -800,8 +867,20 @@ function updateMarker(lng, lat) {
     marker.value.remove()
   }
 
-  // Add new marker
-  marker.value = new maplibregl.Marker({ color: "#0061FF" })
+  // Add new marker with custom icon
+  const customIcon = document.createElement('div');
+  customIcon.style.backgroundImage = 'url(/marker.png)';
+  customIcon.style.width = '60px';
+  customIcon.style.height = '60px';
+  customIcon.style.backgroundSize = 'contain';
+  customIcon.style.backgroundRepeat = 'no-repeat';
+  customIcon.style.backgroundPosition = 'center bottom';
+  customIcon.style.cursor = 'pointer';
+
+  marker.value = new maplibregl.Marker({
+    element: customIcon,
+    anchor: 'bottom'
+  })
     .setLngLat([lng, lat])
     .addTo(map.value)
 }
@@ -836,10 +915,10 @@ async function reverseGeocode(lng, lat) {
 onMounted(() => {
   // Fetch categories from API
   fetchCategories()
-  
+
   // Add click outside listener for dropdown
   document.addEventListener('click', handleClickOutside)
-  
+
   // Initialize map centered on Amsterdam
   map.value = new maplibregl.Map({
     container: "event-map",
@@ -880,10 +959,277 @@ onUnmounted(() => {
 
 function handleFileChange(event) {
   const file = event.target.files[0]
-  fileName.value = file ? file.name : 'No File Chosen'
+  if (file) {
+    selectedImageFile.value = file
+    fileName.value = file.name
+    errors.value.eventImage = false
+    
+    // Create image preview using URL.createObjectURL()
+    imagePreview.value = URL.createObjectURL(file)
+  } else {
+    selectedImageFile.value = null
+    fileName.value = 'No File Chosen'
+    imagePreview.value = null
+  }
+}
+
+function removeImage() {
+  selectedImageFile.value = null
+  fileName.value = 'No File Chosen'
+  imagePreview.value = null
+  errors.value.eventImage = true
+  
+  // Clear the file input
+  const fileInput = document.querySelector('input[type="file"]')
+  if (fileInput) {
+    fileInput.value = ''
+  }
+}
+
+// Clear individual field error
+function clearFieldError(fieldName) {
+  if (errors.value.hasOwnProperty(fieldName)) {
+    errors.value[fieldName] = false
+  }
+  
+  // Special handling for category/subcategory
+  if (fieldName === 'category') {
+    categoryError.value = false
+  }
+  if (fieldName === 'subcategories') {
+    subcategoryError.value = false
+  }
+}
+
+// Scroll to first invalid field
+async function scrollToFirstError() {
+  await nextTick()
+  
+  // Find first field with error
+  const errorFields = ['eventTitle', 'eventImage', 'category', 'subcategories', 'eventDate', 'eventTime', 'address', 'dressCode', 'ageLimit', 'entranceFee']
+  const firstErrorField = errorFields.find(field => 
+    errors.value[field] || 
+    (field === 'category' && categoryError.value) || 
+    (field === 'subcategories' && subcategoryError.value)
+  )
+  
+  if (firstErrorField) {
+    let element
+    
+    // Map field names to DOM elements
+    switch (firstErrorField) {
+      case 'eventTitle':
+        element = document.querySelector('input[placeholder="Enter Event Title"]')
+        break
+      case 'eventImage':
+        element = document.querySelector('input[type="file"]')
+        break
+      case 'category':
+        element = document.querySelector('select')
+        break
+      case 'subcategories':
+        element = document.querySelector('.subcategory-dropdown-container')
+        break
+      case 'eventDate':
+        element = document.querySelector('input[placeholder="MM/DD/YYYY"]')
+        break
+      case 'eventTime':
+        element = document.querySelector('input[placeholder="-- -- --"]')
+        break
+      case 'address':
+        element = document.querySelector('input[readonly]')
+        break
+      case 'dressCode':
+        element = document.querySelectorAll('select')[1] // Second select
+        break
+      case 'ageLimit':
+        element = document.querySelectorAll('select')[2] // Third select
+        break
+      case 'entranceFee':
+        element = document.querySelectorAll('select')[3] // Fourth select
+        break
+    }
+    
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      })
+      
+      // Focus the element if it's an input or select
+      if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+        element.focus()
+      }
+    }
+  }
+}
+
+// Form validation functions
+function validateForm() {
+  console.log('🔍 validateForm() called')
+  
+  // Reset all errors
+  Object.keys(errors.value).forEach(key => {
+    errors.value[key] = false
+  })
+  categoryError.value = false
+  subcategoryError.value = false
+
+  // Validate each field
+  errors.value.eventTitle = !eventTitle.value.trim()
+  errors.value.eventImage = !selectedImageFile.value
+  errors.value.category = !selectedCategory.value
+  errors.value.subcategories = selectedSubcategories.value.length === 0
+  errors.value.eventDate = !eventDate.value
+  errors.value.eventTime = !eventTime.value
+  errors.value.address = !selectedAddress.value
+  errors.value.dressCode = !dressCode.value
+  errors.value.ageLimit = !ageLimit.value
+  errors.value.entranceFee = !entranceFee.value
+
+  // Set category/subcategory specific errors
+  categoryError.value = !selectedCategory.value
+  subcategoryError.value = selectedSubcategories.value.length === 0
+
+  console.log('📋 Validation errors:', errors.value)
+  
+  const isValid = !Object.values(errors.value).some(error => error) && !categoryError.value && !subcategoryError.value
+  console.log('✅ Form is valid:', isValid)
+  
+  return isValid
+}
+
+// Submit handler function
+async function handleSubmit() {
+  console.log('🚀 handleSubmit() called')
+  
+  if (isSubmitting.value) {
+    console.log('⚠️ Already submitting, returning')
+    return
+  }
+
+  // Always run validation first
+  const isValid = validateForm()
+  
+  if (!isValid) {
+    console.log('❌ Validation failed, scrolling to first error')
+    await scrollToFirstError()
+    return
+  }
+
+  console.log('✅ Validation passed, proceeding with submission')
+  
+  // Call the original createEvent function
+  await createEvent()
+}
+
+// Create Event function
+async function createEvent() {
+  if (isSubmitting.value) return
+
+  // Validate form
+  if (!validateForm()) {
+    return
+  }
+
+  try {
+    isSubmitting.value = true
+
+    // Find category and subcategory IDs
+    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+    const categoryId = selectedCategoryData ? selectedCategoryData.id : null
+
+    const selectedSubcategoryData = selectedCategoryData ?
+      selectedCategoryData.subcategories.filter(sub => selectedSubcategories.value.includes(sub.name)) : []
+    const subcategoryIds = selectedSubcategoryData.map(sub => sub.id)
+
+    // Build payload
+    const payload = {
+      title: eventTitle.value,
+      category_id: categoryId,
+      subcategory_ids: subcategoryIds,
+      event_date: eventDate.value,
+      event_time: eventTime.value,
+      address: selectedAddress.value,
+      latitude: marker.value ? marker.value.getLngLat().lat : null,
+      longitude: marker.value ? marker.value.getLngLat().lng : null,
+      dress_code: dressCode.value,
+      age_limit: ageLimit.value,
+      entrance_fee: entranceFee.value
+    }
+
+    console.log('Creating event with payload:', payload)
+
+    // Create FormData for image upload
+    const formData = new FormData()
+
+    // Add all payload fields to FormData
+    Object.keys(payload).forEach(key => {
+      if (Array.isArray(payload[key])) {
+        payload[key].forEach(item => {
+          formData.append(`${key}[]`, item)
+        })
+      } else {
+        formData.append(key, payload[key])
+      }
+    })
+
+    // Add image file if exists
+    if (selectedImageFile.value) {
+      formData.append('image', selectedImageFile.value)
+    }
+
+    // Submit to API
+    const response = await axios.post('/api/v1/events', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    if (response.data.success) {
+      // Show success message
+      alert('Event created successfully!')
+
+      // Optionally reset form or redirect
+      // router.push('/events')
+
+    } else {
+      // Handle API validation errors
+      if (response.data.errors) {
+        // Map API errors to form errors
+        Object.keys(response.data.errors).forEach(field => {
+          if (errors.value.hasOwnProperty(field)) {
+            errors.value[field] = true
+          }
+        })
+        alert('Please correct the errors in the form.')
+      } else {
+        alert('Failed to create event. Please try again.')
+      }
+    }
+
+  } catch (error) {
+    console.error('Error creating event:', error)
+
+    // Handle API validation errors
+    if (error.response && error.response.data && error.response.data.errors) {
+      const apiErrors = error.response.data.errors
+      Object.keys(apiErrors).forEach(field => {
+        if (errors.value.hasOwnProperty(field)) {
+          errors.value[field] = true
+        }
+      })
+      alert('Please correct the errors in the form.')
+    } else {
+      alert('An error occurred while creating the event. Please try again.')
+    }
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 function handleBack() {
   router.push('/events') // Navigate to events list
 }
+
 </script>
