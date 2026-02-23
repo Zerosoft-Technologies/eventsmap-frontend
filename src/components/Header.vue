@@ -161,7 +161,17 @@
         </transition>
       </div>
       <div>
-        <button @click="$emit('open-login')" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/login.png" alt="Login Icon"/><span>{{ $t('header.login') }}</span></button>
+        <!-- Authenticated: user menu -->
+        <div v-if="authStore.isAuthenticated" class="tw:flex tw:items-center tw:gap-2">
+          <router-link to="/dashboard" style="height: 50px;" class="no-hover tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) hover:tw:bg-gray-50">
+            <span class="tw:text-sm tw:font-medium" style="color: var(--primary-color)">{{ authStore.user?.name || 'Dashboard' }}</span>
+          </router-link>
+          <button @click="handleLogout" style="height: 50px;" class="no-hover tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) hover:tw:bg-gray-50">
+            <span class="tw:text-sm">{{ $t('header.logout') || 'Logout' }}</span>
+          </button>
+        </div>
+        <!-- Not authenticated: login button -->
+        <button v-else @click="$emit('open-login')" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/login.png" alt="Login Icon"/><span>{{ $t('header.login') }}</span></button>
       </div>
     </div>
 
@@ -186,14 +196,20 @@
           <p>{{ $t('header.createProfile') }}</p>
         </div>
 
-        <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
+        <div v-if="authStore.isAuthenticated" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
+          <router-link to="/dashboard"><p>{{ authStore.user?.name || 'Dashboard' }}</p></router-link>
+        </div>
+        <div v-if="authStore.isAuthenticated" @click="handleLogout" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg tw:cursor-pointer">
+          <p>{{ $t('header.logout') || 'Logout' }}</p>
+        </div>
+        <div v-if="!authStore.isAuthenticated" @click="$emit('open-login')" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg tw:cursor-pointer">
           <p>{{ $t('header.login') }}</p>
         </div>
 
         <!-- Mobile Language Switcher -->
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
           <p class="tw-mb-2 tw-font-medium">{{ $t('header.language') }}</p>
-          <div class="tw-flex tw-flex-col tw-gap-2">
+          <div class="tw:flex tw:flex-col tw-gap-2">
             <button
               v-for="lang in availableLanguages"
               :key="lang.code"
@@ -227,13 +243,14 @@
   />
 </template>
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ref, onMounted, onBeforeUnmount, computed, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DatePicker from "./DatePicker.vue";
 import LocationPermissionPrompt from './LocationPermissionPrompt.vue';
 import { useLocationPermission } from '../composables/useLocationPermission';
 import { useLanguageSwitch } from '../composables/useLanguageSwitch';
+import { useAuthStore } from '@/stores/auth';
 
 // Lazy load AllEvents to avoid circular import issue
 const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
@@ -243,6 +260,13 @@ const EventDetailsPanel = defineAsyncComponent(() => import('./EventDetailsPanel
 
 const { t, locale } = useI18n()
 const { switchLanguage, getAvailableLanguages, initializeLanguage } = useLanguageSwitch()
+const authStore = useAuthStore()
+const router = useRouter()
+
+async function handleLogout() {
+  await authStore.logout()
+  router.push({ name: 'Login' })
+}
 
 // Language switcher state
 const showLanguageDropdown = ref(false)

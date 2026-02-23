@@ -8,6 +8,25 @@
                     ✕
                 </button>
             </div>
+
+            <!-- Error Banner -->
+            <div v-if="authStore.error" class="tw:bg-red-50 tw:border tw:border-red-200 tw:text-red-700 tw:rounded-lg tw:px-4 tw:py-3 tw:mb-4 tw:text-sm">
+                {{ authStore.error }}
+            </div>
+
+            <!-- Unverified Email Banner -->
+            <div v-if="showResendBanner" class="tw:bg-yellow-50 tw:border tw:border-yellow-200 tw:text-yellow-800 tw:rounded-lg tw:px-4 tw:py-3 tw:mb-4 tw:text-sm">
+                <p>Your email is not verified.</p>
+                <button
+                    @click="handleResend"
+                    :disabled="resending"
+                    class="no-hover tw:mt-1 tw:font-semibold tw:underline hover:tw:no-underline tw:disabled:opacity-50"
+                    style="color: var(--primary-color)"
+                >
+                    {{ resending ? 'Sending...' : 'Resend verification email' }}
+                </button>
+                <p v-if="resendMessage" class="tw:text-green-600 tw:mt-1">{{ resendMessage }}</p>
+            </div>
             
             <form @submit.prevent="submitLogin" class="tw:space-y-5">
                 <div>
@@ -25,10 +44,21 @@
                 </div>
 
                 <button type="submit"
-                    class="tw:w-full tw:bg-(--primary-color) tw:text-white tw:font-semibold tw:py-2 tw:rounded-lg tw:transition">
-                    {{ $t('auth.signIn') }}
+                    :disabled="authStore.loading"
+                    class="no-hover tw:w-full tw:bg-(--primary-color) tw:text-white tw:font-semibold tw:py-2 tw:rounded-lg tw:transition tw:disabled:opacity-50 tw:disabled:cursor-not-allowed">
+                    <span v-if="authStore.loading">Signing in...</span>
+                    <span v-else>{{ $t('auth.signIn') }}</span>
                 </button>
             </form>
+
+            <div class="tw:flex tw:justify-between tw:items-center tw:mt-4 tw:text-sm">
+                <router-link to="/forgot-password" @click="closePopup" class="no-hover tw:font-medium hover:tw:underline" style="color: var(--primary-color)">
+                    Forgot Password?
+                </router-link>
+                <router-link to="/register" @click="closePopup" class="no-hover tw:font-medium hover:tw:underline" style="color: var(--primary-color)">
+                    Create Account
+                </router-link>
+            </div>
         </div>
     </div>
 
@@ -37,8 +67,12 @@
 <script setup>
 import { ref } from "vue";
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 const { t } = useI18n()
+const router = useRouter()
+const authStore = useAuthStore()
 
 const props = defineProps({
     isOpen: {
@@ -51,11 +85,59 @@ const emit = defineEmits(["close"]);
 
 const email = ref("");
 const password = ref("");
+const showResendBanner = ref(false);
+const resending = ref(false);
+const resendMessage = ref("");
 
-const closePopup = () => emit("close");
+const closePopup = () => {
+    authStore.clearErrors();
+    showResendBanner.value = false;
+    resendMessage.value = "";
+    emit("close");
+};
 
-const submitLogin = () => {
-    console.log("Email:", email.value);
-    console.log("Password:", password.value);
+const submitLogin = async () => {
+    showResendBanner.value = false;
+    resendMessage.value = "";
+    authStore.clearErrors();
+
+    const result = await authStore.login({ email: email.value, password: password.value });
+
+    if (result.success) {
+        closePopup();
+        // Redirect based on user's profile_type
+        const redirectPath = getRedirectPath(authStore.user?.profile_type);
+        router.push(redirectPath);
+    } else if (!result.emailVerified) {
+        showResendBanner.value = true;
+    }
+};
+
+/**
+ * Get redirect path based on user's profile type
+ */
+function getRedirectPath(profileType) {
+    switch (profileType) {
+        case 'event':
+            return '/create-event-free';
+        case 'organizer':
+            return '/create-organiser-free';
+        case 'talent':
+            return '/create-talents-free';
+        case 'venue':
+            return '/create-venue-free';
+        default:
+            return '/dashboard';
+    }
+}
+
+const handleResend = async () => {
+    resending.value = true;
+    resendMessage.value = "";
+    const msg = await authStore.resendVerification(email.value);
+    if (msg) {
+        resendMessage.value = msg;
+    }
+    resending.value = false;
 };
 </script>
