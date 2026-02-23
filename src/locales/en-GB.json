@@ -7,6 +7,7 @@
       "placeholder": "Enter location..."
     },
     "login": "Login",
+    "logout": "Logout",
     "createProfile": "Register",
     "resetSearch": "Reset Search",
     "currentLocation": "Current location",
