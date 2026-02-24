@@ -13,8 +13,16 @@
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
-export const API_PREFIX = '/api/v1'
+export const API_PREFIX_V1 = '/api/v1'
+export const API_PREFIX_V2 = '/api/v2'
+
+// Legacy v1 API helper (for backwards compatibility)
+export const API_PREFIX = API_PREFIX_V1
 
 export const getApiUrl = (endpoint: string): string => {
-  return `${API_BASE_URL}${API_PREFIX}${endpoint}`
+  return `${API_BASE_URL}${API_PREFIX_V1}${endpoint}`
+}
+
+export const getApiUrlV2 = (endpoint: string): string => {
+  return `${API_BASE_URL}${API_PREFIX_V2}${endpoint}`
 }

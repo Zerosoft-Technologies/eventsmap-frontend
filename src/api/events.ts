@@ -1,7 +1,7 @@
 import { getApiUrl } from './config'
+import api from '@/services/api'
 import type { 
   Event, 
-  EventsResponse, 
   EventResponse, 
   EventFilters,
   Talent,
@@ -11,8 +11,11 @@ import type {
   EventLocationDetails,
   EventLocationResponse,
   EventImage,
-  EventImagesResponse
+  EventImagesResponse,
+  PaginationMeta
 } from '../types/events'
+import { extractEventsFromV2Response } from '../adapters/eventAdapter'
+import type { EventsV2Response } from '../adapters/eventAdapter'
 
 /**
  * API Error class for handling non-200 responses
@@ -120,6 +123,7 @@ export function buildQueryParams(filters: EventFilters): URLSearchParams {
 
 /**
  * Fetch events with filters and pagination
+ * Uses API v2 endpoint with adapter for field mapping
  * 
  * @example
  * // Get events near Amsterdam with radius
@@ -135,40 +139,32 @@ export function buildQueryParams(filters: EventFilters): URLSearchParams {
  */
 export async function fetchEvents(
   filters: EventFilters = {}
-): Promise<{ data: Event[]; meta: EventsResponse['meta'] }> {
+): Promise<{ data: Event[]; meta: PaginationMeta }> {
   const params = buildQueryParams(filters)
   const queryString = params.toString()
-  const url = getApiUrl('/events') + (queryString ? `?${queryString}` : '')
+  // Use v2 API endpoint with relative path (Axios will add base URL)
+  const endpoint = `/v2/events${queryString ? `?${queryString}` : ''}`
 
   try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    })
+    // Use Axios instance which includes authentication headers
+    const response = await api.get<EventsV2Response>(endpoint)
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new ApiError(
-        `Failed to fetch events: ${response.statusText}`,
-        response.status,
-        errorData
-      )
+    // Axios already handles 401 errors globally via interceptor
+    // Just check for success flag
+    if (response.data.success === false) {
+      throw new ApiError(response.data.message || 'API returned success: false', 400, response.data)
     }
 
-    const result: EventsResponse = await response.json()
-    
-    if (!result.success) {
-      throw new ApiError('API returned success: false', 400, result)
-    }
+    // Use adapter to extract and transform events from v2 response
+    // v2 response structure: { success, data: { data: [...], current_page, ... } }
+    const { events, meta } = extractEventsFromV2Response(response.data)
 
     return {
-      data: result.data,
-      meta: result.meta
+      data: events,
+      meta
     }
   } catch (error) {
+    // Axios interceptor already handles 401 globally
     if (error instanceof ApiError) {
       throw error
     }

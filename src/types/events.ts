@@ -214,6 +214,7 @@ export interface Event {
   category: EventCategoryObject | string
   category_id?: number
   subcategory?: EventSubcategory
+  subcategories?: EventSubcategory[]
   subcategory_id?: number
   price: string | null
   min_price?: number | string | null
@@ -222,8 +223,13 @@ export interface Event {
   dresscode: string | null
   min_age: number | null
   max_age?: number | null
+  age_limit?: string
   start_datetime: string
   end_datetime: string
+  event_date?: string
+  start_time?: string
+  end_time?: string
+  is_overnight?: boolean
   timezone?: string
   venue_name?: string
   city: string
@@ -251,6 +257,7 @@ export interface Event {
   meta_description?: string
   tags?: string[]
   view_count?: number
+  like_count?: number
   created_at: string
   updated_at: string
   published_at?: string
@@ -271,6 +278,15 @@ export interface Event {
   formatted_date: string
   formatted_price?: string
   formatted_dresscode?: string
+  
+  // API v2 additional fields
+  status?: string
+  computed_status?: string
+  is_approved?: boolean
+  entrance_status?: string
+  venue?: unknown
+  organisers?: Array<unknown>
+  is_free_package?: boolean
 }
 
 /**

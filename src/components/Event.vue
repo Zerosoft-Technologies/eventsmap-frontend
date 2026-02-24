@@ -11,7 +11,7 @@
             </div>
 
             <div class="tw:flex tw:md:justify-start tw:justify-between tw:md:gap-4 tw:mt-4">
-                <img :src="event.image" class="tw:rounded-lg tw:w-40 tw:object-cover" />
+                <img :src="event.cover_image" class="tw:rounded-lg tw:w-40 tw:object-cover" />
 
                 <div>
                     <!-- STATUS SLOT (COUNTDOWN / LIVE / FINISHED) -->
@@ -48,12 +48,12 @@
                     </div>
 
                     <div class="tw:space-y-3 tw:mt-3">
-                        <DetailRow icon="date-time" :text="event.date" />
-                        <DetailRow icon="location-02" :text="event.location_name" />
-                        <DetailRow icon="music-note" :text="event.category == null ? 'N/A' : event.category" />
+                        <DetailRow icon="date-time" :text="event.formatted_date" />
+                        <DetailRow icon="location-02" :text="event.address" />
+                        <DetailRow icon="music-note" :text="event.category == null ? 'N/A' : event.category.name" />
                         <DetailRow icon="bitcoin-bag" :text="event.price" />
                         <DetailRow icon="baby-boy-dress" :text="event.dresscode" />
-                        <DetailRow icon="user-group" :text="event.age" />
+                        <DetailRow icon="user-group" :text="event.age_limit" />
                     </div>
                 </div>
             </div>

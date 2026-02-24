@@ -9,13 +9,13 @@
             Welcome back, {{ authStore.user.name }}
           </p>
         </div>
-        <button
+        <!-- <button
           @click="handleLogout"
           :disabled="authStore.loading"
           class="no-hover tw:text-sm tw:font-medium tw:px-4 tw:py-2 tw:rounded-lg tw:border tw:border-gray-300 tw:text-gray-600 hover:tw:bg-gray-100 tw:transition tw:disabled:opacity-50"
         >
           Sign Out
-        </button>
+        </button> -->
       </div>
     </div>
 
