@@ -265,53 +265,6 @@
                     </div>
                 </div>
 
-                <!-- GENRE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Genre
-                        </h3>
-                        <!-- <button
-                            class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                            <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-                    <!-- Dropdown -->
-                    <div class="tw:relative" ref="genreDropdownRef">
-
-                        <!-- Trigger -->
-                        <div @click="toggleDropdown"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
-
-                            <span class="tw:text-gray-700">
-                                {{ selectedGenres.length ? selectedGenres.join(', ') : 'Select Genres' }}
-                            </span>
-
-                            <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
-                        </div>
-
-                        <!-- Dropdown Box -->
-                        <div v-if="showGenreDropdown"
-                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
-
-                            <!-- Inner white container -->
-                            <div class="tw:bg-white tw:rounded-lg tw:space-y-4 tw:p-4">
-
-                                <label v-for="genre in genres" :key="genre"
-                                    class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
-
-                                    <span class="tw:text-gray-700">{{ genre }}</span>
-
-                                    <input type="checkbox" :value="genre" v-model="selectedGenres"
-                                        class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
-                                </label>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
                 <!-- VENUE SECTION -->
                 <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
@@ -715,6 +668,7 @@ import {
 import { ref, onMounted, onBeforeUnmount, computed } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import eventService from "@/services/eventService"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -766,6 +720,139 @@ const isLoading = ref(false)
 const debounceTimer = ref(null)
 const selectedCategory = ref("")
 
+const selectedSubcategories = ref([])  // Multi-select array for subcategories
+const categoryError = ref(false)
+const subcategoryError = ref(false)
+const subcategoryValidationError = ref(false)  // For max 5 validation
+const categories = ref([])
+const isLoadingCategories = ref(false)
+const categoriesError = ref(null)
+const showSubcategoryDropdown = ref(false)  // For dropdown toggle
+
+// Dropdown refs for click outside functionality
+const dropdownContainer = ref(null)
+const dropdownMenu = ref(null)
+
+// Computed property for available subcategories
+const availableSubcategories = computed(() => {
+  if (!selectedCategory.value) return []
+  const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+  return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
+})
+
+// Fetch categories from API using eventService
+async function fetchCategories() {
+  try {
+    isLoadingCategories.value = true
+    categoriesError.value = null
+
+    const response = await eventService.getCategories()
+
+    if (response.success) {
+      categories.value = response.data
+    } else {
+      categoriesError.value = 'Failed to fetch categories'
+    }
+  } catch (error) {
+    console.error('Error fetching categories:', error)
+    categoriesError.value = 'Error loading categories. Please try again.'
+  } finally {
+    isLoadingCategories.value = false
+  }
+}
+
+// Handle category change with validation clearing
+function handleCategoryChangeWithValidation() {
+  selectedSubcategories.value = []  // Reset array when category changes
+  subcategoryError.value = false
+  subcategoryValidationError.value = false  // Clear validation error
+  categoryError.value = false
+  showSubcategoryDropdown.value = false  // Close dropdown
+}
+
+// Handle category change
+function handleCategoryChange() {
+  handleCategoryChangeWithValidation()
+}
+
+// Toggle subcategory dropdown
+function toggleSubcategoryDropdown() {
+  if (!selectedCategory.value || categoriesError.value) return
+  showSubcategoryDropdown.value = !showSubcategoryDropdown.value
+}
+
+// Toggle individual subcategory selection
+function toggleSubcategory(subcategory) {
+  if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
+    return // Prevent selection if already at max 5
+  }
+
+  const index = selectedSubcategories.value.indexOf(subcategory)
+  if (index > -1) {
+    selectedSubcategories.value.splice(index, 1)
+  } else {
+    selectedSubcategories.value.push(subcategory)
+  }
+
+  handleSubcategoryChange()
+}
+
+// Click outside handler to close dropdown
+function handleClickOutside(event) {
+  if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
+    showSubcategoryDropdown.value = false
+  }
+  // Also handle the old genre dropdown
+  if (
+    genreDropdownRef.value &&
+    !genreDropdownRef.value.contains(event.target)
+  ) {
+    showGenreDropdown.value = false
+  }
+}
+
+// Handle subcategory change with max 5 validation
+function handleSubcategoryChange() {
+  subcategoryError.value = false
+
+  // Maximum 5 subcategories selection logic
+  // Prevent selection if trying to add more than 5 items
+  if (selectedSubcategories.value.length > 5) {
+    // Remove the last added item to maintain the limit
+    const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
+    selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
+
+    // Show validation error
+    subcategoryValidationError.value = true
+
+    // Auto-hide validation message after 3 seconds
+    setTimeout(() => {
+      subcategoryValidationError.value = false
+    }, 3000)
+  } else {
+    // Clear validation error when within limit
+    subcategoryValidationError.value = false
+  }
+}
+
+// Remove subcategory from selection
+function removeSubcategory(subcategoryToRemove) {
+  const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
+  if (index > -1) {
+    selectedSubcategories.value.splice(index, 1)
+    // Clear validation error when removing items (going below limit)
+    subcategoryValidationError.value = false
+  }
+}
+
+// Validate genre fields
+function validateGenre() {
+  categoryError.value = !selectedCategory.value
+  subcategoryError.value = selectedSubcategories.value.length === 0
+
+  return selectedCategory.value && selectedSubcategories.value.length > 0
+}
+
 const showGenreDropdown = ref(false)
 const genreDropdownRef = ref(null)
 
@@ -800,14 +887,14 @@ function toggleDropdown() {
 }
 
 // Close when clicking outside
-function handleClickOutside(event) {
-    if (
-        genreDropdownRef.value &&
-        !genreDropdownRef.value.contains(event.target)
-    ) {
-        showGenreDropdown.value = false
-    }
-}
+// function handleClickOutside(event) {
+//     if (
+//         genreDropdownRef.value &&
+//         !genreDropdownRef.value.contains(event.target)
+//     ) {
+//         showGenreDropdown.value = false
+//     }
+// }
 
 onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside)
@@ -938,6 +1025,12 @@ async function reverseGeocode(lng, lat) {
 
 // Initialize map on component mount
 onMounted(() => {
+    // Fetch categories from API
+    fetchCategories()
+
+    // Add click outside listener for dropdown
+    document.addEventListener('click', handleClickOutside)
+
     // Initialize map centered on Amsterdam
     map.value = new maplibregl.Map({
         container: "event-map",
@@ -957,9 +1050,6 @@ onMounted(() => {
         await reverseGeocode(lng, lat)
     })
 
-    // ✅ ADD THIS LINE
-    document.addEventListener("click", handleClickOutside)
-
     /* ------------------ DATE PICKER ------------------ */
     flatpickr(dateInput.value, {
         dateFormat: "m/d/Y",
@@ -974,3 +1064,183 @@ onMounted(() => {
     })
 })
 </script>
+
+<style scoped>
+/* Subcategory Dropdown Styles */
+.subcategory-dropdown-container {
+  position: relative;
+}
+
+.subcategory-input {
+  width: 100%;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.subcategory-input:hover {
+  border-color: #3b82f6;
+}
+
+.subcategory-input.disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.subcategory-input.error {
+  border-color: #ef4444;
+}
+
+.subcategory-input-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.subcategory-input-text {
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.subcategory-input.disabled .subcategory-input-text {
+  color: #9ca3af;
+}
+
+.dropdown-chevron {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #9ca3af;
+  transition: transform 0.2s;
+}
+
+.dropdown-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.subcategory-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin-top: 0.5rem;
+  background: #f6f1e7;
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.dropdown-content {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  space-y: 1rem;
+}
+
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dropdown-option:hover {
+  background-color: #f9fafb;
+}
+
+.dropdown-option.selected {
+  background-color: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.dropdown-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.option-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.75rem;
+  accent-color: #ff7700;
+  cursor: pointer;
+}
+
+.option-label {
+  flex: 1;
+  color: #374151;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.max-selection-notice {
+  padding: 0.5rem 1rem;
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 0.375rem;
+  color: #92400e;
+  font-size: 0.75rem;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.selected-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 9999px;
+  color: #1e40af;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  background: none;
+  border: none;
+  color: #1e40af;
+  cursor: pointer;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+}
+
+.tag-remove:hover {
+  background-color: #dbeafe;
+}
+
+.tag-remove-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.validation-error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+</style>
