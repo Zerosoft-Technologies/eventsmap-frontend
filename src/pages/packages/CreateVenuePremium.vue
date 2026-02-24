@@ -166,6 +166,90 @@
                     </div>
                 </div>
 
+                <!-- DESCRIPTION OF VENUE SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                            Description of Venue
+                        </h3>
+                    </div>
+                    <!-- Dropdown -->
+                    <div class="tw:relative" ref="descriptionDropdownRef">
+
+                        <!-- Trigger -->
+                        <div @click="toggleDescriptionDropdown"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
+
+                            <span class="tw:text-gray-700">
+                                {{ selectedDescriptionItems.length ? selectedDescriptionItems.join(', ') : 'Select Description Items' }}
+                            </span>
+
+                            <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
+                        </div>
+
+                        <!-- Dropdown Box -->
+                        <div v-if="showDescriptionDropdown"
+                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
+
+                            <!-- Inner white container -->
+                            <div class="tw:bg-white tw:rounded-lg tw:space-y-4 tw:p-4">
+
+                                <label v-for="item in descriptionItems" :key="item"
+                                    class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
+
+                                    <span class="tw:text-gray-700">{{ item }}</span>
+
+                                    <input type="checkbox" :value="item" v-model="selectedDescriptionItems"
+                                        class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
+                                </label>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACCESSIBILITY SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                            Accessibility
+                        </h3>
+                    </div>
+                    <!-- Dropdown -->
+                    <div class="tw:relative" ref="accessibilityDropdownRef">
+
+                        <!-- Trigger -->
+                        <div @click="toggleAccessibilityDropdown"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
+
+                            <span class="tw:text-gray-700">
+                                {{ selectedAccessibilityItems.length ? selectedAccessibilityItems.join(', ') : 'Select Accessibility Items' }}
+                            </span>
+
+                            <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
+                        </div>
+
+                        <!-- Dropdown Box -->
+                        <div v-if="showAccessibilityDropdown"
+                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
+
+                            <!-- Inner white container -->
+                            <div class="tw:bg-white tw:rounded-lg tw:space-y-4 tw:p-4">
+
+                                <label v-for="item in accessibilityItems" :key="item"
+                                    class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
+
+                                    <span class="tw:text-gray-700">{{ item }}</span>
+
+                                    <input type="checkbox" :value="item" v-model="selectedAccessibilityItems"
+                                        class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
+                                </label>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- GENRE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
@@ -681,17 +765,79 @@ const genres = [
 
 const selectedGenres = ref([])
 
+// Description of Venue dropdown
+const showDescriptionDropdown = ref(false)
+const descriptionDropdownRef = ref(null)
+
+const descriptionItems = [
+    "Hall / theatre / stage / public place / boat / beach house",
+    "Elevator",
+    "Cloakrooms (paid / non paid)",
+    "Bar / foyer / restaurant / food-truck",
+    "Vending machines",
+    "Ticket collection point(s) where to find",
+    "Ticket sales on site",
+    "History of venue",
+    "Payment methods (cash, cards, fiches, cheque…)",
+    "Security entrance",
+    "Smoking area",
+    "Baby changing facilities",
+    "Toilets",
+    "Free Wifi"
+]
+
+const selectedDescriptionItems = ref([])
+
+// Accessibility dropdown
+const showAccessibilityDropdown = ref(false)
+const accessibilityDropdownRef = ref(null)
+
+const accessibilityItems = [
+    "Directions to venue",
+    "Parking facilities",
+    "Public transport to the venue",
+    "Taxis nearby"
+]
+
+const selectedAccessibilityItems = ref([])
+
+// Toggle functions
+function toggleDescriptionDropdown() {
+    showDescriptionDropdown.value = !showDescriptionDropdown.value
+}
+
+function toggleAccessibilityDropdown() {
+    showAccessibilityDropdown.value = !showAccessibilityDropdown.value
+}
+
 function toggleDropdown() {
     showGenreDropdown.value = !showGenreDropdown.value
 }
 
 // Close when clicking outside
 function handleClickOutside(event) {
+    // Genre dropdown
     if (
         genreDropdownRef.value &&
         !genreDropdownRef.value.contains(event.target)
     ) {
         showGenreDropdown.value = false
+    }
+    
+    // Description dropdown
+    if (
+        descriptionDropdownRef.value &&
+        !descriptionDropdownRef.value.contains(event.target)
+    ) {
+        showDescriptionDropdown.value = false
+    }
+    
+    // Accessibility dropdown
+    if (
+        accessibilityDropdownRef.value &&
+        !accessibilityDropdownRef.value.contains(event.target)
+    ) {
+        showAccessibilityDropdown.value = false
     }
 }
 
