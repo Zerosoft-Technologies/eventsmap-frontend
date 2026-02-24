@@ -21,8 +21,21 @@
           </div>
 
           <input v-model="eventTitle" type="text" placeholder="Enter Event Title"
-            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" @input="clearFieldError('eventTitle')" />
+            :class="[
+              'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
+              fieldErrors.title ? 'tw:border-red-500' : 'tw:border-gray-200'
+            ]"
+            @input="clearFieldError('eventTitle')" />
           <p v-if="errors.eventTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">Event title is required</p>
+          <p v-if="fieldErrors.title" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.title[0] }}</p>
+          
+          <!-- Slug Preview -->
+          <div v-if="eventTitle.trim()" class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
+            <span class="tw:text-xs tw:text-gray-500">URL Preview:</span>
+            <span class="tw:text-xs tw:font-mono tw:bg-gray-100 tw:px-2 tw:py-1 tw:rounded tw:text-blue-600">
+              /event/{{ slugPreview }}
+            </span>
+          </div>
         </div>
 
         <!-- EVENT IMAGE SECTION -->
@@ -289,40 +302,105 @@
           </h3>
 
           <!-- Horizontal Layout -->
-          <div class="tw:flex tw:gap-6">
+          <div class="tw:grid tw:grid-cols-1 md:tw:grid-cols-3 tw:gap-6">
 
             <!-- EVENT DATE -->
-            <div class="tw:flex-1">
+            <div>
               <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                 Event Date <span class="tw:text-red-500">*</span>
               </label>
 
               <div class="tw:relative">
                 <input ref="dateInput" v-model="eventDate" placeholder="MM/DD/YYYY"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" @input="clearFieldError('eventDate')" />
+                  :class="[
+                    'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                    fieldErrors.event_date ? 'tw:border-red-500' : 'tw:border-gray-200'
+                  ]"
+                  @input="clearFieldError('eventDate')" />
 
                 <!-- Custom Calendar Icon -->
                 <Calendar
                   class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
               </div>
               <p v-if="errors.eventDate" class="tw:text-red-500 tw:text-sm tw:mt-1">Event date is required</p>
+              <p v-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.event_date[0] }}</p>
+              <p v-if="pastDateError" class="tw:text-red-500 tw:text-sm tw:mt-1">Cannot select a past date</p>
             </div>
 
-            <!-- EVENT TIME -->
-            <div class="tw:flex-1">
-              <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                Event Time <span class="tw:text-red-500">*</span>
-              </label>
+            <!-- START & END TIME ROW -->
+            <div style="display: flex; justify-content: space-between;">
 
-              <div class="tw:relative">
-                <input ref="timeInput" v-model="eventTime" placeholder="-- -- --"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" @input="clearFieldError('eventTime')" />
+              <!-- START TIME -->
+              <div style="width: 48%;">
+                <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
+                  Start Time <span class="tw:text-red-500">*</span>
+                </label>
 
-                <!-- Custom Clock Icon -->
-                <Clock
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                <div class="tw:relative">
+                  <input
+                    ref="startTimeInput"
+                    v-model="startTime"
+                    placeholder="HH:MM"
+                    :class="[
+                      'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                      fieldErrors.start_time ? 'tw:border-red-500' : 'tw:border-gray-200'
+                    ]"
+                    @input="clearFieldError('startTime')"
+                  />
+
+                  <Clock
+                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none"
+                  />
+                </div>
+
+                <p v-if="errors.startTime" class="tw:text-red-500 tw:text-sm tw:mt-1">
+                  Start time is required
+                </p>
+
+                <p v-if="fieldErrors.start_time" class="tw:text-red-500 tw:text-sm tw:mt-1">
+                  {{ fieldErrors.start_time[0] }}
+                </p>
               </div>
-              <p v-if="errors.eventTime" class="tw:text-red-500 tw:text-sm tw:mt-1">Event time is required</p>
+
+
+              <!-- END TIME -->
+              <div style="width: 48%;">
+                <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
+                  End Time <span class="tw:text-red-500">*</span>
+                </label>
+
+                <div class="tw:relative">
+                  <input
+                    ref="endTimeInput"
+                    v-model="endTime"
+                    placeholder="HH:MM"
+                    :class="[
+                      'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                      fieldErrors.end_time || timeValidationError
+                        ? 'tw:border-red-500'
+                        : 'tw:border-gray-200'
+                    ]"
+                    @input="clearFieldError('endTime')"
+                  />
+
+                  <Clock
+                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none"
+                  />
+                </div>
+
+                <p v-if="errors.endTime" class="tw:text-red-500 tw:text-sm tw:mt-1">
+                  End time is required
+                </p>
+
+                <p v-if="fieldErrors.end_time" class="tw:text-red-500 tw:text-sm tw:mt-1">
+                  {{ fieldErrors.end_time[0] }}
+                </p>
+
+                <p v-if="timeValidationError" class="tw:text-red-500 tw:text-sm tw:mt-1">
+                  End time must be after start time
+                </p>
+              </div>
+
             </div>
 
           </div>
@@ -407,16 +485,17 @@
               <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit <span class="tw:text-red-500">*</span></label>
               <div class="tw:relative">
                 <select v-model="ageLimit" @change="clearFieldError('ageLimit')"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                  <option value="">4+</option>
-                  <option value="8">8+</option>
-                  <option value="12">12+</option>
-                  <option value="16">16+</option>
-                  <option value="18">18+</option>
-                  <option value="21">21+</option>
-                  <option value="55">55+</option>
-                  <option value="65">65+</option>
-                  <option value="different">Different Ages</option>
+                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+                  <option value="">Select Age</option>
+                  <option value="all_ages">All Ages</option>
+                  <option value="4+">4+</option>
+                  <option value="8+">8+</option>
+                  <option value="12+">12+</option>
+                  <option value="16+">16+</option>
+                  <option value="18+">18+</option>
+                  <option value="21+">21+</option>
+                  <option value="55+">55+</option>
+                  <option value="65+">65+</option>
                 </select>
                 <ChevronDown
                   class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
@@ -428,9 +507,10 @@
             <div class="tw:space-y-2">
               <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status <span class="tw:text-red-500">*</span></label>
               <div class="tw:relative">
-                <select v-model="entranceFee" @change="clearFieldError('entranceFee')"
+                <select v-model="entranceStatus" @change="clearFieldError('entranceStatus')"
                   class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                  <option value="">Free Entrance</option>
+                  <option value="">Select Entrance Status</option>
+                  <option value="free">Free Entrance</option>
                   <option value="paid">Paid Entrance</option>
                   <option value="donation">Sold Out</option>
                   <option value="cancelled">Event is Cancelled</option>
@@ -438,7 +518,7 @@
                 <ChevronDown
                   class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
-              <p v-if="errors.entranceFee" class="tw:text-red-500 tw:text-sm tw:mt-1">Entrance fee is required</p>
+              <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm tw:mt-1">Entrance fee is required</p>
             </div>
           </div>
         </div>
@@ -551,12 +631,14 @@ import {
   User,
   SkipBackIcon,
   Clock,
+  Loader2,
 } from "lucide-vue-next"
 
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue"
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
-import axios from "axios"
+import eventService from "@/services/eventService"
+import { useToast } from "@/composables/useToast"
 
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -566,10 +648,22 @@ import "flatpickr/dist/flatpickr.css"
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 
 const activeTab = ref("home")
 const eventTitle = ref("")
 const selectedVenue = ref("")
+
+// Server-side validation errors from API
+const fieldErrors = ref({})
+
+// Time validation
+const timeValidationError = ref(false)
+const pastDateError = ref(false)
+
+// Explicit lat/lng state (not from marker)
+const latitude = ref(null)
+const longitude = ref(null)
 
 // Form validation state
 const errors = ref({
@@ -578,17 +672,30 @@ const errors = ref({
   category: false,
   subcategories: false,
   eventDate: false,
-  eventTime: false,
+  startTime: false,
+  endTime: false,
   address: false,
   dressCode: false,
   ageLimit: false,
-  entranceFee: false
+  entranceStatus: false
 })
 
 // Form submission state
 const isSubmitting = ref(false)
 const selectedImageFile = ref(null)
 const imagePreview = ref(null)
+
+// Slug preview computed property
+const slugPreview = computed(() => {
+  if (!eventTitle.value.trim()) return ''
+  return eventTitle.value
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 50)
+})
 
 // Form validation computed property
 const isFormValid = computed(() => {
@@ -598,11 +705,11 @@ const isFormValid = computed(() => {
     selectedCategory.value !== '' &&
     selectedSubcategories.value.length > 0 &&
     eventDate.value !== '' &&
-    eventTime.value !== '' &&
+    startTime.value !== '' &&
+    endTime.value !== '' &&
     selectedAddress.value !== '' &&
-    dressCode.value !== '' &&
-    ageLimit.value !== '' &&
-    entranceFee.value !== ''
+    !timeValidationError.value &&
+    !pastDateError.value
   )
 })
 
@@ -628,16 +735,16 @@ const availableSubcategories = computed(() => {
   return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
 })
 
-// Fetch categories from API
+// Fetch categories from API using eventService
 async function fetchCategories() {
   try {
     isLoadingCategories.value = true
     categoriesError.value = null
 
-    const response = await axios.get('http://localhost:8001/api/v1/categories')
+    const response = await eventService.getCategories()
 
-    if (response.data.success) {
-      categories.value = response.data.data
+    if (response.success) {
+      categories.value = response.data
     } else {
       categoriesError.value = 'Failed to fetch categories'
     }
@@ -743,12 +850,71 @@ function validateGenre() {
 const dressCode = ref("")
 const ageLimit = ref("")
 const entranceFee = ref("")
+const entranceStatus = ref("")
 
 // Event Date and Time
 const eventDate = ref("")
-const eventTime = ref("")
+const startTime = ref("")
+const endTime = ref("")
 const dateInput = ref(null)
-const timeInput = ref(null)
+const startTimeInput = ref(null)
+const endTimeInput = ref(null)
+
+// Watchers for time validation
+watch([startTime, endTime], () => {
+  validateTimeRange()
+})
+
+watch(eventDate, () => {
+  validatePastDate()
+})
+
+// Validate that end time is after start time
+function validateTimeRange() {
+  if (!startTime.value || !endTime.value) {
+    timeValidationError.value = false
+    return
+  }
+  
+  // Parse times (assuming HH:MM format)
+  const start = parseTime(startTime.value)
+  const end = parseTime(endTime.value)
+  
+  if (start && end) {
+    timeValidationError.value = end <= start
+  }
+}
+
+// Parse time string to minutes for comparison
+function parseTime(timeStr) {
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i)
+  if (!match) return null
+  
+  let hours = parseInt(match[1])
+  const minutes = parseInt(match[2])
+  const period = match[3]
+  
+  if (period) {
+    if (period.toUpperCase() === 'PM' && hours !== 12) hours += 12
+    if (period.toUpperCase() === 'AM' && hours === 12) hours = 0
+  }
+  
+  return hours * 60 + minutes
+}
+
+// Validate that selected date is not in the past
+function validatePastDate() {
+  if (!eventDate.value) {
+    pastDateError.value = false
+    return
+  }
+  
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const selected = new Date(eventDate.value)
+  pastDateError.value = selected < today
+}
 
 // Event Location refs
 const searchAddress = ref("")
@@ -848,6 +1014,10 @@ function selectSuggestion(suggestion) {
   // Update selected address
   selectedAddress.value = display_name
 
+  // Store lat/lng explicitly in state
+  latitude.value = parseFloat(lat)
+  longitude.value = parseFloat(lon)
+
   // Center map and add marker
   if (map.value) {
     map.value.flyTo({
@@ -931,6 +1101,10 @@ onMounted(() => {
   map.value.on("click", async (e) => {
     const { lng, lat } = e.lngLat
 
+    // Store lat/lng explicitly in state
+    latitude.value = lat
+    longitude.value = lng
+
     // Update marker location
     updateMarker(lng, lat)
 
@@ -938,17 +1112,35 @@ onMounted(() => {
     await reverseGeocode(lng, lat)
   })
 
-  /* ------------------ DATE PICKER ------------------ */
+  /* ------------------ DATE PICKER (prevents past dates) ------------------ */
   flatpickr(dateInput.value, {
-    dateFormat: "m/d/Y",
+    dateFormat: "Y-m-d",
+    minDate: "today",
+    onChange: (selectedDates, dateStr) => {
+      eventDate.value = dateStr
+    }
   })
 
-
-  /* ------------------ TIME PICKER ------------------ */
-  flatpickr(timeInput.value, {
+  /* ------------------ START TIME PICKER ------------------ */
+  flatpickr(startTimeInput.value, {
     enableTime: true,
     noCalendar: true,
-    dateFormat: "h:i K",
+    dateFormat: "H:i",
+    time_24hr: true,
+    onChange: (selectedDates, timeStr) => {
+      startTime.value = timeStr
+    }
+  })
+
+  /* ------------------ END TIME PICKER ------------------ */
+  flatpickr(endTimeInput.value, {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "H:i",
+    time_24hr: true,
+    onChange: (selectedDates, timeStr) => {
+      endTime.value = timeStr
+    }
   })
 })
 
@@ -1066,14 +1258,13 @@ async function scrollToFirstError() {
 
 // Form validation functions
 function validateForm() {
-  console.log('🔍 validateForm() called')
-  
   // Reset all errors
   Object.keys(errors.value).forEach(key => {
     errors.value[key] = false
   })
   categoryError.value = false
   subcategoryError.value = false
+  fieldErrors.value = {}
 
   // Validate each field
   errors.value.eventTitle = !eventTitle.value.trim()
@@ -1081,20 +1272,21 @@ function validateForm() {
   errors.value.category = !selectedCategory.value
   errors.value.subcategories = selectedSubcategories.value.length === 0
   errors.value.eventDate = !eventDate.value
-  errors.value.eventTime = !eventTime.value
+  errors.value.startTime = !startTime.value
+  errors.value.endTime = !endTime.value
   errors.value.address = !selectedAddress.value
-  errors.value.dressCode = !dressCode.value
-  errors.value.ageLimit = !ageLimit.value
-  errors.value.entranceFee = !entranceFee.value
 
   // Set category/subcategory specific errors
   categoryError.value = !selectedCategory.value
   subcategoryError.value = selectedSubcategories.value.length === 0
 
-  console.log('📋 Validation errors:', errors.value)
+  // Check time validation
+  const hasTimeError = timeValidationError.value || pastDateError.value
   
-  const isValid = !Object.values(errors.value).some(error => error) && !categoryError.value && !subcategoryError.value
-  console.log('✅ Form is valid:', isValid)
+  const isValid = !Object.values(errors.value).some(error => error) && 
+                  !categoryError.value && 
+                  !subcategoryError.value &&
+                  !hasTimeError
   
   return isValid
 }
@@ -1123,7 +1315,7 @@ async function handleSubmit() {
   await createEvent()
 }
 
-// Create Event function
+// Create Event function using eventService
 async function createEvent() {
   if (isSubmitting.value) return
 
@@ -1134,6 +1326,7 @@ async function createEvent() {
 
   try {
     isSubmitting.value = true
+    fieldErrors.value = {}
 
     // Find category and subcategory IDs
     const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
@@ -1143,85 +1336,64 @@ async function createEvent() {
       selectedCategoryData.subcategories.filter(sub => selectedSubcategories.value.includes(sub.name)) : []
     const subcategoryIds = selectedSubcategoryData.map(sub => sub.id)
 
-    // Build payload
-    const payload = {
-      title: eventTitle.value,
-      category_id: categoryId,
-      subcategory_ids: subcategoryIds,
-      event_date: eventDate.value,
-      event_time: eventTime.value,
-      address: selectedAddress.value,
-      latitude: marker.value ? marker.value.getLngLat().lat : null,
-      longitude: marker.value ? marker.value.getLngLat().lng : null,
-      dress_code: dressCode.value,
-      age_limit: ageLimit.value,
-      entrance_fee: entranceFee.value
-    }
-
-    console.log('Creating event with payload:', payload)
-
     // Create FormData for image upload
     const formData = new FormData()
-
-    // Add all payload fields to FormData
-    Object.keys(payload).forEach(key => {
-      if (Array.isArray(payload[key])) {
-        payload[key].forEach(item => {
-          formData.append(`${key}[]`, item)
-        })
-      } else {
-        formData.append(key, payload[key])
-      }
-    })
+    
+    // Add form fields
+    formData.append('title', eventTitle.value)
+    formData.append('category_id', categoryId)
+    subcategoryIds.forEach(id => formData.append('subcategory_ids[]', id))
+    formData.append('event_date', eventDate.value)
+    formData.append('start_time', startTime.value)
+    formData.append('end_time', endTime.value)
+    formData.append('address', selectedAddress.value)
+    formData.append('latitude', latitude.value)
+    formData.append('longitude', longitude.value)
+    formData.append('dress_code', dressCode.value)
+    formData.append('age_limit', ageLimit.value)
+    formData.append('entrance_fee', entranceFee.value)
+    formData.append('entrance_status', entranceStatus.value)
 
     // Add image file if exists
     if (selectedImageFile.value) {
       formData.append('image', selectedImageFile.value)
     }
 
-    // Submit to API
-    const response = await axios.post('/api/v1/events', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
+    // Submit to API v2 using eventService
+    const response = await eventService.createEvent(formData)
+
+    if (response.success) {
+      // Show success toast
+      toast.success('Event created successfully!')
+
+      // Redirect to event page using slug
+      const slug = response.data?.slug
+      if (slug) {
+        router.push(`/event/${slug}`)
+      } else {
+        router.push('/events')
       }
-    })
-
-    if (response.data.success) {
-      // Show success message
-      alert('Event created successfully!')
-
-      // Optionally reset form or redirect
-      // router.push('/events')
-
     } else {
       // Handle API validation errors
-      if (response.data.errors) {
-        // Map API errors to form errors
-        Object.keys(response.data.errors).forEach(field => {
-          if (errors.value.hasOwnProperty(field)) {
-            errors.value[field] = true
-          }
-        })
-        alert('Please correct the errors in the form.')
+      if (response.errors) {
+        fieldErrors.value = response.errors
+        toast.error(response.message || 'Please correct the errors in the form.')
       } else {
-        alert('Failed to create event. Please try again.')
+        toast.error(response.message || 'Failed to create event. Please try again.')
       }
     }
 
   } catch (error) {
     console.error('Error creating event:', error)
 
-    // Handle API validation errors
-    if (error.response && error.response.data && error.response.data.errors) {
-      const apiErrors = error.response.data.errors
-      Object.keys(apiErrors).forEach(field => {
-        if (errors.value.hasOwnProperty(field)) {
-          errors.value[field] = true
-        }
-      })
-      alert('Please correct the errors in the form.')
+    // Handle API validation errors from Laravel
+    if (error.response?.data?.errors) {
+      fieldErrors.value = error.response.data.errors
+      toast.error(error.response.data.message || 'Please correct the errors in the form.')
+    } else if (error.response?.data?.message) {
+      toast.error(error.response.data.message)
     } else {
-      alert('An error occurred while creating the event. Please try again.')
+      toast.error('An error occurred while creating the event. Please try again.')
     }
   } finally {
     isSubmitting.value = false
@@ -1231,5 +1403,4 @@ async function createEvent() {
 function handleBack() {
   router.push('/events') // Navigate to events list
 }
-
 </script>

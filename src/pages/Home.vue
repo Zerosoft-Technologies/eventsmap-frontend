@@ -7,7 +7,6 @@ import maplibregl from 'maplibre-gl'
 import { addEventMarker, clearAllMarkers } from '../utils/useMapPopup.js'
 import { ref, onMounted } from 'vue'
 import { fetchEvents } from '../api/events'
-import { transformApiEventsToUI } from '../utils/eventTransformer'
 
 const mapContainer = ref(null);
 const events = ref([]);
@@ -46,9 +45,11 @@ async function loadEvents() {
     const result = await fetchEvents({
       per_page: 100 // Get more events for the map
     });
-    
-    // Transform API data to UI format
-    events.value = transformApiEventsToUI(result.data);
+
+
+    console.log('API response:', result);
+    // Events are already transformed by the adapter
+    events.value = result.data;
     
     // Add markers to map if map is loaded
     if (map && map.loaded()) {

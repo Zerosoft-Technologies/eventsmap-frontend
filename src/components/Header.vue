@@ -496,8 +496,7 @@ async function loadEventsFromApi(searchQuery = '') {
   eventsLoading.value = true;
   try {
     const { fetchEvents } = await import('../api/events');
-    const { transformApiEventsToUI } = await import('../utils/eventTransformer');
-    
+        
     const params = {
       lat: selectedLocation.value.lat,
       lng: selectedLocation.value.lng,
@@ -535,7 +534,7 @@ async function loadEventsFromApi(searchQuery = '') {
     }
     
     const result = await fetchEvents(params);
-    events.value = transformApiEventsToUI(result.data);
+    events.value = result.data;
   } catch (e) {
     console.error('Failed to load events:', e);
     events.value = [];

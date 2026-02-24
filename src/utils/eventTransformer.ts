@@ -191,7 +191,7 @@ export function transformApiEventToUI(apiEvent: ApiEvent): UIEvent {
 /**
  * Transform array of API events to UI format
  */
-export function transformApiEventsToUI(apiEvents: ApiEvent[]): UIEvent[] {
+export function transformApiEventsToUI(apiEvents: any[]): UIEvent[] {
   return apiEvents
     .filter(e => e.latitude != null && e.longitude != null) // Only events with coordinates
     .map(transformApiEventToUI)

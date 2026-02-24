@@ -5,6 +5,8 @@ import App from './App.vue'
 import router from './router'
 import i18n from './i18n'
 import { useAuthStore } from '@/stores/auth'
+import { useLoadingStore } from '@/stores/loading'
+import { setupLoadingInterceptors } from '@/services/api'
 import './assets/styles/event-form.css'
 
 // Add hover-enabled class to body for system-wide hover effects
@@ -16,22 +18,33 @@ const pinia = createPinia()
 // IMPORTANT: Pinia must be registered BEFORE using any store
 app.use(pinia)
 
-// Initialize auth state BEFORE router processes any navigation
-// This ensures user session is restored on page refresh
+// Initialize stores
 const authStore = useAuthStore()
+const loadingStore = useLoadingStore()
+
+// Setup Axios loading interceptors with the loading store
+setupLoadingInterceptors({
+  startLoading: () => loadingStore.startLoading(),
+  stopLoading: () => loadingStore.stopLoading(),
+  forceStop: () => loadingStore.forceStop()
+})
 
 async function bootstrap() {
-  // Wait for auth initialization to complete
-  await authStore.initializeAuth()
-  
-  // Now register router (guards will have access to auth state)
+  // Register router and i18n first
   app.use(router)
   app.use(i18n)
   
-  // Wait for router to be ready before mounting
-  await router.isReady()
-  
+  // Mount the app immediately so FullPageLoader is visible
   app.mount('#app')
+  
+  // Show auth checking state (FullPageLoader will be visible now)
+  loadingStore.setAuthChecking(true)
+  
+  // Wait for auth initialization to complete
+  await authStore.initializeAuth()
+  
+  // Hide auth checking state
+  loadingStore.setAuthChecking(false)
 }
 
 bootstrap()

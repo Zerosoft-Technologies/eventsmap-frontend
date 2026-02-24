@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useLoadingStore } from '@/stores/loading'
 
 import Home from '../pages/Home.vue'
 import CreateProfile from '../pages/CreateProfile.vue'
@@ -95,6 +96,10 @@ const router = createRouter({
 // ── Navigation Guard ──────────────────────────────────────
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
+  const loadingStore = useLoadingStore()
+
+  // Start page loading indicator
+  loadingStore.startPageLoading()
 
   // Wait for auth to be initialized (important for page refresh)
   if (!authStore.authReady) {
@@ -125,6 +130,12 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   next()
+})
+
+// ── After Navigation Hook ─────────────────────────────────
+router.afterEach(() => {
+  const loadingStore = useLoadingStore()
+  loadingStore.stopPageLoading()
 })
 
 /**
