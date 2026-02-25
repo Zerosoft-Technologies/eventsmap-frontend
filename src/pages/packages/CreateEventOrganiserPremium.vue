@@ -259,53 +259,6 @@
                     </div>
                 </div>
 
-                <!-- GENRE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Genre
-                        </h3>
-                        <!-- <button
-                            class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                            <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-                    <!-- Dropdown -->
-                    <div class="tw:relative" ref="genreDropdownRef">
-
-                        <!-- Trigger -->
-                        <div @click="toggleDropdown"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
-
-                            <span class="tw:text-gray-700">
-                                {{ selectedGenres.length ? selectedGenres.join(', ') : 'Select Genres' }}
-                            </span>
-
-                            <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
-                        </div>
-
-                        <!-- Dropdown Box -->
-                        <div v-if="showGenreDropdown"
-                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
-
-                            <!-- Inner white container -->
-                            <div class="tw:bg-white tw:rounded-lg tw:space-y-4 tw:p-4">
-
-                                <label v-for="genre in genres" :key="genre"
-                                    class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
-
-                                    <span class="tw:text-gray-700">{{ genre }}</span>
-
-                                    <input type="checkbox" :value="genre" v-model="selectedGenres"
-                                        class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
-                                </label>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
                 <!-- VENUE SECTION -->
                 <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
@@ -519,15 +472,27 @@
                             </div>
 
                             
-                            <div
                                 class="tw:absolute tw:left-1 tw:top-1 tw:w-4 tw:h-4 tw:bg-white tw:rounded-full tw:transition tw:peer-checked:translate-x-6">
                             </div>
                         </label>
                     </div> -->
                 </div>
 
+                <!-- CONTACT BOX SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Contact Box
+                    </h3>
+
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Contact Message</label>
+                        <textarea v-model="contactBoxMessage" rows="4" placeholder="Enter your contact message"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                    </div>
+                </div>
+
                 <!-- SOCIAL MEDIA LINKS SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Social Media Links
                     </h3>
@@ -690,53 +655,275 @@
 </template>
 
 <script setup>
-    import {
-        Home,
-        FileText,
-        BarChart3,
-        Settings,
-        Calendar,
-        ChevronDown,
-        ChevronLeft,
-        Upload,
-        Plus,
-        MapPin,
-        User,
-        SkipBackIcon,
-        Clock,
-    } from "lucide-vue-next"
+import {
+    Home,
+    FileText,
+    BarChart3,
+    Settings,
+    Calendar,
+    ChevronDown,
+    ChevronLeft,
+    Upload,
+    Plus,
+    MapPin,
+    User,
+    SkipBackIcon,
+    Clock,
+    MessageSquareText
+} from "lucide-vue-next"
 
-    import { ref, onMounted, onBeforeUnmount, computed } from "vue"
-    import { useRouter, useRoute } from "vue-router"
-    import EventSidebar from "./eventsidebar/Eventsidebar.vue"
-    import maplibregl from "maplibre-gl"
-    import "maplibre-gl/dist/maplibre-gl.css"
+import { ref, onMounted, onBeforeUnmount, computed } from "vue"
+import { useRouter, useRoute } from "vue-router"
+import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import eventService from "@/services/eventService"
+import maplibregl from "maplibre-gl"
+import "maplibre-gl/dist/maplibre-gl.css"
 
-    import flatpickr from "flatpickr"
-    import "flatpickr/dist/flatpickr.css"
+import flatpickr from "flatpickr"
+import "flatpickr/dist/flatpickr.css"
 
     const router = useRouter()
     const route = useRoute()
+const activeTab = ref("home")
+// const eventTitle = ref("")
+const eventDescription = ref("")
+const selectedVenue = ref("")
+const selectedGenre = ref("")
+const dressCode = ref("")
+const ageLimit = ref("")
+const contactPhone = ref("")
+const contactEmail = ref("")
+const contactWebsite = ref("")
+const bookingInstructions = ref('');
+const ticketUrl = ref('');
+const eventOption = ref('');
+const showChatbox = ref(false)
+const contactBoxMessage = ref('')
 
-    const activeTab = ref("home")
-    const eventTitle = ref("Organiser Title")
-    const eventDescription = ref("")
-    const selectedVenue = ref("")
-    const selectedGenre = ref("")
-    const dressCode = ref("")
-    const ageLimit = ref("")
-    const contactPhone = ref("")
-    const contactEmail = ref("")
-    const contactWebsite = ref("")
-    const bookingInstructions = ref('');
-    const ticketUrl = ref('');
-    const eventOption = ref('');
-    const showChatbox = ref(false)
+const notifications = ref({
+    receiveEmail: false,
+    receiveUpdates: false
+})
 
-    const notifications = ref({
-        receiveEmail: false,
-        receiveUpdates: false
-    })
+const facebookUrl = ref("")
+const instagramUrl = ref("")
+const tiktokUrl = ref("")
+
+const entranceFee = ref("")
+
+// Event Date and Time
+// const eventDate = ref("")
+const eventTime = ref("")
+const dateInput = ref(null)
+const timeInput = ref(null)
+
+// Event Location refs
+const searchAddress = ref("")
+const selectedAddress = ref("")
+const map = ref(null)
+const marker = ref(null)
+const suggestions = ref([])
+const isLoading = ref(false)
+const debounceTimer = ref(null)
+const selectedCategory = ref("")
+
+const selectedSubcategories = ref([])  // Multi-select array for subcategories
+const categoryError = ref(false)
+const subcategoryError = ref(false)
+const subcategoryValidationError = ref(false)  // For max 5 validation
+const categories = ref([])
+const isLoadingCategories = ref(false)
+const categoriesError = ref(null)
+const showSubcategoryDropdown = ref(false)  // For dropdown toggle
+
+// Dropdown refs for click outside functionality
+const dropdownContainer = ref(null)
+const dropdownMenu = ref(null)
+
+// Computed property for available subcategories
+const availableSubcategories = computed(() => {
+  if (!selectedCategory.value) return []
+  const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+  return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
+})
+
+// Fetch categories from API using eventService
+async function fetchCategories() {
+  try {
+    isLoadingCategories.value = true
+    categoriesError.value = null
+
+    const response = await eventService.getCategories()
+
+    if (response.success) {
+      categories.value = response.data
+    } else {
+      categoriesError.value = 'Failed to fetch categories'
+    }
+  } catch (error) {
+    console.error('Error fetching categories:', error)
+    categoriesError.value = 'Error loading categories. Please try again.'
+  } finally {
+    isLoadingCategories.value = false
+  }
+}
+
+// Handle category change with validation clearing
+function handleCategoryChangeWithValidation() {
+  selectedSubcategories.value = []  // Reset array when category changes
+  subcategoryError.value = false
+  subcategoryValidationError.value = false  // Clear validation error
+  categoryError.value = false
+  showSubcategoryDropdown.value = false  // Close dropdown
+}
+
+// Handle category change
+function handleCategoryChange() {
+  handleCategoryChangeWithValidation()
+}
+
+// Toggle subcategory dropdown
+function toggleSubcategoryDropdown() {
+  if (!selectedCategory.value || categoriesError.value) return
+  showSubcategoryDropdown.value = !showSubcategoryDropdown.value
+}
+
+// Toggle individual subcategory selection
+function toggleSubcategory(subcategory) {
+  if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
+    return // Prevent selection if already at max 5
+  }
+
+  const index = selectedSubcategories.value.indexOf(subcategory)
+  if (index > -1) {
+    selectedSubcategories.value.splice(index, 1)
+  } else {
+    selectedSubcategories.value.push(subcategory)
+  }
+
+  handleSubcategoryChange()
+}
+
+// Click outside handler to close dropdown
+function handleClickOutside(event) {
+  if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
+    showSubcategoryDropdown.value = false
+  }
+  // Also handle the old genre dropdown
+  if (
+    genreDropdownRef.value &&
+    !genreDropdownRef.value.contains(event.target)
+  ) {
+    showGenreDropdown.value = false
+  }
+}
+
+// Handle subcategory change with max 5 validation
+function handleSubcategoryChange() {
+  subcategoryError.value = false
+
+  // Maximum 5 subcategories selection logic
+  // Prevent selection if trying to add more than 5 items
+  if (selectedSubcategories.value.length > 5) {
+    // Remove the last added item to maintain the limit
+    const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
+    selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
+
+    // Show validation error
+    subcategoryValidationError.value = true
+
+    // Auto-hide validation message after 3 seconds
+    setTimeout(() => {
+      subcategoryValidationError.value = false
+    }, 3000)
+  } else {
+    // Clear validation error when within limit
+    subcategoryValidationError.value = false
+  }
+}
+
+// Remove subcategory from selection
+function removeSubcategory(subcategoryToRemove) {
+  const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
+  if (index > -1) {
+    selectedSubcategories.value.splice(index, 1)
+    // Clear validation error when removing items (going below limit)
+    subcategoryValidationError.value = false
+  }
+}
+
+// Validate genre fields
+function validateGenre() {
+  categoryError.value = !selectedCategory.value
+  subcategoryError.value = selectedSubcategories.value.length === 0
+
+  return selectedCategory.value && selectedSubcategories.value.length > 0
+}
+
+const showGenreDropdown = ref(false)
+const genreDropdownRef = ref(null)
+
+const genres = [
+    "Electronic",
+    "House",
+    "Techno",
+    "Hip Hop",
+    "Live Music"
+]
+
+const selectedGenres = ref([])
+
+const eventTitle = ref("Organiser Title")
+const eventDate = ref("05.03.2026, 18:30 CET")
+const eventStatus = ref("Premium")
+
+const fileName = ref("")
+
+// Menu items specific to CreateEventPremium
+const menuItems = [
+    { id: "home", icon: Home, label: "Home", route: "/create-organiser-premium" },
+    { id: "details", icon: FileText, label: "Details", route: "/create-organiser-premium" },
+    { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
+    { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
+    { id: "calendar", icon: Calendar, label: "Calendar" },
+    { id: "back", icon: SkipBackIcon, label: "Back" },
+    { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
+]
+
+function toggleDropdown() {
+    showGenreDropdown.value = !showGenreDropdown.value
+}
+
+// Close when clicking outside
+// function handleClickOutside(event) {
+//     if (
+//         genreDropdownRef.value &&
+//         !genreDropdownRef.value.contains(event.target)
+//     ) {
+//         showGenreDropdown.value = false
+//     }
+// }
+
+onBeforeUnmount(() => {
+    document.removeEventListener("click", handleClickOutside)
+})
+
+
+function handleMenuClick(item) {
+    if (item.route) {
+        console.log("Navigating to:", item.route);
+        router.push(item.route)
+    } else {
+        activeTab.value = item.id
+    }
+}
+
+function isActive(item) {
+    if (item.route) {
+        return route.path === item.route
+    }
+    return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
+}
 
 function saveEvent() {
     console.log("Saving event...");
@@ -846,6 +1033,12 @@ async function reverseGeocode(lng, lat) {
 
 // Initialize map on component mount
 onMounted(() => {
+    // Fetch categories from API
+    fetchCategories()
+
+    // Add click outside listener for dropdown
+    document.addEventListener('click', handleClickOutside)
+
     // Initialize map centered on Amsterdam
     map.value = new maplibregl.Map({
         container: "event-map",
@@ -864,9 +1057,6 @@ onMounted(() => {
         // Reverse geocode to get address
         await reverseGeocode(lng, lat)
     })
-
-    // ✅ ADD THIS LINE
-    document.addEventListener("click", handleClickOutside)
 
     /* ------------------ DATE PICKER ------------------ */
     flatpickr(dateInput.value, {

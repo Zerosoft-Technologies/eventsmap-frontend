@@ -87,14 +87,14 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+// import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter()
+// const router = useRouter()
 const authStore = useAuthStore()
 
-async function handleLogout() {
-  await authStore.logout()
-  router.push({ name: 'Login' })
-}
+// async function handleLogout() {
+//   await authStore.logout()
+//   router.push({ name: 'Login' })
+// }
 </script>

@@ -72,13 +72,15 @@
 
           <!-- Image Preview -->
           <div v-if="imagePreview" class="tw:relative tw:mt-4 tw:w-full">
-            <img :src="imagePreview" alt="Event image preview" 
-                 class="tw:w-full tw:h-auto tw:rounded-lg tw:border tw:border-gray-200 tw:object-cover" />
+            <img :src="imagePreview" alt="Event image preview"
+              class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200" />
             <!-- Remove button -->
             <button @click="removeImage" type="button"
-                    class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-600 tw:transition-colors">
+              class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-600 tw:transition-colors">
               <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                <path fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd"></path>
               </svg>
             </button>
           </div>
@@ -129,7 +131,8 @@
                     (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
                   ]">
                   <option value="">
-                    {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'SelectCategory') }}
+                    {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
+                    'SelectCategory') }}
                   </option>
                   <option v-for="category in categories" :key="category.id" :value="category.name">
                     {{ category.name }}
@@ -467,7 +470,8 @@
           <div class="tw:grid tw:grid-cols-3 tw:gap-4">
             <!-- Dress Code -->
             <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code <span class="tw:text-red-500">*</span></label>
+              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code <span
+                  class="tw:text-red-500">*</span></label>
               <div class="tw:relative">
                 <select v-model="dressCode" @change="clearFieldError('dressCode')"
                   class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
@@ -482,7 +486,8 @@
 
             <!-- Age Limit -->
             <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit <span class="tw:text-red-500">*</span></label>
+              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit <span
+                  class="tw:text-red-500">*</span></label>
               <div class="tw:relative">
                 <select v-model="ageLimit" @change="clearFieldError('ageLimit')"
                 class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
@@ -505,7 +510,8 @@
 
             <!-- Entrance Fee -->
             <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status <span class="tw:text-red-500">*</span></label>
+              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status <span
+                  class="tw:text-red-500">*</span></label>
               <div class="tw:relative">
                 <select v-model="entranceStatus" @change="clearFieldError('entranceStatus')"
                   class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
@@ -763,7 +769,7 @@ function handleCategoryChangeWithValidation() {
   subcategoryValidationError.value = false  // Clear validation error
   categoryError.value = false
   showSubcategoryDropdown.value = false  // Close dropdown
-  
+
   // Clear field errors
   clearFieldError('category')
   clearFieldError('subcategories')
@@ -806,7 +812,7 @@ function handleClickOutside(event) {
 // Handle subcategory change with max 5 validation
 function handleSubcategoryChange() {
   subcategoryError.value = false
-  
+
   // Clear field errors
   clearFieldError('subcategories')
 
@@ -1155,7 +1161,7 @@ function handleFileChange(event) {
     selectedImageFile.value = file
     fileName.value = file.name
     errors.value.eventImage = false
-    
+
     // Create image preview using URL.createObjectURL()
     imagePreview.value = URL.createObjectURL(file)
   } else {
@@ -1170,7 +1176,7 @@ function removeImage() {
   fileName.value = 'No File Chosen'
   imagePreview.value = null
   errors.value.eventImage = true
-  
+
   // Clear the file input
   const fileInput = document.querySelector('input[type="file"]')
   if (fileInput) {
@@ -1183,7 +1189,7 @@ function clearFieldError(fieldName) {
   if (errors.value.hasOwnProperty(fieldName)) {
     errors.value[fieldName] = false
   }
-  
+
   // Special handling for category/subcategory
   if (fieldName === 'category') {
     categoryError.value = false
@@ -1196,18 +1202,18 @@ function clearFieldError(fieldName) {
 // Scroll to first invalid field
 async function scrollToFirstError() {
   await nextTick()
-  
+
   // Find first field with error
   const errorFields = ['eventTitle', 'eventImage', 'category', 'subcategories', 'eventDate', 'eventTime', 'address', 'dressCode', 'ageLimit', 'entranceFee']
-  const firstErrorField = errorFields.find(field => 
-    errors.value[field] || 
-    (field === 'category' && categoryError.value) || 
+  const firstErrorField = errorFields.find(field =>
+    errors.value[field] ||
+    (field === 'category' && categoryError.value) ||
     (field === 'subcategories' && subcategoryError.value)
   )
-  
+
   if (firstErrorField) {
     let element
-    
+
     // Map field names to DOM elements
     switch (firstErrorField) {
       case 'eventTitle':
@@ -1241,13 +1247,13 @@ async function scrollToFirstError() {
         element = document.querySelectorAll('select')[3] // Fourth select
         break
     }
-    
+
     if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
       })
-      
+
       // Focus the element if it's an input or select
       if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
         element.focus()
@@ -1294,7 +1300,7 @@ function validateForm() {
 // Submit handler function
 async function handleSubmit() {
   console.log('🚀 handleSubmit() called')
-  
+
   if (isSubmitting.value) {
     console.log('⚠️ Already submitting, returning')
     return
@@ -1302,7 +1308,7 @@ async function handleSubmit() {
 
   // Always run validation first
   const isValid = validateForm()
-  
+
   if (!isValid) {
     console.log('❌ Validation failed, scrolling to first error')
     await scrollToFirstError()
@@ -1310,7 +1316,7 @@ async function handleSubmit() {
   }
 
   console.log('✅ Validation passed, proceeding with submission')
-  
+
   // Call the original createEvent function
   await createEvent()
 }
