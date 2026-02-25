@@ -104,8 +104,14 @@
                         </button> -->
                     </div>
 
-                    <input v-model="eventTitle" type="text" placeholder="Enter Talent Title"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <input v-model="formData.talentTitle" type="text" placeholder="Enter Talent Title"
+                        data-field="talentTitle"
+                        @input="formErrors.talentTitle && clearError('talentTitle')"
+                        :class="[
+                          'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
+                          formErrors.talentTitle ? 'tw:border-red-500' : 'tw:border-gray-200'
+                        ]" />
+                    <p v-if="formErrors.talentTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.talentTitle }}</p>
                     <!-- Description -->
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:text-gray-700">Description</label>
@@ -153,16 +159,11 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images (Max 5)
+                            Additional Images
                         </h3>
                     </div>
 
-                    <div class="tw:flex tw:gap-4 tw:flex-wrap tw:justify-between">
-                        <div v-for="n in 5" :key="n"
-                            class="tw:w-[48px] tw:h-[48px] tw:bg-[#F6F1E7] tw:rounded-sm tw:flex tw:items-center tw:justify-center tw:cursor-pointer hover:tw:bg-blue-50 tw:transition">
-                            <Plus class="tw:w-5 tw:h-5 tw:text-orange-400" />
-                        </div>
-                    </div>
+                    <AdditionalImageUpload v-model:files="additionalImages" :max-files="5" :max-size-m-b="5" />
                 </div>
 
                 <!-- GENRE SECTION -->
@@ -722,15 +723,23 @@
                 </div>
 
                 <!-- SAVE Talent BUTTON -->
-                <div class="tw:flex tw:flex-col tw:items-start tw:pt-4 tw:w-full">
-                    <button @click="saveEvent" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-               tw:border tw:border-orange-500 tw:text-[#0061FF]
-               tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
-                        Buy Tickets
-                    </button>
-                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full">Soon you can show this button in
+                <div class="tw:w-full tw:pt-4">
+                    <div class="tw:flex tw:w-full tw:items-center tw:justify-between">
+                        <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                           tw:border tw:border-orange-500 tw:text-[#0061FF]
+                           tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
+                            Buy Tickets
+                        </button>
+                        <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                           tw:border tw:border-blue-500 tw:text-blue-600
+                           tw:bg-white hover:tw:bg-blue-50 tw:transition-all
+                           disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
+                            {{ isSubmitting ? 'Saving...' : 'Save Talent' }}
+                        </button>
+                    </div>
+                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon you can show this button in
                         your event description or event info window when appropriate. This is still under
-                        consideration.”</span>
+                        consideration.</span>
                 </div>
 
             </div>
@@ -756,10 +765,13 @@ import {
     MessageSquareText
 } from "lucide-vue-next"
 
-import { ref, onMounted, onBeforeUnmount, computed, nextTick } from "vue"
+import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import eventService from "@/services/eventService"
+import { useFormValidation } from "@/composables/useFormValidation"
+import { useToast } from "@/composables/useToast"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -768,10 +780,28 @@ import "flatpickr/dist/flatpickr.css"
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 
 const activeTab = ref("home")
-// const eventTitle = ref("")
+const isSubmitting = ref(false)
 const eventDescription = ref("")
+
+// ── Form Validation (generic composable) ─────────────────────
+const formData = reactive({
+  talentTitle: '',
+  category: '',
+  subcategories: [],
+})
+
+const talentSchema = {
+  talentTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Talent Title' },
+  category: { type: 'select', required: true, label: 'Category' },
+  subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
+}
+
+const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(talentSchema, formData)
+
+const additionalImages = ref([])
 const selectedVenue = ref("")
 const selectedGenre = ref("")
 const dressCode = ref("")
@@ -955,7 +985,6 @@ const genres = [
 
 const selectedGenres = ref([])
 
-const eventTitle = ref("Talent Title")
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Premium")
 
@@ -990,6 +1019,31 @@ onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside)
 })
 
+// Sync category/subcategory selections into formData for validation
+function syncFormData() {
+  formData.category = selectedCategory.value
+  formData.subcategories = selectedSubcategories.value
+}
+
+async function handleSubmit() {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
+
+  syncFormData()
+
+  const isValid = validate()
+  const genreValid = validateGenre()
+
+  if (!isValid || !genreValid) {
+    await scrollToFirstError()
+    isSubmitting.value = false
+    return
+  }
+
+  // No API call — show success toast
+  toast.success('This feature will be available in future')
+  isSubmitting.value = false
+}
 
 function handleMenuClick(item) {
     if (item.route) {
@@ -1005,11 +1059,6 @@ function isActive(item) {
         return route.path === item.route
     }
     return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
-}
-
-function saveEvent() {
-    console.log("Saving event...");
-    alert("Event saved successfully!");
 }
 
 // Debounce function

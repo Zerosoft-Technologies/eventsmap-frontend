@@ -100,8 +100,14 @@
                         </button> -->
                     </div>
 
-                    <input v-model="eventTitle" type="text" placeholder="Enter Event Title"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <input v-model="formData.eventTitle" type="text" placeholder="Enter Event Title"
+                        data-field="eventTitle"
+                        @input="formErrors.eventTitle && clearError('eventTitle')"
+                        :class="[
+                          'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
+                          formErrors.eventTitle ? 'tw:border-red-500' : 'tw:border-gray-200'
+                        ]" />
+                    <p v-if="formErrors.eventTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.eventTitle }}</p>
                     <!-- Description -->
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:text-gray-700">Description</label>
@@ -149,16 +155,11 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images (Max 5)
+                            Additional Images
                         </h3>
                     </div>
 
-                    <div class="tw:flex tw:gap-4 tw:flex-wrap tw:justify-between">
-                        <div v-for="n in 5" :key="n"
-                            class="tw:w-[48px] tw:h-[48px] tw:bg-[#F6F1E7] tw:rounded-sm tw:flex tw:items-center tw:justify-center tw:cursor-pointer hover:tw:bg-blue-50 tw:transition">
-                            <Plus class="tw:w-5 tw:h-5 tw:text-orange-400" />
-                        </div>
-                    </div>
+                    <AdditionalImageUpload v-model:files="additionalImages" :max-files="5" :max-size-m-b="5" />
                 </div>
 
                 <!-- GENRE SECTION -->
@@ -686,15 +687,23 @@
                 </div>
 
                 <!-- SAVE EVENT BUTTON -->
-                <div class="tw:flex tw:flex-col tw:items-start tw:pt-4 tw:w-full">
-                    <button @click="saveEvent" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-               tw:border tw:border-orange-500 tw:text-[#0061FF]
-               tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
-                        Buy Tickets
-                    </button>
-                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full">Soon you can show this button in
+                <div class="tw:w-full tw:pt-4">
+                    <div class="tw:flex tw:w-full tw:items-center tw:justify-between">
+                        <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                           tw:border tw:border-orange-500 tw:text-[#0061FF]
+                           tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
+                            Buy Tickets
+                        </button>
+                        <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                           tw:border tw:border-blue-500 tw:text-blue-600
+                           tw:bg-white hover:tw:bg-blue-50 tw:transition-all
+                           disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
+                            {{ isSubmitting ? 'Saving...' : 'Save Event' }}
+                        </button>
+                    </div>
+                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon you can show this button in
                         your event description or event info window when appropriate. This is still under
-                        consideration.”</span>
+                        consideration.</span>
                 </div>
 
             </div>
@@ -720,10 +729,13 @@ import {
     MessageSquareText
 } from "lucide-vue-next"
 
-import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
+import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import eventService from "@/services/eventService"
+import { useFormValidation } from "@/composables/useFormValidation"
+import { useToast } from "@/composables/useToast"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -732,16 +744,32 @@ import "flatpickr/dist/flatpickr.css"
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 
 // Event data
-const eventTitle = ref("Event Title")
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Draft")
 
-
 const activeTab = ref("home")
-// const eventTitle = ref("")
+const isSubmitting = ref(false)
 const eventDescription = ref("")
+
+// ── Form Validation (generic composable) ─────────────────────
+const formData = reactive({
+  eventTitle: '',
+  category: '',
+  subcategories: [],
+})
+
+const eventSchema = {
+  eventTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Event Title' },
+  category: { type: 'select', required: true, label: 'Category' },
+  subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
+}
+
+const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(eventSchema, formData)
+
+const additionalImages = ref([])
 const selectedVenue = ref("")
 const fileName = ref("")
 const selectedGenre = ref("")
@@ -939,37 +967,30 @@ onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside)
 })
 
-
-// Menu items specific to CreateEventPremium
-const menuItems = [
-    { id: "home", icon: Home, label: "Home", route: "/create-event-premium" },
-    { id: "details", icon: FileText, label: "Details", route: "/create-event-premium" },
-    { id: "analytics", icon: BarChart3, route: "/create-event-premium/report", label: "Analytics" },
-    { id: "settings", icon: Settings, route: "/create-event-premium/settings", label: "Settings" },
-    { id: "calendar", icon: Calendar, label: "Calendar" },
-    { id: "back", icon: SkipBackIcon, label: "Back" },
-    { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
-]
-
-function handleMenuClick(item) {
-    if (item.route) {
-        console.log("Navigating to:", item.route);
-        router.push(item.route)
-    } else {
-        activeTab.value = item.id
-    }
+// Sync category/subcategory selections into formData for validation
+function syncFormData() {
+  formData.category = selectedCategory.value
+  formData.subcategories = selectedSubcategories.value
 }
 
-function isActive(item) {
-    if (item.route) {
-        return route.path === item.route
-    }
-    return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
-}
+async function handleSubmit() {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
 
-function saveEvent() {
-    console.log("Saving event...");
-    alert("Event saved successfully!");
+  syncFormData()
+
+  const isValid = validate()
+  const genreValid = validateGenre()
+
+  if (!isValid || !genreValid) {
+    await scrollToFirstError()
+    isSubmitting.value = false
+    return
+  }
+
+  // No API call — show success toast
+  toast.success('This feature will be available in future')
+  isSubmitting.value = false
 }
 
 // Debounce function

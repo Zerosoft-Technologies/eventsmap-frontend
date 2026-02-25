@@ -81,14 +81,16 @@
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Talent Title
             </h3>
-            <!-- <button
-              class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-              <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
           </div>
 
-          <input v-model="eventTitle" type="text" placeholder="Enter Talent Title"
-            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+          <input v-model="formData.talentTitle" type="text" placeholder="Enter Talent Title"
+            data-field="talentTitle"
+            @input="formErrors.talentTitle && clearError('talentTitle')"
+            :class="[
+              'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
+              formErrors.talentTitle ? 'tw:border-red-500' : 'tw:border-gray-200'
+            ]" />
+          <p v-if="formErrors.talentTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.talentTitle }}</p>
         </div>
 
         <!-- Talent IMAGE SECTION -->
@@ -100,10 +102,6 @@
               Talent Image (Max 1)
             </h3>
 
-            <!-- <button type="button"
-              class="tw:w-8 tw:h-8 tw:rounded-full tw:bg-blue-100 tw:text-blue-600 tw:flex tw:items-center tw:justify-center">
-              <Plus class="tw:w-4 tw:h-4" />
-            </button> -->
           </div>
 
           <!-- Custom File Input -->
@@ -131,10 +129,6 @@
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Genre <span class="tw:text-red-500">*</span>
             </h3>
-            <!-- <button
-              class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-              <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
           </div>
 
           <!-- Error Display -->
@@ -163,7 +157,7 @@
               <div class="tw:relative">
                 <select v-model="selectedCategory" @change="handleCategoryChangeWithValidation"
                   :disabled="isLoadingCategories || categoriesError" :class="[
-                    'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                    'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                     categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
                     (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
                   ]">
@@ -444,10 +438,6 @@
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Overview
             </h3>
-            <!-- <button
-              class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-              <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
           </div>
 
           <div class="tw:grid tw:grid-cols-3 tw:gap-4">
@@ -510,10 +500,6 @@
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Invite
             </h3>
-            <!-- <button
-              class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-              <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
           </div>
 
           <p class="tw:text-sm tw:text-gray-600">
@@ -565,14 +551,23 @@
         </div>
 
         <!-- SAVE Talent BUTTON -->
-        <div class="tw:flex tw:flex-col tw:items-start tw:pt-4 tw:w-full">
-          <button @click="saveEvent" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+        <div class="tw:w-full tw:pt-4">
+          <div class="tw:flex tw:w-full tw:items-center tw:justify-between">
+            <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                tw:border tw:border-orange-500 tw:text-[#0061FF]
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
-            Buy Tickets
-          </button>
-          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full">Soon you can show this button in your
-            event description or event info window when appropriate. This is still under consideration.”</span>
+              Buy Tickets
+            </button>
+
+            <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+               tw:border tw:border-blue-500 tw:text-blue-600
+               tw:bg-white hover:tw:bg-blue-50 tw:transition-all
+               disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
+              {{ isSubmitting ? 'Saving...' : 'Save Talent' }}
+            </button>
+          </div>
+          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon you can show this button in your
+            event description or event info window when appropriate. This is still under consideration.</span>
         </div>
 
       </div>
@@ -598,10 +593,12 @@ import {
   Clock,
 } from "lucide-vue-next"
 
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue"
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import eventService from "@/services/eventService"
+import { useFormValidation } from "@/composables/useFormValidation"
+import { useToast } from "@/composables/useToast"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -610,20 +607,36 @@ import "flatpickr/dist/flatpickr.css"
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 
 const activeTab = ref("home")
-// const eventTitle = ref("")
+const isSubmitting = ref(false)
 const selectedVenue = ref("")
+
+// ── Form Validation (generic composable) ─────────────────────
+const formData = reactive({
+  talentTitle: '',
+  category: '',
+  subcategories: [],
+})
+
+const talentSchema = {
+  talentTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Talent Title' },
+  category: { type: 'select', required: true, label: 'Category' },
+  subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
+}
+
+const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(talentSchema, formData)
 // Genre state
 const selectedCategory = ref("")
-const selectedSubcategories = ref([])  // Multi-select array for subcategories
+const selectedSubcategories = ref([]) // Multi-select array for subcategories
 const categoryError = ref(false)
 const subcategoryError = ref(false)
-const subcategoryValidationError = ref(false)  // For max 5 validation
+const subcategoryValidationError = ref(false) // For max 5 validation
 const categories = ref([])
 const isLoadingCategories = ref(false)
 const categoriesError = ref(null)
-const showSubcategoryDropdown = ref(false)  // For dropdown toggle
+const showSubcategoryDropdown = ref(false) // For dropdown toggle
 
 // Dropdown refs for click outside functionality
 const dropdownContainer = ref(null)
@@ -659,11 +672,11 @@ async function fetchCategories() {
 
 // Handle category change with validation clearing
 function handleCategoryChangeWithValidation() {
-  selectedSubcategories.value = []  // Reset array when category changes
+  selectedSubcategories.value = [] // Reset array when category changes
   subcategoryError.value = false
-  subcategoryValidationError.value = false  // Clear validation error
+  subcategoryValidationError.value = false // Clear validation error
   categoryError.value = false
-  showSubcategoryDropdown.value = false  // Close dropdown
+  showSubcategoryDropdown.value = false // Close dropdown
 }
 
 // Handle category change
@@ -767,7 +780,6 @@ const selectedOrganiser = ref("")
 const selectedTalent = ref("")
 
 // Event data
-const eventTitle = ref("Talent Title")
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Draft")
 
@@ -799,9 +811,30 @@ function isActive(item) {
   return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
 }
 
-function saveEvent() {
-  console.log("Saving event...");
-  alert("Event saved successfully!");
+// Sync category/subcategory selections into formData for validation
+function syncFormData() {
+  formData.category = selectedCategory.value
+  formData.subcategories = selectedSubcategories.value
+}
+
+async function handleSubmit() {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
+
+  syncFormData()
+
+  const isValid = validate()
+  const genreValid = validateGenre()
+
+  if (!isValid || !genreValid) {
+    await scrollToFirstError()
+    isSubmitting.value = false
+    return
+  }
+
+  // No API call — show success toast
+  toast.success('This feature will be available in future')
+  isSubmitting.value = false
 }
 
 // Debounce function

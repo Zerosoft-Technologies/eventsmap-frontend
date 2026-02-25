@@ -85,8 +85,14 @@
             </button> -->
           </div>
 
-          <input v-model="eventTitle" type="text" placeholder="Enter Organiser Title"
-            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+          <input v-model="formData.organiserTitle" type="text" placeholder="Enter Organiser Title"
+            data-field="organiserTitle"
+            @input="formErrors.organiserTitle && clearError('organiserTitle')"
+            :class="[
+              'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
+              formErrors.organiserTitle ? 'tw:border-red-500' : 'tw:border-gray-200'
+            ]" />
+          <p v-if="formErrors.organiserTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.organiserTitle }}</p>
         </div>
 
         <!-- Organiser IMAGE SECTION -->
@@ -161,7 +167,7 @@
               <div class="tw:relative">
                 <select v-model="selectedCategory" @change="handleCategoryChangeWithValidation"
                   :disabled="isLoadingCategories || categoriesError" :class="[
-                    'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                    'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                     categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
                     (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
                   ]">
@@ -549,14 +555,23 @@
         </div>
 
         <!-- SAVE Organiser BUTTON -->
-        <div class="tw:flex tw:flex-col tw:items-start tw:pt-4 tw:w-full">
-          <button @click="saveEvent" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+        <div class="tw:w-full tw:pt-4">
+          <div class="tw:flex tw:w-full tw:items-center tw:justify-between">
+            <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                tw:border tw:border-orange-500 tw:text-[#0061FF]
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
-            Buy Tickets
-          </button>
-          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:w-full">Soon you can show this button in your
-            event description or event info window when appropriate. This is still under consideration.”</span>
+              Buy Tickets
+            </button>
+
+            <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+               tw:border tw:border-blue-500 tw:text-blue-600
+               tw:bg-white hover:tw:bg-blue-50 tw:transition-all
+               disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
+              {{ isSubmitting ? 'Saving...' : 'Save Organiser' }}
+            </button>
+          </div>
+          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon you can show this button in your
+            event description or event info window when appropriate. This is still under consideration.</span>
         </div>
 
       </div>
@@ -582,10 +597,12 @@ import {
   Clock,
 } from "lucide-vue-next"
 
-import { ref, computed, onMounted, onBeforeUnmount } from "vue"
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import eventService from "@/services/eventService"
+import { useFormValidation } from "@/composables/useFormValidation"
+import { useToast } from "@/composables/useToast"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -594,14 +611,30 @@ import "flatpickr/dist/flatpickr.css"
 
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 
 const activeTab = ref("home")
-// const eventTitle = ref("")
+const isSubmitting = ref(false)
 const selectedVenue = ref("")
 const selectedGenre = ref("")
 const dressCode = ref("")
 const ageLimit = ref("")
 const entranceFee = ref("")
+
+// ── Form Validation (generic composable) ─────────────────────
+const formData = reactive({
+  organiserTitle: '',
+  category: '',
+  subcategories: [],
+})
+
+const organiserSchema = {
+  organiserTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Organiser Title' },
+  category: { type: 'select', required: true, label: 'Category' },
+  subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
+}
+
+const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(organiserSchema, formData)
 
 // Event Date and Time
 // const eventDate = ref("")
@@ -750,7 +783,6 @@ const selectedOrganiser = ref("")
 const selectedTalent = ref("")
 
 // Event data
-const eventTitle = ref("Organiser Title")
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Draft")
 const fileName = ref("")
@@ -780,9 +812,33 @@ function isActive(item) {
   return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
 }
 
-function saveEvent() {
-  console.log("Saving event...");
-  alert("Event saved successfully!");
+// Sync category/subcategory selections into formData for validation
+function syncFormData() {
+  formData.category = selectedCategory.value
+  formData.subcategories = selectedSubcategories.value
+}
+
+async function handleSubmit() {
+  if (isSubmitting.value) return
+  isSubmitting.value = true
+
+  // Sync current selections into formData
+  syncFormData()
+
+  const isValid = validate()
+
+  // Also validate genre fields (existing logic)
+  const genreValid = validateGenre()
+
+  if (!isValid || !genreValid) {
+    await scrollToFirstError()
+    isSubmitting.value = false
+    return
+  }
+
+  // No API call — show success toast
+  toast.success('This feature will be available in future')
+  isSubmitting.value = false
 }
 
 function handleBack() {
