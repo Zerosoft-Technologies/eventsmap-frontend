@@ -48,16 +48,24 @@
     "no": "Non"
   },
   "auth": {
-    "loginTitle": "Connectez-vous à votre compte",
+    "loginTitle": "Connexion à votre compte",
     "registerTitle": "Créer un nouveau compte",
-    "email": "E-mail",
+    "email": "Email",
     "password": "Mot de passe",
-    "forgotPassword": "Mot de passe oublié ?",
+    "forgotPassword": "Mot de passe oublié",
+    "forgotPasswordDescription": "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "newPassword": "Nouveau mot de passe",
     "rememberMe": "Se souvenir de moi",
-    "alreadyHaveAccount": "Vous avez déjà un compte ?",
-    "dontHaveAccount": "Vous n'avez pas de compte ?",
+    "alreadyHaveAccount": "Vous avez déjà un compte?",
+    "dontHaveAccount": "Vous n'avez pas de compte?",
     "signUp": "S'inscrire",
-    "signIn": "Se Connecter"
+    "signIn": "Se connecter",
+    "sendResetLink": "Envoyer le lien de réinitialisation",
+    "backToLogin": "Retour à la connexion",
+    "passwordResetSuccess": "Mot de passe réinitialisé avec succès! Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
+    "passwordResetSent": "Le lien de réinitialisation du mot de passe a été envoyé à votre email."
   },
   "event": {
     "title": "Événement",
@@ -177,5 +185,12 @@
     "noTalents": "Aucun talent ajouté à cet événement pour le moment.",
     "more": "plus",
     "close": "Fermer"
+  },
+  "wishlist": {
+    "title": "Ma Liste de Souhaits",
+    "empty": "Aucun événement sauvegardé",
+    "emptyHint": "Cliquez sur l'icône cœur sur les événements pour les sauvegarder ici",
+    "clearAll": "Tout Supprimer",
+    "clearing": "Suppression..."
   }
 }

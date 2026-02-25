@@ -2,7 +2,7 @@
     <!-- CTA Button when minimized -->
     <transition name="slide-left">
       <button 
-        v-if="!visible && events.length > 0"
+        v-if="!visible && computedEvents.length > 0"
         @click="expand"
         class="tw:fixed tw:top-1/2 tw:-translate-y-1/2 tw:left-0 tw:z-50 tw:bg-white tw:px-4 tw:py-3 tw:rounded-r-lg tw:shadow-lg tw:border tw:border-(--secondary-color) tw:flex tw:items-center tw:gap-2 tw:transition-all hover:tw:translate-x-1"
       >
@@ -54,7 +54,7 @@
             class="tw:max-h-[80vh] tw:lg:max-h-[60vh] tw:space-y-4 tw:pr-2 tw:overflow-y-auto"
           >
           <!-- Loading state with skeleton -->
-          <div v-if="loading" class="tw:space-y-4">
+          <div v-if="isLoading" class="tw:space-y-4">
             <div v-for="i in 3" :key="i" class="tw:p-3 tw:bg-[#ECEEF4] tw:rounded-xl tw:animate-pulse">            
               <!-- Header section -->
               <div class="tw:flex tw:justify-between tw:md:gap-5 tw:flex-wrap tw:items-center">
@@ -109,8 +109,8 @@
             </div>
           </div>
           
-          <!-- Empty state -->
-          <div v-else-if="events.length === 0" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:py-12 tw:px-6">
+          <!-- Events empty state -->
+          <div v-else-if="computedEvents.length === 0" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:py-12 tw:px-6">
             <div class="tw:w-24 tw:h-24 tw:bg-[#ECEEF4] tw:rounded-full tw:flex tw:items-center tw:justify-center tw:mb-6">
               <svg class="tw:w-12 tw:h-12 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -129,13 +129,13 @@
           </div>
           
           <!-- Events list -->
-          <template v-else>
-            <div v-for="event in events" :key="event.id">
+          <transition-group v-else name="panel-fade" tag="div" class="tw:space-y-4">
+            <div v-for="event in computedEvents" :key="event.id">
               <Event :event="event" @viewEvent="handleViewEvent"></Event>
             </div>
-          </template>
+          </transition-group>
           
-          <div v-if="!loading && events.length > 0" class="tw:text-center">
+          <div v-if="!isLoading && computedEvents.length > 0" class="tw:text-center">
             <button @click="reset" class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)">                
                 {{ $t('header.resetSearch') }}
             </button>
@@ -147,14 +147,14 @@
 </template>
 <script setup>
 import { useI18n } from 'vue-i18n'
-import { defineAsyncComponent, ref } from 'vue'
+import { defineAsyncComponent, ref, computed } from 'vue'
 
 // Lazy load Event to avoid circular import issue
 const Event = defineAsyncComponent(() => import('./Event.vue'))
 
 const { t } = useI18n()
 
-defineProps({
+const props = defineProps({
   events: {
     type: Array,
     required: true
@@ -162,10 +162,16 @@ defineProps({
   loading: {
     type: Boolean,
     default: false
-  }
+  },
 });
 
 const emit = defineEmits(['closeResults', 'resetSearch', 'viewEvent']);
+
+// Computed: events list
+const computedEvents = computed(() => props.events)
+
+// Computed: loading state
+const isLoading = computed(() => props.loading)
 
 // Component state
 const visible = ref(true);
@@ -205,6 +211,18 @@ function handleViewEvent(event) {
 }
 .fade-enter-from,
 .fade-leave-to {
+  opacity: 0;
+}
+
+/* Smooth fade transition for panel content switching */
+.panel-fade-enter-active {
+  transition: opacity 0.25s ease;
+}
+.panel-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.panel-fade-enter-from,
+.panel-fade-leave-to {
   opacity: 0;
 }
 

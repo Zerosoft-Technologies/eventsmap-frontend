@@ -1,10 +1,10 @@
 <template>
   <div
-    class="tw:w-[400px] tw:bg-[#F3F2EE] tw:rounded-lg tw:border-[10px] tw:border-[#F6F1E7] tw:flex tw:max-h-[85vh] tw:sticky tw:top-10">
+    class="tw:w-[400px] tw:bg-[#F3F2EE] tw:rounded-lg tw:border-[10px] tw:border-[#F6F1E7] tw:flex tw:h-[85vh] tw:sticky tw:top-10">
 
     <!-- Sidebar -->
     <div
-      class="tw:w-[90px] tw:bg-[#FFFFFF] tw:flex tw:flex-col tw:items-center tw:py-8 tw:space-y-6 tw:rounded-l-lg tw:border-r tw:border-gray-200">
+      class="tw:w-[90px] tw:bg-[#FFFFFF] tw:flex tw:flex-col tw:items-center tw:py-8 tw:space-y-6 tw:rounded-l-lg tw:border-r tw:border-gray-200 tw:flex-shrink-0">
       <div v-for="item in menuItems" :key="item.id" class="tw:relative tw:group">
         <button @click="handleMenuClick(item)" :class="[
           'tw:flex tw:items-center tw:justify-center tw:transition-all',
@@ -29,10 +29,10 @@
     </div>
 
     <!-- Event Summary -->
-    <div class="tw:flex-1 tw:bg-[#FFFFFF] tw:rounded-r-lg tw:overflow-hidden">
+    <div class="tw:flex-1 tw:bg-[#FFFFFF] tw:rounded-r-lg tw:overflow-hidden tw:flex tw:flex-col">
 
-      <!-- Header Section -->
-      <div class="tw:px-6 tw:py-6 tw:border-b tw:border-gray-300">
+      <!-- Header Section - Fixed -->
+      <div class="tw:px-6 tw:py-6 tw:border-b tw:border-gray-300 tw:flex-shrink-0">
         <button
           @click="handleBackClick"
           class="tw:inline-flex tw:items-center tw:gap-2 tw:text-sm tw:text-[#0061FF] hover:tw:text-black tw:font-medium">
@@ -41,27 +41,49 @@
         </button>
       </div>
 
-      <!-- Content Section -->
-      <div class="tw:p-6">
-        <!-- Event Card -->
-        <div class="tw:bg-[#F6F1E7] tw:rounded-2xl tw:p-5 tw:space-y-4 tw:border tw:border-gray-200">
+      <!-- Content Section - Scrollable -->
+      <div class="tw:p-6 tw:overflow-y-auto tw:flex-1 tw:space-y-4" style="height: 0;">
 
-          <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF]">
-            {{ eventTitle || 'Event Title' }}
-          </h2>
-
-          <div class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2">
-            <Calendar class="tw:w-4 tw:h-4" />
-            <span>{{ eventDate || '05.03.2026, 18:30 CET' }}</span>
-          </div>
-
-          <button
-            class="tw:inline-flex tw:items-center tw:gap-2 tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:bg-white tw:text-[#0061FF] tw:rounded-md tw:border tw:border-[#FF7700] hover:tw:bg-gray-50 tw:transition">
-            {{ eventStatus || 'Draft' }}
-            <ChevronDown class="tw:w-4 tw:h-4" />
-          </button>
-
+        <!-- Loading State -->
+        <div v-if="myEventStore.loading" class="tw:text-center tw:py-4 tw:text-gray-400 tw:text-sm">
+          Loading events...
         </div>
+
+        <!-- Events List -->
+        <template v-else-if="myEventStore.events.length > 0">
+          <div
+            v-for="event in myEventStore.events"
+            :key="event.id"
+            @click="handleEventClick(event)"
+            :class="[
+              'tw:bg-[#F6F1E7] tw:rounded-2xl tw:p-5 tw:space-y-4 tw:border tw:cursor-pointer tw:transition',
+              myEventStore.selectedEventId === event.id
+                ? 'tw:border-[#0061FF]'
+                : 'tw:border-gray-200 hover:tw:border-gray-300'
+            ]"
+          >
+            <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF]">
+              {{ event.title || 'Event Title' }}
+            </h2>
+
+            <div class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2">
+              <Calendar class="tw:w-4 tw:h-4" />
+              <span>{{ formatEventDateTime(event.event_date, event.start_time) }}</span>
+            </div>
+
+            <button
+              class="tw:inline-flex tw:items-center tw:gap-2 tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:bg-white tw:text-[#0061FF] tw:rounded-md tw:border tw:border-[#FF7700] hover:tw:bg-gray-50 tw:transition">
+              {{ event.status || 'Draft' }}
+              <ChevronDown class="tw:w-4 tw:h-4" />
+            </button>
+          </div>
+        </template>
+
+        <!-- Empty State -->
+        <div v-else class="tw:text-center tw:py-4 tw:text-gray-400 tw:text-sm">
+          No events found
+        </div>
+
       </div>
 
     </div>
@@ -80,21 +102,13 @@ import {
 } from "lucide-vue-next"
 
 import { useRouter, useRoute } from "vue-router"
+import { onMounted } from "vue"
+import { useMyEventStore } from "@/stores/myEventStore"
+
+const myEventStore = useMyEventStore()
 
 // Props
 const props = defineProps({
-  eventTitle: {
-    type: String,
-    default: 'Event Title'
-  },
-  eventDate: {
-    type: String,
-    default: '05.03.2026, 18:30 CET'
-  },
-  eventStatus: {
-    type: String,
-    default: 'Draft'
-  },
   menuItems: {
     type: Array,
     required: true
@@ -102,7 +116,26 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['back'])
+const emit = defineEmits(['back', 'event-selected'])
+
+onMounted(() => {
+  myEventStore.fetchMyEvents()
+})
+
+function formatEventDateTime(date, time) {
+  if (!date) return ''
+  const d = new Date(date)
+  const day = String(d.getDate()).padStart(2, '0')
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const year = d.getFullYear()
+  const timePart = time ? `, ${time.substring(0, 5)}` : ''
+  return `${day}.${month}.${year}${timePart}`
+}
+
+function handleEventClick(event) {
+  myEventStore.selectEvent(event.id)
+  emit('event-selected', event.id)
+}
 
 const router = useRouter()
 const route = useRoute()
@@ -154,8 +187,29 @@ function isActive(item) {
 }
 
 function handleBackClick() {
-  emit('back')
-  // You can also add default navigation logic here
-  // router.push('/events')
+  // Navigate to home page without full page reload
+  router.push({ name: 'Home' })
 }
 </script>
+
+<style scoped>
+/* Custom scrollbar styling */
+.tw\:overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tw\:overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.tw\:overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.tw\:overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+</style>

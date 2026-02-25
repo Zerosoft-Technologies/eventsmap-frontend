@@ -4,11 +4,9 @@
 
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
       <EventSidebar 
-        :eventTitle="eventTitle"
-        :eventDate="eventDate"
-        :eventStatus="eventStatus"
         :menuItems="menuItems"
         @back="handleBack"
+        @event-selected="handleEventSelected"
       />
 
       <!-- ================= RIGHT CARD ================= -->
@@ -83,5 +81,9 @@ const menuItems = [
 
 function handleBack() {
   router.push('/events') // Navigate to events list or wherever you need
+}
+
+function handleEventSelected(eventId) {
+  console.log('Event selected for editing:', eventId)
 }
 </script>

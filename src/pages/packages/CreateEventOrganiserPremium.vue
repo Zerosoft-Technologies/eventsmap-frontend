@@ -64,14 +64,8 @@
                             </button>
 
                         </div>
-                    </div>
-
-                </div>
-            </div> -->
-
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-            <EventSidebar :eventTitle="eventTitle" :eventDate="eventDate" :eventStatus="eventStatus"
-                :menuItems="menuItems" @back="handleBack" />
+            <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" />
 
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6 tw:space-y-6">
@@ -696,139 +690,53 @@
 </template>
 
 <script setup>
-import {
-    Home,
-    FileText,
-    BarChart3,
-    Settings,
-    Calendar,
-    ChevronDown,
-    ChevronLeft,
-    Upload,
-    Plus,
-    MapPin,
-    User,
-    SkipBackIcon,
-    Clock,
-} from "lucide-vue-next"
+    import {
+        Home,
+        FileText,
+        BarChart3,
+        Settings,
+        Calendar,
+        ChevronDown,
+        ChevronLeft,
+        Upload,
+        Plus,
+        MapPin,
+        User,
+        SkipBackIcon,
+        Clock,
+    } from "lucide-vue-next"
 
-import { ref, onMounted, onBeforeUnmount, computed } from "vue"
-import { useRouter, useRoute } from "vue-router"
-import EventSidebar from "./eventsidebar/Eventsidebar.vue"
-import maplibregl from "maplibre-gl"
-import "maplibre-gl/dist/maplibre-gl.css"
+    import { ref, onMounted, onBeforeUnmount, computed } from "vue"
+    import { useRouter, useRoute } from "vue-router"
+    import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+    import maplibregl from "maplibre-gl"
+    import "maplibre-gl/dist/maplibre-gl.css"
 
-import flatpickr from "flatpickr"
-import "flatpickr/dist/flatpickr.css"
+    import flatpickr from "flatpickr"
+    import "flatpickr/dist/flatpickr.css"
 
-const router = useRouter()
-const route = useRoute()
+    const router = useRouter()
+    const route = useRoute()
 
-const activeTab = ref("home")
-// const eventTitle = ref("")
-const eventDescription = ref("")
-const selectedVenue = ref("")
-const selectedGenre = ref("")
-const dressCode = ref("")
-const ageLimit = ref("")
-const contactPhone = ref("")
-const contactEmail = ref("")
-const contactWebsite = ref("")
-const bookingInstructions = ref('');
-const ticketUrl = ref('');
-const eventOption = ref('');
-const showChatbox = ref(false)
+    const activeTab = ref("home")
+    const eventTitle = ref("Organiser Title")
+    const eventDescription = ref("")
+    const selectedVenue = ref("")
+    const selectedGenre = ref("")
+    const dressCode = ref("")
+    const ageLimit = ref("")
+    const contactPhone = ref("")
+    const contactEmail = ref("")
+    const contactWebsite = ref("")
+    const bookingInstructions = ref('');
+    const ticketUrl = ref('');
+    const eventOption = ref('');
+    const showChatbox = ref(false)
 
-const notifications = ref({
-    receiveEmail: false,
-    receiveUpdates: false
-})
-
-const facebookUrl = ref("")
-const instagramUrl = ref("")
-const tiktokUrl = ref("")
-
-const entranceFee = ref("")
-
-// Event Date and Time
-// const eventDate = ref("")
-const eventTime = ref("")
-const dateInput = ref(null)
-const timeInput = ref(null)
-
-// Event Location refs
-const searchAddress = ref("")
-const selectedAddress = ref("")
-const map = ref(null)
-const marker = ref(null)
-const suggestions = ref([])
-const isLoading = ref(false)
-const debounceTimer = ref(null)
-const selectedCategory = ref("")
-
-const showGenreDropdown = ref(false)
-const genreDropdownRef = ref(null)
-
-const genres = [
-    "Electronic",
-    "House",
-    "Techno",
-    "Hip Hop",
-    "Live Music"
-]
-
-const selectedGenres = ref([])
-
-const eventTitle = ref("Organiser Title")
-const eventDate = ref("05.03.2026, 18:30 CET")
-const eventStatus = ref("Premium")
-
-const fileName = ref("")
-
-// Menu items specific to CreateEventPremium
-const menuItems = [
-    { id: "home", icon: Home, label: "Home", route: "/create-organiser-premium" },
-    { id: "details", icon: FileText, label: "Details", route: "/create-organiser-premium" },
-    { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
-    { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
-    { id: "calendar", icon: Calendar, label: "Calendar" },
-    { id: "back", icon: SkipBackIcon, label: "Back" },
-]
-
-function toggleDropdown() {
-    showGenreDropdown.value = !showGenreDropdown.value
-}
-
-// Close when clicking outside
-function handleClickOutside(event) {
-    if (
-        genreDropdownRef.value &&
-        !genreDropdownRef.value.contains(event.target)
-    ) {
-        showGenreDropdown.value = false
-    }
-}
-
-onBeforeUnmount(() => {
-    document.removeEventListener("click", handleClickOutside)
-})
-
-
-function handleMenuClick(item) {
-    if (item.route) {
-        console.log("Navigating to:", item.route);
-        router.push(item.route)
-    } else {
-        activeTab.value = item.id
-    }
-}
-
-function isActive(item) {
-    if (item.route) {
-        return route.path === item.route
-    }
-    return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
-}
+    const notifications = ref({
+        receiveEmail: false,
+        receiveUpdates: false
+    })
 
 function saveEvent() {
     console.log("Saving event...");

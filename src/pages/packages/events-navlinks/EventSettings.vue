@@ -3,8 +3,8 @@
         <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
 
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-            <EventSidebar :eventTitle="eventTitle" :eventDate="eventDate" :eventStatus="eventStatus" :menuItems="menuItems"
-                @back="handleBack" />
+            <EventSidebar :menuItems="menuItems"
+                @back="handleBack" @event-selected="handleEventSelected" />
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6">
                 <div class="tw:bg-white tw:rounded-2xl tw:p-8 md:tw:p-12">
@@ -280,9 +280,13 @@ import { Eye, EyeOff } from 'lucide-vue-next'
 const router = useRouter()
 
 // Event data (you can fetch this from API or store)
-const eventTitle = ref("Event Title")
-const eventDate = ref("05.03.2026, 18:30 CET")
-const eventStatus = ref("Draft")
+const menuItems = [
+  { id: "home", icon: Home, label: "Home", route: "/create-event-free" },
+  { id: "details", icon: FileText, label: "Details", route: "/create-event-free" },
+  { id: "analytics", icon: BarChart3, route: "/create-event-free/report", label: "Analytics" },
+  { id: "settings", icon: Settings, route: "/create-event-free/settings", label: "Settings" },
+  { id: "calendar", icon: Calendar, label: "Calendar" },
+]
 
 const activeTab = ref('profile');
 const billingTab = ref('history');
@@ -304,15 +308,6 @@ const notifications = reactive({
     receiveEmail: true,
     receiveUpdates: false
 });
-
-// Menu items for CreateEventFree (you can change this based on your route)
-const menuItems = [
-  { id: "home", icon: Home, label: "Home", route: "/create-event-free" },
-  { id: "details", icon: FileText, label: "Details", route: "/create-event-free" },
-  { id: "analytics", icon: BarChart3, route: "/create-event-free/report", label: "Analytics" },
-  { id: "settings", icon: Settings, route: "/create-event-free/settings", label: "Settings" },
-  { id: "calendar", icon: Calendar, label: "Calendar" },
-]
 
 const saveProfile = () => {
     console.log('Saving profile...', profileForm);
@@ -341,5 +336,9 @@ const downloadBillingHistory = () => {
 
 function handleBack() {
   router.push('/events') // Navigate to events list or wherever you need
+}
+
+function handleEventSelected(eventId) {
+  console.log('Event selected for editing:', eventId)
 }
 </script>

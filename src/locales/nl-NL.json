@@ -49,15 +49,23 @@
   },
   "auth": {
     "loginTitle": "Log in op uw account",
-    "registerTitle": "Maak een nieuw account",
-    "email": "E-mail",
+    "registerTitle": "Maak een nieuwe account",
+    "email": "Email",
     "password": "Wachtwoord",
-    "forgotPassword": "Wachtwoord vergeten?",
+    "forgotPassword": "Wachtwoord Vergeten",
+    "forgotPasswordDescription": "Voer uw e-mailadres in en we sturen u een link om uw wachtwoord opnieuw in te stellen.",
+    "resetPassword": "Wachtwoord Resetten",
+    "confirmPassword": "Bevestig wachtwoord",
+    "newPassword": "Nieuw Wachtwoord",
     "rememberMe": "Onthoud mij",
     "alreadyHaveAccount": "Heeft u al een account?",
     "dontHaveAccount": "Heeft u geen account?",
     "signUp": "Aanmelden",
-    "signIn": "Inloggen"
+    "signIn": "Inloggen",
+    "sendResetLink": "Verstuur Reset Link",
+    "backToLogin": "Terug naar inloggen",
+    "passwordResetSuccess": "Wachtwoord succesvol gereset! U kunt nu inloggen met uw nieuwe wachtwoord.",
+    "passwordResetSent": "Wachtwoord reset link is verzonden naar uw e-mail."
   },
   "event": {
     "title": "Evenement",
@@ -177,5 +185,12 @@
     "noTalents": "Nog geen talents toegevoegd voor dit evenement.",
     "more": "meer",
     "close": "Sluiten"
+  },
+  "wishlist": {
+    "title": "Mijn Verlanglijstje",
+    "empty": "Geen opgeslagen evenementen",
+    "emptyHint": "Klik op het hart-icoon op evenementen om ze hier op te slaan",
+    "clearAll": "Alles Wissen",
+    "clearing": "Wissen..."
   }
 }

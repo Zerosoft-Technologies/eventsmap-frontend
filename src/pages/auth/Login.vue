@@ -80,6 +80,12 @@
         </button>
       </form>
 
+      <div class="tw:text-center tw:mt-4">
+        <router-link to="/forgot-password" class="no-hover tw:text-sm tw:font-semibold hover:tw:underline" style="color: var(--primary-color)">
+          Forgot your password?
+        </router-link>
+      </div>
+
       <p class="tw:text-center tw:text-sm tw:text-gray-500 tw:mt-6">
         Don't have an account?
         <router-link to="/register" class="no-hover tw:font-semibold hover:tw:underline" style="color: var(--primary-color)">

@@ -71,6 +71,7 @@
   },
   "common": {
     "loading": "Loading...",
+    "sending": "Sending",
     "error": "An error occurred",
     "retry": "Retry",
     "close": "Close",
@@ -93,12 +94,20 @@
     "registerTitle": "Create a new account",
     "email": "Email",
     "password": "Password",
-    "forgotPassword": "Forgot password?",
+    "forgotPassword": "Forgot Password",
+    "forgotPasswordDescription": "Enter your email address and we'll send you a link to reset your password.",
+    "resetPassword": "Reset Password",
+    "confirmPassword": "Confirm password",
+    "newPassword": "New Password",
     "rememberMe": "Remember me",
     "alreadyHaveAccount": "Already have an account?",
     "dontHaveAccount": "Don't have an account?",
     "signUp": "Sign Up",
-    "signIn": "Sign In"
+    "signIn": "Sign In",
+    "sendResetLink": "Send Reset Link",
+    "backToLogin": "Back to login",
+    "passwordResetSuccess": "Password reset successfully! You can now login with your new password.",
+    "passwordResetSent": "Password reset link has been sent to your email."
   },
   "event": {
     "title": "Event",
@@ -220,5 +229,12 @@
     "noTalents": "No talents added for this event yet.",
     "more": "more",
     "close": "Close"
+  },
+  "wishlist": {
+    "title": "My Wishlist",
+    "empty": "No saved events",
+    "emptyHint": "Click the heart icon on events to save them here",
+    "clearAll": "Clear All",
+    "clearing": "Clearing..."
   }
 }

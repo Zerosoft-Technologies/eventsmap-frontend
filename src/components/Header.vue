@@ -112,9 +112,9 @@
 
     <div class="tw:hidden tw:lg:flex tw:items-center tw:gap-4">
       <div>
-        <button @click="filterBy('suggestion')" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color)">
+        <button @click="toggleWishlistPanel" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color) tw:relative hover:tw:border-red-400 hover:tw:bg-red-50 tw:transition-colors">
           <img src="../assets/favourite.png" alt="Favourite Icon"/>
-          <!-- <span>{{ $t('header.link') }}</span> -->
+          <span v-if="wishlistStore.wishlistEvents.length > 0" class="tw:absolute tw:-top-1.5 tw:-right-1.5 tw:bg-red-500 tw:text-white tw:text-[10px] tw:font-bold tw:w-5 tw:h-5 tw:rounded-full tw:flex tw:items-center tw:justify-center">{{ wishlistStore.wishlistEvents.length }}</span>
         </button>
       </div>      
       <div>        
@@ -147,7 +147,7 @@
               :class="{ 'tw:bg-gray-100': lang.code === currentLocale }"
             >
               <img :src="lang.flag" :alt="lang.name + ' flag'" class="tw:w-4 tw:h-4 tw-object-cover tw-rounded-sm" />
-              <!-- <span class="tw-text-sm">{{ lang.name }}</span> -->
+              <!-- <span class="tw:text-sm">{{ lang.name }}</span> -->
               <!-- <svg 
                 v-if="lang.code === currentLocale" 
                 class="tw:w-4 tw:h-4 tw:ml-auto tw:text-green-600" 
@@ -251,6 +251,7 @@ import LocationPermissionPrompt from './LocationPermissionPrompt.vue';
 import { useLocationPermission } from '../composables/useLocationPermission';
 import { useLanguageSwitch } from '../composables/useLanguageSwitch';
 import { useAuthStore } from '@/stores/auth';
+import { useWishlistStore } from '@/stores/wishlistStore';
 
 // Lazy load AllEvents to avoid circular import issue
 const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
@@ -258,9 +259,12 @@ const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
 // Lazy load EventDetailsPanel for event details side panel
 const EventDetailsPanel = defineAsyncComponent(() => import('./EventDetailsPanel.vue'))
 
+const emit = defineEmits(['open-login', 'toggle-wishlist'])
+
 const { t, locale } = useI18n()
 const { switchLanguage, getAvailableLanguages, initializeLanguage } = useLanguageSwitch()
 const authStore = useAuthStore()
+const wishlistStore = useWishlistStore()
 const router = useRouter()
 
 async function handleLogout() {
@@ -421,6 +425,11 @@ function filterBy(action){
 const fixedMenu = computed(() => { 
   return route.name === 'Home'
 })
+
+function toggleWishlistPanel() {
+  // Emit toggle event - auth guard and state management handled in App.vue
+  emit('toggle-wishlist')
+}
 
 function handleClose(){
   showResults.value = false

@@ -3,8 +3,7 @@
         <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
 
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-            <EventSidebar :eventTitle="eventTitle" :eventDate="eventDate" :eventStatus="eventStatus"
-                :menuItems="menuItems" @back="handleBack" />
+            <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" />
 
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6">
@@ -319,85 +318,74 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
-import { Eye, EyeOff } from 'lucide-vue-next'
-import { useRouter } from "vue-router"
-import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
-import EventSidebar from '../eventsidebar/Eventsidebar.vue'
+    import { ref, reactive } from 'vue';
+    import { Eye, EyeOff } from 'lucide-vue-next'
+    import { useRouter } from "vue-router"
+    import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
+    import EventSidebar from '../eventsidebar/Eventsidebar.vue'
 
-const router = useRouter()
+    const router = useRouter()
 
-// Organiser data (you can fetch this from API or store)
-const eventTitle = ref("Organiser Title")
-const eventDate = ref("05.03.2026, 18:30 CET")
-const eventStatus = ref("Draft")
+    // Organiser data (you can fetch this from API or store)
+    const menuItems = [
+        { id: "home", icon: Home, label: "Home", route: "/create-organiser-premium" },
+        { id: "details", icon: FileText, label: "Details", route: "/create-organiser-premium" },
+        { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
+        { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
+        { id: "calendar", icon: Calendar, label: "Calendar" },
+    ]
 
+    function handleBack() {
+        router.push('/events') // Navigate to events list or wherever you need
+    }
 
-const activeTab = ref('profile');
-const billingTab = ref('history');
+    function handleEventSelected(eventId) {
+        console.log('Event selected for editing:', eventId)
+    }
 
-const tabs = [
-    { id: 'profile', label: 'Organiser profile' },
-    { id: 'notification', label: 'Notification' },
-    { id: 'plan', label: 'Plan Management' }
-];
+    const activeTab = ref('profile');
+    const billingTab = ref('history');
 
+    const tabs = [
+        { id: 'profile', label: 'Organiser profile' },
+        { id: 'notification', label: 'Notification' },
+        { id: 'plan', label: 'Plan Management' }
+    ];
 
-const showPassword = ref(false)
+    const showPassword = ref(false)
 
-const profileForm = reactive({
-    username: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    taxNumber: '',
-    companyName: '',
-    country: '',
-    password: ''
-});
+    const profileForm = reactive({
+        email: '',
+        password: ''
+    });
 
-const notifications = reactive({
-    receiveEmail: true,
-    receiveUpdates: false
-});
+    const notifications = reactive({
+        receiveEmail: true,
+        receiveUpdates: false
+    });
 
-const notificationEmail = ref('')
+    const saveProfile = () => {
+        console.log('Saving profile...', profileForm);
+        alert('Profile changes saved successfully!');
+    };
 
-// Menu items for CreateEventFree (you can change this based on your route)
-const menuItems = [
-  { id: "home", icon: Home, label: "Home", route: "/create-organiser-premium" },
-  { id: "details", icon: FileText, label: "Details", route: "/create-organiser-premium" },
-  { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
-  { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
-  { id: "calendar", icon: Calendar, label: "Calendar" },
-]
+    const saveNotifications = () => {
+        console.log('Saving notifications...', notifications);
+        alert('Notification preferences saved!');
+    };
 
-function handleBack() {
-  router.push('/events') // Navigate to events list or wherever you need
-}
+    const comparePlans = () => {
+        console.log('Comparing plans...');
+        alert('Opening plan comparison...');
+    };
 
-const saveProfile = () => {
-    console.log('Saving profile...', profileForm);
-    alert('Profile changes saved successfully!');
-};
+    const upgradePlan = () => {
+        console.log('Upgrading plan...');
+        alert('Redirecting to upgrade page...');
+    };
 
-const saveNotifications = () => {
-    console.log('Saving notifications...', notifications);
-    alert('Notification preferences saved!');
-};
-
-const comparePlans = () => {
-    console.log('Comparing plans...');
-    alert('Opening plan comparison...');
-};
-
-const upgradePlan = () => {
-    console.log('Upgrading plan...');
-    alert('Redirecting to upgrade page...');
-};
-
-const downloadBillingHistory = () => {
-    console.log('Downloading billing history...');
-    alert('Downloading billing history...');
-};
+    const downloadBillingHistory = () => {
+        console.log('Downloading billing history...');
+        alert('Downloading billing history...');
+    };
 </script>

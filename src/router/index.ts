@@ -48,7 +48,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/login', name: 'Login', component: Login, meta: { guest: true } },
   { path: '/register', name: 'Register', component: Register, meta: { guest: true } },
   { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPassword, meta: { guest: true } },
-  { path: '/reset-password', name: 'ResetPassword', component: ResetPassword, meta: { guest: true } },
+  { path: '/auth/reset-password', name: 'ResetPassword', component: ResetPassword, meta: { guest: true } },
   { path: '/email/verify/:id/:hash', name: 'VerifyEmail', component: VerifyEmail },
 
   // ── Protected Routes ────────────────────────────────────

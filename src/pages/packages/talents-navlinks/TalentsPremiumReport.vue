@@ -4,11 +4,9 @@
 
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
       <EventSidebar 
-        :eventTitle="eventTitle"
-        :eventDate="eventDate"
-        :eventStatus="eventStatus"
         :menuItems="menuItems"
         @back="handleBack"
+        @event-selected="handleEventSelected"
       />
 
       <!-- ================= RIGHT CARD ================= -->
@@ -61,10 +59,6 @@ import EventSidebar from "../eventsidebar/Eventsidebar.vue"
 const router = useRouter()
 
 // Event data (you can fetch this from API or store)
-const eventTitle = ref("Talent Title")
-const eventDate = ref("05.03.2026, 18:30 CET")
-const eventStatus = ref("Draft")
-
 const monthlyViews = ref([
   { month: "January 2026", views: 120 },
   { month: "February 2026", views: 245 },
@@ -83,5 +77,9 @@ const menuItems = [
 
 function handleBack() {
   router.push('/events') // Navigate to events list or wherever you need
+}
+
+function handleEventSelected(eventId) {
+  console.log('Event selected for editing:', eventId)
 }
 </script>

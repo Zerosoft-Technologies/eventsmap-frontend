@@ -46,6 +46,35 @@ export interface CategoriesResponse {
   message?: string
 }
 
+export interface MyEvent {
+  id: number
+  title: string
+  event_date: string
+  start_time: string
+  status: string
+  image_url: string
+}
+
+export interface MyEventsResponse {
+  success: boolean
+  message?: string
+  data: MyEvent[]
+}
+
+export interface WishlistToggleResponse {
+  success: boolean
+  message?: string
+  data: {
+    is_wishlisted: boolean
+  }
+}
+
+export interface WishlistListResponse {
+  success: boolean
+  message?: string
+  data: unknown[]
+}
+
 // ── Event Service ──────────────────────────────────────────────────────────
 const eventService = {
   /**
@@ -102,6 +131,30 @@ const eventService = {
    */
   async deleteEvent(slug: string): Promise<EventResponse> {
     const response: AxiosResponse<EventResponse> = await api.delete(`/v2/events/${slug}`)
+    return response.data
+  },
+
+  /**
+   * Fetch authenticated user's events
+   */
+  async getMyEvents(): Promise<MyEventsResponse> {
+    const response: AxiosResponse<MyEventsResponse> = await api.get('/v2/my-events')
+    return response.data
+  },
+
+  /**
+   * Fetch authenticated user's wishlist events
+   */
+  async getWishlistEvents(): Promise<WishlistListResponse> {
+    const response: AxiosResponse<WishlistListResponse> = await api.get('/v2/my-wishlist')
+    return response.data
+  },
+
+  /**
+   * Toggle wishlist status for an event
+   */
+  async toggleWishlist(eventId: number): Promise<WishlistToggleResponse> {
+    const response: AxiosResponse<WishlistToggleResponse> = await api.post(`/v2/events/${eventId}/wishlist`)
     return response.data
   }
 }

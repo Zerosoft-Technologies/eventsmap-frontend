@@ -3,8 +3,7 @@
         <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
 
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-            <EventSidebar :eventTitle="eventTitle" :eventDate="eventDate" :eventStatus="eventStatus"
-                :menuItems="menuItems" @back="handleBack" />
+            <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" />
 
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6">
@@ -289,25 +288,6 @@ const tabs = [
     { id: 'plan', label: 'Plan Management' }
 ];
 
-// Organiser data (you can fetch this from API or store)
-const eventTitle = ref("Organiser Title")
-const eventDate = ref("05.03.2026, 18:30 CET")
-const eventStatus = ref("Draft")
-
-const showPassword = ref(false)
-
-const profileForm = reactive({
-    email: '',
-    password: ''
-});
-
-const notifications = reactive({
-    receiveEmail: true,
-    receiveUpdates: false
-});
-
-const notificationEmail = ref('')
-
 // Menu items for CreateEventFree (you can change this based on your route)
 const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-organiser-free" },
@@ -319,6 +299,10 @@ const menuItems = [
 
 function handleBack() {
   router.push('/events') // Navigate to events list or wherever you need
+}
+
+function handleEventSelected(eventId) {
+  console.log('Event selected for editing:', eventId)
 }
 
 const saveProfile = () => {

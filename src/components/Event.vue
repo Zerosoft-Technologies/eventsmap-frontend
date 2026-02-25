@@ -60,7 +60,23 @@
 
             <div class="tw:flex tw:justify-between tw:items-center tw:mt-4">
                 <div class="tw:flex tw:gap-1 tw:items-center">
-                    <img src="../assets/favourite.png" alt="Favourite Icon">
+                    <button 
+                        @click.stop="handleWishlistToggle" 
+                        class="tw:flex tw:items-center tw:gap-1 tw:transition-all tw:duration-200 tw:cursor-pointer"
+                        :disabled="wishlistLoading"
+                    >
+                        <svg 
+                            class="tw:w-5 tw:h-5 tw:transition-colors tw:duration-200" 
+                            :class="wishlistStore.isWishlisted(event.id) ? 'tw:text-red-500 tw:fill-red-500' : 'tw:text-gray-400 tw:fill-none'"
+                            :style="wishlistLoading ? 'opacity: 0.5' : ''"
+                            xmlns="http://www.w3.org/2000/svg" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor" 
+                            stroke-width="2"
+                        >
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </button>
                     <!-- <a href="#" class="tw:leading-[1.2]">{{ $t('eventCard.link') }}</a> -->
                 </div>
 
@@ -71,7 +87,7 @@
                         <span>{{ $t('eventCard.route') }}</span>
                     </button>
 
-                    <button @click="emit('viewEvent', event)"
+                    <button v-if="!hideViewEvent" @click="emit('viewEvent', event)"
                         class="tw:bg-white tw:px-3 tw:py-2 tw:flex tw:items-center tw:gap-1 tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)">
                         <span>{{ $t('eventCard.viewEvent') }}</span>
                         <img src="../assets/arrow-right.png" alt="Arrow Icon">
@@ -124,19 +140,48 @@ onBeforeUnmount(() => clearInterval(interval))
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import DetailRow from './DetailedRow.vue'
+import { useWishlistStore } from '@/stores/wishlistStore'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
+const router = useRouter()
+const wishlistStore = useWishlistStore()
+const authStore = useAuthStore()
 
-const props = defineProps({ event: Object })
-console.log("Event data:", props.event)
-console.log("location_name:", props.event?.location_name)
-console.log("location:", props.event?.location)
+const props = defineProps({ 
+  event: Object,
+  hideViewEvent: {
+    type: Boolean,
+    default: false
+  }
+})
 const emit = defineEmits(['viewEvent'])
 
+/* ------------------ WISHLIST TOGGLE ------------------ */
+const wishlistLoading = ref(false)
+
+async function handleWishlistToggle() {
+    if (!authStore.isAuthenticated) {
+        router.push({ name: 'Login' })
+        return
+    }
+    if (wishlistLoading.value) return
+    wishlistLoading.value = true
+    try {
+        await wishlistStore.toggleWishlist(props.event)
+    } finally {
+        wishlistLoading.value = false
+    }
+}
+
 /* ------------------ TIME VALUES ------------------ */
-const start = new Date(props.event.start_datetime).getTime()
-const end = new Date(props.event.end_datetime).getTime()
+// Combine event_date with start_datetime and end_datetime to create proper Date objects
+const startDate = new Date(`${props.event.event_date}T${props.event.start_datetime}`)
+const endDate = new Date(`${props.event.event_date}T${props.event.end_datetime}`)
+const start = startDate.getTime()
+const end = endDate.getTime()
 
 /* ------------------ STATE FLAGS ------------------ */
 const isUpcoming = computed(() => Date.now() < start)

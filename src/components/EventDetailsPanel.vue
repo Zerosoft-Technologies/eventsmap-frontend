@@ -11,8 +11,8 @@
           <button
             class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)"
             style="border-radius: 30px;">
-            <img src="../assets/timer.png" alt="Opening Hours" class="tw:w-3 tw:h-3">
-            <span class="tw:text-xs">Categories</span>
+            <img src="../assets/music-note.png" alt="Category" class="tw:w-3 tw:h-3">
+            <span class="tw:text-xs">{{ event?.category.name }}</span>
           </button>
           <button v-if="event?.start_datetime"
             class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)"
@@ -127,9 +127,21 @@
             <div class="tw:flex tw:justify-between tw:items-center tw:mb-6">
 
               <div class="tw:flex tw:gap-3">
-                <button @click="handleLink"
-                  class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)">
-                  <img src="../assets/favourite.png" alt="Favourite Icon">
+                <button @click="handleWishlistToggle"
+                  class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color) tw:transition-all tw:duration-200"
+                  :class="wishlistStore.isWishlisted(event?.id) ? 'tw:border-red-400 tw:bg-red-50' : ''"
+                  :disabled="wishlistLoading">
+                  <svg 
+                    class="tw:w-4 tw:h-4 tw:transition-colors tw:duration-200" 
+                    :class="wishlistStore.isWishlisted(event?.id) ? 'tw:text-red-500 tw:fill-red-500' : 'tw:text-gray-400 tw:fill-none'"
+                    :style="wishlistLoading ? 'opacity: 0.5' : ''"
+                    xmlns="http://www.w3.org/2000/svg" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor" 
+                    stroke-width="2"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
                   <!-- <span class="tw:leading-[1.2]">{{ $t('eventCard.link') }}</span> -->
                 </button>
                 <button @click="handleRoute"
@@ -160,7 +172,7 @@
                   <CalendarIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
                 </div>
                 <div>
-                  <p class="tw:text-sm tw:font-medium">{{ event?.date || $t('eventDetails.notSpecified') }}</p>
+                  <p class="tw:text-sm tw:font-medium">{{ event?.event_date || $t('eventDetails.notSpecified') }}</p>
                 </div>
               </div>
               <!-- Organisator -->
@@ -180,7 +192,7 @@
                   <MusicIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
                 </div>
                 <div>
-                  <p class="tw:text-sm tw:font-medium">{{ event?.category ? event?.category :
+                  <p class="tw:text-sm tw:font-medium">{{ event?.category ? event?.category.name :
                     $t('eventDetails.notSpecified') }}</p>
                 </div>
               </div>
@@ -271,8 +283,14 @@ import DateLocationTab from './DateLocationTab.vue'
 import VenueTab from './VenueTab.vue'
 import TalentsTab from './TalentsTab.vue'
 import CommunityTab from './CommunityTab.vue'
+import { useWishlistStore } from '@/stores/wishlistStore'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
+const router = useRouter()
+const wishlistStore = useWishlistStore()
+const authStore = useAuthStore()
 
 // Props
 const props = defineProps({
@@ -295,6 +313,24 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits(['close', 'link', 'route', 'share'])
+
+// Wishlist state
+const wishlistLoading = ref(false)
+
+// Wishlist toggle handler
+async function handleWishlistToggle() {
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'Login' })
+    return
+  }
+  if (wishlistLoading.value) return
+  wishlistLoading.value = true
+  try {
+    await wishlistStore.toggleWishlist(props.event)
+  } finally {
+    wishlistLoading.value = false
+  }
+}
 
 // State
 const currentImageIndex = ref(0)
@@ -376,6 +412,7 @@ watch(() => props.event, () => {
 
 // Computed: Get event images or fallback to dummy
 const images = computed(() => {
+  return [props.event?.cover_image]
   if (props.event?.images && props.event.images.length > 0) {
     return props.event.images
   }
@@ -412,8 +449,13 @@ const eventStatus = computed(() => {
   }
 
   const now = new Date()
-  const start = new Date(props.event.start_datetime)
-  const end = props.event.end_datetime ? new Date(props.event.end_datetime) : start
+  // const start = new Date(props.event.start_datetime)
+  // const end = props.event.end_datetime ? new Date(props.event.end_datetime) : start
+
+  const startDate = new Date(`${props.event.event_date}T${props.event.start_datetime}`)
+  const endDate = new Date(`${props.event.event_date}T${props.event.end_datetime}`)
+  const start = startDate.getTime()
+  const end = endDate.getTime()
 
   if (now < start) {
     // Upcoming event
@@ -441,12 +483,12 @@ const eventStatus = computed(() => {
 
 // Computed: Opening hours
 const openingHours = computed(() => {
-  if (!props.event?.start_datetime) {
+  if (!props.event?.start_datetime || !props.event?.event_date) {
     return t('eventDetails.notSpecified')
   }
 
-  const start = new Date(props.event.start_datetime)
-  const end = props.event.end_datetime ? new Date(props.event.end_datetime) : null
+  const start = new Date(`${props.event.event_date}T${props.event.start_datetime}`)
+  const end = props.event.end_datetime ? new Date(`${props.event.event_date}T${props.event.end_datetime}`) : null
 
   const timeOpts = {
     hour: '2-digit',
@@ -466,12 +508,12 @@ const openingHours = computed(() => {
 
 // Computed: Formatted date and time
 const formattedDateTime = computed(() => {
-  if (!props.event?.start_datetime) {
+  if (!props.event?.start_datetime || !props.event?.event_date) {
     return t('eventDetails.notSpecified')
   }
 
-  const start = new Date(props.event.start_datetime)
-  const end = props.event.end_datetime ? new Date(props.event.end_datetime) : null
+  const start = new Date(`${props.event.event_date}T${props.event.start_datetime}`)
+  const end = props.event.end_datetime ? new Date(`${props.event.event_date}T${props.event.end_datetime}`) : null
 
   const dateOpts = {
     weekday: 'short',

@@ -70,8 +70,8 @@
       </div> -->
 
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-      <EventSidebar :eventTitle="eventTitle" :eventDate="eventDate" :eventStatus="eventStatus" :menuItems="menuItems"
-        @back="handleBack" />
+      <EventSidebar :menuItems="menuItems"
+        @back="handleBack" @event-selected="handleEventSelected" />
 
       <!-- ================= RIGHT CARD ================= -->
       <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6 tw:space-y-6">
@@ -700,5 +700,9 @@ function handleFileChange(event) {
 
 function handleBack() {
   router.push('/events') // Navigate to events list
+}
+
+function handleEventSelected(eventId) {
+  console.log('Event selected for editing:', eventId)
 }
 </script>

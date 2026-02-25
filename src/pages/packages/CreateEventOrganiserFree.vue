@@ -68,8 +68,8 @@
         </div>
       </div> -->
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-      <EventSidebar :eventTitle="eventTitle" :eventDate="eventDate" :eventStatus="eventStatus" :menuItems="menuItems"
-        @back="handleBack" />
+      <EventSidebar :menuItems="menuItems"
+        @back="handleBack" @event-selected="handleEventSelected" />
 
       <!-- ================= RIGHT CARD ================= -->
       <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6 tw:space-y-6">
@@ -551,6 +551,14 @@ function isActive(item) {
 function saveEvent() {
   console.log("Saving event...");
   alert("Event saved successfully!");
+}
+
+function handleBack() {
+  router.push('/events')
+}
+
+function handleEventSelected(eventId) {
+  console.log('Event selected for editing:', eventId)
 }
 
 // Debounce function
