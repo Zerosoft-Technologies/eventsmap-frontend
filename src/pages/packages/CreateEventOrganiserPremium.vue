@@ -478,15 +478,27 @@
                             </div>
 
                             
-                            <div
                                 class="tw:absolute tw:left-1 tw:top-1 tw:w-4 tw:h-4 tw:bg-white tw:rounded-full tw:transition tw:peer-checked:translate-x-6">
                             </div>
                         </label>
                     </div> -->
                 </div>
 
+                <!-- CONTACT BOX SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Contact Box
+                    </h3>
+
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Contact Message</label>
+                        <textarea v-model="contactBoxMessage" rows="4" placeholder="Enter your contact message"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                    </div>
+                </div>
+
                 <!-- SOCIAL MEDIA LINKS SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Social Media Links
                     </h3>
@@ -693,6 +705,7 @@ const bookingInstructions = ref('');
 const ticketUrl = ref('');
 const eventOption = ref('');
 const showChatbox = ref(false)
+const contactBoxMessage = ref('')
 
 const notifications = ref({
     receiveEmail: false,

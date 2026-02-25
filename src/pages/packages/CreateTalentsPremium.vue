@@ -518,6 +518,19 @@
                     </div> -->
                 </div>
 
+                <!-- CONTACT BOX DESIGN SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Contact Box Design
+                    </h3>
+
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Design Message</label>
+                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your design message"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                    </div>
+                </div>
+
                 <!-- SOCIAL MEDIA LINKS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
@@ -561,6 +574,50 @@
 
                     <textarea v-model="bookingInstructions" rows="4" placeholder="Booking Instructions"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                </div>
+
+                <!-- NATIONALITY OF TALENT SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Nationality of Talent
+                    </h3>
+
+                    <div class="tw-relative">
+                        <select v-model="talentNationality" 
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+                            <option value="">Select Nationality</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                        <ChevronDown
+                            class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                    </div>
+                </div>
+
+                <!-- LANGUAGES SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Languages
+                    </h3>
+
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Languages</label>
+                        <input v-model="languagesText" type="text" placeholder="Enter languages"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    </div>
+                </div>
+
+                <!-- TALENT HIGHLIGHTS SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Talent Highlights
+                    </h3>
+
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Highlights</label>
+                        <input v-model="talentHighlightsText" type="text" placeholder="Enter talent highlights"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    </div>
                 </div>
 
                 <!-- INVITE SECTION -->
@@ -726,7 +783,11 @@ const contactWebsite = ref("")
 const bookingInstructions = ref('');
 const ticketUrl = ref('');
 const eventOption = ref('');
+const talentNationality = ref('');
 const showChatbox = ref(false)
+const contactBoxDesignMessage = ref('')
+const languagesText = ref('')
+const talentHighlightsText = ref('')
 
 const notifications = ref({
     receiveEmail: false,

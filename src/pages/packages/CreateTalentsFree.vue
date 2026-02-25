@@ -81,10 +81,10 @@
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Talent Title
             </h3>
-            <button
+            <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
               <Plus class="tw:w-5 tw:h-5" />
-            </button>
+            </button> -->
           </div>
 
           <input v-model="eventTitle" type="text" placeholder="Enter Talent Title"
@@ -100,10 +100,10 @@
               Talent Image (Max 1)
             </h3>
 
-            <button type="button"
+            <!-- <button type="button"
               class="tw:w-8 tw:h-8 tw:rounded-full tw:bg-blue-100 tw:text-blue-600 tw:flex tw:items-center tw:justify-center">
               <Plus class="tw:w-4 tw:h-4" />
-            </button>
+            </button> -->
           </div>
 
           <!-- Custom File Input -->
@@ -421,6 +421,20 @@
             </label>
             <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
               class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+          </div>
+
+        </div>
+
+        <!-- CITY WHERE TALENT IS LIVING SECTION -->
+        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+          <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+            City where talent is living
+          </h3>
+
+          <div class="tw:space-y-2">
+            <label class="tw:text-sm tw:font-medium tw:text-gray-700">City</label>
+            <input v-model="talentCity" type="text" placeholder="Enter city"
+              class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
           </div>
         </div>
 
@@ -742,6 +756,7 @@ const timeInput = ref(null)
 // Event Location refs
 const searchAddress = ref("")
 const selectedAddress = ref("")
+const talentCity = ref("")
 const map = ref(null)
 const marker = ref(null)
 const suggestions = ref([])

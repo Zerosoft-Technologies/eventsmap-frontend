@@ -250,6 +250,128 @@
                     </div>
                 </div>
 
+                <!-- ALLOWANCE OF DOGS SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Allowance of dogs
+                        </h3>
+                        <!-- <button
+                        class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
+                        <Plus class="tw:w-5 tw:h-5" />
+                        </button> -->
+                    </div>
+
+                    <div class="tw:relative">
+                        <select v-model="allowanceOfDogs"
+                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+                        <option value="">Select dog policy</option>
+                        <option value="all-dogs">all dogs allowed</option>
+                        <option value="small-dogs">small dogs only, except for assistance dogs</option>
+                        <option value="no-dogs-assistance">no dogs allowed, except for assistance dogs</option>
+                        <option value="no-dogs-included">no dogs allowed, assistance dogs included</option>
+                        </select>
+                        <ChevronDown
+                        class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
+                    </div>
+                </div>
+
+                <!-- WHEELCHAIR ACCESSIBLE SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Wheelchair accessible
+                        </h3>
+                        <!-- <button
+                        class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
+                        <Plus class="tw:w-5 tw:h-5" />
+                        </button> -->
+                    </div>
+
+                    <div class="tw:relative">
+                        <select v-model="wheelchairAccessible"
+                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+                        <option value="">Select option</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        </select>
+                        <ChevronDown
+                        class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
+                    </div>
+                </div>
+
+                <!-- ACCESSIBLE PARKING SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Accessible parking close to entrance
+                        </h3>
+                        <!-- <button
+                        class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
+                        <Plus class="tw:w-5 tw:h-5" />
+                        </button> -->
+                    </div>
+
+                    <div class="tw:relative">
+                        <select v-model="accessibleParking"
+                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+                        <option value="">Select option</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        </select>
+                        <ChevronDown
+                        class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
+                    </div>
+                </div>
+
+                <!-- VALET PARKING SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Valet-Parking
+                        </h3>
+                        <!-- <button
+                        class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
+                        <Plus class="tw:w-5 tw:h-5" />
+                        </button> -->
+                    </div>
+
+                    <div class="tw:relative">
+                        <select v-model="valetParking"
+                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+                        <option value="">Select option</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        </select>
+                        <ChevronDown
+                        class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
+                    </div>
+                </div>
+
+                <!-- CHILDREN'S PLAY AREA SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Children's play area
+                        </h3>
+                        <!-- <button
+                        class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
+                        <Plus class="tw:w-5 tw:h-5" />
+                        </button> -->
+                    </div>
+
+                    <div class="tw:relative">
+                        <select v-model="childrensPlayArea"
+                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+                        <option value="">Select option</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        </select>
+                        <ChevronDown
+                        class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
+                    </div>
+                </div>
+
                 <!-- GENRE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
@@ -749,6 +871,32 @@
                     </div>
                 </div>
 
+                <!-- CONTACT BOX TO CONTACT THE VENUE SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Contact Box to Contact the Venue
+                    </h3>
+
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Contact Message</label>
+                        <textarea v-model="contactBoxMessage" rows="4" placeholder="Enter your contact message"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- OPENING HOURS VENUE SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Opening Hours Venue
+                    </h3>
+
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Opening Hours</label>
+                        <input v-model="openingHoursText" type="text" placeholder="Enter opening hours"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    </div>
+                </div>
+
                 <!-- SAVE Venue BUTTON -->
                 <div class="tw:flex tw:flex-col tw:items-start tw:pt-4 tw:w-full">
                     <button @click="saveEvent" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
@@ -957,6 +1105,9 @@ const ticketUrl = ref('');
 const eventOption = ref('');
 const showChatbox = ref(false)
 
+const contactBoxMessage = ref('')
+const openingHoursText = ref('')
+
 const notifications = ref({
     receiveEmail: false,
     receiveUpdates: false
@@ -983,6 +1134,13 @@ const suggestions = ref([])
 const isLoading = ref(false)
 const debounceTimer = ref(null)
 // const selectedCategory = ref("")
+
+// Accessibility fields
+const allowanceOfDogs = ref("")
+const wheelchairAccessible = ref("")
+const accessibleParking = ref("")
+const valetParking = ref("")
+const childrensPlayArea = ref("")
 
 const showGenreDropdown = ref(false)
 const genreDropdownRef = ref(null)
