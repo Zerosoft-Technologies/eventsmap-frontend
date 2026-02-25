@@ -128,7 +128,7 @@
         <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-              Genre
+              Genre <span class="tw:text-red-500">*</span>
             </h3>
             <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -136,20 +136,123 @@
             </button> -->
           </div>
 
-          <div class="tw:relative">
-            <select v-model="selectedGenre"
-              class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-              <option value="">Music Event</option>
-              <option value="dance">Dance Event</option>
-              <option value="film">Film Event</option>
-              <option value="nightlife">Nightlife Event</option>
-              <option value="theatre">Theatre Event</option>
-              <option value="community">Community Event</option>
-              <option value="venue">Venue Event</option>
-              <!-- <option value="other">Other Event</option> -->
-            </select>
-            <ChevronDown
-              class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
+          <!-- Error Display -->
+          <div v-if="categoriesError" class="tw:bg-red-50 tw:border tw:border-red-200 tw:rounded-lg tw:p-4 tw:mb-4">
+            <div class="tw:flex tw:items-center">
+              <svg class="tw:w-5 tw:h-5 tw:text-red-400 tw:mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clip-rule="evenodd"></path>
+              </svg>
+              <p class="tw:text-red-800 tw:text-sm">{{ categoriesError }}</p>
+              <button @click="fetchCategories"
+                class="tw:ml-auto tw:text-red-600 tw:text-sm tw:font-medium hover:tw:text-red-700">
+                Retry
+              </button>
+            </div>
+          </div>
+
+          <!-- Category and Subcategory Dropdowns -->
+          <div class="tw:flex tw:gap-4">
+            <!-- Category Dropdown -->
+            <div class="tw:flex-1">
+              <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
+                Category <span class="tw:text-red-500">*</span>
+              </label>
+              <div class="tw:relative">
+                <select v-model="selectedCategory" @change="handleCategoryChangeWithValidation"
+                  :disabled="isLoadingCategories || categoriesError" :class="[
+                    'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                    categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
+                    (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
+                  ]">
+                  <option value="">
+                    {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
+                    'SelectCategory') }}
+                  </option>
+                  <option v-for="category in categories" :key="category.id" :value="category.name">
+                    {{ category.name }}
+                  </option>
+                </select>
+                <ChevronDown
+                  class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
+              </div>
+              <p v-if="categoryError" class="tw:text-red-500 tw:text-sm tw:mt-1">Category is required</p>
+            </div>
+
+            <!-- Subcategory Multi-Select -->
+            <div class="tw:flex-1">
+              <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
+                Subcategories (Max 5) <span class="tw:text-red-500">*</span>
+              </label>
+
+              <!-- Multi-Select Input Field -->
+              <div class="subcategory-dropdown-container" ref="dropdownContainer">
+                <div @click="toggleSubcategoryDropdown" :class="[
+                  'subcategory-input',
+                  (!selectedCategory || categoriesError) ? 'disabled' : '',
+                  subcategoryError ? 'error' : ''
+                ]">
+                  <div class="subcategory-input-content">
+                    <span class="subcategory-input-text">
+                      {{ selectedSubcategories.length > 0
+                        ? `${selectedSubcategories.length} selected`
+                        : (selectedCategory ? 'Select Subcategories' : 'Select Category First')
+                      }}
+                    </span>
+                    <ChevronDown :class="[
+                      'dropdown-chevron',
+                      showSubcategoryDropdown ? 'rotated' : ''
+                    ]" />
+                  </div>
+                </div>
+
+                <!-- Dropdown Options -->
+                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError" class="subcategory-dropdown"
+                  ref="dropdownMenu">
+                  <div class="dropdown-content">
+                    <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
+                      :class="{
+                        'selected': selectedSubcategories.includes(subcategory),
+                        'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5
+                      }" @click="toggleSubcategory(subcategory)">
+                      <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
+                        v-model="selectedSubcategories"
+                        :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5"
+                        @change="handleSubcategoryChange" @click.stop class="option-checkbox">
+                      <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
+                        {{ subcategory }}
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Max selection notice -->
+                  <div v-if="selectedSubcategories.length >= 5" class="max-selection-notice">
+                    Maximum 5 subcategories selected
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selected Tags Display -->
+              <div v-if="selectedSubcategories.length > 0" class="selected-tags">
+                <span v-for="subcategory in selectedSubcategories" :key="subcategory" class="selected-tag">
+                  {{ subcategory }}
+                  <button @click="removeSubcategory(subcategory)" class="tag-remove">
+                    <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clip-rule="evenodd"></path>
+                    </svg>
+                  </button>
+                </span>
+              </div>
+
+              <!-- Validation Message -->
+              <p v-if="subcategoryValidationError" class="validation-error">
+                You can select maximum 5 subcategories only.
+              </p>
+              <p v-else-if="subcategoryError" class="validation-error">Please select at least one subcategory</p>
+            </div>
           </div>
         </div>
 
@@ -602,9 +705,10 @@ import {
   Clock,
 } from "lucide-vue-next"
 
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, onMounted, onUnmounted } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import eventService from "@/services/eventService"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -618,6 +722,134 @@ const activeTab = ref("home")
 // const eventTitle = ref("")
 const selectedVenue = ref("")
 const selectedGenre = ref("")
+
+// Genre state
+const selectedCategory = ref("")
+const selectedSubcategories = ref([])  // Multi-select array for subcategories
+const categoryError = ref(false)
+const subcategoryError = ref(false)
+const subcategoryValidationError = ref(false)  // For max 5 validation
+const categories = ref([])
+const isLoadingCategories = ref(false)
+const categoriesError = ref(null)
+const showSubcategoryDropdown = ref(false)  // For dropdown toggle
+
+// Dropdown refs for click outside functionality
+const dropdownContainer = ref(null)
+const dropdownMenu = ref(null)
+
+// Computed property for available subcategories
+const availableSubcategories = computed(() => {
+  if (!selectedCategory.value) return []
+  const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+  return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
+})
+
+// Fetch categories from API using eventService
+async function fetchCategories() {
+  try {
+    isLoadingCategories.value = true
+    categoriesError.value = null
+
+    const response = await eventService.getCategories()
+
+    if (response.success) {
+      categories.value = response.data
+    } else {
+      categoriesError.value = 'Failed to fetch categories'
+    }
+  } catch (error) {
+    console.error('Error fetching categories:', error)
+    categoriesError.value = 'Error loading categories. Please try again.'
+  } finally {
+    isLoadingCategories.value = false
+  }
+}
+
+// Handle category change with validation clearing
+function handleCategoryChangeWithValidation() {
+  selectedSubcategories.value = []  // Reset array when category changes
+  subcategoryError.value = false
+  subcategoryValidationError.value = false  // Clear validation error
+  categoryError.value = false
+  showSubcategoryDropdown.value = false  // Close dropdown
+}
+
+// Handle category change
+function handleCategoryChange() {
+  handleCategoryChangeWithValidation()
+}
+
+// Toggle subcategory dropdown
+function toggleSubcategoryDropdown() {
+  if (!selectedCategory.value || categoriesError.value) return
+  showSubcategoryDropdown.value = !showSubcategoryDropdown.value
+}
+
+// Toggle individual subcategory selection
+function toggleSubcategory(subcategory) {
+  if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
+    return // Prevent selection if already at max 5
+  }
+
+  const index = selectedSubcategories.value.indexOf(subcategory)
+  if (index > -1) {
+    selectedSubcategories.value.splice(index, 1)
+  } else {
+    selectedSubcategories.value.push(subcategory)
+  }
+
+  handleSubcategoryChange()
+}
+
+// Click outside handler to close dropdown
+function handleClickOutside(event) {
+  if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
+    showSubcategoryDropdown.value = false
+  }
+}
+
+// Handle subcategory change with max 5 validation
+function handleSubcategoryChange() {
+  subcategoryError.value = false
+
+  // Maximum 5 subcategories selection logic
+  // Prevent selection if trying to add more than 5 items
+  if (selectedSubcategories.value.length > 5) {
+    // Remove the last added item to maintain the limit
+    const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
+    selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
+
+    // Show validation error
+    subcategoryValidationError.value = true
+
+    // Auto-hide validation message after 3 seconds
+    setTimeout(() => {
+      subcategoryValidationError.value = false
+    }, 3000)
+  } else {
+    // Clear validation error when within limit
+    subcategoryValidationError.value = false
+  }
+}
+
+// Remove subcategory from selection
+function removeSubcategory(subcategoryToRemove) {
+  const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
+  if (index > -1) {
+    selectedSubcategories.value.splice(index, 1)
+    // Clear validation error when removing items (going below limit)
+    subcategoryValidationError.value = false
+  }
+}
+
+// Validate genre fields
+function validateGenre() {
+  categoryError.value = !selectedCategory.value
+  subcategoryError.value = selectedSubcategories.value.length === 0
+
+  return selectedCategory.value && selectedSubcategories.value.length > 0
+}
 const dressCode = ref("")
 const ageLimit = ref("")
 const entranceFee = ref("")
@@ -796,6 +1028,12 @@ async function reverseGeocode(lng, lat) {
 
 // Initialize map on component mount
 onMounted(() => {
+  // Fetch categories from API
+  fetchCategories()
+
+  // Add click outside listener for dropdown
+  document.addEventListener('click', handleClickOutside)
+
   // Initialize map centered on Amsterdam
   map.value = new maplibregl.Map({
     container: "event-map",
@@ -828,4 +1066,19 @@ onMounted(() => {
     dateFormat: "h:i K",
   })
 })
+
+// function handleFileChange(event) {
+//   const file = event.target.files[0]
+//   fileName.value = file ? file.name : 'No File Chosen'
+// }
+
+// function handleBack() {
+//   router.push('/events') // Navigate to events list
+// }
+
+// Cleanup on unmount
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
 </script>

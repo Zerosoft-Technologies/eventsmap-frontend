@@ -693,6 +693,7 @@ import {
     User,
     SkipBackIcon,
     Clock,
+    MessageSquareText
 } from "lucide-vue-next"
 
 import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
@@ -921,6 +922,7 @@ const menuItems = [
     { id: "settings", icon: Settings, route: "/create-event-premium/settings", label: "Settings" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
+    { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
 ]
 
 function handleMenuClick(item) {
