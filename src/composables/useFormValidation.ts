@@ -1,4 +1,5 @@
-import { reactive, nextTick, UnwrapRef } from 'vue'
+import { reactive, nextTick } from 'vue'
+import type { UnwrapRef } from 'vue'
 import type { ValidationSchema, FormValidationReturn } from './useFormValidation.d'
 
 /**
@@ -27,7 +28,7 @@ export function useFormValidation<T extends Record<string, any>>(
 ): FormValidationReturn {
   // Build a reactive errors object with one key per schema field, initialised to ''
   const errors = reactive(
-    Object.keys(schema).reduce((acc, key) => {
+    Object.keys(schema).reduce((acc: Record<string, string>, key) => {
       acc[key] = ''
       return acc
     }, {})
@@ -39,12 +40,12 @@ export function useFormValidation<T extends Record<string, any>>(
   const TEL_RE = /^[0-9+\-\s()]{7,20}$/
 
   // ── Single-field validator ─────────────────────────────────────
-  function validateField(field) {
+  function validateField(field: string): string {
     const rules = schema[field]
     if (!rules) return ''
 
-    const value = formData[field]
-    const label = rules.label || formatLabel(field)
+    const value = (formData as any)[field]
+    const label = rules.label || formatLabel(field || '')
 
     // Required check
     if (rules.required) {
@@ -132,38 +133,43 @@ export function useFormValidation<T extends Record<string, any>>(
   }
 
   // ── Validate all fields ────────────────────────────────────────
-  function validate() {
+  function validate(): boolean {
     let isValid = true
+    const schemaKeys = Object.keys(schema)
 
-    for (const field of Object.keys(schema)) {
-      const msg = validateField(field)
-      errors[field] = msg
-      if (msg) isValid = false
+    for (let i = 0; i < schemaKeys.length; i++) {
+      const field = schemaKeys[i]
+      if (!field) continue
+      const errorMessage = validateField(field)
+      ;(errors as any)[field] = errorMessage
+      if (errorMessage) {
+        isValid = false
+      }
     }
 
     return isValid
   }
 
   // ── Clear a single field error ─────────────────────────────────
-  function clearError(field) {
+  function clearError(field: string): void {
     if (field in errors) {
-      errors[field] = ''
+      (errors as any)[field] = ''
     }
   }
 
   // ── Reset all errors ───────────────────────────────────────────
-  function resetErrors() {
+  function resetErrors(): void {
     for (const key of Object.keys(errors)) {
-      errors[key] = ''
+      (errors as any)[key] = ''
     }
   }
 
   // ── Scroll to first error ─────────────────────────────────────
-  async function scrollToFirstError() {
+  async function scrollToFirstError(): Promise<void> {
     await nextTick()
 
     // Find the first field with an error
-    const firstErrorField = Object.keys(schema).find(field => errors[field])
+    const firstErrorField = Object.keys(schema).find(field => (errors as any)[field])
     if (!firstErrorField) return
 
     // Try to find DOM element by data-field attribute first, then fallback to name/id
@@ -175,13 +181,13 @@ export function useFormValidation<T extends Record<string, any>>(
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
       if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
-        el.focus()
+        (el as HTMLElement).focus()
       }
     }
   }
 
   // ── Helpers ────────────────────────────────────────────────────
-  function isEmpty(value, type) {
+  function isEmpty(value: any, type?: string): boolean {
     if (type === 'file') return !value
     if (type === 'multiselect') return !Array.isArray(value) || value.length === 0
     if (type === 'checkbox') return false // checkbox always has a value
@@ -189,7 +195,8 @@ export function useFormValidation<T extends Record<string, any>>(
     return !value || (typeof value === 'string' && !value.trim())
   }
 
-  function formatLabel(field) {
+  function formatLabel(field: string): string {
+    if (!field) return ''
     return field
       .replace(/([A-Z])/g, ' $1')
       .replace(/[_-]/g, ' ')
