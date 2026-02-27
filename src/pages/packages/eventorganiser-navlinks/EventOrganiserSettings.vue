@@ -28,45 +28,7 @@
                     <div class="tw:transition-opacity tw:duration-300">
                         <!-- Organiser Profile Tab -->
                         <div v-if="activeTab === 'profile'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-8">
-                            <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-6">Organiser Profile</h2>
-
-                            <div class="tw:grid tw:grid-cols-2 tw:gap-x-6 tw:gap-y-4 tw:mb-6">
-                                <div class="tw:flex tw:flex-col tw:gap-2">
-                                    <label for="email" class="tw:text-sm tw:font-medium tw:text-gray-900">Email</label>
-                                    <input id="email" v-model="profileForm.email" type="email"
-                                        placeholder="email@example.com"
-                                        class="tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition" />
-                                </div>
-
-                                <div class="tw:flex tw:flex-col tw:gap-2">
-                                    <label for="password" class="tw:text-sm tw:font-medium tw:text-gray-900">
-                                        Password
-                                    </label>
-
-                                    <div class="tw:relative">
-                                        <input id="password" v-model="profileForm.password"
-                                            :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
-                                            class="tw:w-full tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition tw:pr-10" />
-
-                                        <!-- Eye Icon -->
-                                        <button type="button" @click="showPassword = !showPassword"
-                                            class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:text-gray-400 hover:tw:text-gray-600 tw:transition">
-                                            <component :is="showPassword ? EyeOff : Eye" class="tw:w-4 tw:h-4" />
-                                        </button>
-                                    </div>
-
-                                    <!-- Minimum Characters Text -->
-                                    <p class="tw:text-xs tw:text-gray-500">
-                                        Minimum 8 Characters
-                                    </p>
-                                </div>
-                            </div>
-
-                            <button
-                                class="tw:bg-white tw:text-[#2563eb] tw:border tw:border-orange-500 tw:px-6 tw:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:transition hover:tw:bg-blue-50"
-                                @click="saveProfile">
-                                Save Change
-                            </button>
+                            <UserSettings />
                         </div>
 
                         <!-- Notification Tab -->
@@ -275,7 +237,7 @@ import { ref, reactive } from 'vue';
 import { useRouter } from "vue-router"
 import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
 import EventSidebar from '../eventsidebar/Eventsidebar.vue'
-import { Eye, EyeOff } from 'lucide-vue-next'
+import UserSettings from '@/components/UserSettings.vue'
 
 const router = useRouter()
 
@@ -304,11 +266,6 @@ function handleBack() {
 function handleEventSelected(eventId) {
   console.log('Event selected for editing:', eventId)
 }
-
-const saveProfile = () => {
-    console.log('Saving profile...', profileForm);
-    alert('Profile changes saved successfully!');
-};
 
 const saveNotifications = () => {
     console.log('Saving notifications...', notifications);

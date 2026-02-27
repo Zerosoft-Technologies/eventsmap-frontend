@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLoadingStore } from '@/stores/loading'
+import { getCreateRoute } from '@/utils/routeResolver'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -40,6 +41,8 @@ import CreateVenuePremium from '../pages/packages/CreateVenuePremium.vue'
 import VenuePremiumReport from '../pages/packages/venue-navlinks/VenuePremiumReport.vue'
 import VenuePremiumSettings from '../pages/packages/venue-navlinks/VenuePremiumSettings.vue'
 
+import CreateRedirect from '../components/CreateRedirect.vue'
+
 // Auth pages (lazy-loaded)
 const Login = () => import('../pages/auth/Login.vue')
 const Register = () => import('../pages/auth/Register.vue')
@@ -70,6 +73,7 @@ const routes: RouteRecordRaw[] = [
   // ── Protected Routes ────────────────────────────────────
   { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-profile', name: 'CreateProfile', component: CreateProfile, meta: { requiresAuth: true } },
+  { path: '/create-redirect', name: 'CreateRedirect', component: CreateRedirect, meta: { requiresAuth: true } },
 
   { path: '/create-event-free', name: 'CreateEventFree', component: CreateEventFree, meta: { requiresAuth: true } },
   { path: '/create-event-free/report', name: 'EventReport', component: EventReport, meta: { requiresAuth: true } },
@@ -149,9 +153,9 @@ router.beforeEach(async (to, _from, next) => {
     return next()
   }
 
-  // Guest-only route: redirect authenticated users based on profile_type
+  // Guest-only route: redirect authenticated users based on profile_type & account_type
   if (to.meta.guest && authStore.token && authStore.user) {
-    return next(getRedirectRouteForUser(authStore.user))
+    return next(getCreateRoute(authStore.user.profile_type, authStore.user.account_type))
   }
 
   next()
@@ -162,25 +166,5 @@ router.afterEach(() => {
   const loadingStore = useLoadingStore()
   loadingStore.stopPageLoading()
 })
-
-/**
- * Returns the appropriate route based on user's profile_type
- */
-function getRedirectRouteForUser(user: { profile_type?: string } | null): string {
-  if (!user?.profile_type) return '/dashboard'
-  
-  switch (user.profile_type) {
-    case 'event':
-      return '/create-event-free'
-    case 'organizer':
-      return '/create-organiser-free'
-    case 'talent':
-      return '/create-talents-free'
-    case 'venue':
-      return '/create-venue-free'
-    default:
-      return '/dashboard'
-  }
-}
 
 export default router

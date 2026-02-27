@@ -7,11 +7,18 @@ export interface User {
   id: number
   name: string
   email: string
+  role?: string
+  is_active?: boolean
   email_verified?: boolean
   email_verified_at?: string | null
   account_type: 'free' | 'premium'
   profile_type: string
   status: 'active' | 'pending_payment' | 'suspended'
+  billing_type?: 'individual' | 'business' | null
+  company_name?: string | null
+  vat_number?: string | null
+  vat_validated?: boolean
+  address?: string | null
   country?: string | null
   created_at: string
   updated_at?: string

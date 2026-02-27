@@ -98,6 +98,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Calendar, Users, Mic2, MapPin, Check, ArrowRight } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/auth'
+import { getCreateRoute } from '@/utils/routeResolver'
 
 const router = useRouter()
 
@@ -130,6 +132,8 @@ const profiles = [
 
 const selectedProfile = ref(null)
 
+const authStore = useAuthStore()
+
 function handleProceed() {
   if (selectedProfile.value) {
     const routes = {
@@ -138,11 +142,11 @@ function handleProceed() {
       'talent': '/create-talents-free',
       'venue': '/create-venue-free'
     }
-    
-    const targetRoute = routes[selectedProfile.value]
-    if (targetRoute) {
-      router.push(targetRoute)
-    }
+
+    router.push(getCreateRoute(selectedProfile.value, authStore.user?.account_type))
+    // const targetRoute = routes[getCreateRoute(selectedProfile.value, authStore.user?.account_type)]
+    // if (targetRoute) {
+    // }
   }
 }
 </script>

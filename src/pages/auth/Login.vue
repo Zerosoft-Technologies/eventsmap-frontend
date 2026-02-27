@@ -100,6 +100,7 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { getCreateRoute } from '@/utils/routeResolver'
 
 const router = useRouter()
 const route = useRoute()
@@ -135,26 +136,11 @@ async function handleLogin() {
     if (redirect) {
       router.push(redirect)
     } else {
-      // Redirect based on user's profile_type
-      router.push(getRedirectPath(authStore.user?.profile_type))
+      // Redirect based on user's profile_type & account_type
+      router.push(getCreateRoute(authStore.user?.profile_type, authStore.user?.account_type))
     }
   } else if (!result.emailVerified) {
     showResendBanner.value = true
-  }
-}
-
-function getRedirectPath(profileType: string | undefined): string {
-  switch (profileType) {
-    case 'event':
-      return '/create-event-free'
-    case 'organizer':
-      return '/create-organiser-free'
-    case 'talent':
-      return '/create-talents-free'
-    case 'venue':
-      return '/create-venue-free'
-    default:
-      return '/dashboard'
   }
 }
 
