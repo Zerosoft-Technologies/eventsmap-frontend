@@ -9,9 +9,9 @@ export interface User {
   email: string
   email_verified?: boolean
   email_verified_at?: string | null
-  account_type: string
+  account_type: 'free' | 'premium'
   profile_type: string
-  status: string
+  status: 'active' | 'pending_payment' | 'suspended'
   country?: string | null
   created_at: string
   updated_at?: string
@@ -33,6 +33,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   // ── Getters ────────────────────────────────────────────
   const isAuthenticated = computed(() => !!token.value && !!user.value)
+
+  const isPremiumPending = computed(() =>
+    user.value?.account_type === 'premium' && user.value?.status === 'pending_payment'
+  )
 
   // ── Helpers ────────────────────────────────────────────
   function setToken(newToken: string | null) {
@@ -64,6 +68,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   // ── Actions ────────────────────────────────────────────
 
+  function setUser(userData: User) {
+    user.value = userData
+  }
+
   async function register(payload: {
     name: string
     email: string
@@ -74,11 +82,12 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     clearErrors()
     try {
-      await api.post('/auth/register', payload)
-      return true
+      const { data } = await api.post('/auth/register', payload)
+      const responseData = data.data || data
+      return { success: true, checkout_url: responseData.checkout_url || null }
     } catch (err) {
       handleError(err)
-      return false
+      return { success: false, checkout_url: null }
     } finally {
       loading.value = false
     }
@@ -243,11 +252,14 @@ export const useAuthStore = defineStore('auth', () => {
     authReady,
     // getters
     isAuthenticated,
+    isPremiumPending,
     // actions
     register,
     login,
     logout,
     fetchUser,
+    setUser,
+    setToken,
     resendVerification,
     verifyEmail,
     forgotPassword,

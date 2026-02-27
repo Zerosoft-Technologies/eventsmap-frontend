@@ -54,7 +54,7 @@ api.interceptors.request.use(
   }
 )
 
-// Response interceptor — handle 401 globally + stop loading
+// Response interceptor — handle 401/403 globally + stop loading
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     // Stop loading on success
@@ -63,12 +63,12 @@ api.interceptors.response.use(
     }
     return response
   },
-  (error: AxiosError) => {
+  (error: AxiosError<{ status?: string }>) => {
     // Stop loading on error
     if (loadingStore) {
       loadingStore.stopLoading()
     }
-    
+
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       // Avoid circular import: use window location for hard redirect
@@ -76,6 +76,17 @@ api.interceptors.response.use(
         window.location.href = '/login'
       }
     }
+
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.status === 'pending_payment'
+    ) {
+      // Avoid circular import: use window location for hard redirect
+      if (window.location.pathname !== '/payment-required') {
+        window.location.href = '/payment-required'
+      }
+    }
+
     return Promise.reject(error)
   }
 )

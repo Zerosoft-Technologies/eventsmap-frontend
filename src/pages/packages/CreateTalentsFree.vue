@@ -178,7 +178,7 @@
             <!-- Subcategory Multi-Select -->
             <div class="tw:flex-1">
               <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                Subcategories (Max 5) <span class="tw:text-red-500">*</span>
+                Subcategories <span class="tw:text-red-500">*</span>
               </label>
 
               <!-- Multi-Select Input Field -->
@@ -209,11 +209,11 @@
                     <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
                       :class="{
                         'selected': selectedSubcategories.includes(subcategory),
-                        'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5
+                        'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 1
                       }" @click="toggleSubcategory(subcategory)">
                       <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
                         v-model="selectedSubcategories"
-                        :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5"
+                        :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 1"
                         @change="handleSubcategoryChange" @click.stop class="option-checkbox">
                       <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
                         {{ subcategory }}
@@ -692,7 +692,7 @@ function toggleSubcategoryDropdown() {
 
 // Toggle individual subcategory selection
 function toggleSubcategory(subcategory) {
-  if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
+  if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 1) {
     return // Prevent selection if already at max 5
   }
 

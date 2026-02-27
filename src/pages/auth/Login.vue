@@ -122,6 +122,14 @@ async function handleLogin() {
   const result = await authStore.login(form.value)
 
   if (result.success) {
+    // Premium user with pending payment → must complete payment first
+    if (
+      authStore.user?.account_type === 'premium' &&
+      authStore.user?.status === 'pending_payment'
+    ) {
+      return router.push({ name: 'PaymentRequired' })
+    }
+
     // Check if there's a redirect query param
     const redirect = route.query.redirect as string | undefined
     if (redirect) {

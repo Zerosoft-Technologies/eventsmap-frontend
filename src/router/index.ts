@@ -2,6 +2,14 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLoadingStore } from '@/stores/loading'
 
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean
+    requiresPremium?: boolean
+    guest?: boolean
+  }
+}
+
 import Home from '../pages/Home.vue'
 import CreateProfile from '../pages/CreateProfile.vue'
 import CreateEventFree from '../pages/packages/CreateEventFree.vue'
@@ -39,6 +47,9 @@ const ForgotPassword = () => import('../pages/auth/ForgotPassword.vue')
 const ResetPassword = () => import('../pages/auth/ResetPassword.vue')
 const VerifyEmail = () => import('../pages/auth/VerifyEmail.vue')
 const Dashboard = () => import('../pages/Dashboard.vue')
+const PaymentSuccess = () => import('../pages/payment/PaymentSuccess.vue')
+const PaymentCancel = () => import('../pages/payment/PaymentCancel.vue')
+const PaymentRequired = () => import('../pages/payment/PaymentRequired.vue')
 
 const routes: RouteRecordRaw[] = [
   // ── Public Routes ───────────────────────────────────────
@@ -51,41 +62,46 @@ const routes: RouteRecordRaw[] = [
   { path: '/auth/reset-password', name: 'ResetPassword', component: ResetPassword, meta: { guest: true } },
   { path: '/email/verify/:id/:hash', name: 'VerifyEmail', component: VerifyEmail },
 
+  // ── Payment Routes ─────────────────────────────────────────
+  { path: '/payment/success', name: 'PaymentSuccess', component: PaymentSuccess },
+  { path: '/payment/cancel', name: 'PaymentCancel', component: PaymentCancel },
+  { path: '/payment-required', name: 'PaymentRequired', component: PaymentRequired, meta: { requiresAuth: true } },
+
   // ── Protected Routes ────────────────────────────────────
-  { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-profile', name: 'CreateProfile', component: CreateProfile, meta: { requiresAuth: true } },
 
   { path: '/create-event-free', name: 'CreateEventFree', component: CreateEventFree, meta: { requiresAuth: true } },
   { path: '/create-event-free/report', name: 'EventReport', component: EventReport, meta: { requiresAuth: true } },
   { path: '/create-event-free/settings', name: 'EventSettings', component: EventSettings, meta: { requiresAuth: true } },
 
-  { path: '/create-event-premium', name: 'CreateEventPremium', component: CreateEventPremium, meta: { requiresAuth: true } },
-  { path: '/create-event-premium/report', name: 'EventPremiumReport', component: EventPremiumReport, meta: { requiresAuth: true } },
-  { path: '/create-event-premium/settings', name: 'EventPremiumSettings', component: EventPremiumSettings, meta: { requiresAuth: true } },
+  { path: '/create-event-premium', name: 'CreateEventPremium', component: CreateEventPremium, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-event-premium/report', name: 'EventPremiumReport', component: EventPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-event-premium/settings', name: 'EventPremiumSettings', component: EventPremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
 
   { path: '/create-organiser-free', name: 'CreateEventOrganiserFree', component: CreateEventOrganiserFree, meta: { requiresAuth: true } },
   { path: '/create-organiser-free/report', name: 'EventOrganiserReport', component: EventOrganiserReport, meta: { requiresAuth: true } },
   { path: '/create-organiser-free/settings', name: 'EventOrganiserSettings', component: EventOrganiserSettings, meta: { requiresAuth: true } },
 
-  { path: '/create-organiser-premium', name: 'CreateEventOrganiserPremium', component: CreateEventOrganiserPremium, meta: { requiresAuth: true } },
-  { path: '/create-organiser-premium/report', name: 'EventOrganiserPremiumReport', component: EventOrganiserPremiumReport, meta: { requiresAuth: true } },
-  { path: '/create-organiser-premium/settings', name: 'EventOrganiserPremiumSettings', component: EventOrganiserPremiumSettings, meta: { requiresAuth: true } },
+  { path: '/create-organiser-premium', name: 'CreateEventOrganiserPremium', component: CreateEventOrganiserPremium, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-organiser-premium/report', name: 'EventOrganiserPremiumReport', component: EventOrganiserPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-organiser-premium/settings', name: 'EventOrganiserPremiumSettings', component: EventOrganiserPremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
 
   { path: '/create-talents-free', name: 'CreateTalentsFree', component: CreateTalentsFree, meta: { requiresAuth: true } },
   { path: '/create-talents-free/report', name: 'TalentsReport', component: TalentsReport, meta: { requiresAuth: true } },
   { path: '/create-talents-free/settings', name: 'TalentsSettings', component: TalentsSettings, meta: { requiresAuth: true } },
 
-  { path: '/create-talents-premium', name: 'CreateTalentsPremium', component: CreateTalentsPremium, meta: { requiresAuth: true } },
-  { path: '/create-talents-premium/report', name: 'TalentsPremiumReport', component: TalentsPremiumReport, meta: { requiresAuth: true } },
-  { path: '/create-talents-premium/settings', name: 'TalentsPremiumSettings', component: TalentsPremiumSettings, meta: { requiresAuth: true } },
+  { path: '/create-talents-premium', name: 'CreateTalentsPremium', component: CreateTalentsPremium, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-talents-premium/report', name: 'TalentsPremiumReport', component: TalentsPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-talents-premium/settings', name: 'TalentsPremiumSettings', component: TalentsPremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
 
   { path: '/create-venue-free', name: 'CreateVenueFree', component: CreateVenueFree, meta: { requiresAuth: true } },
   { path: '/create-venue-free/report', name: 'VenueReport', component: VenueReport, meta: { requiresAuth: true } },
   { path: '/create-venue-free/settings', name: 'VenueSettings', component: VenueSettings, meta: { requiresAuth: true } },
 
-  { path: '/create-venue-premium', name: 'CreateVenuePremium', component: CreateVenuePremium, meta: { requiresAuth: true } },
-  { path: '/create-venue-premium/report', name: 'VenuePremiumReport', component: VenuePremiumReport, meta: { requiresAuth: true } },
-  { path: '/create-venue-premium/settings', name: 'VenuePremiumSettings', component: VenuePremiumSettings, meta: { requiresAuth: true } },
+  { path: '/create-venue-premium', name: 'CreateVenuePremium', component: CreateVenuePremium, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-venue-premium/report', name: 'VenuePremiumReport', component: VenuePremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-venue-premium/settings', name: 'VenuePremiumSettings', component: VenuePremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
 ]
 
 const router = createRouter({
@@ -120,6 +136,15 @@ router.beforeEach(async (to, _from, next) => {
     if (!authStore.user) {
       return next({ name: 'Login', query: { redirect: to.fullPath } })
     }
+    // Premium enforcement: premium user whose payment is not complete
+    if (
+      to.meta.requiresPremium &&
+      authStore.user.account_type === 'premium' &&
+      authStore.user.status === 'pending_payment'
+    ) {
+      return next({ name: 'PaymentRequired' })
+    }
+
     // User is authenticated, allow access
     return next()
   }
