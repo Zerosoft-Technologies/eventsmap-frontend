@@ -21,7 +21,7 @@
     </div>
 
     <!-- ── Premium Member Card ──────────────────────────────── -->
-    <div v-else-if="true" class="plan-fade-in">
+    <div v-else-if="isPremium" class="plan-fade-in">
       <div class="premium-card tw:rounded-2xl tw:p-10 tw:text-center tw:relative tw:overflow-hidden tw:group">
         <!-- Subtle background shimmer -->
         <div class="premium-shimmer"></div>
@@ -438,13 +438,6 @@ const {
   redirectingToStripe,
   submitError,
   submitting,
-  el_fullName,
-  el_companyName,
-  el_vatNumber,
-  el_country,
-  el_address,
-  el_postalCode,
-  el_city,
   clearBillingError,
   onVatInput,
   validateVat,
@@ -460,8 +453,7 @@ const loadingUser = ref(false)
 const upgradeStep = ref<'idle' | 'select-type' | 'billing-details'>('idle')
 
 const isPremium = computed(() =>
-  // authStore.user?.account_type == 'premium' && authStore.user?.status == 'active'
-  true
+  authStore.user?.account_type == 'premium' && authStore.user?.status == 'active'
 )
 
 const freeFeatures = [
