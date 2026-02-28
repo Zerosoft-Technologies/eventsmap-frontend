@@ -27,6 +27,10 @@ export interface User {
 interface ApiErrorResponse {
   message?: string
   errors?: Record<string, string[]>
+  error?: {
+    message?: string
+    code?: string
+  }
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -64,7 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
     const axiosErr = err as AxiosError<ApiErrorResponse>
     if (axiosErr.response?.data) {
       const data = axiosErr.response.data
-      error.value = data.message || 'An unexpected error occurred.'
+      error.value = data?.message || data?.error?.message || 'An unexpected error occurred.'
       if (data.errors) {
         validationErrors.value = data.errors
       }

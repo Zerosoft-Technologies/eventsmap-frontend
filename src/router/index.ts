@@ -49,6 +49,7 @@ const Register = () => import('../pages/auth/Register.vue')
 const ForgotPassword = () => import('../pages/auth/ForgotPassword.vue')
 const ResetPassword = () => import('../pages/auth/ResetPassword.vue')
 const VerifyEmail = () => import('../pages/auth/VerifyEmail.vue')
+const EmailVerified = () => import('../pages/auth/EmailVerified.vue')
 const Dashboard = () => import('../pages/Dashboard.vue')
 const PaymentSuccess = () => import('../pages/payment/PaymentSuccess.vue')
 const PaymentCancel = () => import('../pages/payment/PaymentCancel.vue')
@@ -64,6 +65,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPassword, meta: { guest: true } },
   { path: '/auth/reset-password', name: 'ResetPassword', component: ResetPassword, meta: { guest: true } },
   { path: '/email/verify/:id/:hash', name: 'VerifyEmail', component: VerifyEmail },
+  { path: '/auth/email-verified', name: 'EmailVerified', component: EmailVerified },
 
   // ── Payment Routes ─────────────────────────────────────────
   { path: '/payment/success', name: 'PaymentSuccess', component: PaymentSuccess },

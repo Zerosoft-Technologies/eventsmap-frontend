@@ -9,7 +9,7 @@ const api: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  timeout: 15000,
+  timeout: 30000,
 })
 
 // Loading store reference (set after Pinia is initialized)
