@@ -1407,7 +1407,7 @@ async function createEvent() {
 }
 
 function handleBack() {
-  router.push('/events') // Navigate to events list
+  router.push('/') // Navigate to events list
 }
 
 async function handleEventSelected(eventId) {

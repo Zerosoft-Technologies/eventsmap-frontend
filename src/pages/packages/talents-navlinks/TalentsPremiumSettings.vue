@@ -90,55 +90,7 @@
 
                         <!-- Plan Management Tab -->
                         <div v-if="activeTab === 'plan'" class="tw:rounded-lg tw:p-8">
-                            <!-- Cards Section with Background -->
-                            <div class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-6 tw:mb-8">
-                                <!-- Cards in Grid with Headers Outside -->
-                                <div class="tw:grid tw:grid-cols-12 tw:gap-6">
-                                    <!-- Plan Management Section - Takes 9/12 (3/4) -->
-                                    <div class="tw:col-span-7">
-                                        <!-- Header Outside -->
-                                        <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Talent Package
-                                        </h2>
-                                        <!-- Card -->
-                                        <div
-                                            class="tw:bg-[#F6F1E7] tw:border tw:border-gray-200 tw:rounded-lg tw:p-6 tw:flex tw:flex-col tw:min-h-[200px]">
-                                            <span
-                                                class="tw:inline-block tw:bg-blue-100 tw:text-[#2563eb] tw:px-2.5 tw:py-1 tw:rounded tw:text-xs tw:font-medium tw:w-fit tw:mb-3">
-                                                Current Plan
-                                            </span>
-                                            <h3 class="tw:text-xl tw:font-bold tw:text-gray-900 tw:mb-2">Free</h3>
-                                            <p class="tw:text-[#2563eb] tw:text-sm tw:mb-auto">Publish unlimited events
-                                                and
-                                                tickets
-                                                for free!</p>
-                                            <div class="tw:flex tw:justify-end tw:mt-4">
-                                                <button
-                                                    class="tw:bg-white tw:text-[#2563eb] tw:border tw:border-orange-500 tw:px-6 tw:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:transition hover:tw:bg-blue-50"
-                                                    @click="comparePlans">
-                                                    Compare options
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Upgrade Plan Section - Takes 3/12 (1/4) -->
-                                    <div class="tw:col-span-5">
-                                        <!-- Header Outside -->
-                                        <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Upgrade to
-                                            Premium
-                                            Package</h2>
-                                        <!-- Card -->
-                                        <div
-                                            class="tw:bg-[#F6F1E7] tw:border tw:border-gray-200 tw:rounded-lg tw:p-6 tw:flex tw:items-center tw:justify-center tw:min-h-[200px]">
-                                            <button
-                                                class="tw:bg-white tw:text-[#2563eb] tw:border tw:border-orange-500 tw:px-6 tw:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:transition hover:tw:bg-blue-50"
-                                                @click="upgradePlan">
-                                                Upgrade plan
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <PlanManagement />
 
                             <!-- Billing History Section -->
                             <div class="tw:mt-8">
@@ -237,8 +189,9 @@
     import { ref, reactive } from 'vue';
     import UserSettings from '@/components/UserSettings.vue'
     import { useRouter } from "vue-router"
-    import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
+    import { Home, FileText, BarChart3, Settings, Calendar, MessageSquareText } from "lucide-vue-next"
     import EventSidebar from '../eventsidebar/Eventsidebar.vue'
+import PlanManagement from '@/components/PlanManagement.vue';
 
     const router = useRouter()
 
@@ -249,10 +202,11 @@
         { id: "analytics", icon: BarChart3, route: "/create-talents-premium/report", label: "Analytics" },
         { id: "settings", icon: Settings, route: "/create-talents-premium/settings", label: "Settings" },
         { id: "calendar", icon: Calendar, label: "Calendar" },
+        { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
     ]
 
     function handleBack() {
-        router.push('/events') // Navigate to events list or wherever you need
+        router.push('/') // Navigate to events list or wherever you need
     }
 
     function handleEventSelected(eventId) {

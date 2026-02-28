@@ -1209,7 +1209,7 @@ function handleFileChange(event) {
 }
 
 function handleBack() {
-    router.push('/talents') // Navigate to talents list
+    router.push('/') // Navigate to talents list
 }
 
 function handleEventSelected(eventId) {

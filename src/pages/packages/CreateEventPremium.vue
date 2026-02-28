@@ -1150,6 +1150,6 @@ async function handleEventSelected(eventId) {
 }
 
 function handleBack() {
-    router.push('/events') // Navigate to events list
+    router.push('/') // Navigate to events list
 }
 </script>

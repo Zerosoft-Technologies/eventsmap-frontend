@@ -80,7 +80,7 @@ const menuItems = [
 ]
 
 function handleBack() {
-  router.push('/events') // Navigate to events list or wherever you need
+  router.push('/') // Navigate to events list or wherever you need
 }
 
 function handleEventSelected(eventId) {

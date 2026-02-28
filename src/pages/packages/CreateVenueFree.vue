@@ -933,7 +933,7 @@ function handleFileChange(event) {
 }
 
 function handleBack() {
-  router.push('/events') // Navigate to events list
+  router.push('/') // Navigate to events list
 }
 
 function handleEventSelected(eventId) {

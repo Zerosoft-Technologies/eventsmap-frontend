@@ -842,7 +842,7 @@ async function handleSubmit() {
 }
 
 function handleBack() {
-  router.push('/events')
+  router.push('/')
 }
 
 function handleEventSelected(eventId) {
