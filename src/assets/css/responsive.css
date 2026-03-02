@@ -1,0 +1,365 @@
+/* Responsive Design Utilities for Event Management Profile Pages */
+
+/* ===== Base Responsive Breakpoints ===== */
+/* Mobile: < 640px */
+/* Tablet: 640px - 1024px */
+/* Desktop: > 1024px */
+
+/* ===== Mobile Optimizations ===== */
+@media (max-width: 639px) {
+  /* Ensure full width containers */
+  .tw-w-full-mobile {
+    width: 100% !important;
+  }
+  
+  /* Touch-friendly tap targets (minimum 44px) */
+  .tw-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Safe area insets for mobile devices */
+  .tw-safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .tw-safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Optimize text for mobile */
+  .tw-mobile-text {
+    font-size: 16px; /* Prevents zoom on iOS */
+    line-height: 1.5;
+  }
+  
+  /* Mobile card spacing */
+  .tw-mobile-card {
+    margin: 0.5rem 0;
+    padding: 1rem;
+  }
+  
+  /* Stack flexbox on mobile */
+  .tw-mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  /* Full width buttons on mobile */
+  .tw-mobile-full-btn {
+    width: 100% !important;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Hide desktop-only elements */
+  .tw-desktop-only {
+    display: none !important;
+  }
+}
+
+/* ===== Tablet Optimizations ===== */
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* Tablet grid adjustments */
+  .tw-tablet-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Tablet padding */
+  .tw-tablet-padding {
+    padding: 1.5rem;
+  }
+  
+  /* Show tablet-specific elements */
+  .tw-tablet-only {
+    display: block !important;
+  }
+  
+  /* Hide mobile-only elements */
+  .tw-mobile-only {
+    display: none !important;
+  }
+}
+
+/* ===== Desktop Optimizations ===== */
+@media (min-width: 1024px) {
+  /* Desktop grid */
+  .tw-desktop-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  /* Desktop hover states */
+  .tw-desktop-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Show desktop-only elements */
+  .tw-desktop-only {
+    display: block !important;
+  }
+  
+  /* Hide mobile/tablet elements */
+  .tw-mobile-tablet-only {
+    display: none !important;
+  }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  .tw-no-print {
+    display: none !important;
+  }
+  
+  .tw-print-break {
+    page-break-after: always;
+  }
+}
+
+/* ===== High DPI Displays ===== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .tw-retina-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* ===== Dark Mode Support ===== */
+@media (prefers-color-scheme: dark) {
+  .tw-dark-auto {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .tw-motion-safe * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== Custom Responsive Components ===== */
+
+/* Responsive Sidebar */
+.responsive-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 280px;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 9999;
+}
+
+.responsive-sidebar.active {
+  transform: translateX(0);
+}
+
+@media (min-width: 1024px) {
+  .responsive-sidebar {
+    position: relative;
+    transform: translateX(0);
+    width: auto;
+  }
+}
+
+/* Responsive Tab Container */
+.responsive-tabs {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.responsive-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .responsive-tabs {
+    overflow-x: visible;
+  }
+}
+
+/* Responsive Form Grid */
+.responsive-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .responsive-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-form-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Responsive Card Deck */
+.responsive-card-deck {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .responsive-card-deck {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-card-deck {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Responsive Image Container */
+.responsive-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Responsive Text Sizes */
+.responsive-text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+@media (min-width: 768px) {
+  .responsive-text-xs {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+.responsive-text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .responsive-text-sm {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+}
+
+.responsive-text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .responsive-text-base {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+}
+
+.responsive-text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+@media (min-width: 768px) {
+  .responsive-text-lg {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-text-lg {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+}
+
+/* Responsive Spacing */
+.responsive-spacing-y {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .responsive-spacing-y {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-spacing-y {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+/* ===== Utility Classes ===== */
+.sticky-mobile {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+@media (min-width: 1024px) {
+  .sticky-mobile {
+    position: static;
+  }
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* ===== Animation Classes ===== */
+.slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
