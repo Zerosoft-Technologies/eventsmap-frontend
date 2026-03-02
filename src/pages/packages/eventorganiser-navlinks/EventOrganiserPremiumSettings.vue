@@ -176,6 +176,35 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Account Information Tab -->
+                        <div v-if="activeTab === 'account'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-8">
+                            <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-6">Account Information</h2>
+                            
+                            <div v-if="authStore.user" class="tw:grid tw:grid-cols-1 md:tw:grid-cols-2 tw:gap-6">
+                                <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:border tw:border-gray-200">
+                                    <p class="tw:text-xs tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Name</p>
+                                    <p class="tw:text-gray-800 tw:font-medium">{{ authStore.user.name }}</p>
+                                </div>
+                                <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:border tw:border-gray-200">
+                                    <p class="tw:text-xs tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Email</p>
+                                    <p class="tw:text-gray-800 tw:font-medium">{{ authStore.user.email }}</p>
+                                </div>
+                                <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:border tw:border-gray-200">
+                                    <p class="tw:text-xs tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Profile Type</p>
+                                    <p class="tw:text-gray-800 tw:font-medium tw:capitalize">{{ authStore.user.profile_type }}</p>
+                                </div>
+                                <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:border tw:border-gray-200">
+                                    <p class="tw:text-xs tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Account Type</p>
+                                    <span class="tw:inline-block tw:bg-green-100 tw:text-green-700 tw:text-xs tw:font-semibold tw:px-2.5 tw:py-0.5 tw:rounded-full tw:capitalize">
+                                        {{ authStore.user.account_type }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div v-else class="tw:bg-white tw:rounded-lg tw:p-6 tw:border tw:border-gray-200 tw:text-center">
+                                <p class="tw:text-gray-500">No account information available</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -189,9 +218,11 @@
     import { useRouter } from "vue-router"
     import { Home, FileText, BarChart3, Settings, Calendar, MessageSquareText } from "lucide-vue-next"
     import EventSidebar from '../eventsidebar/Eventsidebar.vue'
-import PlanManagement from '@/components/PlanManagement.vue';
+    import PlanManagement from '@/components/PlanManagement.vue';
+    import { useAuthStore } from '@/stores/auth';
 
     const router = useRouter()
+    const authStore = useAuthStore()
 
     // Organiser data (you can fetch this from API or store)
     const menuItems = [
@@ -217,7 +248,8 @@ import PlanManagement from '@/components/PlanManagement.vue';
     const tabs = [
         { id: 'profile', label: 'Organiser profile' },
         { id: 'notification', label: 'Notification' },
-        { id: 'plan', label: 'Plan Management' }
+        { id: 'plan', label: 'Plan Management' },
+        { id: 'account', label: 'Account Information' }
     ];
 
     const notifications = reactive({

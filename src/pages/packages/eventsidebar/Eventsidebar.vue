@@ -71,11 +71,11 @@
               <span>{{ formatEventDateTime(event.event_date, event.start_time) }}</span>
             </div>
 
-            <button
+            <!-- <button
               class="tw:inline-flex tw:items-center tw:gap-2 tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:bg-white tw:text-[#0061FF] tw:rounded-md tw:border tw:border-[#FF7700] hover:tw:bg-gray-50 tw:transition">
               {{ event.status || 'Draft' }}
               <ChevronDown class="tw:w-4 tw:h-4" />
-            </button>
+            </button> -->
           </div>
         </template>
 

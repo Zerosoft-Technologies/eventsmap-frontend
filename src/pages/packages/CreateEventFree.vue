@@ -130,10 +130,10 @@
                     categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
                     (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
                   ]">
-                  <option value="">
+                  <!-- <option value="">
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
                     'SelectCategory') }}
-                  </option>
+                  </option> -->
                   <option v-for="category in categories" :key="category.id" :value="category.name">
                     {{ category.name }}
                   </option>
@@ -346,9 +346,9 @@
                     placeholder="HH:MM"
                     :class="[
                       'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                      fieldErrors.start_time ? 'tw:border-red-500' : 'tw:border-gray-200'
+                      hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'
                     ]"
-                    @input="clearFieldError('startTime')"
+                    @input="clearStartError"
                   />
 
                   <Clock
@@ -356,13 +356,7 @@
                   />
                 </div>
 
-                <p v-if="errors.startTime" class="tw:text-red-500 tw:text-sm tw:mt-1">
-                  Start time is required
-                </p>
-
-                <p v-if="fieldErrors.start_time" class="tw:text-red-500 tw:text-sm tw:mt-1">
-                  {{ fieldErrors.start_time[0] }}
-                </p>
+                <p v-if="startError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ startError }}</p>
               </div>
 
 
@@ -379,11 +373,9 @@
                     placeholder="HH:MM"
                     :class="[
                       'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                      fieldErrors.end_time || timeValidationError
-                        ? 'tw:border-red-500'
-                        : 'tw:border-gray-200'
+                      hasEndError ? 'tw:border-red-500' : 'tw:border-gray-200'
                     ]"
-                    @input="clearFieldError('endTime')"
+                    @input="clearEndError"
                   />
 
                   <Clock
@@ -391,17 +383,7 @@
                   />
                 </div>
 
-                <p v-if="errors.endTime" class="tw:text-red-500 tw:text-sm tw:mt-1">
-                  End time is required
-                </p>
-
-                <p v-if="fieldErrors.end_time" class="tw:text-red-500 tw:text-sm tw:mt-1">
-                  {{ fieldErrors.end_time[0] }}
-                </p>
-
-                <p v-if="timeValidationError" class="tw:text-red-500 tw:text-sm tw:mt-1">
-                  End time must be after start time
-                </p>
+                <p v-if="endError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ endError }}</p>
               </div>
 
             </div>
@@ -547,45 +529,9 @@
           </p>
 
           <div class="tw:space-y-3">
-            <!-- Invite talent -->
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-              <div class="tw:flex tw:items-center tw:gap-3">
-                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Talent</span>
-              </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                + Add
-              </button>
-            </div>
-
-            <!-- Invite organiser -->
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-              <div class="tw:flex tw:items-center tw:gap-3">
-                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organiser</span>
-              </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                + Add
-              </button>
-            </div>
-
-            <!-- Invite venue -->
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-              <div class="tw:flex tw:items-center tw:gap-3">
-                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
-              </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                + Add
-              </button>
-            </div>
-
+            <InviteSection role="talent"    :has-border="true" />
+            <InviteSection role="organiser" :has-border="true" />
+            <InviteSection role="venue"     :has-border="false" />
           </div>
         </div>
 
@@ -642,9 +588,11 @@ import {
 
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue"
 import { useRouter, useRoute } from "vue-router"
+import InviteSection from "@/components/invite/InviteSection.vue"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import eventService from "@/services/eventService"
 import { useToast } from "@/composables/useToast"
+import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -663,8 +611,6 @@ const selectedVenue = ref("")
 // Server-side validation errors from API
 const fieldErrors = ref({})
 
-// Time validation
-const timeValidationError = ref(false)
 const pastDateError = ref(false)
 
 // Explicit lat/lng state (not from marker)
@@ -678,8 +624,6 @@ const errors = ref({
   category: false,
   subcategories: false,
   eventDate: false,
-  startTime: false,
-  endTime: false,
   address: false,
   dressCode: false,
   ageLimit: false,
@@ -711,10 +655,9 @@ const isFormValid = computed(() => {
     selectedCategory.value !== '' &&
     selectedSubcategories.value.length > 0 &&
     eventDate.value !== '' &&
-    startTime.value !== '' &&
-    endTime.value !== '' &&
+    !hasStartError.value &&
+    !hasEndError.value &&
     selectedAddress.value !== '' &&
-    !timeValidationError.value &&
     !pastDateError.value
   )
 })
@@ -853,6 +796,7 @@ function validateGenre() {
 
   return selectedCategory.value && selectedSubcategories.value.length > 0
 }
+
 const dressCode = ref("")
 const ageLimit = ref("")
 const entranceFee = ref("")
@@ -866,47 +810,20 @@ const dateInput = ref(null)
 const startTimeInput = ref(null)
 const endTimeInput = ref(null)
 
-// Watchers for time validation
-watch([startTime, endTime], () => {
-  validateTimeRange()
-})
+const {
+  startError,
+  endError,
+  hasStartError,
+  hasEndError,
+  validateTimeRange,
+  clearStartError,
+  clearEndError,
+  applyServerErrors: applyTimeServerErrors,
+} = useTimeRangeValidation(startTime, endTime)
 
 watch(eventDate, () => {
   validatePastDate()
 })
-
-// Validate that end time is after start time
-function validateTimeRange() {
-  if (!startTime.value || !endTime.value) {
-    timeValidationError.value = false
-    return
-  }
-  
-  // Parse times (assuming HH:MM format)
-  const start = parseTime(startTime.value)
-  const end = parseTime(endTime.value)
-  
-  if (start && end) {
-    timeValidationError.value = end <= start
-  }
-}
-
-// Parse time string to minutes for comparison
-function parseTime(timeStr) {
-  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i)
-  if (!match) return null
-  
-  let hours = parseInt(match[1])
-  const minutes = parseInt(match[2])
-  const period = match[3]
-  
-  if (period) {
-    if (period.toUpperCase() === 'PM' && hours !== 12) hours += 12
-    if (period.toUpperCase() === 'AM' && hours === 12) hours = 0
-  }
-  
-  return hours * 60 + minutes
-}
 
 // Validate that selected date is not in the past
 function validatePastDate() {
@@ -914,10 +831,10 @@ function validatePastDate() {
     pastDateError.value = false
     return
   }
-  
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
+
   const selected = new Date(eventDate.value)
   pastDateError.value = selected < today
 }
@@ -1204,7 +1121,7 @@ async function scrollToFirstError() {
   await nextTick()
 
   // Find first field with error
-  const errorFields = ['eventTitle', 'eventImage', 'category', 'subcategories', 'eventDate', 'eventTime', 'address', 'dressCode', 'ageLimit', 'entranceFee']
+  const errorFields = ['eventTitle', 'eventImage', 'category', 'subcategories', 'eventDate', 'address', 'dressCode', 'ageLimit', 'entranceStatus']
   const firstErrorField = errorFields.find(field =>
     errors.value[field] ||
     (field === 'category' && categoryError.value) ||
@@ -1231,9 +1148,6 @@ async function scrollToFirstError() {
       case 'eventDate':
         element = document.querySelector('input[placeholder="MM/DD/YYYY"]')
         break
-      case 'eventTime':
-        element = document.querySelector('input[placeholder="-- -- --"]')
-        break
       case 'address':
         element = document.querySelector('input[readonly]')
         break
@@ -1243,7 +1157,7 @@ async function scrollToFirstError() {
       case 'ageLimit':
         element = document.querySelectorAll('select')[2] // Third select
         break
-      case 'entranceFee':
+      case 'entranceStatus':
         element = document.querySelectorAll('select')[3] // Fourth select
         break
     }
@@ -1278,23 +1192,19 @@ function validateForm() {
   errors.value.category = !selectedCategory.value
   errors.value.subcategories = selectedSubcategories.value.length === 0
   errors.value.eventDate = !eventDate.value
-  errors.value.startTime = !startTime.value
-  errors.value.endTime = !endTime.value
   errors.value.address = !selectedAddress.value
 
   // Set category/subcategory specific errors
   categoryError.value = !selectedCategory.value
   subcategoryError.value = selectedSubcategories.value.length === 0
 
-  // Check time validation
-  const hasTimeError = timeValidationError.value || pastDateError.value
-  
-  const isValid = !Object.values(errors.value).some(error => error) && 
-                  !categoryError.value && 
-                  !subcategoryError.value &&
-                  !hasTimeError
-  
-  return isValid
+  const timeValid = validateTimeRange()
+  const hasOtherErrors = Object.values(errors.value).some(error => error) ||
+                         categoryError.value ||
+                         subcategoryError.value ||
+                         pastDateError.value
+
+  return !hasOtherErrors && timeValid
 }
 
 // Submit handler function
@@ -1383,6 +1293,7 @@ async function createEvent() {
       // Handle API validation errors
       if (response.errors) {
         fieldErrors.value = response.errors
+        applyTimeServerErrors(fieldErrors.value)
         toast.error(response.message || 'Please correct the errors in the form.')
       } else {
         toast.error(response.message || 'Failed to create event. Please try again.')
@@ -1395,6 +1306,7 @@ async function createEvent() {
     // Handle API validation errors from Laravel
     if (error.response?.data?.errors) {
       fieldErrors.value = error.response.data.errors
+      applyTimeServerErrors(fieldErrors.value)
       toast.error(error.response.data.message || 'Please correct the errors in the form.')
     } else if (error.response?.data?.message) {
       toast.error(error.response.data.message)

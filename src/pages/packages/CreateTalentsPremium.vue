@@ -126,7 +126,7 @@
                     <!-- Header -->
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
                         <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-                            Talent Image
+                            Talent main image
                         </h3>
 
                         <!-- <button type="button"
@@ -159,7 +159,7 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images
+                            Additional Images (Max. 5 images)
                         </h3>
                     </div>
 
@@ -225,7 +225,7 @@
                         <!-- Subcategory Multi-Select -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories (Max 5) <span class="tw:text-red-500">*</span>
+                                Subcategories (Max 1) <span class="tw:text-red-500">*</span>
                             </label>
 
                             <!-- Multi-Select Input Field -->
@@ -256,11 +256,11 @@
                                         <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
                                             :class="{
                                                 'selected': selectedSubcategories.includes(subcategory),
-                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5
+                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 1
                                             }" @click="toggleSubcategory(subcategory)">
                                             <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
                                                 v-model="selectedSubcategories"
-                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5"
+                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 1"
                                                 @change="handleSubcategoryChange" @click.stop class="option-checkbox">
                                             <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
                                                 {{ subcategory }}
@@ -349,20 +349,51 @@
                             </div>
                         </div>
 
-                        <!-- Talent TIME -->
-                        <div class="tw:flex-1">
-                            <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                Talent Time
-                            </label>
+                        <!-- START & END TIME -->
+                        <div style="display: flex; justify-content: space-between;">
 
-                            <div class="tw:relative">
-                                <input ref="timeInput" placeholder="-- -- --"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
-
-                                <!-- Custom Clock Icon -->
-                                <Clock
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                            <!-- START TIME -->
+                            <div style="width: 48%;">
+                                <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
+                                    Start Time <span class="tw:text-red-500">*</span>
+                                </label>
+                                <div class="tw:relative">
+                                    <input
+                                        ref="startTimeInput"
+                                        v-model="startTime"
+                                        placeholder="HH:MM"
+                                        :class="[
+                                            'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                                            hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                        ]"
+                                        @input="clearStartError"
+                                    />
+                                    <Clock class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                </div>
+                                <p v-if="startError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ startError }}</p>
                             </div>
+
+                            <!-- END TIME -->
+                            <div style="width: 48%;">
+                                <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
+                                    End Time <span class="tw:text-red-500">*</span>
+                                </label>
+                                <div class="tw:relative">
+                                    <input
+                                        ref="endTimeInput"
+                                        v-model="endTime"
+                                        placeholder="HH:MM"
+                                        :class="[
+                                            'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                                            hasEndError ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                        ]"
+                                        @input="clearEndError"
+                                    />
+                                    <Clock class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                </div>
+                                <p v-if="endError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ endError }}</p>
+                            </div>
+
                         </div>
 
                     </div>
@@ -417,72 +448,6 @@
                     </div>
                 </div>
 
-                <!-- OVERVIEW SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Overview
-                        </h3>
-                        <!-- <button
-                            class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                            <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-
-                    <div class="tw:grid tw:grid-cols-3 tw:gap-4">
-                        <!-- Dress Code -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code</label>
-                            <div class="tw:relative">
-                                <select v-model="dressCode"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">No Dress Code</option>
-                                    <option value="casual">Dress Code</option>
-                                </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-                            </div>
-                        </div>
-
-                        <!-- Age Limit -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit</label>
-                            <div class="tw:relative">
-                                <select v-model="ageLimit"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">4+</option>
-                                    <option value="8">8+</option>
-                                    <option value="12">12+</option>
-                                    <option value="16">16+</option>
-                                    <option value="18">18+</option>
-                                    <option value="21">21+</option>
-                                    <option value="55">55+</option>
-                                    <option value="65">65+</option>
-                                    <option value="different">Different Ages</option>
-                                </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-                            </div>
-                        </div>
-
-                        <!-- Entrance Fee -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status</label>
-                            <div class="tw:relative">
-                                <select v-model="entranceFee"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">Free Entrance</option>
-                                    <option value="paid">Paid Entrance</option>
-                                    <option value="donation">Sold Out</option>
-                                    <option value="cancelled">Talent is Cancelled</option>
-                                </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- CONTACT DETAILS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
@@ -519,7 +484,7 @@
                 </div>
 
                 <!-- CONTACT BOX DESIGN SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Contact Box Design
                     </h3>
@@ -529,7 +494,7 @@
                         <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your design message"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- SOCIAL MEDIA LINKS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
@@ -547,19 +512,13 @@
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
                 </div>
 
-                <!-- Talent CONDITIONS SECTION -->
+                <!-- FAN CLUB SITE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Talent Conditions (Optional)
+                        Link to Fan Club Site
                     </h3>
 
-                    <input type="text" placeholder="Entrance Fee (If Different)"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
-                    <input type="text" placeholder="Dress Code (If Different)"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
-                    <input type="text" placeholder="Age Limit (If Different)"
+                    <input v-model="fanClubUrl" type="text" placeholder="Enter Fan Club Website URL"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
                 </div>
 
@@ -571,9 +530,6 @@
 
                     <input v-model="ticketUrl" type="text" placeholder="Ticket / Booking URL"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
-                    <textarea v-model="bookingInstructions" rows="4" placeholder="Booking Instructions"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                 </div>
 
                 <!-- NATIONALITY OF TALENT SECTION -->
@@ -582,15 +538,53 @@
                         Nationality of Talent
                     </h3>
 
-                    <div class="tw-relative">
-                        <select v-model="talentNationality" 
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                            <option value="">Select Nationality</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                        <ChevronDown
-                            class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                    <!-- Exact Nationality Input -->
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Enter Nationality</label>
+                        <input v-model="exactNationality" type="text" placeholder="e.g., American, British, German, French"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    </div>
+
+                    <!-- Yes/No Selection -->
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Can You Share Nationality?</label>
+                        <div class="tw:relative">
+                            <select v-model="talentNationality" 
+                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                            <ChevronDown
+                                class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Age OF TALENT SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Age of Talent
+                    </h3>
+
+                    <!-- Exact Age Input -->
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Enter Age</label>
+                        <input v-model="exactAge" type="text" placeholder="e.g., 21, 22, 23"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    </div>
+
+                    <!-- Yes/No Selection -->
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Can You Share Age?</label>
+                        <div class="tw:relative">
+                            <select v-model="showAge" 
+                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                            <ChevronDown
+                                class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                        </div>
                     </div>
                 </div>
 
@@ -640,62 +634,8 @@
                     </p>
 
                     <div class="tw:space-y-3">
-                        <!-- Invite venue -->
-                        <!-- <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <MapPin class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite venue</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div> -->
-
-                        <!-- Invite talent -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Talent</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
-                        <!-- Invite organiser -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organiser</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
-                        <!-- Invite venue -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
+                        <InviteSection role="organiser" :has-border="true" />
+                        <InviteSection role="venue"     :has-border="false" />
                     </div>
                 </div>
 
@@ -768,10 +708,12 @@ import {
 import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import InviteSection from "@/components/invite/InviteSection.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -813,6 +755,9 @@ const bookingInstructions = ref('');
 const ticketUrl = ref('');
 const eventOption = ref('');
 const talentNationality = ref('');
+const exactNationality = ref('');
+const exactAge = ref('');
+const showAge = ref('show');
 const showChatbox = ref(false)
 const contactBoxDesignMessage = ref('')
 const languagesText = ref('')
@@ -826,14 +771,27 @@ const notifications = ref({
 const facebookUrl = ref("")
 const instagramUrl = ref("")
 const tiktokUrl = ref("")
+const fanClubUrl = ref("")
 
 const entranceFee = ref("")
 
 // Event Date and Time
 // const eventDate = ref("")
-const eventTime = ref("")
+const startTime = ref("")
+const endTime = ref("")
 const dateInput = ref(null)
-const timeInput = ref(null)
+const startTimeInput = ref(null)
+const endTimeInput = ref(null)
+
+const {
+  startError,
+  endError,
+  hasStartError,
+  hasEndError,
+  validateTimeRange,
+  clearStartError,
+  clearEndError,
+} = useTimeRangeValidation(startTime, endTime)
 
 // Event Location refs
 const searchAddress = ref("")
@@ -1033,8 +991,9 @@ async function handleSubmit() {
 
   const isValid = validate()
   const genreValid = validateGenre()
+  const timeValid = validateTimeRange()
 
-  if (!isValid || !genreValid) {
+  if (!isValid || !genreValid || !timeValid) {
     await scrollToFirstError()
     isSubmitting.value = false
     return
@@ -1195,11 +1154,22 @@ onMounted(() => {
     })
 
 
-    /* ------------------ TIME PICKER ------------------ */
-    flatpickr(timeInput.value, {
+    /* ------------------ START TIME PICKER ------------------ */
+    flatpickr(startTimeInput.value, {
         enableTime: true,
         noCalendar: true,
-        dateFormat: "h:i K",
+        dateFormat: "H:i",
+        time_24hr: true,
+        onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
+    })
+
+    /* ------------------ END TIME PICKER ------------------ */
+    flatpickr(endTimeInput.value, {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
     })
 })
 

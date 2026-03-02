@@ -120,6 +120,92 @@
                     </div>
                 </div>
 
+                <!-- DESCRIPTION OF VENUE SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                            Description of Venue
+                        </h3>
+                    </div>
+                    <!-- Dropdown -->
+                    <div class="tw:relative" ref="descriptionDropdownRef">
+
+                        <!-- Trigger -->
+                        <div @click="toggleDescriptionDropdown"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
+
+                            <span class="tw:text-gray-700">
+                                {{ selectedDescriptionItems?.length ? selectedDescriptionItems.join(', ') : 'Select Description Items' }}
+                            </span>
+
+                            <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
+                        </div>
+
+                        <!-- Dropdown Box -->
+                        <div v-if="showDescriptionDropdown"
+                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
+
+                            <!-- Inner white container -->
+                            <div class="tw:bg-white tw:rounded-lg tw:space-y-4 tw:p-4">
+
+                                <label v-for="item in descriptionItems" :key="item"
+                                    class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
+
+                                    <span class="tw:text-gray-700">{{ item }}</span>
+
+                                    <input type="checkbox" :value="item" v-model="selectedDescriptionItems"
+                                        class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
+                                </label>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Venue LOCATION SECTION -->
+                <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
+                    <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
+                        Venue Location
+                    </h3>
+
+                    <div class="tw:relative tw:mb-4">
+                        <input v-model="searchAddress" @input="onSearchInput" type="text"
+                            placeholder="Search Address..."
+                            class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+
+                        <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
+                            <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="tw:opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="tw:opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </div>
+
+                        <div v-if="suggestions.length > 0"
+                            class="tw:absolute tw-top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
+                            <button v-for="(suggestion, index) in suggestions" :key="index"
+                                @click="selectSuggestion(suggestion)"
+                                class="tw:w-full tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors tw:border-b tw:border-gray-100 last:tw:border-b-0">
+                                {{ suggestion.display_name }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="event-map" class="tw:w-full tw:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4">
+                    </div>
+
+                    <div class="tw:space-y-2">
+                        <label class="tw:block tw:text-sm tw:text-gray-600">
+                            Selected Address
+                        </label>
+                        <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
+                            class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+                    </div>
+                </div>
+
                 <!-- Venue IMAGE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-6">
 
@@ -166,48 +252,6 @@
                     <AdditionalImageUpload v-model:files="additionalImages" :max-files="5" :max-size-m-b="5" />
                 </div>
 
-                <!-- DESCRIPTION OF VENUE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Description of Venue
-                        </h3>
-                    </div>
-                    <!-- Dropdown -->
-                    <div class="tw:relative" ref="descriptionDropdownRef">
-
-                        <!-- Trigger -->
-                        <div @click="toggleDescriptionDropdown"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
-
-                            <span class="tw:text-gray-700">
-                                {{ selectedDescriptionItems.length ? selectedDescriptionItems.join(', ') : 'Select Description Items' }}
-                            </span>
-
-                            <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
-                        </div>
-
-                        <!-- Dropdown Box -->
-                        <div v-if="showDescriptionDropdown"
-                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
-
-                            <!-- Inner white container -->
-                            <div class="tw:bg-white tw:rounded-lg tw:space-y-4 tw:p-4">
-
-                                <label v-for="item in descriptionItems" :key="item"
-                                    class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
-
-                                    <span class="tw:text-gray-700">{{ item }}</span>
-
-                                    <input type="checkbox" :value="item" v-model="selectedDescriptionItems"
-                                        class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
-                                </label>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- ACCESSIBILITY SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
@@ -223,7 +267,7 @@
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
 
                             <span class="tw:text-gray-700">
-                                {{ selectedAccessibilityItems.length ? selectedAccessibilityItems.join(', ') : 'Select Accessibility Items' }}
+                                {{ selectedAccessibilityItems?.length ? selectedAccessibilityItems.join(', ') : 'Select Accessibility Items' }}
                             </span>
 
                             <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
@@ -416,7 +460,7 @@
                                     ]">
                                     <option value="">
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                                        'SelectCategory') }}
+                                        'Select') }}
                                     </option>
                                     <option v-for="category in categories" :key="category.id" :value="category.name">
                                         {{ category.name }}
@@ -555,216 +599,93 @@
                             </div>
                         </div>
 
-                        <!-- Venue TIME -->
-                        <div class="tw:flex-1">
-                            <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                Venue Time
-                            </label>
+                        <!-- START & END TIME -->
+                        <div style="display: flex; justify-content: space-between;">
 
-                            <div class="tw:relative">
-                                <input ref="timeInput" placeholder="-- -- --"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
-
-                                <!-- Custom Clock Icon -->
-                                <Clock
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                            <!-- START TIME -->
+                            <div style="width: 48%;">
+                                <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
+                                    Start Time <span class="tw:text-red-500">*</span>
+                                </label>
+                                <div class="tw:relative">
+                                    <input
+                                        ref="startTimeInput"
+                                        v-model="startTime"
+                                        placeholder="HH:MM"
+                                        :class="[
+                                            'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                                            hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                        ]"
+                                        @input="clearStartError"
+                                    />
+                                    <Clock class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                </div>
+                                <p v-if="startError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ startError }}</p>
                             </div>
-                        </div>
 
-                    </div>
-                </div>
-
-                <!-- Venue LOCATION SECTION -->
-                <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
-                    <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Venue Location
-                    </h3>
-
-                    <!-- Address Search Input with Loading Spinner -->
-                    <div class="tw:relative tw:mb-4">
-                        <input v-model="searchAddress" @input="onSearchInput" type="text"
-                            placeholder="Search Address..."
-                            class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
-                        <!-- Loading Spinner -->
-                        <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
-                            <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="tw:opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="tw:opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                        </div>
-
-                        <!-- Suggestions Dropdown -->
-                        <div v-if="suggestions.length > 0"
-                            class="tw:absolute tw-top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
-                            <button v-for="(suggestion, index) in suggestions" :key="index"
-                                @click="selectSuggestion(suggestion)"
-                                class="tw:w-full tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors tw:border-b tw:border-gray-100 last:tw:border-b-0">
-                                {{ suggestion.display_name }}
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Map Container -->
-                    <div id="event-map" class="tw:w-full tw:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4">
-                    </div>
-
-                    <!-- Selected Address -->
-                    <div class="tw:space-y-2">
-                        <label class="tw:block tw:text-sm tw:text-gray-600">
-                            Selected Address
-                        </label>
-                        <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
-                            class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
-                    </div>
-                </div>
-
-                <!-- OVERVIEW SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Overview
-                        </h3>
-                        <!-- <button
-                            class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                            <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-
-                    <div class="tw:grid tw:grid-cols-3 tw:gap-4">
-                        <!-- Dress Code -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code</label>
-                            <div class="tw:relative">
-                                <select v-model="dressCode"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">No Dress Code</option>
-                                    <option value="casual">Dress Code</option>
-                                </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                            <!-- END TIME -->
+                            <div style="width: 48%;">
+                                <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
+                                    End Time <span class="tw:text-red-500">*</span>
+                                </label>
+                                <div class="tw:relative">
+                                    <input
+                                        ref="endTimeInput"
+                                        v-model="endTime"
+                                        placeholder="HH:MM"
+                                        :class="[
+                                            'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                                            hasEndError ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                        ]"
+                                        @input="clearEndError"
+                                    />
+                                    <Clock class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                </div>
+                                <p v-if="endError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ endError }}</p>
                             </div>
+
                         </div>
 
-                        <!-- Age Limit -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit</label>
-                            <div class="tw:relative">
-                                <select v-model="ageLimit"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">4+</option>
-                                    <option value="8">8+</option>
-                                    <option value="12">12+</option>
-                                    <option value="16">16+</option>
-                                    <option value="18">18+</option>
-                                    <option value="21">21+</option>
-                                    <option value="55">55+</option>
-                                    <option value="65">65+</option>
-                                    <option value="different">Different Ages</option>
-                                </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-                            </div>
-                        </div>
-
-                        <!-- Entrance Fee -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status</label>
-                            <div class="tw:relative">
-                                <select v-model="entranceFee"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">Free Entrance</option>
-                                    <option value="paid">Paid Entrance</option>
-                                    <option value="donation">Sold Out</option>
-                                    <option value="cancelled">Venue is Cancelled</option>
-                                </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-                            </div>
-                        </div>
                     </div>
                 </div>
 
                 <!-- CONTACT DETAILS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Contact Details
-                    </h3>
-
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Details</h3>
                     <input v-model="contactPhone" type="text" placeholder="Telephone Number"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
-
                     <input v-model="contactEmail" type="email" placeholder="Email"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
-
                     <input v-model="contactWebsite" type="text" placeholder="Website"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
-
-                    <!-- SHOW CHATBOX TOGGLE -->
-                    <div class="tw:flex tw:justify-between tw:items-center tw:pt-2">
-                        <span class="tw:text-sm tw:text-gray-900">Show Chatbox</span>
-
-                        <label class="tw:relative tw:inline-flex tw:items-center tw:w-12 tw:h-6 tw:cursor-pointer">
-                            <input type="checkbox" v-model="showChatbox" class="tw:sr-only tw:peer" />
-
-                            
-                            <div
-                                class="tw:w-12 tw:h-6 tw:bg-gray-300 tw:rounded-full tw:transition tw:peer-checked:bg-orange-500">
-                            </div>
-
-                            
-                            <div
-                                class="tw:absolute tw:left-1 tw:top-1 tw:w-4 tw:h-4 tw:bg-white tw:rounded-full tw:transition tw:peer-checked:translate-x-6">
-                            </div>
-                        </label>
-                    </div>
                 </div>
+
+                <!-- CONTACT BOX DESIGN SECTION -->
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box Design</h3>
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Design Message</label>
+                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your design message"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                    </div>
+                </div> -->
 
                 <!-- SOCIAL MEDIA LINKS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Social Media Links
-                    </h3>
-
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Social Media Links</h3>
                     <input v-model="facebookUrl" type="text" placeholder="Facebook URL"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
                     <input v-model="instagramUrl" type="text" placeholder="Instagram URL"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
                     <input v-model="tiktokUrl" type="text" placeholder="Tik Tok URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-                </div>
-
-                <!-- Venue CONDITIONS SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Venue Conditions (Optional)
-                    </h3>
-
-                    <input type="text" placeholder="Entrance Fee (If Different)"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
-                    <input type="text" placeholder="Dress Code (If Different)"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
-                    <input type="text" placeholder="Age Limit (If Different)"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
                 </div>
 
                 <!-- BOOKING & TICKET INFO SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Booking & Ticket Info
-                    </h3>
-
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Booking & Ticket Info</h3>
                     <input v-model="ticketUrl" type="text" placeholder="Ticket / Booking URL"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
                     <textarea v-model="bookingInstructions" rows="4" placeholder="Booking Instructions"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                 </div>
@@ -772,128 +693,31 @@
                 <!-- INVITE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Invite
-                        </h3>
-                        <!-- <button
-                            class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                            <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Invite</h3>
                     </div>
-
                     <p class="tw:text-sm tw:text-[#1E3A8A]">
-                        Make your event stand out even more. These sections help attendees find information and
-                        answer
-                        their
-                        questions.
+                        Make your event stand out even more. These sections help attendees find information and answer their questions.
                     </p>
-
-                    <div class="tw:space-y-3">
-                        <!-- Invite venue -->
-                        <!-- <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <MapPin class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite venue</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div> -->
-
-                        <!-- Invite talent -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Talent</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
-                        <!-- Invite organiser -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organiser</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
-                        <!-- Invite venue -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
+                    <div class="tw:space-y-1">
+                        <InviteSection role="talent" :has-border="true" />
+                        <InviteSection role="organiser" :has-border="false" />
                     </div>
                 </div>
 
                 <!-- Venue OPTIONS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Venue Options
-                    </h3>
-
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Venue Options</h3>
                     <div class="tw:flex tw:gap-6 tw:items-center">
-                        <!-- Copy Venue -->
                         <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
                             <input type="radio" value="copy" v-model="eventOption"
                                 class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500" />
                             <span class="tw:text-sm tw:text-gray-700">Copy Venue</span>
                         </label>
-
-                        <!-- Recurring Venue -->
                         <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
                             <input type="radio" value="recurring" v-model="eventOption"
                                 class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500" />
                             <span class="tw:text-sm tw:text-gray-700">Recurring Venue</span>
                         </label>
-                    </div>
-                </div>
-
-                <!-- CONTACT BOX TO CONTACT THE VENUE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Contact Box to Contact the Venue
-                    </h3>
-
-                    <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Contact Message</label>
-                        <textarea v-model="contactBoxMessage" rows="4" placeholder="Enter your contact message"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
-                    </div>
-                </div>
-
-                <!-- OPENING HOURS VENUE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Opening Hours Venue
-                    </h3>
-
-                    <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Opening Hours</label>
-                        <input v-model="openingHoursText" type="text" placeholder="Enter opening hours"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
                     </div>
                 </div>
 
@@ -943,10 +767,12 @@ import {
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import InviteSection from "@/components/invite/InviteSection.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -960,193 +786,163 @@ const toast = useToast()
 const activeTab = ref("home")
 const isSubmitting = ref(false)
 const eventDescription = ref("")
-
-// ── Form Validation (generic composable) ─────────────────────
-const formData = reactive({
-  venueTitle: '',
-  category: '',
-  subcategories: [],
-})
-
-const venueSchema = {
-  venueTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Venue Title' },
-  category: { type: 'select', required: true, label: 'Category' },
-  subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
-}
-
-const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(venueSchema, formData)
-
 const additionalImages = ref([])
-const selectedVenue = ref("")
 const selectedGenre = ref("")
-
-// Genre state
-const selectedCategory = ref("")
-const selectedSubcategories = ref([])  // Multi-select array for subcategories
-const categoryError = ref(false)
-const subcategoryError = ref(false)
-const subcategoryValidationError = ref(false)  // For max 5 validation
-const categories = ref([])
-const isLoadingCategories = ref(false)
-const categoriesError = ref(null)
-const showSubcategoryDropdown = ref(false)  // For dropdown toggle
-
-// Dropdown refs for click outside functionality
-const dropdownContainer = ref(null)
-const dropdownMenu = ref(null)
-
-// Computed property for available subcategories
-const availableSubcategories = computed(() => {
-  if (!selectedCategory.value) return []
-  const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
-  return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
-})
-
-// Fetch categories from API using eventService
-async function fetchCategories() {
-  try {
-    isLoadingCategories.value = true
-    categoriesError.value = null
-
-    const response = await eventService.getCategories()
-
-    if (response.success) {
-      categories.value = response.data
-    } else {
-      categoriesError.value = 'Failed to fetch categories'
-    }
-  } catch (error) {
-    console.error('Error fetching categories:', error)
-    categoriesError.value = 'Error loading categories. Please try again.'
-  } finally {
-    isLoadingCategories.value = false
-  }
-}
-
-// Handle category change with validation clearing
-function handleCategoryChangeWithValidation() {
-  selectedSubcategories.value = []  // Reset array when category changes
-  subcategoryError.value = false
-  subcategoryValidationError.value = false  // Clear validation error
-  categoryError.value = false
-  showSubcategoryDropdown.value = false  // Close dropdown
-}
-
-// Handle category change
-function handleCategoryChange() {
-  handleCategoryChangeWithValidation()
-}
-
-// Toggle subcategory dropdown
-function toggleSubcategoryDropdown() {
-  if (!selectedCategory.value || categoriesError.value) return
-  showSubcategoryDropdown.value = !showSubcategoryDropdown.value
-}
-
-// Toggle individual subcategory selection
-function toggleSubcategory(subcategory) {
-  if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
-    return // Prevent selection if already at max 5
-  }
-
-  const index = selectedSubcategories.value.indexOf(subcategory)
-  if (index > -1) {
-    selectedSubcategories.value.splice(index, 1)
-  } else {
-    selectedSubcategories.value.push(subcategory)
-  }
-
-  handleSubcategoryChange()
-}
-
-// Click outside handler to close dropdown
-function handleClickOutside(event) {
-  // Subcategory dropdown
-  if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
-    showSubcategoryDropdown.value = false
-  }
-  
-  // Description dropdown
-  if (
-    descriptionDropdownRef.value &&
-    !descriptionDropdownRef.value.contains(event.target)
-  ) {
-    showDescriptionDropdown.value = false
-  }
-  
-  // Accessibility dropdown
-  if (
-    accessibilityDropdownRef.value &&
-    !accessibilityDropdownRef.value.contains(event.target)
-  ) {
-    showAccessibilityDropdown.value = false
-  }
-}
-
-// Handle subcategory change with max 5 validation
-function handleSubcategoryChange() {
-  subcategoryError.value = false
-
-  // Maximum 5 subcategories selection logic
-  // Prevent selection if trying to add more than 5 items
-  if (selectedSubcategories.value.length > 5) {
-    // Remove the last added item to maintain the limit
-    const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
-    selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
-
-    // Show validation error
-    subcategoryValidationError.value = true
-
-    // Auto-hide validation message after 3 seconds
-    setTimeout(() => {
-      subcategoryValidationError.value = false
-    }, 3000)
-  } else {
-    // Clear validation error when within limit
-    subcategoryValidationError.value = false
-  }
-}
-
-// Remove subcategory from selection
-function removeSubcategory(subcategoryToRemove) {
-  const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
-  if (index > -1) {
-    selectedSubcategories.value.splice(index, 1)
-    // Clear validation error when removing items (going below limit)
-    subcategoryValidationError.value = false
-  }
-}
-
-// Validate genre fields
-function validateGenre() {
-  categoryError.value = !selectedCategory.value
-  subcategoryError.value = selectedSubcategories.value.length === 0
-
-  return selectedCategory.value && selectedSubcategories.value.length > 0
-}
 const dressCode = ref("")
 const ageLimit = ref("")
+const entranceFee = ref("")
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
-const bookingInstructions = ref('');
-const ticketUrl = ref('');
-const eventOption = ref('');
+const bookingInstructions = ref("")
+const ticketUrl = ref("")
+const eventOption = ref("")
 const showChatbox = ref(false)
-
-const contactBoxMessage = ref('')
-const openingHoursText = ref('')
+const contactBoxDesignMessage = ref("")
+const childrensPlayArea = ref("")
+const facebookUrl = ref("")
+const instagramUrl = ref("")
+const tiktokUrl = ref("")
 
 const notifications = ref({
     receiveEmail: false,
     receiveUpdates: false
 })
 
-const facebookUrl = ref("")
-const instagramUrl = ref("")
-const tiktokUrl = ref("")
+// ── Form Validation ─────────────────────
+const formData = reactive({
+    venueTitle: '',
+    category: '',
+    subcategories: [],
+})
 
-const entranceFee = ref("")
+const venueSchema = {
+    venueTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Venue Title' },
+    category: { type: 'select', required: true, label: 'Category' },
+    subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
+}
+
+const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(venueSchema, formData)
+
+// Event Date and Time
+// const eventDate = ref("")
+const startTime = ref("")
+const endTime = ref("")
+const startTimeInput = ref(null)
+const endTimeInput = ref(null)
+
+const {
+    startError,
+    endError,
+    hasStartError,
+    hasEndError,
+    validateTimeRange,
+    clearStartError,
+    clearEndError,
+} = useTimeRangeValidation(startTime, endTime)
+
+const selectedCategory = ref("")
+
+// Genre state
+const selectedSubcategories = ref([])
+const categoryError = ref(false)
+const subcategoryError = ref(false)
+const subcategoryValidationError = ref(false)
+const categories = ref([])
+const isLoadingCategories = ref(false)
+const categoriesError = ref(null)
+const showSubcategoryDropdown = ref(false)
+
+const dropdownContainer = ref(null)
+const dropdownMenu = ref(null)
+
+const availableSubcategories = computed(() => {
+    if (!selectedCategory.value) return []
+    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+    return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
+})
+
+async function fetchCategories() {
+    try {
+        isLoadingCategories.value = true
+        categoriesError.value = null
+        const response = await eventService.getCategories()
+        if (response.success) {
+            categories.value = response.data
+        } else {
+            categoriesError.value = 'Failed to fetch categories'
+        }
+    } catch (error) {
+        console.error('Error fetching categories:', error)
+        categoriesError.value = 'Error loading categories. Please try again.'
+    } finally {
+        isLoadingCategories.value = false
+    }
+}
+
+function handleCategoryChangeWithValidation() {
+    selectedSubcategories.value = []
+    subcategoryError.value = false
+    subcategoryValidationError.value = false
+    categoryError.value = false
+    showSubcategoryDropdown.value = false
+}
+
+function handleCategoryChange() {
+    handleCategoryChangeWithValidation()
+}
+
+function toggleSubcategoryDropdown() {
+    if (!selectedCategory.value || categoriesError.value) return
+    showSubcategoryDropdown.value = !showSubcategoryDropdown.value
+}
+
+function toggleSubcategory(subcategory) {
+    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
+        return
+    }
+    const index = selectedSubcategories.value.indexOf(subcategory)
+    if (index > -1) {
+        selectedSubcategories.value.splice(index, 1)
+    } else {
+        selectedSubcategories.value.push(subcategory)
+    }
+    handleSubcategoryChange()
+}
+
+function handleClickOutside(event) {
+    if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
+        showSubcategoryDropdown.value = false
+    }
+}
+
+function handleSubcategoryChange() {
+    subcategoryError.value = false
+    if (selectedSubcategories.value.length > 5) {
+        selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
+        subcategoryValidationError.value = true
+        setTimeout(() => { subcategoryValidationError.value = false }, 3000)
+    } else {
+        subcategoryValidationError.value = false
+    }
+}
+
+function removeSubcategory(subcategoryToRemove) {
+    const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
+    if (index > -1) {
+        selectedSubcategories.value.splice(index, 1)
+        subcategoryValidationError.value = false
+    }
+}
+
+function validateGenre() {
+    categoryError.value = !selectedCategory.value
+    subcategoryError.value = selectedSubcategories.value.length === 0
+    return selectedCategory.value && selectedSubcategories.value.length > 0
+}
+
+const contactBoxMessage = ref('')
+const openingHoursText = ref('')
 
 // Event Date and Time
 // const eventDate = ref("")
@@ -1169,7 +965,6 @@ const allowanceOfDogs = ref("")
 const wheelchairAccessible = ref("")
 const accessibleParking = ref("")
 const valetParking = ref("")
-const childrensPlayArea = ref("")
 
 const showGenreDropdown = ref(false)
 const genreDropdownRef = ref(null)
@@ -1266,10 +1061,8 @@ onBeforeUnmount(() => {
 
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Premium")
-
 const fileName = ref("")
 
-// Menu items specific to CreateEventPremium
 const menuItems = [
     { id: "home", icon: Home, label: "Home", route: "/create-venue-premium" },
     { id: "details", icon: FileText, label: "Details", route: "/create-venue-premium" },
@@ -1295,7 +1088,7 @@ function handleEventSelected(eventId) {
 
 function handleMenuClick(item) {
     if (item.route) {
-        console.log("Navigating to:", item.route);
+        console.log("Navigating to:", item.route)
         router.push(item.route)
     } else {
         activeTab.value = item.id
@@ -1309,33 +1102,31 @@ function isActive(item) {
     return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
 }
 
-// Sync category/subcategory selections into formData for validation
 function syncFormData() {
-  formData.category = selectedCategory.value
-  formData.subcategories = selectedSubcategories.value
+    formData.category = selectedCategory.value
+    formData.subcategories = selectedSubcategories.value
 }
 
 async function handleSubmit() {
-  if (isSubmitting.value) return
-  isSubmitting.value = true
+    if (isSubmitting.value) return
+    isSubmitting.value = true
 
-  syncFormData()
+    syncFormData()
 
-  const isValid = validate()
-  const genreValid = validateGenre()
+    const isValid = validate()
+    const genreValid = validateGenre()
+    const timeValid = validateTimeRange()
 
-  if (!isValid || !genreValid) {
-    await scrollToFirstError()
+    if (!isValid || !genreValid || !timeValid) {
+        await scrollToFirstError()
+        isSubmitting.value = false
+        return
+    }
+
+    toast.success('This feature will be available in future')
     isSubmitting.value = false
-    return
-  }
-
-  // No API call — show success toast
-  toast.success('This feature will be available in future')
-  isSubmitting.value = false
 }
 
-// Debounce function
 function debounce(func, delay) {
     return function (...args) {
         clearTimeout(debounceTimer.value)
@@ -1343,25 +1134,17 @@ function debounce(func, delay) {
     }
 }
 
-// Handle search input with debouncing
 const onSearchInput = debounce(async () => {
     if (!searchAddress.value.trim()) {
         suggestions.value = []
         return
     }
-
     isLoading.value = true
-
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress.value)}&limit=5&addressdetails=1`,
-            {
-                headers: {
-                    "User-Agent": "EventMap App"
-                }
-            }
+            { headers: { "User-Agent": "EventMap App" } }
         )
-
         if (response.ok) {
             const data = await response.json()
             suggestions.value = data
@@ -1374,56 +1157,31 @@ const onSearchInput = debounce(async () => {
     }
 }, 400)
 
-// Select a suggestion from dropdown
 function selectSuggestion(suggestion) {
     const { lat, lon, display_name } = suggestion
-
-    // Update search input and clear suggestions
     searchAddress.value = display_name
     suggestions.value = []
-
-    // Update selected address
     selectedAddress.value = display_name
-
-    // Center map and add marker
     if (map.value) {
-        map.value.flyTo({
-            center: [lon, lat],
-            zoom: 15,
-            essential: true
-        })
-
+        map.value.flyTo({ center: [lon, lat], zoom: 15, essential: true })
         updateMarker(lon, lat)
     }
 }
 
-// Update or add marker
 function updateMarker(lng, lat) {
-    // Remove existing marker
-    if (marker.value) {
-        marker.value.remove()
-    }
-
-    // Add new marker
+    if (marker.value) { marker.value.remove() }
     marker.value = new maplibregl.Marker({ color: "#0061FF" })
         .setLngLat([lng, lat])
         .addTo(map.value)
 }
 
-// Reverse geocode function
 async function reverseGeocode(lng, lat) {
     isLoading.value = true
-
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-            {
-                headers: {
-                    "User-Agent": "EventMap App"
-                }
-            }
+            { headers: { "User-Agent": "EventMap App" } }
         )
-
         if (response.ok) {
             const data = await response.json()
             selectedAddress.value = data.display_name || "Address not found"
@@ -1436,44 +1194,48 @@ async function reverseGeocode(lng, lat) {
     }
 }
 
-// Initialize map on component mount
 onMounted(() => {
-    // Fetch categories from API
     fetchCategories()
+    document.addEventListener('click', handleClickOutside)
 
-    // Initialize map centered on Amsterdam
     map.value = new maplibregl.Map({
         container: "event-map",
         style: "https://api.maptiler.com/maps/streets-v2/style.json?key=4Rm2OIdojZoTFcWWjJPY",
-        center: [4.895168, 52.370216], // Amsterdam coordinates
+        center: [4.895168, 52.370216],
         zoom: 12
     })
 
-    // Add click handler to map
     map.value.on("click", async (e) => {
         const { lng, lat } = e.lngLat
-
-        // Update marker location
         updateMarker(lng, lat)
-
-        // Reverse geocode to get address
         await reverseGeocode(lng, lat)
     })
-
-    // Add click outside listener for dropdowns
-    document.addEventListener("click", handleClickOutside)
 
     /* ------------------ DATE PICKER ------------------ */
     flatpickr(dateInput.value, {
         dateFormat: "m/d/Y",
     })
 
-
-    /* ------------------ TIME PICKER ------------------ */
-    flatpickr(timeInput.value, {
+    /* ------------------ START TIME PICKER ------------------ */
+    flatpickr(startTimeInput.value, {
         enableTime: true,
         noCalendar: true,
-        dateFormat: "h:i K",
+        dateFormat: "H:i",
+        time_24hr: true,
+        onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
     })
+
+    /* ------------------ END TIME PICKER ------------------ */
+    flatpickr(endTimeInput.value, {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
+    })
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', handleClickOutside)
 })
 </script>

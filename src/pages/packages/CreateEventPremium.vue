@@ -122,7 +122,8 @@
                     <!-- Header -->
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
                         <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-                            Event Image
+                            <!-- Upload Event Image with recommended size -->
+                            Event main image <span class="tw:text-red-500">*</span> <span class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
                         </h3>
 
                         <!-- <button type="button"
@@ -155,7 +156,7 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images
+                            Additional Images (Max. 5 images) <span class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
                         </h3>
                     </div>
 
@@ -206,7 +207,7 @@
                                     ]">
                                     <option value="">
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                                        'SelectCategory') }}
+                                        'Select') }}
                                     </option>
                                     <option v-for="category in categories" :key="category.id" :value="category.name">
                                         {{ category.name }}
@@ -345,20 +346,51 @@
                             </div>
                         </div>
 
-                        <!-- EVENT TIME -->
-                        <div class="tw:flex-1">
-                            <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                Event Time
-                            </label>
+                        <!-- START & END TIME -->
+                        <div style="display: flex; justify-content: space-between;">
 
-                            <div class="tw:relative">
-                                <input ref="timeInput" placeholder="-- -- --"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
-
-                                <!-- Custom Clock Icon -->
-                                <Clock
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                            <!-- START TIME -->
+                            <div style="width: 48%;">
+                                <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
+                                    Start Time <span class="tw:text-red-500">*</span>
+                                </label>
+                                <div class="tw:relative">
+                                    <input
+                                        ref="startTimeInput"
+                                        v-model="startTime"
+                                        placeholder="HH:MM"
+                                        :class="[
+                                            'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                                            hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                        ]"
+                                        @input="clearStartError"
+                                    />
+                                    <Clock class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                </div>
+                                <p v-if="startError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ startError }}</p>
                             </div>
+
+                            <!-- END TIME -->
+                            <div style="width: 48%;">
+                                <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
+                                    End Time <span class="tw:text-red-500">*</span>
+                                </label>
+                                <div class="tw:relative">
+                                    <input
+                                        ref="endTimeInput"
+                                        v-model="endTime"
+                                        placeholder="HH:MM"
+                                        :class="[
+                                            'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                                            hasEndError ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                        ]"
+                                        @input="clearEndError"
+                                    />
+                                    <Clock class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                </div>
+                                <p v-if="endError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ endError }}</p>
+                            </div>
+
                         </div>
 
                     </div>
@@ -434,10 +466,13 @@
                                     class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
                                     <option value="">No Dress Code</option>
                                     <option value="casual">Dress Code</option>
+                                    <option value="different">+ If different to above</option>
                                 </select>
                                 <ChevronDown
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
+                            <input v-if="dressCode === 'different'" v-model="customDressCode" type="text" placeholder="Enter dress code details"
+                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2" />
                         </div>
 
                         <!-- Age Limit -->
@@ -454,11 +489,13 @@
                                     <option value="21">21+</option>
                                     <option value="55">55+</option>
                                     <option value="65">65+</option>
-                                    <option value="different">Different Ages</option>
+                                    <option value="different">+ If different to above</option>
                                 </select>
                                 <ChevronDown
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
+                            <input v-if="ageLimit === 'different'" v-model="customAgeLimit" type="text" placeholder="Enter age limit details"
+                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2" />
                         </div>
 
                         <!-- Entrance Fee -->
@@ -471,10 +508,13 @@
                                     <option value="paid">Paid Entrance</option>
                                     <option value="donation">Sold Out</option>
                                     <option value="cancelled">Event is Cancelled</option>
+                                    <option value="different">+ If different to above</option>
                                 </select>
                                 <ChevronDown
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
+                            <input v-if="entranceFee === 'different'" v-model="customEntranceFee" type="text" placeholder="Enter entrance status details"
+                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2" />
                         </div>
                     </div>
                 </div>
@@ -604,62 +644,9 @@
                     </p>
 
                     <div class="tw:space-y-3">
-                        <!-- Invite venue -->
-                        <!-- <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <MapPin class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite venue</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div> -->
-
-                        <!-- Invite talent -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Talent</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
-                        <!-- Invite organiser -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organiser</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
-                        <!-- Invite venue -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
+                        <InviteSection role="talent"    :has-border="true" />
+                        <InviteSection role="organiser" :has-border="true" />
+                        <InviteSection role="venue"     :has-border="false" />
                     </div>
                 </div>
 
@@ -732,10 +719,12 @@ import {
 import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import InviteSection from "@/components/invite/InviteSection.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -775,6 +764,10 @@ const fileName = ref("")
 const selectedGenre = ref("")
 const dressCode = ref("")
 const ageLimit = ref("")
+const entranceFee = ref("")
+const customDressCode = ref("")
+const customAgeLimit = ref("")
+const customEntranceFee = ref("")
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
@@ -794,13 +787,23 @@ const facebookUrl = ref("")
 const instagramUrl = ref("")
 const tiktokUrl = ref("")
 
-const entranceFee = ref("")
-
 // Event Date and Time
 // const eventDate = ref("")
-const eventTime = ref("")
+const startTime = ref("")
+const endTime = ref("")
 const dateInput = ref(null)
-const timeInput = ref(null)
+const startTimeInput = ref(null)
+const endTimeInput = ref(null)
+
+const {
+    startError,
+    endError,
+    hasStartError,
+    hasEndError,
+    validateTimeRange,
+    clearStartError,
+    clearEndError,
+} = useTimeRangeValidation(startTime, endTime)
 
 // Event Location refs
 const searchAddress = ref("")
@@ -991,8 +994,9 @@ async function handleSubmit() {
 
   const isValid = validate()
   const genreValid = validateGenre()
+  const timeValid = validateTimeRange()
 
-  if (!isValid || !genreValid) {
+  if (!isValid || !genreValid || !timeValid) {
     await scrollToFirstError()
     isSubmitting.value = false
     return
@@ -1137,11 +1141,26 @@ onMounted(() => {
     })
 
 
-    /* ------------------ TIME PICKER ------------------ */
-    flatpickr(timeInput.value, {
+    /* ------------------ START TIME PICKER ------------------ */
+    flatpickr(startTimeInput.value, {
         enableTime: true,
         noCalendar: true,
-        dateFormat: "h:i K",
+        dateFormat: "H:i",
+        time_24hr: true,
+        onChange: (selectedDates, timeStr) => {
+            startTime.value = timeStr
+        }
+    })
+
+    /* ------------------ END TIME PICKER ------------------ */
+    flatpickr(endTimeInput.value, {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true,
+        onChange: (selectedDates, timeStr) => {
+            endTime.value = timeStr
+        }
     })
 })
 

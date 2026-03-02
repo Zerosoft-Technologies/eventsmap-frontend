@@ -231,9 +231,9 @@
     "close": "Close"
   },
   "wishlist": {
-    "title": "My Wishlist",
-    "empty": "No saved events",
-    "emptyHint": "Click the heart icon on events to save them here",
+    "title": "My Links",
+    "empty": "No saved links",
+    "emptyHint": "Click the heart icon on links to save them here",
     "clearAll": "Clear All",
     "clearing": "Clearing..."
   }

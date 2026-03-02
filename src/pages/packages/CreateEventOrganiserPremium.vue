@@ -412,171 +412,6 @@
                             <option value="venue2">Venue B</option>
                             <option value="venue3">Create New Venue</option>
                         </select>
-                        <ChevronDown
-                            class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
-                    </div>
-                </div> -->
-
-                <!-- Organiser DATE & TIME SECTION -->
-                <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
-
-                    <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Organiser Date & Time
-                    </h3>
-
-                    <!-- Horizontal Layout -->
-                    <div class="tw:flex tw:gap-6">
-
-                        <!-- Organiser DATE -->
-                        <div class="tw:flex-1">
-                            <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                Organiser Date
-                            </label>
-
-                            <div class="tw:relative">
-                                <input ref="dateInput" placeholder="MM/DD/YYYY"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
-
-                                <!-- Custom Calendar Icon -->
-                                <Calendar
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
-                            </div>
-                        </div>
-
-                        <!-- Organiser TIME -->
-                        <div class="tw:flex-1">
-                            <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                Organiser Time
-                            </label>
-
-                            <div class="tw:relative">
-                                <input ref="timeInput" placeholder="-- -- --"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
-
-                                <!-- Custom Clock Icon -->
-                                <Clock
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Organiser LOCATION SECTION -->
-                <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
-                    <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Organiser Location
-                    </h3>
-
-                    <!-- Address Search Input with Loading Spinner -->
-                    <div class="tw:relative tw:mb-4">
-                        <input v-model="searchAddress" @input="onSearchInput" type="text"
-                            placeholder="Search Address..."
-                            class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
-                        <!-- Loading Spinner -->
-                        <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
-                            <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="tw:opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="tw:opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                        </div>
-
-                        <!-- Suggestions Dropdown -->
-                        <div v-if="suggestions.length > 0"
-                            class="tw:absolute tw-top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
-                            <button v-for="(suggestion, index) in suggestions" :key="index"
-                                @click="selectSuggestion(suggestion)"
-                                class="tw:w-full tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors tw:border-b tw:border-gray-100 last:tw:border-b-0">
-                                {{ suggestion.display_name }}
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Map Container -->
-                    <div id="event-map" class="tw:w-full tw:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4">
-                    </div>
-
-                    <!-- Selected Address -->
-                    <div class="tw:space-y-2">
-                        <label class="tw:block tw:text-sm tw:text-gray-600">
-                            Selected Address
-                        </label>
-                        <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
-                            class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
-                    </div>
-                </div>
-
-                <!-- OVERVIEW SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Overview
-                        </h3>
-                        <!-- <button
-                            class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                            <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-
-                    <div class="tw:grid tw:grid-cols-3 tw:gap-4">
-                        <!-- Dress Code -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code</label>
-                            <div class="tw:relative">
-                                <select v-model="dressCode"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">No Dress Code</option>
-                                    <option value="casual">Dress Code</option>
-                                </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-                            </div>
-                        </div>
-
-                        <!-- Age Limit -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit</label>
-                            <div class="tw:relative">
-                                <select v-model="ageLimit"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">4+</option>
-                                    <option value="8">8+</option>
-                                    <option value="12">12+</option>
-                                    <option value="16">16+</option>
-                                    <option value="18">18+</option>
-                                    <option value="21">21+</option>
-                                    <option value="55">55+</option>
-                                    <option value="65">65+</option>
-                                    <option value="different">Different Ages</option>
-                                </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-                            </div>
-                        </div>
-
-                        <!-- Entrance Fee -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status</label>
-                            <div class="tw:relative">
-                                <select v-model="entranceFee"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">Free Entrance</option>
-                                    <option value="paid">Paid Entrance</option>
-                                    <option value="donation">Sold Out</option>
-                                    <option value="cancelled">Organiser is Cancelled</option>
-                                </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- CONTACT DETAILS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
@@ -612,7 +447,7 @@
                 </div>
 
                 <!-- CONTACT BOX SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Contact Box
                     </h3>
@@ -622,7 +457,7 @@
                         <textarea v-model="contactBoxMessage" rows="4" placeholder="Enter your contact message"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- SOCIAL MEDIA LINKS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
@@ -641,7 +476,7 @@
                 </div>
 
                 <!-- Organiser CONDITIONS SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Organiser Conditions (Optional)
                     </h3>
@@ -654,7 +489,7 @@
 
                     <input type="text" placeholder="Age Limit (If Different)"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-                </div>
+                </div> -->
 
                 <!-- BOOKING & TICKET INFO SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
@@ -689,61 +524,8 @@
                     </p>
 
                     <div class="tw:space-y-3">
-                        <!-- Invite venue -->
-                        <!-- <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <MapPin class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite venue</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div> -->
-
-                        <!-- Invite talent -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Talent</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
-                        <!-- Invite organiser -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organiser</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
-
-                        <!-- Invite venue -->
-                        <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-                            <div class="tw:flex tw:items-center tw:gap-3">
-                                <div
-                                    class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                                    <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                                </div>
-                                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
-                            </div>
-                            <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                                + Add
-                            </button>
-                        </div>
+                        <InviteSection role="talent" :has-border="true" />
+                        <InviteSection role="venue"     :has-border="false" />
                     </div>
                 </div>
 
@@ -809,13 +591,13 @@ import {
     MapPin,
     User,
     SkipBackIcon,
-    Clock,
     MessageSquareText
 } from "lucide-vue-next"
 
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import InviteSection from "@/components/invite/InviteSection.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
@@ -855,22 +637,6 @@ const facebookUrl = ref("")
 const instagramUrl = ref("")
 const tiktokUrl = ref("")
 
-const entranceFee = ref("")
-
-// Event Date and Time
-// const eventDate = ref("")
-const eventTime = ref("")
-const dateInput = ref(null)
-const timeInput = ref(null)
-
-// Event Location refs
-const searchAddress = ref("")
-const selectedAddress = ref("")
-const map = ref(null)
-const marker = ref(null)
-const suggestions = ref([])
-const isLoading = ref(false)
-const debounceTimer = ref(null)
 const selectedCategory = ref("")
 
 const selectedSubcategories = ref([])  // Multi-select array for subcategories
@@ -955,13 +721,6 @@ function handleClickOutside(event) {
   if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
     showSubcategoryDropdown.value = false
   }
-  // Also handle the old genre dropdown
-  if (
-    genreDropdownRef.value &&
-    !genreDropdownRef.value.contains(event.target)
-  ) {
-    showGenreDropdown.value = false
-  }
 }
 
 // Handle subcategory change with max 5 validation
@@ -988,16 +747,6 @@ function handleSubcategoryChange() {
   }
 }
 
-// Remove subcategory from selection
-function removeSubcategory(subcategoryToRemove) {
-  const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
-  if (index > -1) {
-    selectedSubcategories.value.splice(index, 1)
-    // Clear validation error when removing items (going below limit)
-    subcategoryValidationError.value = false
-  }
-}
-
 // Validate genre fields
 function validateGenre() {
   categoryError.value = !selectedCategory.value
@@ -1005,19 +754,6 @@ function validateGenre() {
 
   return selectedCategory.value && selectedSubcategories.value.length > 0
 }
-
-const showGenreDropdown = ref(false)
-const genreDropdownRef = ref(null)
-
-const genres = [
-    "Electronic",
-    "House",
-    "Techno",
-    "Hip Hop",
-    "Live Music"
-]
-
-const selectedGenres = ref([])
 
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
@@ -1036,7 +772,6 @@ const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstErro
 
 const eventDate = ref("05.03.2026, 18:30 CET")
 const eventStatus = ref("Premium")
-
 const fileName = ref("")
 
 // Menu items specific to CreateEventPremium
@@ -1049,25 +784,6 @@ const menuItems = [
     { id: "back", icon: SkipBackIcon, label: "Back" },
     { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
 ]
-
-function toggleDropdown() {
-    showGenreDropdown.value = !showGenreDropdown.value
-}
-
-// Close when clicking outside
-// function handleClickOutside(event) {
-//     if (
-//         genreDropdownRef.value &&
-//         !genreDropdownRef.value.contains(event.target)
-//     ) {
-//         showGenreDropdown.value = false
-//     }
-// }
-
-onBeforeUnmount(() => {
-    document.removeEventListener("click", handleClickOutside)
-})
-
 
 function handleMenuClick(item) {
     if (item.route) {
@@ -1099,8 +815,9 @@ async function handleSubmit() {
 
   const isValid = validate()
   const genreValid = validateGenre()
+  const timeValid = validateTimeRange()
 
-  if (!isValid || !genreValid) {
+  if (!isValid || !genreValid || !timeValid) {
     await scrollToFirstError()
     isSubmitting.value = false
     return
@@ -1221,35 +938,46 @@ onMounted(() => {
     document.addEventListener('click', handleClickOutside)
 
     // Initialize map centered on Amsterdam
-    map.value = new maplibregl.Map({
-        container: "event-map",
-        style: "https://api.maptiler.com/maps/streets-v2/style.json?key=4Rm2OIdojZoTFcWWjJPY",
-        center: [4.895168, 52.370216], // Amsterdam coordinates
-        zoom: 12
-    })
+    // map.value = new maplibregl.Map({
+    //     container: "event-map",
+    //     style: "https://api.maptiler.com/maps/streets-v2/style.json?key=4Rm2OIdojZoTFcWWjJPY",
+    //     center: [4.895168, 52.370216], // Amsterdam coordinates
+    //     zoom: 12
+    // })
 
     // Add click handler to map
-    map.value.on("click", async (e) => {
-        const { lng, lat } = e.lngLat
+    // map.value.on("click", async (e) => {
+    //     const { lng, lat } = e.lngLat
 
-        // Update marker location
-        updateMarker(lng, lat)
+    //     // Update marker location
+    //     updateMarker(lng, lat)
 
-        // Reverse geocode to get address
-        await reverseGeocode(lng, lat)
-    })
+    //     // Reverse geocode to get address
+    //     await reverseGeocode(lng, lat)
+    // })
 
     /* ------------------ DATE PICKER ------------------ */
-    flatpickr(dateInput.value, {
-        dateFormat: "m/d/Y",
-    })
+    // flatpickr(dateInput.value, {
+    //     dateFormat: "m/d/Y",
+    // })
 
 
-    /* ------------------ TIME PICKER ------------------ */
-    flatpickr(timeInput.value, {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "h:i K",
-    })
+    // /* ------------------ START TIME PICKER ------------------ */
+    // flatpickr(startTimeInput.value, {
+    //     enableTime: true,
+    //     noCalendar: true,
+    //     dateFormat: "H:i",
+    //     time_24hr: true,
+    //     onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
+    // })
+
+    // /* ------------------ END TIME PICKER ------------------ */
+    // flatpickr(endTimeInput.value, {
+    //     enableTime: true,
+    //     noCalendar: true,
+    //     dateFormat: "H:i",
+    //     time_24hr: true,
+    //     onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
+    // })
 })
 </script>

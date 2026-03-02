@@ -117,7 +117,7 @@ const profiles = [
     icon: Users
   },
   { 
-    type: 'talent', 
+    type: 'talents', 
     title: 'Talent', 
     subtitle: 'Showcase your talent and get booked for events',
     icon: Mic2
@@ -139,7 +139,7 @@ function handleProceed() {
     const routes = {
       'event': '/create-event-free',
       'organiser': '/create-organiser-free',
-      'talent': '/create-talents-free',
+      'talent': '/create-talent-free',
       'venue': '/create-venue-free'
     }
 

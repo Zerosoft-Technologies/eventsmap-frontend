@@ -5,7 +5,7 @@
         <img src="../assets/logo.png" alt="Logo" style="width: 80px;" />
       </RouterLink>
     </h1>
-    <div class="tw:hidden tw:relative tw:md:flex tw:items-center tw:gap-3">
+    <div v-if="!isProfilePage" class="tw:hidden tw:relative tw:md:flex tw:items-center tw:gap-3">
       <div class="tw:flex tw:relative tw:bg-white tw:gap-6 tw:items-center tw:py-3 tw:pr-3 tw:pl-4 tw:border tw:border-(--secondary-color) tw:rounded-lg" >
         <div class="tw:flex tw:gap-2 tw:relative tw:cursor-pointer tw:items-center tw:w-[169px] overflow-hidden">
           <img src="../assets/search.png" alt="Search Icon" />
@@ -424,6 +424,18 @@ function filterBy(action){
 
 const fixedMenu = computed(() => { 
   return route.name === 'Home'
+})
+
+// Check if current route is a profile/creation page
+const isProfilePage = computed(() => {
+  const path = route.path.toLowerCase()
+  return path.includes('/create-') || 
+         path.includes('/settings') || 
+         path.includes('/report') ||
+         path.includes('organiser') ||
+         path.includes('venue') ||
+         path.includes('talent') ||
+         path.includes('event')
 })
 
 function toggleWishlistPanel() {

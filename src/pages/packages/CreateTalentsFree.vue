@@ -163,7 +163,7 @@
                   ]">
                   <option value="">
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                    'SelectCategory') }}
+                    'Select') }}
                   </option>
                   <option v-for="category in categories" :key="category.id" :value="category.name">
                     {{ category.name }}
@@ -323,56 +323,6 @@
               <option value="new">Add New Talent</option>
             </select>
 
-            <ChevronDown
-              class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
-          </div>
-        </div> -->
-
-        <!-- Talent DATE & TIME SECTION -->
-        <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
-
-          <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-            Talent Date & Time
-          </h3>
-
-          <!-- Horizontal Layout -->
-          <div class="tw:flex tw:gap-6">
-
-            <!-- Talent DATE -->
-            <div class="tw:flex-1">
-              <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                Talent Date
-              </label>
-
-              <div class="tw:relative">
-                <input ref="dateInput" placeholder="MM/DD/YYYY"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
-
-                <!-- Custom Calendar Icon -->
-                <Calendar
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
-              </div>
-            </div>
-
-            <!-- Talent TIME -->
-            <div class="tw:flex-1">
-              <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                Talent Time
-              </label>
-
-              <div class="tw:relative">
-                <input ref="timeInput" placeholder="-- -- --"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
-
-                <!-- Custom Clock Icon -->
-                <Clock
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
-              </div>
-            </div>
-
-          </div>
-        </div>
-
         <!-- Talent LOCATION SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
           <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
@@ -508,45 +458,8 @@
           </p>
 
           <div class="tw:space-y-3">
-            <!-- Invite talent -->
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-              <div class="tw:flex tw:items-center tw:gap-3">
-                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Talent</span>
-              </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                + Add
-              </button>
-            </div>
-
-            <!-- Invite organiser -->
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-              <div class="tw:flex tw:items-center tw:gap-3">
-                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organiser</span>
-              </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                + Add
-              </button>
-            </div>
-
-            <!-- Invite venue -->
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-              <div class="tw:flex tw:items-center tw:gap-3">
-                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
-              </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                + Add
-              </button>
-            </div>
-
+            <InviteSection role="organiser" :has-border="true" />
+            <InviteSection role="venue"     :has-border="false" />
           </div>
         </div>
 
@@ -582,7 +495,6 @@ import {
   FileText,
   BarChart3,
   Settings,
-  Calendar,
   ChevronDown,
   ChevronLeft,
   Upload,
@@ -590,20 +502,17 @@ import {
   MapPin,
   User,
   SkipBackIcon,
-  Clock,
 } from "lucide-vue-next"
 
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import InviteSection from "@/components/invite/InviteSection.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
-
-import flatpickr from "flatpickr"
-import "flatpickr/dist/flatpickr.css"
 
 const router = useRouter()
 const route = useRoute()
@@ -759,17 +668,11 @@ const selectedGenre = ref("")
 const dressCode = ref("")
 const ageLimit = ref("")
 const entranceFee = ref("")
-
-// Event Date and Time
-// const eventDate = ref("")
-const eventTime = ref("")
-const dateInput = ref(null)
-const timeInput = ref(null)
+const talentCity = ref("")
 
 // Event Location refs
 const searchAddress = ref("")
 const selectedAddress = ref("")
-const talentCity = ref("")
 const map = ref(null)
 const marker = ref(null)
 const suggestions = ref([])
@@ -786,13 +689,12 @@ const eventStatus = ref("Draft")
 
 const fileName = ref("")
 
-// Menu items specific to CreateEventFree
+// Menu items specific to CreateTalentFree
 const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-talents-free" },
   { id: "details", icon: FileText, label: "Details", route: "/create-talents-free" },
   { id: "analytics", icon: BarChart3, route: "/create-talents-free/report", label: "Analytics" },
   { id: "settings", icon: Settings, route: "/create-talents-free/settings", label: "Settings" },
-  { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
 
 function handleMenuClick(item) {
@@ -963,19 +865,6 @@ onMounted(() => {
 
     // Reverse geocode to get address
     await reverseGeocode(lng, lat)
-  })
-
-  /* ------------------ DATE PICKER ------------------ */
-  flatpickr(dateInput.value, {
-    dateFormat: "m/d/Y",
-  })
-
-
-  /* ------------------ TIME PICKER ------------------ */
-  flatpickr(timeInput.value, {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "h:i K",
   })
 })
 

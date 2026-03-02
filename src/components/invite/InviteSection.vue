@@ -1,0 +1,148 @@
+<template>
+  <div class="tw:relative" ref="containerRef">
+
+    <!-- Row header -->
+    <div
+      class="tw:flex tw:items-center tw:justify-between tw:py-3"
+      :class="{ 'tw:border-b tw:border-gray-100': hasBorder }"
+    >
+      <div class="tw:flex tw:items-center tw:gap-3">
+        <div class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
+          <component :is="roleIcon" class="tw:w-5 tw:h-5 tw:text-gray-600" />
+        </div>
+        <div>
+          <span class="tw:text-sm tw:font-medium tw:text-gray-900">{{ roleLabel }}</span>
+          <span
+            v-if="selectedUsers.length > 0"
+            class="tw:ml-2 tw:text-xs tw:font-semibold tw:px-1.5 tw:py-0.5 tw:rounded-full tw:bg-blue-100 tw:text-blue-600"
+          >
+            {{ selectedUsers.length }}
+          </span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        @click.stop="togglePanel"
+        :class="[
+          'tw:text-sm tw:font-medium tw:px-3 tw:py-1.5 tw:rounded-lg tw:transition-all tw:leading-none',
+          isOpen
+            ? 'tw:bg-gray-100 tw:text-gray-600 hover:tw:bg-gray-200'
+            : 'tw:text-blue-600 hover:tw:bg-blue-50'
+        ]"
+      >
+        {{ isOpen ? '✕ Close' : '+ Add' }}
+      </button>
+    </div>
+
+    <!-- Animated search panel -->
+    <Transition
+      enter-active-class="tw:transition tw:duration-200 tw:ease-out"
+      enter-from-class="tw:opacity-0 tw:-translate-y-1 tw:scale-[0.98]"
+      enter-to-class="tw:opacity-100 tw:translate-y-0 tw:scale-100"
+      leave-active-class="tw:transition tw:duration-150 tw:ease-in"
+      leave-from-class="tw:opacity-100 tw:translate-y-0 tw:scale-100"
+      leave-to-class="tw:opacity-0 tw:-translate-y-1 tw:scale-[0.98]"
+    >
+      <InviteSearchPanel
+        v-if="isOpen"
+        :role="role"
+        :profiles="roleProfiles"
+        :recommended="recommendedProfiles"
+        :selected-ids="selectedIds"
+        @toggle="handleToggle"
+      />
+    </Transition>
+
+    <!-- Selected chips -->
+    <SelectedChips
+      v-if="selectedUsers.length > 0"
+      :users="selectedUsers"
+      @remove="removeUser"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { User, MapPin, Mic2 } from 'lucide-vue-next'
+import InviteSearchPanel from './InviteSearchPanel.vue'
+import SelectedChips from './SelectedChips.vue'
+import { mockProfiles } from '@/data/mockProfiles'
+
+const props = defineProps({
+  role: {
+    type: String,
+    required: true,
+    validator: (v) => ['talent', 'organiser', 'venue'].includes(v),
+  },
+  hasBorder: {
+    type: Boolean,
+    default: true,
+  },
+})
+
+const ROLE_CONFIG = {
+  talent:    { label: 'Invite Talent',    icon: Mic2    },
+  organiser: { label: 'Invite Organiser', icon: User    },
+  venue:     { label: 'Invite Venue',     icon: MapPin  },
+}
+
+const containerRef   = ref(null)
+const isOpen         = ref(false)
+const selectedUsers  = ref([])
+
+const roleLabel = computed(() => ROLE_CONFIG[props.role]?.label ?? 'Invite')
+const roleIcon  = computed(() => ROLE_CONFIG[props.role]?.icon  ?? User)
+
+const selectedIds = computed(() => selectedUsers.value.map((u) => u.id))
+
+const roleProfiles = computed(() =>
+  mockProfiles.filter((p) => p.profile_type === props.role)
+)
+
+const recommendedProfiles = computed(() =>
+  roleProfiles.value
+    .filter((p) => p.account_type === 'premium')
+    .slice(0, 4)
+)
+
+function togglePanel() {
+  isOpen.value = !isOpen.value
+}
+
+function handleToggle(profile) {
+  const idx = selectedUsers.value.findIndex((u) => u.id === profile.id)
+  if (idx > -1) {
+    selectedUsers.value.splice(idx, 1)
+  } else {
+    selectedUsers.value.push(profile)
+  }
+}
+
+function removeUser(userId) {
+  selectedUsers.value = selectedUsers.value.filter((u) => u.id !== userId)
+}
+
+function onKeydown(e) {
+  if (e.key === 'Escape' && isOpen.value) {
+    isOpen.value = false
+  }
+}
+
+function onClickOutside(e) {
+  if (containerRef.value && !containerRef.value.contains(e.target)) {
+    isOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onKeydown)
+  document.addEventListener('click', onClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeydown)
+  document.removeEventListener('click', onClickOutside)
+})
+</script>

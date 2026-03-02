@@ -96,6 +96,44 @@
           <p v-if="formErrors.venueTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.venueTitle }}</p>
         </div>
 
+        <!-- Venue LOCATION SECTION -->
+        <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
+          <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
+            Venue Location
+          </h3>
+
+          <div class="tw:relative tw:mb-4">
+            <input v-model="searchAddress" @input="onSearchInput" type="text" placeholder="Search Address..."
+              class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+
+            <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
+              <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="tw:opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="tw:opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+            </div>
+
+            <div v-if="suggestions.length > 0"
+              class="tw:absolute tw-top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
+              <button v-for="(suggestion, index) in suggestions" :key="index" @click="selectSuggestion(suggestion)"
+                class="tw:w-full tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors tw:border-b tw:border-gray-100 last:tw:border-b-0">
+                {{ suggestion.display_name }}
+              </button>
+            </div>
+          </div>
+
+          <div id="event-map" class="tw:w-full tw:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4"></div>
+
+          <div class="tw:space-y-2">
+            <label class="tw:block tw:text-sm tw:text-gray-600">Selected Address</label>
+            <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
+              class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+          </div>
+        </div>
+
         <!-- Venue IMAGE SECTION -->
         <div class="tw:bg-white tw:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-6">
 
@@ -461,181 +499,16 @@
           </div>
         </div> -->
 
-        <!-- Venue DATE & TIME SECTION -->
-        <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
-
-          <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-            Venue Date & Time
-          </h3>
-
-          <!-- Horizontal Layout -->
-          <div class="tw:flex tw:gap-6">
-
-            <!-- Venue DATE -->
-            <div class="tw:flex-1">
-              <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                Venue Date
-              </label>
-
-              <div class="tw:relative">
-                <input ref="dateInput" placeholder="MM/DD/YYYY"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
-
-                <!-- Custom Calendar Icon -->
-                <Calendar
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
-              </div>
-            </div>
-
-            <!-- Venue TIME -->
-            <div class="tw:flex-1">
-              <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                Venue Time
-              </label>
-
-              <div class="tw:relative">
-                <input ref="timeInput" placeholder="-- -- --"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
-
-                <!-- Custom Clock Icon -->
-                <Clock
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Venue LOCATION SECTION -->
-        <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
-          <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-            Venue Location
-          </h3>
-
-          <!-- Address Search Input with Loading Spinner -->
-          <div class="tw:relative tw:mb-4">
-            <input v-model="searchAddress" @input="onSearchInput" type="text" placeholder="Search Address..."
-              class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
-            <!-- Loading Spinner -->
-            <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
-              <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24">
-                <circle class="tw:opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="tw:opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                </path>
-              </svg>
-            </div>
-
-            <!-- Suggestions Dropdown -->
-            <div v-if="suggestions.length > 0"
-              class="tw:absolute tw-top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
-              <button v-for="(suggestion, index) in suggestions" :key="index" @click="selectSuggestion(suggestion)"
-                class="tw:w-full tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors tw:border-b tw:border-gray-100 last:tw:border-b-0">
-                {{ suggestion.display_name }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Map Container -->
-          <div id="event-map" class="tw:w-full tw:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4"></div>
-
-          <!-- Selected Address -->
-          <div class="tw:space-y-2">
-            <label class="tw:block tw:text-sm tw:text-gray-600">
-              Selected Address
-            </label>
-            <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
-              class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
-          </div>
-        </div>
-
-        <!-- OVERVIEW SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-          <div class="tw:flex tw:justify-between tw:items-center">
-            <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-              Overview
-            </h3>
-            <!-- <button
-              class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-              <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
-          </div>
-
-          <div class="tw:grid tw:grid-cols-3 tw:gap-4">
-            <!-- Dress Code -->
-            <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code</label>
-              <div class="tw:relative">
-                <select v-model="dressCode"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                  <option value="">No Dress Code</option>
-                  <option value="casual">Dress Code</option>
-                </select>
-                <ChevronDown
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-              </div>
-            </div>
-
-            <!-- Age Limit -->
-            <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit</label>
-              <div class="tw:relative">
-                <select v-model="ageLimit"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                  <option value="">4+</option>
-                  <option value="8">8+</option>
-                  <option value="12">12+</option>
-                  <option value="16">16+</option>
-                  <option value="18">18+</option>
-                  <option value="21">21+</option>
-                  <option value="55">55+</option>
-                  <option value="65">65+</option>
-                  <option value="different">Different Ages</option>
-                </select>
-                <ChevronDown
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-              </div>
-            </div>
-
-            <!-- Entrance Fee -->
-            <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status</label>
-              <div class="tw:relative">
-                <select v-model="entranceFee"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                  <option value="">Free Entrance</option>
-                  <option value="paid">Paid Entrance</option>
-                  <option value="donation">Sold Out</option>
-                  <option value="cancelled">Venue is Cancelled</option>
-                </select>
-                <ChevronDown
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- INVITE SECTION -->
         <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
-            <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-              Invite
-            </h3>
-            <!-- <button
-              class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-              <Plus class="tw:w-5 tw:h-5" />
-            </button> -->
+            <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Invite</h3>
           </div>
-
           <p class="tw:text-sm tw:text-gray-600">
             Make your event stand out even more. These sections help attendees find information and answer their
             questions.
           </p>
-
           <div class="tw:space-y-3">
-            <!-- Invite talent -->
             <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
               <div class="tw:flex tw:items-center tw:gap-3">
                 <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
@@ -643,25 +516,17 @@
                 </div>
                 <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Talent</span>
               </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                + Add
-              </button>
+              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
             </div>
-
-            <!-- Invite organiser -->
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
+            <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
               <div class="tw:flex tw:items-center tw:gap-3">
                 <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
                   <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
                 </div>
                 <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organiser</span>
               </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                + Add
-              </button>
+              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
             </div>
-
-            <!-- Invite venue -->
             <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
               <div class="tw:flex tw:items-center tw:gap-3">
                 <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
@@ -669,11 +534,8 @@
                 </div>
                 <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
               </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">
-                + Add
-              </button>
+              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
             </div>
-
           </div>
         </div>
 
@@ -685,7 +547,6 @@
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
               Buy Tickets
             </button>
-
             <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                tw:border tw:border-blue-500 tw:text-blue-600
                tw:bg-white hover:tw:bg-blue-50 tw:transition-all
@@ -726,6 +587,7 @@ import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+// import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -889,9 +751,21 @@ const entranceFee = ref("")
 
 // Event Date and Time
 // const eventDate = ref("")
-const eventTime = ref("")
-const dateInput = ref(null)
-const timeInput = ref(null)
+// const startTime = ref("")
+// const endTime = ref("")
+// const dateInput = ref(null)
+// const startTimeInput = ref(null)
+// const endTimeInput = ref(null)
+
+// const {
+//   startError,
+//   endError,
+//   hasStartError,
+//   hasEndError,
+//   validateTimeRange,
+//   clearStartError,
+//   clearEndError,
+// } = useTimeRangeValidation(startTime, endTime)
 
 // Event Location refs
 const searchAddress = ref("")
@@ -970,8 +844,9 @@ async function handleSubmit() {
 
   const isValid = validate()
   const genreValid = validateGenre()
+  const timeValid = validateTimeRange()
 
-  if (!isValid || !genreValid) {
+  if (!isValid || !genreValid || !timeValid) {
     await scrollToFirstError()
     isSubmitting.value = false
     return
@@ -1111,17 +986,27 @@ onMounted(() => {
   })
 
   /* ------------------ DATE PICKER ------------------ */
-  flatpickr(dateInput.value, {
-    dateFormat: "m/d/Y",
-  })
+  // flatpickr(dateInput.value, {
+  //   dateFormat: "m/d/Y",
+  // })
 
+  // /* ------------------ START TIME PICKER ------------------ */
+  // flatpickr(startTimeInput.value, {
+  //   enableTime: true,
+  //   noCalendar: true,
+  //   dateFormat: "H:i",
+  //   time_24hr: true,
+  //   onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
+  // })
 
-  /* ------------------ TIME PICKER ------------------ */
-  flatpickr(timeInput.value, {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "h:i K",
-  })
+  // /* ------------------ END TIME PICKER ------------------ */
+  // flatpickr(endTimeInput.value, {
+  //   enableTime: true,
+  //   noCalendar: true,
+  //   dateFormat: "H:i",
+  //   time_24hr: true,
+  //   onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
+  // })
 })
 
 // function handleFileChange(event) {
