@@ -307,6 +307,7 @@ import {
   FileText,
   BarChart3,
   Settings,
+  Calendar,
   ChevronLeft,
   Upload,
   Plus,
@@ -441,6 +442,9 @@ const fileName = ref("")
 const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-organiser-free" },
   { id: "details", icon: FileText, label: "Details", route: "/create-organiser-free" },
+  { id: "analytics", icon: BarChart3, route: "/create-organiser-free/report", label: "Analytics" },
+  { id: "settings", icon: Settings, route: "/create-organiser-free/settings", label: "Settings" },
+  { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
 
 function handleFileChange(event) {
