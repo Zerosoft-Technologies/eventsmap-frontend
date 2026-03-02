@@ -504,38 +504,12 @@
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Invite</h3>
           </div>
-          <p class="tw:text-sm tw:text-gray-600">
-            Make your event stand out even more. These sections help attendees find information and answer their
-            questions.
+          <p class="tw:text-sm tw:text-[#1E3A8A]">
+            Make your event stand out even more. These sections help attendees find information and answer their questions.
           </p>
-          <div class="tw:space-y-3">
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-              <div class="tw:flex tw:items-center tw:gap-3">
-                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Talent</span>
-              </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
-            </div>
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
-              <div class="tw:flex tw:items-center tw:gap-3">
-                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organiser</span>
-              </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
-            </div>
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
-              <div class="tw:flex tw:items-center tw:gap-3">
-                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
-                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
-                </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
-              </div>
-              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
-            </div>
+          <div class="tw:space-y-1">
+            <InviteSection role="talent" :has-border="true" />
+            <InviteSection role="organiser" :has-border="false" />
           </div>
         </div>
 
@@ -585,6 +559,7 @@ import { ref, reactive, computed, onMounted, onUnmounted } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import eventService from "@/services/eventService"
+import InviteSection from "@/components/invite/InviteSection.vue"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 // import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
