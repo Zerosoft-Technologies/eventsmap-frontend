@@ -523,7 +523,7 @@
                 <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
                   <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
                 </div>
-                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organiser</span>
+                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organizer</span>
               </div>
               <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
             </div>

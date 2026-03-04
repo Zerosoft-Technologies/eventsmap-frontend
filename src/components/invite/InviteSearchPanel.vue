@@ -98,7 +98,7 @@ const searchQuery    = ref('')
 
 const ROLE_LABELS = {
   talent:    { label: 'Talent',    placeholder: 'Search talent by name or country…'    },
-  organiser: { label: 'Organiser', placeholder: 'Search organiser by name or country…' },
+  organizer: { label: 'Organizer', placeholder: 'Search organiser by name or country…' },
   venue:     { label: 'Venue',     placeholder: 'Search venue by name or country…'     },
 }
 

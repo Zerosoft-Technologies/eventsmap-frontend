@@ -668,9 +668,9 @@
                     </p>
 
                     <div class="tw:space-y-3">
-                        <InviteSection role="talent"    :has-border="true" />
-                        <InviteSection role="organiser" :has-border="true" />
-                        <InviteSection role="venue"     :has-border="false" />
+                        <InviteSection role="talent"    :profiles="talentUsers"    :has-border="true" />
+                        <InviteSection role="organizer" :profiles="organiserUsers" :has-border="true" />
+                        <InviteSection role="venue"     :profiles="venueUsers"     :has-border="false" />
                     </div>
                 </div>
 
@@ -745,6 +745,7 @@ import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
+import api from "@/services/api"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
@@ -773,6 +774,9 @@ const pastDateError = ref(false)
 const latitude = ref(null)
 const longitude = ref(null)
 const fieldErrors = ref({})
+
+const allUsers = ref([])
+const isLoadingUsers = ref(false)
 
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
@@ -872,6 +876,16 @@ const availableSubcategories = computed(() => {
   const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
   return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
 })
+
+const talentUsers = computed(() =>
+  allUsers.value.filter((u) => u.profile_type?.toLowerCase() === 'talent')
+)
+const organiserUsers = computed(() =>
+  allUsers.value.filter((u) => u.profile_type?.toLowerCase() === 'organizer')
+)
+const venueUsers = computed(() =>
+  allUsers.value.filter((u) => u.profile_type?.toLowerCase() === 'venue')
+)
 
 const menuItems = [
     { id: "home", icon: Home, label: "Home", route: "/create-event-premium" },
@@ -1269,9 +1283,34 @@ async function reverseGeocode(lng, lat) {
     }
 }
 
+async function fetchUsers() {
+  try {
+    isLoadingUsers.value = true
+    const response = await api.get('/v2/users')
+    const data = response.data?.data ?? response.data ?? []
+    allUsers.value = Array.isArray(data) ? data.map(normalizeUser) : []
+    console.log('Fetched users:', allUsers.value)
+  } catch (error) {
+    console.error('Error fetching users:', error)
+    allUsers.value = []
+  } finally {
+    isLoadingUsers.value = false
+  }
+}
+
+function normalizeUser(u) {
+  return {
+    id: u.id,
+    name: u.name ?? u.username ?? '',
+    profile_type: u.profile_type ?? 'talent',
+    account_type: u.account_type ?? 'free',
+    country: u.country ?? '',
+  }
+}
+
 // Initialize map on component mount
 onMounted(() => {
-    // Fetch categories from API
+    fetchUsers()
     fetchCategories()
 
     // Add click outside listener for dropdown
