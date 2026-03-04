@@ -144,12 +144,28 @@
 
                         <!-- No file chosen -->
                         <span id="file-name" class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-                            No File Chosen
+                            {{ fileName || 'No File Chosen' }}
                         </span>
 
-                        <input type="file" accept="image/*" class="tw:hidden"
-                            onchange="document.getElementById('file-name').innerText = this.files[0]?.name || 'No file chosen'" />
+                        <input type="file" accept="image/*" class="tw:hidden" @change="handleFileChange" />
                     </label>
+
+                    <!-- Image Preview -->
+                    <div v-if="imagePreview" class="tw:relative tw:mt-4 tw:w-full">
+                        <img :src="imagePreview" alt="Event image preview"
+                            class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200" />
+                        <button @click="removeImage" type="button"
+                            class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-600 tw:transition-colors">
+                            <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <p v-if="formErrors.eventImage" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.eventImage }}</p>
+                    <p v-if="fieldErrors.image" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image[0] }}</p>
                 </div>
 
                 <!-- ADDITIONAL IMAGES SECTION -->
@@ -337,13 +353,20 @@
                             </label>
 
                             <div class="tw:relative">
-                                <input ref="dateInput" placeholder="MM/DD/YYYY"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
+                                <input ref="dateInput" v-model="eventDate" placeholder="MM/DD/YYYY"
+                                    :class="[
+                                        'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                                        (formErrors.eventDate || fieldErrors.event_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                    ]"
+                                    @input="clearError('eventDate')" />
 
                                 <!-- Custom Calendar Icon -->
                                 <Calendar
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                             </div>
+                            <p v-if="formErrors.eventDate" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.eventDate }}</p>
+                            <p v-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.event_date[0] }}</p>
+                            <p v-if="pastDateError" class="tw:text-red-500 tw:text-sm tw:mt-1">Cannot select a past date</p>
                         </div>
 
                         <!-- START & END TIME -->
@@ -442,6 +465,7 @@
                         </label>
                         <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
                             class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+                        <p v-if="formErrors.address" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.address }}</p>
                     </div>
                 </div>
 
@@ -736,24 +760,37 @@ const route = useRoute()
 const toast = useToast()
 
 // Event data
-const eventDate = ref("05.03.2026, 18:30 CET")
+const eventDate = ref("")
 const eventStatus = ref("Draft")
 
 const activeTab = ref("home")
 const isSubmitting = ref(false)
 const eventDescription = ref("")
 
+const selectedImageFile = ref(null)
+const imagePreview = ref(null)
+const pastDateError = ref(false)
+const latitude = ref(null)
+const longitude = ref(null)
+const fieldErrors = ref({})
+
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
   eventTitle: '',
   category: '',
   subcategories: [],
+  eventDate: '',
+  address: '',
+  eventImage: null,
 })
 
 const eventSchema = {
   eventTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Event Title' },
   category: { type: 'select', required: true, label: 'Category' },
   subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
+  eventDate: { type: 'text', required: true, label: 'Event Date' },
+  address: { type: 'text', required: true, label: 'Address' },
+  eventImage: { type: 'file', required: true, label: 'Event Image' },
 }
 
 const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(eventSchema, formData)
@@ -788,7 +825,6 @@ const instagramUrl = ref("")
 const tiktokUrl = ref("")
 
 // Event Date and Time
-// const eventDate = ref("")
 const startTime = ref("")
 const endTime = ref("")
 const dateInput = ref(null)
@@ -803,6 +839,7 @@ const {
     validateTimeRange,
     clearStartError,
     clearEndError,
+    applyServerErrors: applyTimeServerErrors,
 } = useTimeRangeValidation(startTime, endTime)
 
 // Event Location refs
@@ -980,10 +1017,52 @@ onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside)
 })
 
-// Sync category/subcategory selections into formData for validation
+// Image handling
+function handleFileChange(event) {
+  const file = event.target.files[0]
+  if (file) {
+    selectedImageFile.value = file
+    fileName.value = file.name
+    clearError('eventImage')
+    imagePreview.value = URL.createObjectURL(file)
+  } else {
+    selectedImageFile.value = null
+    fileName.value = 'No File Chosen'
+    imagePreview.value = null
+  }
+}
+
+function removeImage() {
+  selectedImageFile.value = null
+  fileName.value = 'No File Chosen'
+  imagePreview.value = null
+  const fileInput = document.querySelector('input[type="file"]')
+  if (fileInput) fileInput.value = ''
+}
+
+// Past date validation
+watch(eventDate, () => {
+  validatePastDate()
+})
+
+function validatePastDate() {
+  if (!eventDate.value) {
+    pastDateError.value = false
+    return
+  }
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const selected = new Date(eventDate.value)
+  pastDateError.value = selected < today
+}
+
+// Sync form fields into formData for validation
 function syncFormData() {
   formData.category = selectedCategory.value
   formData.subcategories = selectedSubcategories.value
+  formData.eventDate = eventDate.value
+  formData.address = selectedAddress.value
+  formData.eventImage = selectedImageFile.value
 }
 
 async function handleSubmit() {
@@ -996,15 +1075,98 @@ async function handleSubmit() {
   const genreValid = validateGenre()
   const timeValid = validateTimeRange()
 
-  if (!isValid || !genreValid || !timeValid) {
+  if (!isValid || !genreValid || !timeValid || pastDateError.value) {
     await scrollToFirstError()
     isSubmitting.value = false
     return
   }
 
-  // No API call — show success toast
-  toast.success('This feature will be available in future')
-  isSubmitting.value = false
+  await createEvent()
+}
+
+async function createEvent() {
+  try {
+    fieldErrors.value = {}
+
+    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+    const categoryId = selectedCategoryData ? selectedCategoryData.id : null
+
+    const selectedSubcategoryData = selectedCategoryData
+      ? selectedCategoryData.subcategories.filter(sub => selectedSubcategories.value.includes(sub.name))
+      : []
+    const subcategoryIds = selectedSubcategoryData.map(sub => sub.id)
+
+    const payload = new FormData()
+    payload.append('title', formData.eventTitle)
+    payload.append('event_type', 'premium')
+    payload.append('category_id', categoryId)
+    subcategoryIds.forEach(id => payload.append('subcategory_ids[]', id))
+    payload.append('event_date', eventDate.value)
+    payload.append('start_time', startTime.value)
+    payload.append('end_time', endTime.value)
+    payload.append('address', selectedAddress.value)
+    if (latitude.value !== null) payload.append('latitude', latitude.value)
+    if (longitude.value !== null) payload.append('longitude', longitude.value)
+    payload.append('dress_code', dressCode.value === 'different' ? customDressCode.value : dressCode.value)
+    payload.append('age_limit', ageLimit.value === 'different' ? customAgeLimit.value : ageLimit.value)
+    payload.append('entrance_fee', entranceFee.value === 'different' ? customEntranceFee.value : entranceFee.value)
+
+    if (eventDescription.value) payload.append('description', eventDescription.value)
+    if (contactPhone.value) payload.append('contact_phone', contactPhone.value)
+    if (contactEmail.value) payload.append('contact_email', contactEmail.value)
+    if (contactWebsite.value) payload.append('contact_website', contactWebsite.value)
+    if (contactBoxMessage.value) payload.append('contact_box_message', contactBoxMessage.value)
+    if (venueDetailsText.value) payload.append('venue_details', venueDetailsText.value)
+    if (facebookUrl.value) payload.append('facebook_url', facebookUrl.value)
+    if (instagramUrl.value) payload.append('instagram_url', instagramUrl.value)
+    if (tiktokUrl.value) payload.append('tiktok_url', tiktokUrl.value)
+    if (ticketUrl.value) payload.append('ticket_url', ticketUrl.value)
+    if (bookingInstructions.value) payload.append('booking_instructions', bookingInstructions.value)
+    if (eventOption.value) payload.append('event_option', eventOption.value)
+
+    if (selectedImageFile.value) {
+      payload.append('image', selectedImageFile.value)
+    }
+
+    if (additionalImages.value && additionalImages.value.length > 0) {
+      additionalImages.value.forEach((file, index) => {
+        payload.append(`additional_images[${index}]`, file)
+      })
+    }
+
+    const response = await eventService.createEvent(payload)
+
+    if (response.success) {
+      toast.success('Premium event created successfully!')
+      const slug = response.data?.slug
+      if (slug) {
+        router.push(`/event/${slug}`)
+      } else {
+        router.push('/events')
+      }
+    } else {
+      if (response.errors) {
+        fieldErrors.value = response.errors
+        applyTimeServerErrors(fieldErrors.value)
+        toast.error(response.message || 'Please correct the errors in the form.')
+      } else {
+        toast.error(response.message || 'Failed to create event. Please try again.')
+      }
+    }
+  } catch (error) {
+    console.error('Error creating premium event:', error)
+    if (error.response?.data?.errors) {
+      fieldErrors.value = error.response.data.errors
+      applyTimeServerErrors(fieldErrors.value)
+      toast.error(error.response.data.message || 'Please correct the errors in the form.')
+    } else if (error.response?.data?.message) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error('An error occurred while creating the event. Please try again.')
+    }
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 // Debounce function
@@ -1050,14 +1212,13 @@ const onSearchInput = debounce(async () => {
 function selectSuggestion(suggestion) {
     const { lat, lon, display_name } = suggestion
 
-    // Update search input and clear suggestions
     searchAddress.value = display_name
     suggestions.value = []
-
-    // Update selected address
     selectedAddress.value = display_name
 
-    // Center map and add marker
+    latitude.value = parseFloat(lat)
+    longitude.value = parseFloat(lon)
+
     if (map.value) {
         map.value.flyTo({
             center: [lon, lat],
@@ -1128,16 +1289,20 @@ onMounted(() => {
     map.value.on("click", async (e) => {
         const { lng, lat } = e.lngLat
 
-        // Update marker location
-        updateMarker(lng, lat)
+        latitude.value = lat
+        longitude.value = lng
 
-        // Reverse geocode to get address
+        updateMarker(lng, lat)
         await reverseGeocode(lng, lat)
     })
 
-    /* ------------------ DATE PICKER ------------------ */
+    /* ------------------ DATE PICKER (prevents past dates) ------------------ */
     flatpickr(dateInput.value, {
-        dateFormat: "m/d/Y",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        onChange: (selectedDates, dateStr) => {
+            eventDate.value = dateStr
+        }
     })
 
 
