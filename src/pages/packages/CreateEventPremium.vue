@@ -92,7 +92,7 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Create Premium Event
+                            Event Title <span class="tw:text-red-500">*</span>
                         </h3>
                         <!-- <button
                             class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -100,19 +100,25 @@
                         </button> -->
                     </div>
 
-                    <input v-model="formData.eventTitle" type="text" placeholder="Enter Event Title"
-                        data-field="eventTitle"
-                        @input="formErrors.eventTitle && clearError('eventTitle')"
+                    <input v-model="eventTitle" type="text" placeholder="Enter Event Title"
                         :class="[
                           'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
-                          formErrors.eventTitle ? 'tw:border-red-500' : 'tw:border-gray-200'
-                        ]" />
-                    <p v-if="formErrors.eventTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.eventTitle }}</p>
+                          fieldErrors.title ? 'tw:border-red-500' : 'tw:border-gray-200'
+                        ]"
+                        @input="clearFieldError('eventTitle')" />
+                    <p v-if="errors.eventTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">Event title is required</p>
+                    <p v-if="fieldErrors.title" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.title[0] }}</p>
                     <!-- Description -->
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:text-gray-700">Description</label>
+                        <label class="tw:text-sm tw:text-gray-700">Description <span class="tw:text-red-500">*</span></label>
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Event..."
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                            @input="clearFieldError('description')"
+                            :class="[
+                              'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none',
+                              (errors.description || fieldErrors.description) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                            ]"></textarea>
+                        <p v-if="errors.description" class="tw:text-red-500 tw:text-sm tw:mt-1">Description is required</p>
+                        <p v-if="fieldErrors.description" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.description[0] }}</p>
                     </div>
                 </div>
 
@@ -164,7 +170,7 @@
                         </button>
                     </div>
 
-                    <p v-if="formErrors.eventImage" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.eventImage }}</p>
+                    <p v-if="errors.eventImage" class="tw:text-red-500 tw:text-sm tw:mt-1">Event image is required</p>
                     <p v-if="fieldErrors.image" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image[0] }}</p>
                 </div>
 
@@ -340,7 +346,7 @@
                 <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
 
                     <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Event Date & Time
+                        Event Date & Time <span class="tw:text-red-500">*</span>
                     </h3>
 
                     <!-- Horizontal Layout -->
@@ -349,22 +355,22 @@
                         <!-- EVENT DATE -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                Event Date
+                                Event Date <span class="tw:text-red-500">*</span>
                             </label>
 
                             <div class="tw:relative">
                                 <input ref="dateInput" v-model="eventDate" placeholder="MM/DD/YYYY"
                                     :class="[
                                         'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                                        (formErrors.eventDate || fieldErrors.event_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                        fieldErrors.event_date ? 'tw:border-red-500' : 'tw:border-gray-200'
                                     ]"
-                                    @input="clearError('eventDate')" />
+                                    @input="clearFieldError('eventDate')" />
 
                                 <!-- Custom Calendar Icon -->
                                 <Calendar
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                             </div>
-                            <p v-if="formErrors.eventDate" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.eventDate }}</p>
+                            <p v-if="errors.eventDate" class="tw:text-red-500 tw:text-sm tw:mt-1">Event date is required</p>
                             <p v-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.event_date[0] }}</p>
                             <p v-if="pastDateError" class="tw:text-red-500 tw:text-sm tw:mt-1">Cannot select a past date</p>
                         </div>
@@ -422,7 +428,7 @@
                 <!-- EVENT LOCATION SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
                     <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Event Location
+                        Event Location <span class="tw:text-red-500">*</span>
                     </h3>
 
                     <!-- Address Search Input with Loading Spinner -->
@@ -465,7 +471,7 @@
                         </label>
                         <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
                             class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
-                        <p v-if="formErrors.address" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.address }}</p>
+                        <p v-if="errors.address" class="tw:text-red-500 tw:text-sm tw:mt-1">Address is required</p>
                     </div>
                 </div>
 
@@ -484,12 +490,16 @@
                     <div class="tw:grid tw:grid-cols-3 tw:gap-4">
                         <!-- Dress Code -->
                         <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code</label>
+                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code <span class="tw:text-red-500">*</span></label>
                             <div class="tw:relative">
-                                <select v-model="dressCode"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">No Dress Code</option>
-                                    <option value="casual">Dress Code</option>
+                                <select v-model="dressCode" @change="clearFieldError('dressCode')"
+                                    :class="[
+                                      'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                                      errors.dressCode ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                    ]">
+                                    <option value="">Select Dress Code</option>
+                                    <option value="no_dress_code">No Dress Code</option>
+                                    <option value="casual">Casual</option>
                                     <option value="different">+ If different to above</option>
                                 </select>
                                 <ChevronDown
@@ -497,22 +507,25 @@
                             </div>
                             <input v-if="dressCode === 'different'" v-model="customDressCode" type="text" placeholder="Enter dress code details"
                                 class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2" />
+                            <p v-if="errors.dressCode" class="tw:text-red-500 tw:text-sm tw:mt-1">Dress code is required</p>
                         </div>
 
                         <!-- Age Limit -->
                         <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit</label>
+                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit <span class="tw:text-red-500">*</span></label>
                             <div class="tw:relative">
-                                <select v-model="ageLimit"
+                                <select v-model="ageLimit" @change="clearFieldError('ageLimit')"
                                     class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">4+</option>
-                                    <option value="8">8+</option>
-                                    <option value="12">12+</option>
-                                    <option value="16">16+</option>
-                                    <option value="18">18+</option>
-                                    <option value="21">21+</option>
-                                    <option value="55">55+</option>
-                                    <option value="65">65+</option>
+                                    <option value="">Select Age</option>
+                                    <option value="all_ages">All Ages</option>
+                                    <option value="4+">4+</option>
+                                    <option value="8+">8+</option>
+                                    <option value="12+">12+</option>
+                                    <option value="16+">16+</option>
+                                    <option value="18+">18+</option>
+                                    <option value="21+">21+</option>
+                                    <option value="55+">55+</option>
+                                    <option value="65+">65+</option>
                                     <option value="different">+ If different to above</option>
                                 </select>
                                 <ChevronDown
@@ -520,15 +533,17 @@
                             </div>
                             <input v-if="ageLimit === 'different'" v-model="customAgeLimit" type="text" placeholder="Enter age limit details"
                                 class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2" />
+                            <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm tw:mt-1">Age limit is required</p>
                         </div>
 
                         <!-- Entrance Fee -->
                         <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status</label>
+                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status <span class="tw:text-red-500">*</span></label>
                             <div class="tw:relative">
-                                <select v-model="entranceFee"
+                                <select v-model="entranceStatus" @change="clearFieldError('entranceStatus')"
                                     class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">Free Entrance</option>
+                                    <option value="">Select Entrance Status</option>
+                                    <option value="free">Free Entrance</option>
                                     <option value="paid">Paid Entrance</option>
                                     <option value="donation">Sold Out</option>
                                     <option value="cancelled">Event is Cancelled</option>
@@ -537,8 +552,9 @@
                                 <ChevronDown
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
-                            <input v-if="entranceFee === 'different'" v-model="customEntranceFee" type="text" placeholder="Enter entrance status details"
+                            <input v-if="entranceStatus === 'different'" v-model="customEntranceFee" type="text" placeholder="Enter entrance status details"
                                 class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2" />
+                            <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm tw:mt-1">Entrance status is required</p>
                         </div>
                     </div>
                 </div>
@@ -549,11 +565,23 @@
                         Contact Details
                     </h3>
 
-                    <input v-model="contactPhone" type="text" placeholder="Telephone Number"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                    <div>
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Phone <span class="tw:text-red-500">*</span></label>
+                        <input v-model="contactPhone" type="text" placeholder="Telephone Number"
+                            @input="clearFieldError('contactPhone')"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                        <p v-if="errors.contactPhone" class="tw:text-red-500 tw:text-sm tw:mt-1">Phone number is required</p>
+                        <p v-if="fieldErrors.contact_phone" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.contact_phone[0] }}</p>
+                    </div>
 
-                    <input v-model="contactEmail" type="email" placeholder="Email"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                    <div>
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Email <span class="tw:text-red-500">*</span></label>
+                        <input v-model="contactEmail" type="email" placeholder="Email"
+                            @input="clearFieldError('contactEmail')"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                        <p v-if="errors.contactEmail" class="tw:text-red-500 tw:text-sm tw:mt-1">Email is required</p>
+                        <p v-if="fieldErrors.contact_email" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.contact_email[0] }}</p>
+                    </div>
 
                     <input v-model="contactWebsite" type="text" placeholder="Website"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
@@ -624,14 +652,14 @@
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Event Conditions (Optional)
                     </h3>
-
-                    <input type="text" placeholder="Entrance Fee (If Different)"
+                    <!-- EVENT CONDITIONS SECTION -->
+                    <input v-model="conditionEntranceFee" type="text" placeholder="Entrance Fee (If Different)"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
 
-                    <input type="text" placeholder="Dress Code (If Different)"
+                    <input v-model="conditionDressCode" type="text" placeholder="Dress Code (If Different)"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
 
-                    <input type="text" placeholder="Age Limit (If Different)"
+                    <input v-model="conditionAgeLimit" type="text" placeholder="Age Limit (If Different)"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
                 </div>
 
@@ -668,9 +696,9 @@
                     </p>
 
                     <div class="tw:space-y-3">
-                        <InviteSection role="talent"    :profiles="talentUsers"    :has-border="true" />
-                        <InviteSection role="organizer" :profiles="organiserUsers" :has-border="true" />
-                        <InviteSection role="venue"     :profiles="venueUsers"     :has-border="false" />
+                        <InviteSection role="talent"    :profiles="talentUsers"    :has-border="true"  v-model:selectedIds="invitedTalentIds" />
+                        <InviteSection role="organizer" :profiles="organiserUsers" :has-border="true"  v-model:selectedIds="invitedOrganiserIds" />
+                        <InviteSection role="venue"     :profiles="venueUsers"     :has-border="false" v-model:selectedIds="invitedVenueIds" />
                     </div>
                 </div>
 
@@ -740,14 +768,13 @@ import {
     MessageSquareText
 } from "lucide-vue-next"
 
-import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
+import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import api from "@/services/api"
 import eventService from "@/services/eventService"
-import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
@@ -761,6 +788,7 @@ const route = useRoute()
 const toast = useToast()
 
 // Event data
+const eventTitle = ref("")
 const eventDate = ref("")
 const eventStatus = ref("Draft")
 
@@ -773,31 +801,46 @@ const imagePreview = ref(null)
 const pastDateError = ref(false)
 const latitude = ref(null)
 const longitude = ref(null)
+
+const conditionEntranceFee = ref("")
+const conditionDressCode = ref("")
+const conditionAgeLimit = ref("")
+
+// Server-side validation errors from API
 const fieldErrors = ref({})
+
+// Form validation state
+const errors = ref({
+  eventTitle: false,
+  eventImage: false,
+  description: false,
+  category: false,
+  subcategories: false,
+  eventDate: false,
+  address: false,
+  dressCode: false,
+  ageLimit: false,
+  entranceStatus: false,
+  contactPhone: false,
+  contactEmail: false,
+})
 
 const allUsers = ref([])
 const isLoadingUsers = ref(false)
 
-// ── Form Validation (generic composable) ─────────────────────
-const formData = reactive({
-  eventTitle: '',
-  category: '',
-  subcategories: [],
-  eventDate: '',
-  address: '',
-  eventImage: null,
-})
+// Clear individual field error
+function clearFieldError(fieldName) {
+  if (errors.value.hasOwnProperty(fieldName)) {
+    errors.value[fieldName] = false
+  }
 
-const eventSchema = {
-  eventTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Event Title' },
-  category: { type: 'select', required: true, label: 'Category' },
-  subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
-  eventDate: { type: 'text', required: true, label: 'Event Date' },
-  address: { type: 'text', required: true, label: 'Address' },
-  eventImage: { type: 'file', required: true, label: 'Event Image' },
+  if (fieldName === 'category') {
+    categoryError.value = false
+  }
+  if (fieldName === 'subcategories') {
+    subcategoryError.value = false
+  }
 }
-
-const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(eventSchema, formData)
 
 const additionalImages = ref([])
 const selectedVenue = ref("")
@@ -805,7 +848,8 @@ const fileName = ref("")
 const selectedGenre = ref("")
 const dressCode = ref("")
 const ageLimit = ref("")
-const entranceFee = ref("")
+// const entranceFee = ref("")
+const entranceStatus = ref("")
 const customDressCode = ref("")
 const customAgeLimit = ref("")
 const customEntranceFee = ref("")
@@ -887,6 +931,11 @@ const venueUsers = computed(() =>
   allUsers.value.filter((u) => u.profile_type?.toLowerCase() === 'venue')
 )
 
+// Invite section selected IDs (optional - passed to API when user selects)
+const invitedTalentIds = ref([])
+const invitedOrganiserIds = ref([])
+const invitedVenueIds = ref([])
+
 const menuItems = [
     { id: "home", icon: Home, label: "Home", route: "/create-event-premium" },
     { id: "details", icon: FileText, label: "Details", route: "/create-event-premium" },
@@ -925,6 +974,10 @@ function handleCategoryChangeWithValidation() {
   subcategoryValidationError.value = false  // Clear validation error
   categoryError.value = false
   showSubcategoryDropdown.value = false  // Close dropdown
+
+  // Clear field errors
+  clearFieldError('category')
+  clearFieldError('subcategories')
 }
 
 // Handle category change
@@ -971,6 +1024,9 @@ function handleClickOutside(event) {
 // Handle subcategory change with max 5 validation
 function handleSubcategoryChange() {
   subcategoryError.value = false
+
+  // Clear field errors
+  clearFieldError('subcategories')
 
   // Maximum 5 subcategories selection logic
   // Prevent selection if trying to add more than 5 items
@@ -1037,7 +1093,9 @@ function handleFileChange(event) {
   if (file) {
     selectedImageFile.value = file
     fileName.value = file.name
-    clearError('eventImage')
+    errors.value.eventImage = false
+
+    // Create image preview using URL.createObjectURL()
     imagePreview.value = URL.createObjectURL(file)
   } else {
     selectedImageFile.value = null
@@ -1050,8 +1108,13 @@ function removeImage() {
   selectedImageFile.value = null
   fileName.value = 'No File Chosen'
   imagePreview.value = null
+  errors.value.eventImage = true
+
+  // Clear the file input
   const fileInput = document.querySelector('input[type="file"]')
-  if (fileInput) fileInput.value = ''
+  if (fileInput) {
+    fileInput.value = ''
+  }
 }
 
 // Past date validation
@@ -1070,88 +1133,218 @@ function validatePastDate() {
   pastDateError.value = selected < today
 }
 
-// Sync form fields into formData for validation
-function syncFormData() {
-  formData.category = selectedCategory.value
-  formData.subcategories = selectedSubcategories.value
-  formData.eventDate = eventDate.value
-  formData.address = selectedAddress.value
-  formData.eventImage = selectedImageFile.value
+// Scroll to first invalid field
+async function scrollToFirstError() {
+  await nextTick()
+
+  // Find first field with error
+  const errorFields = ['eventTitle', 'eventImage', 'description', 'category', 'subcategories', 'eventDate', 'address', 'dressCode', 'ageLimit', 'entranceStatus', 'contactPhone', 'contactEmail']
+  const firstErrorField = errorFields.find(field =>
+    errors.value[field] ||
+    (field === 'category' && categoryError.value) ||
+    (field === 'subcategories' && subcategoryError.value)
+  )
+
+  if (firstErrorField) {
+    let element
+
+    // Map field names to DOM elements
+    switch (firstErrorField) {
+      case 'eventTitle':
+        element = document.querySelector('input[placeholder="Enter Event Title"]')
+        break
+      case 'description':
+        element = document.querySelector('textarea[placeholder="Describe Your Event..."]')
+        break
+      case 'eventImage':
+        element = document.querySelector('input[type="file"]')
+        break
+      case 'category':
+        element = document.querySelector('select')
+        break
+      case 'subcategories':
+        element = document.querySelector('.subcategory-dropdown-container')
+        break
+      case 'eventDate':
+        element = document.querySelector('input[placeholder="MM/DD/YYYY"]')
+        break
+      case 'address':
+        element = document.querySelector('input[readonly]')
+        break
+      case 'dressCode':
+        element = document.querySelectorAll('select')[1]
+        break
+      case 'ageLimit':
+        element = document.querySelectorAll('select')[2]
+        break
+      case 'entranceStatus':
+        element = document.querySelectorAll('select')[3]
+        break
+      case 'contactPhone':
+        element = document.querySelector('input[placeholder="Telephone Number"]')
+        break
+      case 'contactEmail':
+        element = document.querySelector('input[placeholder="Email"]')
+        break
+    }
+
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      })
+
+      // Focus the element if it's an input or select
+      if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+        element.focus()
+      }
+    }
+  }
 }
 
-async function handleSubmit() {
-  if (isSubmitting.value) return
-  isSubmitting.value = true
+// Form validation functions
+function validateForm() {
+  // Reset all errors
+  Object.keys(errors.value).forEach(key => {
+    errors.value[key] = false
+  })
+  categoryError.value = false
+  subcategoryError.value = false
+  fieldErrors.value = {}
 
-  syncFormData()
+  // Validate each field
+  errors.value.eventTitle = !eventTitle.value.trim()
+  errors.value.eventImage = !selectedImageFile.value
+  errors.value.description = !eventDescription.value.trim()
+  errors.value.category = !selectedCategory.value
+  errors.value.subcategories = selectedSubcategories.value.length === 0
+  errors.value.eventDate = !eventDate.value
+  errors.value.address = !selectedAddress.value
+  errors.value.dressCode = !dressCode.value || (dressCode.value === 'different' && !customDressCode.value?.trim())
+  errors.value.ageLimit = !ageLimit.value
+  errors.value.entranceStatus = !entranceStatus.value
+  errors.value.contactPhone = !contactPhone.value.trim()
+  errors.value.contactEmail = !contactEmail.value.trim()
 
-  const isValid = validate()
-  const genreValid = validateGenre()
+  // Set category/subcategory specific errors
+  categoryError.value = !selectedCategory.value
+  subcategoryError.value = selectedSubcategories.value.length === 0
+
   const timeValid = validateTimeRange()
+  const hasOtherErrors = Object.values(errors.value).some(error => error) ||
+                         categoryError.value ||
+                         subcategoryError.value ||
+                         pastDateError.value
 
-  if (!isValid || !genreValid || !timeValid || pastDateError.value) {
-    await scrollToFirstError()
-    isSubmitting.value = false
+  return !hasOtherErrors && timeValid
+}
+
+// Submit handler function
+async function handleSubmit() {
+  console.log('🚀 handleSubmit() called')
+
+  if (isSubmitting.value) {
+    console.log('⚠️ Already submitting, returning')
     return
   }
 
+  // Always run validation first
+  const isValid = validateForm()
+
+  if (!isValid) {
+    console.log('❌ Validation failed, scrolling to first error')
+    await scrollToFirstError()
+    return
+  }
+
+  console.log('✅ Validation passed, proceeding with submission')
+
+  // Call the original createEvent function
   await createEvent()
 }
 
+// Create Event function using eventService
 async function createEvent() {
+  if (isSubmitting.value) return
+
+  // Validate form
+  if (!validateForm()) {
+    return
+  }
+
   try {
+    isSubmitting.value = true
     fieldErrors.value = {}
 
+    // Find category and subcategory IDs
     const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
     const categoryId = selectedCategoryData ? selectedCategoryData.id : null
 
-    const selectedSubcategoryData = selectedCategoryData
-      ? selectedCategoryData.subcategories.filter(sub => selectedSubcategories.value.includes(sub.name))
-      : []
+    const selectedSubcategoryData = selectedCategoryData ?
+      selectedCategoryData.subcategories.filter(sub => selectedSubcategories.value.includes(sub.name)) : []
     const subcategoryIds = selectedSubcategoryData.map(sub => sub.id)
 
-    const payload = new FormData()
-    payload.append('title', formData.eventTitle)
-    payload.append('event_type', 'premium')
-    payload.append('category_id', categoryId)
-    subcategoryIds.forEach(id => payload.append('subcategory_ids[]', id))
-    payload.append('event_date', eventDate.value)
-    payload.append('start_time', startTime.value)
-    payload.append('end_time', endTime.value)
-    payload.append('address', selectedAddress.value)
-    if (latitude.value !== null) payload.append('latitude', latitude.value)
-    if (longitude.value !== null) payload.append('longitude', longitude.value)
-    payload.append('dress_code', dressCode.value === 'different' ? customDressCode.value : dressCode.value)
-    payload.append('age_limit', ageLimit.value === 'different' ? customAgeLimit.value : ageLimit.value)
-    payload.append('entrance_fee', entranceFee.value === 'different' ? customEntranceFee.value : entranceFee.value)
+    // Create FormData for image upload
+    const formData = new FormData()
 
-    if (eventDescription.value) payload.append('description', eventDescription.value)
-    if (contactPhone.value) payload.append('contact_phone', contactPhone.value)
-    if (contactEmail.value) payload.append('contact_email', contactEmail.value)
-    if (contactWebsite.value) payload.append('contact_website', contactWebsite.value)
-    if (contactBoxMessage.value) payload.append('contact_box_message', contactBoxMessage.value)
-    if (venueDetailsText.value) payload.append('venue_details', venueDetailsText.value)
-    if (facebookUrl.value) payload.append('facebook_url', facebookUrl.value)
-    if (instagramUrl.value) payload.append('instagram_url', instagramUrl.value)
-    if (tiktokUrl.value) payload.append('tiktok_url', tiktokUrl.value)
-    if (ticketUrl.value) payload.append('ticket_url', ticketUrl.value)
-    if (bookingInstructions.value) payload.append('booking_instructions', bookingInstructions.value)
-    if (eventOption.value) payload.append('event_option', eventOption.value)
+    // Add form fields
+    formData.append('title', eventTitle.value)
+    formData.append('event_type', 'premium')
+    formData.append('category_id', categoryId)
+    subcategoryIds.forEach(id => formData.append('subcategory_ids[]', id))
+    formData.append('event_date', eventDate.value)
+    formData.append('start_time', startTime.value)
+    formData.append('end_time', endTime.value)
+    formData.append('address', selectedAddress.value)
+    formData.append('latitude', latitude.value)
+    formData.append('longitude', longitude.value)
+    formData.append('dress_code', dressCode.value === 'different' ? (customDressCode.value || '') : (dressCode.value || ''))
+    formData.append('age_limit', ageLimit.value === 'different' ? (customAgeLimit.value || '') : ageLimit.value)
+    // formData.append('entrance_fee', entranceFee.value)
+    formData.append('entrance_status', entranceStatus.value === 'different' ? (customEntranceFee.value || '') : entranceStatus.value)
+    formData.append('contact_phone', contactPhone.value)
+    formData.append('contact_email', contactEmail.value)
+    formData.append('description', eventDescription.value)
 
+    // Optional fields
+    if (contactWebsite.value) formData.append('contact_website', contactWebsite.value)
+    if (contactBoxMessage.value) formData.append('contact_box_message', contactBoxMessage.value)
+    if (venueDetailsText.value) formData.append('venue_details', venueDetailsText.value)
+    if (facebookUrl.value) formData.append('facebook_url', facebookUrl.value)
+    if (instagramUrl.value) formData.append('instagram_url', instagramUrl.value)
+    if (tiktokUrl.value) formData.append('tiktok_url', tiktokUrl.value)
+    if (ticketUrl.value) formData.append('ticket_url', ticketUrl.value)
+    if (bookingInstructions.value) formData.append('booking_instructions', bookingInstructions.value)
+    if (eventOption.value) formData.append('event_option', eventOption.value)
+    if (conditionEntranceFee.value) formData.append('condition_entrance_fee', conditionEntranceFee.value)
+    if (conditionDressCode.value) formData.append('condition_dress_code', conditionDressCode.value)
+    if (conditionAgeLimit.value) formData.append('condition_age_limit', conditionAgeLimit.value)
+
+    // Invite section IDs (optional - pass when user has selected)
+    invitedTalentIds.value.forEach(id => formData.append('invited_talents[]', id))
+    invitedOrganiserIds.value.forEach(id => formData.append('invited_organisers[]', id))
+    invitedVenueIds.value.forEach(id => formData.append('invited_venues[]', id))
+
+    // Add image file if exists
     if (selectedImageFile.value) {
-      payload.append('image', selectedImageFile.value)
+      formData.append('image', selectedImageFile.value)
     }
 
+    // Add additional images
     if (additionalImages.value && additionalImages.value.length > 0) {
       additionalImages.value.forEach((file, index) => {
-        payload.append(`additional_images[${index}]`, file)
+        formData.append(`additional_images[${index}]`, file)
       })
     }
 
-    const response = await eventService.createEvent(payload)
+    // Submit to API v2 using eventService
+    const response = await eventService.createEvent(formData)
 
     if (response.success) {
-      toast.success('Premium event created successfully!')
+      // Show success toast
+      toast.success('Event created successfully!')
+
+      // Redirect to event page using slug
       const slug = response.data?.slug
       if (slug) {
         router.push(`/event/${slug}`)
@@ -1159,20 +1352,26 @@ async function createEvent() {
         router.push('/events')
       }
     } else {
+      // Handle API validation errors
       if (response.errors) {
         fieldErrors.value = response.errors
         applyTimeServerErrors(fieldErrors.value)
         toast.error(response.message || 'Please correct the errors in the form.')
+        await scrollToFirstError()
       } else {
         toast.error(response.message || 'Failed to create event. Please try again.')
       }
     }
+
   } catch (error) {
-    console.error('Error creating premium event:', error)
+    console.error('Error creating event:', error)
+
+    // Handle API validation errors from Laravel
     if (error.response?.data?.errors) {
       fieldErrors.value = error.response.data.errors
       applyTimeServerErrors(fieldErrors.value)
       toast.error(error.response.data.message || 'Please correct the errors in the form.')
+      await scrollToFirstError()
     } else if (error.response?.data?.message) {
       toast.error(error.response.data.message)
     } else {

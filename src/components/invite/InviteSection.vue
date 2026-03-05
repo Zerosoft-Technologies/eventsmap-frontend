@@ -64,11 +64,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { User, MapPin, Mic2 } from 'lucide-vue-next'
 import InviteSearchPanel from './InviteSearchPanel.vue'
 import SelectedChips from './SelectedChips.vue'
 import { mockProfiles } from '@/data/mockProfiles'
+
+const emit = defineEmits(['update:selectedIds'])
 
 const props = defineProps({
   role: {
@@ -100,6 +102,10 @@ const roleLabel = computed(() => ROLE_CONFIG[props.role]?.label ?? 'Invite')
 const roleIcon  = computed(() => ROLE_CONFIG[props.role]?.icon  ?? User)
 
 const selectedIds = computed(() => selectedUsers.value.map((u) => u.id))
+
+watch(selectedIds, (ids) => {
+  emit('update:selectedIds', [...ids])
+}, { immediate: true })
 
 const roleProfiles = computed(() => {
   const source = props.profiles ?? mockProfiles

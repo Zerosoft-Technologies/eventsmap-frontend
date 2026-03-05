@@ -1257,6 +1257,7 @@ async function createEvent() {
     
     // Add form fields
     formData.append('title', eventTitle.value)
+    formData.append('event_type', 'free')
     formData.append('category_id', categoryId)
     subcategoryIds.forEach(id => formData.append('subcategory_ids[]', id))
     formData.append('event_date', eventDate.value)
