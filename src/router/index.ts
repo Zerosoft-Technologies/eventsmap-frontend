@@ -53,11 +53,13 @@ const EmailVerified = () => import('../pages/auth/EmailVerified.vue')
 const Dashboard = () => import('../pages/Dashboard.vue')
 const PaymentSuccess = () => import('../pages/payment/PaymentSuccess.vue')
 const PaymentCancel = () => import('../pages/payment/PaymentCancel.vue')
-const PaymentRequired = () => import('../pages/payment/PaymentRequired.vue')
+const PaymentRequired     = () => import('../pages/payment/PaymentRequired.vue')
+const InvitationResponse  = () => import('../pages/InvitationResponse.vue')
 
 const routes: RouteRecordRaw[] = [
   // ── Public Routes ───────────────────────────────────────
   { path: '/', name: 'Home', component: Home },
+  { path: '/invitations/:id/respond', name: 'InvitationResponse', component: InvitationResponse },
 
   // ── Auth Routes (guest only) ────────────────────────────
   { path: '/login', name: 'Login', component: Login, meta: { guest: true } },
