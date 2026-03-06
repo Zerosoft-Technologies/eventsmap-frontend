@@ -3,8 +3,7 @@
     <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
 
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-      <EventSidebar :menuItems="menuItems"
-        @back="handleBack" @event-selected="handleEventSelected" />
+      <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" />
 
       <!-- ================= RIGHT CARD ================= -->
       <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6 tw:space-y-6">
@@ -20,15 +19,13 @@
             </button> -->
           </div>
 
-          <input v-model="eventTitle" type="text" placeholder="Enter Event Title"
-            :class="[
-              'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
-              fieldErrors.title ? 'tw:border-red-500' : 'tw:border-gray-200'
-            ]"
-            @input="clearFieldError('eventTitle')" />
+          <input v-model="eventTitle" type="text" placeholder="Enter Event Title" :class="[
+            'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
+            fieldErrors.title ? 'tw:border-red-500' : 'tw:border-gray-200'
+          ]" @input="clearFieldError('eventTitle')" />
           <p v-if="errors.eventTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">Event title is required</p>
           <p v-if="fieldErrors.title" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.title[0] }}</p>
-          
+
           <!-- Slug Preview -->
           <div v-if="eventTitle.trim()" class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
             <span class="tw:text-xs tw:text-gray-500">URL Preview:</span>
@@ -314,76 +311,63 @@
               </label>
 
               <div class="tw:relative">
-                <input ref="dateInput" v-model="eventDate" placeholder="MM/DD/YYYY"
-                  :class="[
-                    'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                    fieldErrors.event_date ? 'tw:border-red-500' : 'tw:border-gray-200'
-                  ]"
-                  @input="clearFieldError('eventDate')" />
+                <input ref="dateInput" v-model="eventDate" placeholder="MM/DD/YYYY" :class="[
+                  'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                  fieldErrors.event_date ? 'tw:border-red-500' : 'tw:border-gray-200'
+                ]" @input="clearFieldError('eventDate')" />
 
                 <!-- Custom Calendar Icon -->
                 <Calendar
                   class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
               </div>
               <p v-if="errors.eventDate" class="tw:text-red-500 tw:text-sm tw:mt-1">Event date is required</p>
-              <p v-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.event_date[0] }}</p>
+              <p v-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.event_date[0]
+                }}</p>
               <p v-if="pastDateError" class="tw:text-red-500 tw:text-sm tw:mt-1">Cannot select a past date</p>
             </div>
 
-            <!-- START & END TIME ROW -->
-            <div style="display: flex; justify-content: space-between;">
+            <!-- START & END TIME -->
+            <div class="tw:flex tw:gap-4" style="flex: 1;">
 
               <!-- START TIME -->
-              <div style="width: 48%;">
+              <div class="tw:flex-1">
                 <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                   Start Time <span class="tw:text-red-500">*</span>
                 </label>
-
-                <div class="tw:relative">
-                  <input
-                    ref="startTimeInput"
-                    v-model="startTime"
-                    placeholder="HH:MM"
-                    :class="[
-                      'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                      hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'
-                    ]"
-                    @input="clearStartError"
-                  />
-
-                  <Clock
-                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none"
-                  />
+                <div
+                  class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
+                  :class="hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'">
+                  <input type="text" inputmode="numeric" maxlength="2" v-model="startHH" placeholder="12"
+                    @input="onTimeInput('startHH', $event)"
+                    class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                  <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
+                  <input type="text" inputmode="numeric" maxlength="2" v-model="startMM" placeholder="00"
+                    @input="onTimeInput('startMM', $event)"
+                    class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                  <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                 </div>
-
-                <p v-if="startError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ startError }}</p>
+                <p v-if="hasStartError" class="tw:text-red-500 tw:text-sm tw:mt-1">Start time is required</p>
               </div>
 
-
               <!-- END TIME -->
-              <div style="width: 48%;">
+              <div class="tw:flex-1">
                 <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                   End Time <span class="tw:text-red-500">*</span>
                 </label>
-
-                <div class="tw:relative">
-                  <input
-                    ref="endTimeInput"
-                    v-model="endTime"
-                    placeholder="HH:MM"
-                    :class="[
-                      'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                      hasEndError ? 'tw:border-red-500' : 'tw:border-gray-200'
-                    ]"
-                    @input="clearEndError"
-                  />
-
-                  <Clock
-                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none"
-                  />
+                <div
+                  class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
+                  :class="(hasEndError || timeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'">
+                  <input type="text" inputmode="numeric" maxlength="2" v-model="endHH" placeholder="13"
+                    @input="onTimeInput('endHH', $event)"
+                    class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                  <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
+                  <input type="text" inputmode="numeric" maxlength="2" v-model="endMM" placeholder="00"
+                    @input="onTimeInput('endMM', $event)"
+                    class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                  <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                 </div>
-
-                <p v-if="endError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ endError }}</p>
+                <p v-if="hasEndError" class="tw:text-red-500 tw:text-sm tw:mt-1">End time is required</p>
+                <p v-if="timeRangeError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ timeRangeError }}</p>
               </div>
 
             </div>
@@ -472,7 +456,7 @@
                   class="tw:text-red-500">*</span></label>
               <div class="tw:relative">
                 <select v-model="ageLimit" @change="clearFieldError('ageLimit')"
-                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
+                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
                   <option value="">Select Age</option>
                   <option value="all_ages">All Ages</option>
                   <option value="4+">4+</option>
@@ -529,9 +513,9 @@
           </p>
 
           <div class="tw:space-y-3">
-            <InviteSection role="talent"    :has-border="true" />
+            <InviteSection role="talent" :has-border="true" />
             <InviteSection role="organiser" :has-border="true" />
-            <InviteSection role="venue"     :has-border="false" />
+            <InviteSection role="venue" :has-border="false" />
           </div>
         </div>
 
@@ -804,22 +788,91 @@ const entranceStatus = ref("")
 
 // Event Date and Time
 const eventDate = ref("")
-const startTime = ref("")
-const endTime = ref("")
-const dateInput = ref(null)
+// const startTime = ref("")
+// const endTime = ref("")
+// const dateInput = ref(null)
 const startTimeInput = ref(null)
 const endTimeInput = ref(null)
 
-const {
-  startError,
-  endError,
-  hasStartError,
-  hasEndError,
-  validateTimeRange,
-  clearStartError,
-  clearEndError,
-  applyServerErrors: applyTimeServerErrors,
-} = useTimeRangeValidation(startTime, endTime)
+const dateInput = ref(null)
+// ── Time split refs ──────────────────────────────────────────────────
+const startHH = ref("")
+const startMM = ref("")
+const endHH = ref("")
+const endMM = ref("")
+const timeRangeError = ref("")
+const hasStartError = ref(false)
+const hasEndError = ref(false)
+
+// Computed HH:MM strings for API
+const startTime = computed(() => {
+  if (startHH.value === "" || startMM.value === "") return ""
+  return `${String(startHH.value).padStart(2, "0")}:${String(startMM.value).padStart(2, "0")}`
+})
+
+const endTime = computed(() => {
+  if (endHH.value === "" || endMM.value === "") return ""
+  return `${String(endHH.value).padStart(2, "0")}:${String(endMM.value).padStart(2, "0")}`
+})
+
+// Enforce max 2 digits + valid range, then validate end > start
+function onTimeInput(field, event) {
+  // Strip non-digits and limit to 2 characters
+  let raw = event.target.value.replace(/\D/g, "").slice(0, 2)
+  event.target.value = raw
+
+  let val = raw === "" ? "" : parseInt(raw)
+
+  if (val !== "") {
+    if (field === "startHH" || field === "endHH") {
+      if (val > 23) val = 23
+      if (val < 0) val = 0
+    } else {
+      if (val > 59) val = 59
+      if (val < 0) val = 0
+    }
+  }
+
+  if (field === "startHH") { startHH.value = val; hasStartError.value = false }
+  if (field === "startMM") { startMM.value = val; hasStartError.value = false }
+  if (field === "endHH") { endHH.value = val; hasEndError.value = false }
+  if (field === "endMM") { endMM.value = val; hasEndError.value = false }
+
+  validateEndAfterStart()
+}
+
+function validateEndAfterStart() {
+  timeRangeError.value = ""
+
+  const sHH = parseInt(startHH.value)
+  const sMM = parseInt(startMM.value)
+  const eHH = parseInt(endHH.value)
+  const eMM = parseInt(endMM.value)
+
+  // Only validate when all four fields are filled
+  if (
+    startHH.value === "" || startMM.value === "" ||
+    endHH.value === "" || endMM.value === ""
+  ) return
+
+  const startTotal = sHH * 60 + sMM
+  const endTotal = eHH * 60 + eMM
+
+  if (endTotal <= startTotal) {
+    timeRangeError.value = "End time must be later than start time"
+  }
+}
+
+// const {
+//   startError,
+//   endError,
+//   hasStartError,
+//   hasEndError,
+//   validateTimeRange,
+//   clearStartError,
+//   clearEndError,
+//   applyServerErrors: applyTimeServerErrors,
+// } = useTimeRangeValidation(startTime, endTime)
 
 watch(eventDate, () => {
   validatePastDate()
@@ -1043,28 +1096,6 @@ onMounted(() => {
       eventDate.value = dateStr
     }
   })
-
-  /* ------------------ START TIME PICKER ------------------ */
-  flatpickr(startTimeInput.value, {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "H:i",
-    time_24hr: true,
-    onChange: (selectedDates, timeStr) => {
-      startTime.value = timeStr
-    }
-  })
-
-  /* ------------------ END TIME PICKER ------------------ */
-  flatpickr(endTimeInput.value, {
-    enableTime: true,
-    noCalendar: true,
-    dateFormat: "H:i",
-    time_24hr: true,
-    onChange: (selectedDates, timeStr) => {
-      endTime.value = timeStr
-    }
-  })
 })
 
 // Cleanup on unmount
@@ -1198,11 +1229,16 @@ function validateForm() {
   categoryError.value = !selectedCategory.value
   subcategoryError.value = selectedSubcategories.value.length === 0
 
-  const timeValid = validateTimeRange()
+  // ✅ Replace with:
+  if (!startTime.value) hasStartError.value = true
+  if (!endTime.value) hasEndError.value = true
+  validateEndAfterStart()
+  const timeValid = startTime.value !== "" && endTime.value !== "" && !timeRangeError.value
+
   const hasOtherErrors = Object.values(errors.value).some(error => error) ||
-                         categoryError.value ||
-                         subcategoryError.value ||
-                         pastDateError.value
+    categoryError.value ||
+    subcategoryError.value ||
+    pastDateError.value
 
   return !hasOtherErrors && timeValid
 }
@@ -1254,7 +1290,7 @@ async function createEvent() {
 
     // Create FormData for image upload
     const formData = new FormData()
-    
+
     // Add form fields
     formData.append('title', eventTitle.value)
     formData.append('event_type', 'free')
