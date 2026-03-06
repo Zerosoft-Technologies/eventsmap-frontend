@@ -1243,8 +1243,23 @@ function selectSuggestion(suggestion) {
 }
 
 function updateMarker(lng, lat) {
-    if (marker.value) { marker.value.remove() }
-    marker.value = new maplibregl.Marker({ color: "#0061FF" })
+    // Remove existing marker
+    if (marker.value) {
+        marker.value.remove()
+    }
+
+    // Create custom marker element using marker.png
+    const el = document.createElement('div')
+    el.style.width = '60px'
+    el.style.height = '60px'
+    el.style.cursor = 'pointer'
+    el.style.backgroundImage = 'url(/marker.png)'
+    el.style.backgroundSize = 'contain'
+    el.style.backgroundRepeat = 'no-repeat'
+    el.style.backgroundPosition = 'center'
+
+    // Add new marker with custom element
+    marker.value = new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
         .addTo(map.value)
 }

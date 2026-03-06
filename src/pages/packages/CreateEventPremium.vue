@@ -753,7 +753,7 @@
                     </div>
                 </div>
 
-                <!-- SAVE EVENT BUTTON -->
+                <!-- SAVE / UPDATE EVENT BUTTONS -->
                 <div class="tw:w-full tw:pt-4">
                     <div class="tw:flex tw:w-full tw:items-center tw:justify-between">
                         <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
@@ -761,12 +761,20 @@
                            tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
                             Buy Tickets
                         </button>
-                        <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-                           tw:border tw:border-blue-500 tw:text-blue-600
-                           tw:bg-white hover:tw:bg-blue-50 tw:transition-all
-                           disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
-                            {{ isSubmitting ? 'Saving...' : 'Save Event' }}
-                        </button>
+                        <div class="tw:flex tw:gap-2">
+                            <button v-if="isEditMode" @click="cancelEdit" type="button"
+                                class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                                   tw:border tw:border-gray-300 tw:text-gray-700
+                                   tw:bg-white hover:tw:bg-gray-50 tw:transition-all">
+                                Cancel
+                            </button>
+                            <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                               tw:border tw:border-blue-500 tw:text-blue-600
+                               tw:bg-white hover:tw:bg-blue-50 tw:transition-all
+                               disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
+                                {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update' : 'Save Event') }}
+                            </button>
+                        </div>
                     </div>
                     <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon you can show this button in
                         your event description or event info window when appropriate. This is still under
@@ -826,6 +834,11 @@ const showChatSidebar = ref(false)
 const chatEventId = computed(() => myEvtStore.selectedEventId ?? 0)
 
 const currentUserId = computed(() => authStore.user?.id ?? 0)
+
+// Edit mode state
+const isEditMode = ref(false)
+const editingEventId = ref(null)
+const eventType = ref('premium')
 
 function handleChatboxClick() {
     if (!myEvtStore.selectedEventId) {
@@ -1325,9 +1338,9 @@ function validateForm() {
     subcategoryError.value = false
     fieldErrors.value = {}
 
-    // Validate each field
+    // Validate each field (image not required when updating)
     errors.value.eventTitle = !eventTitle.value.trim()
-    errors.value.eventImage = !selectedImageFile.value
+    errors.value.eventImage = !isEditMode.value && !selectedImageFile.value
     errors.value.description = !eventDescription.value.trim()
     errors.value.category = !selectedCategory.value
     errors.value.subcategories = selectedSubcategories.value.length === 0
@@ -1358,26 +1371,17 @@ function validateForm() {
 
 // Submit handler function
 async function handleSubmit() {
-    console.log('🚀 handleSubmit() called')
-
-    if (isSubmitting.value) {
-        console.log('⚠️ Already submitting, returning')
-        return
-    }
-
-    // Always run validation first
+    if (isSubmitting.value) return
     const isValid = validateForm()
-
     if (!isValid) {
-        console.log('❌ Validation failed, scrolling to first error')
         await scrollToFirstError()
         return
     }
-
-    console.log('✅ Validation passed, proceeding with submission')
-
-    // Call the original createEvent function
-    await createEvent()
+    if (isEditMode.value) {
+        await updateEvent()
+    } else {
+        await createEvent()
+    }
 }
 
 // Create Event function using eventService
@@ -1561,14 +1565,25 @@ function selectSuggestion(suggestion) {
 }
 
 // Update or add marker
+// Update or add marker
 function updateMarker(lng, lat) {
     // Remove existing marker
     if (marker.value) {
         marker.value.remove()
     }
 
-    // Add new marker
-    marker.value = new maplibregl.Marker({ color: "#0061FF" })
+    // Create custom marker element using marker.png
+    const el = document.createElement('div')
+    el.style.width = '60px'
+    el.style.height = '60px'
+    el.style.cursor = 'pointer'
+    el.style.backgroundImage = 'url(/marker.png)'
+    el.style.backgroundSize = 'contain'
+    el.style.backgroundRepeat = 'no-repeat'
+    el.style.backgroundPosition = 'center'
+
+    // Add new marker with custom element
+    marker.value = new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
         .addTo(map.value)
 }
@@ -1661,8 +1676,183 @@ onMounted(() => {
     })
 })
 
+async function clickEvent(eventId) {
+    await loadEvent(eventId)
+}
+
+async function loadEvent(id) {
+    try {
+        if (!categories.value.length) {
+            await fetchCategories()
+        }
+        const response = await eventService.getEventById(id)
+        if (!response.success || !response.data) {
+            toast.error(response.message || 'Failed to load event.')
+            return
+        }
+        const d = response.data
+
+        eventTitle.value = d.title ?? ''
+        eventType.value = d.event_type ?? 'premium'
+        eventDescription.value = d.description ?? ''
+        eventDate.value = d.event_date ?? ''
+        selectedAddress.value = d.address ?? ''
+        searchAddress.value = d.address ?? ''
+
+        if (d.start_time) {
+            const parts = d.start_time.toString().split(':')
+            const sh = parts[0] ?? ''
+            const sm = parts[1] ?? ''
+            startHH.value = String(sh).padStart(2, '0').slice(0, 2)
+            startMM.value = String(sm).padStart(2, '0').slice(0, 2)
+        } else {
+            startHH.value = ''
+            startMM.value = ''
+        }
+        if (d.end_time) {
+            const parts = d.end_time.toString().split(':')
+            const eh = parts[0] ?? ''
+            const em = parts[1] ?? ''
+            endHH.value = String(eh).padStart(2, '0').slice(0, 2)
+            endMM.value = String(em).padStart(2, '0').slice(0, 2)
+        } else {
+            endHH.value = ''
+            endMM.value = ''
+        }
+
+        if (categories.value.length && d.category_id) {
+            const cat = categories.value.find(c => c.id === d.category_id)
+            selectedCategory.value = cat ? cat.name : ''
+            if (cat && Array.isArray(d.subcategory_ids)) {
+                selectedSubcategories.value = d.subcategory_ids
+                    .map(sid => cat.subcategories.find(s => s.id === sid)?.name)
+                    .filter(Boolean)
+            } else {
+                selectedSubcategories.value = []
+            }
+        } else {
+            selectedCategory.value = ''
+            selectedSubcategories.value = []
+        }
+
+        if (d.image_url) {
+            imagePreview.value = d.image_url
+        } else {
+            imagePreview.value = null
+        }
+        selectedImageFile.value = null
+        fileName.value = d.image_url ? 'Current image' : 'No File Chosen'
+
+        fieldErrors.value = {}
+        isEditMode.value = true
+        editingEventId.value = d.id
+    } catch (error) {
+        console.error('Error loading event:', error)
+        toast.error(error.response?.data?.message || 'Failed to load event.')
+    }
+}
+
+function cancelEdit() {
+    isEditMode.value = false
+    editingEventId.value = null
+    resetForm()
+}
+
+function resetForm() {
+    eventTitle.value = ''
+    eventDescription.value = ''
+    eventDate.value = ''
+    startHH.value = ''
+    startMM.value = ''
+    endHH.value = ''
+    endMM.value = ''
+    selectedAddress.value = ''
+    searchAddress.value = ''
+    selectedCategory.value = ''
+    selectedSubcategories.value = []
+    eventType.value = 'premium'
+    imagePreview.value = null
+    selectedImageFile.value = null
+    fileName.value = ''
+    fieldErrors.value = {}
+    errors.value.eventTitle = false
+    errors.value.description = false
+    errors.value.eventImage = false
+    errors.value.category = false
+    errors.value.subcategories = false
+    errors.value.eventDate = false
+    errors.value.address = false
+    hasStartError.value = false
+    hasEndError.value = false
+    timeRangeError.value = ''
+    categoryError.value = false
+    subcategoryError.value = false
+    subcategoryValidationError.value = false
+    pastDateError.value = false
+    const fileInput = document.querySelector('input[type="file"]')
+    if (fileInput) fileInput.value = ''
+}
+
+async function updateEvent() {
+    if (isSubmitting.value || !editingEventId.value) return
+    if (!validateForm()) {
+        await scrollToFirstError()
+        return
+    }
+    try {
+        isSubmitting.value = true
+        fieldErrors.value = {}
+
+        const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+        const categoryId = selectedCategoryData ? selectedCategoryData.id : null
+        const selectedSubcategoryData = selectedCategoryData
+            ? selectedCategoryData.subcategories.filter(sub => selectedSubcategories.value.includes(sub.name))
+            : []
+        const subcategoryIds = selectedSubcategoryData.map(sub => sub.id)
+
+        const payload = {
+            title: eventTitle.value,
+            event_type: eventType.value,
+            category_id: categoryId,
+            subcategory_ids: subcategoryIds,
+            event_date: eventDate.value,
+            start_time: startTime.value,
+            end_time: endTime.value,
+            address: selectedAddress.value,
+            description: eventDescription.value
+        }
+
+        const response = await eventService.updateEventById(editingEventId.value, payload)
+
+        if (response.success) {
+            toast.success('Event updated successfully.')
+            isEditMode.value = false
+            editingEventId.value = null
+        } else {
+            if (response.errors) {
+                fieldErrors.value = response.errors
+                toast.error(response.message || 'Please correct the errors in the form.')
+                await scrollToFirstError()
+            } else {
+                toast.error(response.message || 'Failed to update event.')
+            }
+        }
+    } catch (error) {
+        console.error('Error updating event:', error)
+        if (error.response?.data?.errors) {
+            fieldErrors.value = error.response.data.errors
+            toast.error(error.response?.data?.message || 'Please correct the errors in the form.')
+            await scrollToFirstError()
+        } else {
+            toast.error(error.response?.data?.message || 'Failed to update event.')
+        }
+    } finally {
+        isSubmitting.value = false
+    }
+}
+
 async function handleEventSelected(eventId) {
-    console.log('Event selected for editing:', eventId)
+    await clickEvent(eventId)
 }
 
 function handleBack() {

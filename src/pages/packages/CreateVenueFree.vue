@@ -921,15 +921,25 @@ function selectSuggestion(suggestion) {
 
 // Update or add marker
 function updateMarker(lng, lat) {
-  // Remove existing marker
-  if (marker.value) {
-    marker.value.remove()
-  }
+    // Remove existing marker
+    if (marker.value) {
+        marker.value.remove()
+    }
 
-  // Add new marker
-  marker.value = new maplibregl.Marker({ color: "#0061FF" })
-    .setLngLat([lng, lat])
-    .addTo(map.value)
+    // Create custom marker element using marker.png
+    const el = document.createElement('div')
+    el.style.width = '60px'
+    el.style.height = '60px'
+    el.style.cursor = 'pointer'
+    el.style.backgroundImage = 'url(/marker.png)'
+    el.style.backgroundSize = 'contain'
+    el.style.backgroundRepeat = 'no-repeat'
+    el.style.backgroundPosition = 'center'
+
+    // Add new marker with custom element
+    marker.value = new maplibregl.Marker({ element: el })
+        .setLngLat([lng, lat])
+        .addTo(map.value)
 }
 
 // Reverse geocode function

@@ -38,9 +38,9 @@
         <p class="tw:text-xs tw:text-gray-400 tw:mt-1">Try a different name or country</p>
       </div>
 
-      <template v-else>
+      <!-- <template v-else> -->
         <!-- Recommended Section (only when not actively searching) -->
-        <div v-if="!searchQuery.trim() && recommended.length > 0">
+        <!-- <div v-if="!searchQuery.trim() && recommended.length > 0">
           <div class="tw:px-4 tw:py-2 tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wider tw:bg-gray-50 tw:border-b tw:border-gray-100 tw:sticky tw:top-0">
             Recommended for this event
           </div>
@@ -56,7 +56,7 @@
           <div class="tw:px-4 tw:py-2 tw:text-xs tw:font-semibold tw:text-gray-400 tw:uppercase tw:tracking-wider tw:sticky tw:top-0">
             All {{ roleLabel }}s
           </div>
-        </div>
+        </div> -->
 
         <!-- Profile List -->
         <InviteListItem
@@ -66,7 +66,7 @@
           :is-selected="selectedIds.includes(profile.id)"
           @toggle="$emit('toggle', profile)"
         />
-      </template>
+      <!-- </template> -->
     </div>
 
     <!-- Footer: selected count hint -->
