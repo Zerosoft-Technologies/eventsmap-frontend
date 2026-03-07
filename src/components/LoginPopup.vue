@@ -69,6 +69,7 @@ import { ref } from "vue";
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { getCreateRoute } from '@/utils/routeResolver';
 
 const { t } = useI18n()
 const router = useRouter()
@@ -105,31 +106,15 @@ const submitLogin = async () => {
 
     if (result.success) {
         closePopup();
-        // Redirect based on user's profile_type
-        const redirectPath = getRedirectPath(authStore.user?.profile_type);
-        router.push(redirectPath);
+        // Ensure we have profile_type & account_type (e.g. if login response was minimal)
+        if (!authStore.user?.profile_type || !authStore.user?.account_type) {
+            await authStore.fetchUser();
+        }
+        router.push(getCreateRoute(authStore.user?.profile_type, authStore.user?.account_type));
     } else if (!result.emailVerified) {
         showResendBanner.value = true;
     }
 };
-
-/**
- * Get redirect path based on user's profile type
- */
-function getRedirectPath(profileType) {
-    switch (profileType) {
-        case 'event':
-            return '/create-event-free';
-        case 'organizer':
-            return '/create-organiser-free';
-        case 'talent':
-            return '/create-talents-free';
-        case 'venue':
-            return '/create-venue-free';
-        default:
-            return '/dashboard';
-    }
-}
 
 const handleResend = async () => {
     resending.value = true;

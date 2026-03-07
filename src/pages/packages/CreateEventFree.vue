@@ -129,7 +129,7 @@
                   ]">
                   <!-- <option value="">
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                    'SelectCategory') }}
+                    'Select Category') }}
                   </option> -->
                   <option v-for="category in categories" :key="category.id" :value="category.name">
                     {{ category.name }}

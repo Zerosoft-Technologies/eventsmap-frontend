@@ -24,7 +24,14 @@ const ROUTE_MAP: Record<ProfileType, Record<AccountType, string>> = {
   },
 }
 
-const DEFAULT_ROUTE = '/dashboard'
+const DEFAULT_ROUTE = '/create-profile'
+
+/** Normalize API profile_type to our route keys (e.g. organizer → organiser, talent → talents). */
+function normalizeProfileType(profileType: string): string {
+  if (profileType === 'organizer') return 'organiser'
+  if (profileType === 'talent') return 'talents'
+  return profileType
+}
 
 /**
  * Returns the correct create-page route for a given profile & account type.
@@ -38,8 +45,26 @@ export function getCreateRoute(
 ): string {
   if (!profileType || !accountType) return DEFAULT_ROUTE
 
-  const profileRoutes = ROUTE_MAP[profileType as ProfileType]
+  const normalized = normalizeProfileType(profileType)
+  const profileRoutes = ROUTE_MAP[normalized as ProfileType]
   if (!profileRoutes) return DEFAULT_ROUTE
 
   return profileRoutes[accountType as AccountType] || DEFAULT_ROUTE
+}
+
+const CREATE_PATH_REGEX = /^\/create-(event|organiser|talents|venue)-(free|premium)(?:\/|$)/
+
+/**
+ * Parses a path to get the profile and account type it belongs to.
+ * Returns null if the path is not a create profile route.
+ */
+export function getProfileAndAccountFromPath(
+  path: string,
+): { profileType: ProfileType; accountType: AccountType } | null {
+  const match = path.match(CREATE_PATH_REGEX)
+  if (!match) return null
+  return {
+    profileType: match[1] as ProfileType,
+    accountType: match[2] as AccountType,
+  }
 }

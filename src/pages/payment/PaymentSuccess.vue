@@ -36,7 +36,7 @@
       </div>
       <h1 class="tw:text-2xl tw:font-bold tw:text-gray-800 tw:mb-2">Payment Successful!</h1>
       <p class="tw:text-gray-500 tw:text-sm tw:mb-6">
-        Your account has been activated. Redirecting to your dashboard...
+        Your account has been activated. Redirecting to your profile...
       </p>
 
       <!-- Session Info -->
@@ -62,10 +62,10 @@
         Redirecting in {{ redirectCountdown }}s...
       </div>
 
-      <button @click="goToDashboard"
+      <button @click="goToProfile"
         class="no-hover tw:w-full tw:text-white tw:font-semibold tw:py-2.5 tw:rounded-lg tw:transition hover:tw:opacity-90"
         style="background-color: var(--primary-color)">
-        Go to Dashboard Now
+        Go to my profile
       </button>
     </div>
 
@@ -106,6 +106,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { getCreateRoute } from '@/utils/routeResolver'
 import api from '@/services/api'
 import type { User } from '@/stores/auth'
 import type { AxiosError } from 'axios'
@@ -148,9 +149,9 @@ function copyToClipboard(text: string) {
   })
 }
 
-function goToDashboard() {
+function goToProfile() {
   clearTimers()
-  router.push('/dashboard')
+  router.push(getCreateRoute(authStore.user?.profile_type, authStore.user?.account_type))
 }
 
 function clearTimers() {
@@ -204,7 +205,7 @@ function handleSuccess(data: VerifyResponse) {
     redirectCountdown.value--
     if (redirectCountdown.value <= 0) {
       clearTimers()
-      router.push('/dashboard')
+      router.push(getCreateRoute(authStore.user?.profile_type, authStore.user?.account_type))
     }
   }, 1000)
 }

@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLoadingStore } from '@/stores/loading'
-import { getCreateRoute } from '@/utils/routeResolver'
+import { getCreateRoute, getProfileAndAccountFromPath } from '@/utils/routeResolver'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -50,7 +50,6 @@ const ForgotPassword = () => import('../pages/auth/ForgotPassword.vue')
 const ResetPassword = () => import('../pages/auth/ResetPassword.vue')
 const VerifyEmail = () => import('../pages/auth/VerifyEmail.vue')
 const EmailVerified = () => import('../pages/auth/EmailVerified.vue')
-const Dashboard = () => import('../pages/Dashboard.vue')
 const PaymentSuccess = () => import('../pages/payment/PaymentSuccess.vue')
 const PaymentCancel = () => import('../pages/payment/PaymentCancel.vue')
 const PaymentRequired     = () => import('../pages/payment/PaymentRequired.vue')
@@ -75,7 +74,6 @@ const routes: RouteRecordRaw[] = [
   { path: '/payment-required', name: 'PaymentRequired', component: PaymentRequired, meta: { requiresAuth: true } },
 
   // ── Protected Routes ────────────────────────────────────
-  { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-profile', name: 'CreateProfile', component: CreateProfile, meta: { requiresAuth: true } },
   { path: '/create-redirect', name: 'CreateRedirect', component: CreateRedirect, meta: { requiresAuth: true } },
 
@@ -130,6 +128,18 @@ router.beforeEach(async (to, _from, next) => {
     await authStore.initializeAuth()
   }
 
+  // Legacy /dashboard → redirect to user's create page
+  if (to.path === '/dashboard') {
+    if (!authStore.token) {
+      return next({ name: 'Login', query: { redirect: to.fullPath } })
+    }
+    if (!authStore.user) await authStore.fetchUser()
+    if (!authStore.user) {
+      return next({ name: 'Login', query: { redirect: to.fullPath } })
+    }
+    return next(getCreateRoute(authStore.user.profile_type, authStore.user.account_type))
+  }
+
   // Protected route: requires authentication
   if (to.meta.requiresAuth) {
     // No token at all → redirect to login
@@ -151,6 +161,16 @@ router.beforeEach(async (to, _from, next) => {
       authStore.user.status === 'pending_payment'
     ) {
       return next({ name: 'PaymentRequired' })
+    }
+
+    // Restrict create pages: user may only access their own create page (profile_type + account_type)
+    const pathProfile = getProfileAndAccountFromPath(to.path)
+    if (pathProfile) {
+      const userProfile = authStore.user.profile_type === 'organizer' ? 'organiser' : authStore.user.profile_type
+      const userProfileNorm = userProfile === 'talent' ? 'talents' : userProfile
+      if (pathProfile.profileType !== userProfileNorm || pathProfile.accountType !== authStore.user.account_type) {
+        return next(getCreateRoute(authStore.user.profile_type, authStore.user.account_type))
+      }
     }
 
     // User is authenticated, allow access
