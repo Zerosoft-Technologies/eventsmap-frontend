@@ -37,7 +37,7 @@
         </transition>         
       </div>
       <div>
-        <button class="tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg tw:shadow-[1px_1px_10px_5px_white]"><img src="../assets/calendar.png" alt="Calendar Icon"/><span>
+        <button class="tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg"><img src="../assets/calendar.png" alt="Calendar Icon"/><span>
           <DatePicker @update:dateRange="dateRange = $event" />
         </span></button>
       </div>      
@@ -118,7 +118,7 @@
         </button>
       </div>      
       <div v-if="!authStore.isAuthenticated">
-        <RouterLink to="/register" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) tw:shadow-[1px_1px_10px_5px_white]"><img src="../assets/user.png" alt="User Icon"/><span>{{ $t('header.createProfile') }}</span></RouterLink>
+        <RouterLink to="/register" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>{{ $t('header.createProfile') }}</span></RouterLink>
       </div>      
       <!-- Language Switcher -->
       <div class="tw:relative">
@@ -440,7 +440,10 @@ const isProfilePage = computed(() => {
          path.includes('organiser') ||
          path.includes('venue') ||
          path.includes('talent') ||
-         path.includes('event')
+         path.includes('event') ||
+         path.includes('login') ||
+         path.includes('register') ||
+         path.includes('forgot-password')
 })
 
 function toggleWishlistPanel() {

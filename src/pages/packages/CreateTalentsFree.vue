@@ -99,7 +99,8 @@
           <!-- Header -->
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
             <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-              Talent Image (Max 1)
+              Talent Image (Max 1) <span class="tw:text-red-500">*</span>
+              <span class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
             </h3>
 
           </div>
@@ -458,8 +459,9 @@
           </p>
 
           <div class="tw:space-y-3">
-            <InviteSection role="organiser" :has-border="true" />
-            <InviteSection role="venue"     :has-border="false" />
+            <!-- <InviteSection role="organiser" :has-border="true" />
+            <InviteSection role="venue"     :has-border="false" /> -->
+            <InviteSection role="talent"    :has-border="false" />
           </div>
         </div>
 

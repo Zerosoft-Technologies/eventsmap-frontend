@@ -42,6 +42,7 @@
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
             <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
               Event Image (Max 1) <span class="tw:text-red-500">*</span>
+              <span class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
             </h3>
 
             <!-- <button type="button"

@@ -140,7 +140,8 @@
           <!-- Header -->
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
             <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-              Venue Image (Max 1)
+              Venue Image (Max 1) <span class="tw:text-red-500">*</span>
+              <span class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
             </h3>
 
             <!-- <button type="button"
@@ -508,8 +509,9 @@
             Make your event stand out even more. These sections help attendees find information and answer their
             questions.
           </p>
-          <div class="tw:space-y-3">
-            <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
+          <div class="tw:space-y-1">
+            <InviteSection role="venue" :has-border="false" />
+            <!-- <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
               <div class="tw:flex tw:items-center tw:gap-3">
                 <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
                   <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
@@ -535,7 +537,7 @@
                 <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
               </div>
               <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -585,6 +587,7 @@ import { ref, reactive, computed, onMounted, onUnmounted } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import eventService from "@/services/eventService"
+import InviteSection from "@/components/invite/InviteSection.vue"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 // import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"

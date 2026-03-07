@@ -127,18 +127,16 @@
                             Description of Venue
                         </h3>
                     </div>
-                    <!-- Dropdown -->
+
                     <div class="tw:relative" ref="descriptionDropdownRef">
 
                         <!-- Trigger -->
                         <div @click="toggleDescriptionDropdown"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
-
                             <span class="tw:text-gray-700">
-                                {{ selectedDescriptionItems?.length ? selectedDescriptionItems.join(', ') : 'Select Description Items' }}
+                                {{ selectedDescriptionItems?.length ? `${selectedDescriptionItems.length} selected` : 'Select Description Items' }}
                             </span>
-
-                            <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
+                            <ChevronDown :class="['tw:w-5 tw:h-5 tw:text-gray-400 tw:transition-transform', showDescriptionDropdown ? 'tw:rotate-180' : '']" />
                         </div>
 
                         <!-- Dropdown Box -->
@@ -146,19 +144,43 @@
                             class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
 
                             <!-- Inner white container -->
-                            <div class="tw:bg-white tw:rounded-lg tw:space-y-4 tw:p-4">
+                            <div class="tw:bg-white tw:rounded-lg tw:p-4">
 
-                                <label v-for="item in descriptionItems" :key="item"
-                                    class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
+                                <!-- Close Button -->
+                                <div class="tw:flex tw:justify-end tw:mb-3">
+                                    <button @click="showDescriptionDropdown = false"
+                                        class="tw:flex tw:items-center tw:gap-1 tw:text-sm tw:text-gray-500 hover:tw:text-gray-800 tw:border tw:border-gray-200 tw:rounded-lg tw:px-3 tw:py-1 tw:transition">
+                                        <X class="tw:w-4 tw:h-4" /> Close
+                                    </button>
+                                </div>
 
-                                    <span class="tw:text-gray-700">{{ item }}</span>
-
-                                    <input type="checkbox" :value="item" v-model="selectedDescriptionItems"
-                                        class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
-                                </label>
+                                <div class="tw:space-y-2">
+                                    <label v-for="item in descriptionItems" :key="item"
+                                        class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
+                                        <span class="tw:text-gray-700">{{ item }}</span>
+                                        <input type="checkbox" :value="item" v-model="selectedDescriptionItems"
+                                            class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
+                                    </label>
+                                </div>
 
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Selected Tags -->
+                    <div v-if="selectedDescriptionItems.length > 0" class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-2">
+                        <span v-for="item in selectedDescriptionItems" :key="item"
+                            class="tw:inline-flex tw:items-center tw:gap-1 tw:bg-[#dbeafe] tw:text-[#1d4ed8] tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-[#bfdbfe]">
+                            {{ item }}
+                            <button @click="selectedDescriptionItems = selectedDescriptionItems.filter(i => i !== item)"
+                                class="tw:ml-1 tw:text-[#1d4ed8] tw:opacity-60 hover:tw:opacity-100 tw:transition">
+                                <svg class="tw:w-3.5 tw:h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </span>
                     </div>
                 </div>
 
@@ -212,7 +234,8 @@
                     <!-- Header -->
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
                         <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-                            Venue Image
+                            Venue Image <span class="tw:text-red-500">*</span> <span
+                                class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
                         </h3>
 
                         <!-- <button type="button"
@@ -245,7 +268,8 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images
+                            Additional Images (Max. 5 images) <span class="tw:text-xs tw:text-gray-500"> Recommended
+                                (1200x800) </span>
                         </h3>
                     </div>
 
@@ -475,7 +499,7 @@
                         <!-- Subcategory Multi-Select -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories (Max 5) <span class="tw:text-red-500">*</span>
+                                Subcategories (Max 6) <span class="tw:text-red-500">*</span>
                             </label>
 
                             <!-- Multi-Select Input Field -->
@@ -506,11 +530,11 @@
                                         <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
                                             :class="{
                                                 'selected': selectedSubcategories.includes(subcategory),
-                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5
+                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6
                                             }" @click="toggleSubcategory(subcategory)">
                                             <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
                                                 v-model="selectedSubcategories"
-                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5"
+                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6"
                                                 @change="handleSubcategoryChange" @click.stop class="option-checkbox">
                                             <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
                                                 {{ subcategory }}
@@ -519,8 +543,8 @@
                                     </div>
 
                                     <!-- Max selection notice -->
-                                    <div v-if="selectedSubcategories.length >= 5" class="max-selection-notice">
-                                        Maximum 5 subcategories selected
+                                    <div v-if="selectedSubcategories.length >= 6" class="max-selection-notice">
+                                        Maximum 6 subcategories selected
                                     </div>
                                 </div>
                             </div>
@@ -699,8 +723,9 @@
                         Make your event stand out even more. These sections help attendees find information and answer their questions.
                     </p>
                     <div class="tw:space-y-1">
-                        <InviteSection role="talent" :has-border="true" />
-                        <InviteSection role="organiser" :has-border="false" />
+                        <!-- <InviteSection role="talent" :has-border="true" />
+                        <InviteSection role="organiser" :has-border="false" /> -->
+                        <InviteSection role="venue" :has-border="false" />
                     </div>
                 </div>
 
@@ -761,7 +786,8 @@ import {
     User,
     SkipBackIcon,
     Clock,
-    MessageSquareText
+    MessageSquareText,
+    X
 } from "lucide-vue-next"
 
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue"
@@ -966,7 +992,7 @@ function toggleSubcategoryDropdown() {
 }
 
 function toggleSubcategory(subcategory) {
-    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
+    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 6) {
         return
     }
     const index = selectedSubcategories.value.indexOf(subcategory)
@@ -986,8 +1012,8 @@ function handleClickOutside(event) {
 
 function handleSubcategoryChange() {
     subcategoryError.value = false
-    if (selectedSubcategories.value.length > 5) {
-        selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
+    if (selectedSubcategories.value.length > 6) {
+        selectedSubcategories.value = selectedSubcategories.value.slice(0, 6)
         subcategoryValidationError.value = true
         setTimeout(() => { subcategoryValidationError.value = false }, 3000)
     } else {

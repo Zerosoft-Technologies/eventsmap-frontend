@@ -125,7 +125,8 @@
                     <!-- Header -->
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
                         <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-                            Talent main image
+                            Talent Main Image <span class="tw:text-red-500">*</span> <span
+                                class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
                         </h3>
 
                         <!-- <button type="button"
@@ -158,7 +159,8 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images (Max. 5 images)
+                            Additional Images (Max. 5 images) <span class="tw:text-xs tw:text-gray-500"> Recommended
+                                (1200x800) </span>
                         </h3>
                     </div>
 
@@ -549,7 +551,7 @@
 
                     <!-- Yes/No Selection -->
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Can You Share Nationality?</label>
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Share info profile (Yes / No)</label>
                         <div class="tw:relative">
                             <select v-model="talentNationality"
                                 class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
@@ -577,7 +579,7 @@
 
                     <!-- Yes/No Selection -->
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Can You Share Age?</label>
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Share info profile (Yes / No)</label>
                         <div class="tw:relative">
                             <select v-model="showAge"
                                 class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
@@ -611,8 +613,10 @@
 
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Highlights</label>
-                        <input v-model="talentHighlightsText" type="text" placeholder="Enter talent highlights"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+
+                        <textarea v-model="talentHighlightsText" placeholder="Enter talent highlights" rows="3"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y"></textarea>
+
                     </div>
                 </div>
 
@@ -636,8 +640,9 @@
                     </p>
 
                     <div class="tw:space-y-3">
-                        <InviteSection role="organiser" :has-border="true" />
-                        <InviteSection role="venue" :has-border="false" />
+                        <!-- <InviteSection role="organiser" :has-border="true" />
+                        <InviteSection role="venue" :has-border="false" /> -->
+                        <InviteSection role="talent" :has-border="false" />
                     </div>
                 </div>
 

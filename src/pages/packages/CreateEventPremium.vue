@@ -135,7 +135,7 @@
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
                         <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
                             <!-- Upload Event Image with recommended size -->
-                            Event main image <span class="tw:text-red-500">*</span> <span
+                            Event Main Image <span class="tw:text-red-500">*</span> <span
                                 class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
                         </h3>
 
@@ -186,7 +186,7 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images (Max. 5 images) <span class="tw:text-xs tw:text-gray-500"> Recommended
+                            Additional Images (Max. 5 Images) <span class="tw:text-xs tw:text-gray-500"> Recommended
                                 (1200x800) </span>
                         </h3>
                     </div>
@@ -253,7 +253,7 @@
                         <!-- Subcategory Multi-Select -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories (Max 5) <span class="tw:text-red-500">*</span>
+                                Subcategories (Max 6) <span class="tw:text-red-500">*</span>
                             </label>
 
                             <!-- Multi-Select Input Field -->
@@ -284,11 +284,11 @@
                                         <div v-for="subcategory in availableSubcategories" :key="subcategory"
                                             class="dropdown-option" :class="{
                                                 'selected': selectedSubcategories.includes(subcategory),
-                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5
+                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6
                                             }" @click="toggleSubcategory(subcategory)">
                                             <input type="checkbox" :id="`subcategory-${subcategory}`"
                                                 :value="subcategory" v-model="selectedSubcategories"
-                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5"
+                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6"
                                                 @change="handleSubcategoryChange" @click.stop class="option-checkbox">
                                             <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
                                                 {{ subcategory }}
@@ -297,8 +297,8 @@
                                     </div>
 
                                     <!-- Max selection notice -->
-                                    <div v-if="selectedSubcategories.length >= 5" class="max-selection-notice">
-                                        Maximum 5 subcategories selected
+                                    <div v-if="selectedSubcategories.length >= 6" class="max-selection-notice">
+                                        Maximum 6 subcategories selected
                                     </div>
                                 </div>
                             </div>
@@ -1119,7 +1119,7 @@ function toggleSubcategoryDropdown() {
 
 // Toggle individual subcategory selection
 function toggleSubcategory(subcategory) {
-    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
+    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 6) {
         return // Prevent selection if already at max 5
     }
 
@@ -1156,10 +1156,10 @@ function handleSubcategoryChange() {
 
     // Maximum 5 subcategories selection logic
     // Prevent selection if trying to add more than 5 items
-    if (selectedSubcategories.value.length > 5) {
+    if (selectedSubcategories.value.length > 6) {
         // Remove the last added item to maintain the limit
         const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
-        selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
+        selectedSubcategories.value = selectedSubcategories.value.slice(0, 6)
 
         // Show validation error
         subcategoryValidationError.value = true
