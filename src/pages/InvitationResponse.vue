@@ -88,7 +88,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Loader2, CheckCircle2, XCircle, AlertCircle, LinkOff } from 'lucide-vue-next'
+import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-vue-next'
 import { chatService } from '@/services/chatService'
 
 type PageStatus = 'processing' | 'accepted' | 'rejected' | 'error' | 'invalid'
