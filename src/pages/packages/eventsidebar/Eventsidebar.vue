@@ -116,7 +116,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['back', 'event-selected'])
+const emit = defineEmits(['back', 'event-selected', 'chatbox-click'])
 
 onMounted(() => {
   myEventStore.fetchMyEvents()
@@ -146,6 +146,8 @@ function handleMenuClick(item) {
     router.push(item.route)
   } else if (item.id === 'back') {
     emit('back')
+  } else if (item.id === 'chatbox') {
+    emit('chatbox-click')
   }
 }
 

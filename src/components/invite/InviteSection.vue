@@ -64,27 +64,33 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { User, MapPin, Mic2 } from 'lucide-vue-next'
 import InviteSearchPanel from './InviteSearchPanel.vue'
 import SelectedChips from './SelectedChips.vue'
 import { mockProfiles } from '@/data/mockProfiles'
 
+const emit = defineEmits(['update:selectedIds'])
+
 const props = defineProps({
   role: {
     type: String,
     required: true,
-    validator: (v) => ['talent', 'organiser', 'venue'].includes(v),
+    validator: (v) => ['talent', 'organizer', 'venue'].includes(v),
   },
   hasBorder: {
     type: Boolean,
     default: true,
   },
+  profiles: {
+    type: Array,
+    default: undefined,
+  },
 })
 
 const ROLE_CONFIG = {
   talent:    { label: 'Invite Talent',    icon: Mic2    },
-  organiser: { label: 'Invite Organiser', icon: User    },
+  organizer: { label: 'Invite Organizer', icon: User    },
   venue:     { label: 'Invite Venue',     icon: MapPin  },
 }
 
@@ -97,9 +103,14 @@ const roleIcon  = computed(() => ROLE_CONFIG[props.role]?.icon  ?? User)
 
 const selectedIds = computed(() => selectedUsers.value.map((u) => u.id))
 
-const roleProfiles = computed(() =>
-  mockProfiles.filter((p) => p.profile_type === props.role)
-)
+watch(selectedIds, (ids) => {
+  emit('update:selectedIds', [...ids])
+}, { immediate: true })
+
+const roleProfiles = computed(() => {
+  const source = props.profiles ?? mockProfiles
+  return source.filter((p) => p.profile_type === props.role)
+})
 
 const recommendedProfiles = computed(() =>
   roleProfiles.value

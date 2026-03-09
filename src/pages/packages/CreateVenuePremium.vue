@@ -120,48 +120,6 @@
                     </div>
                 </div>
 
-                <!-- DESCRIPTION OF VENUE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Description of Venue
-                        </h3>
-                    </div>
-                    <!-- Dropdown -->
-                    <div class="tw:relative" ref="descriptionDropdownRef">
-
-                        <!-- Trigger -->
-                        <div @click="toggleDescriptionDropdown"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
-
-                            <span class="tw:text-gray-700">
-                                {{ selectedDescriptionItems?.length ? selectedDescriptionItems.join(', ') : 'Select Description Items' }}
-                            </span>
-
-                            <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
-                        </div>
-
-                        <!-- Dropdown Box -->
-                        <div v-if="showDescriptionDropdown"
-                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
-
-                            <!-- Inner white container -->
-                            <div class="tw:bg-white tw:rounded-lg tw:space-y-4 tw:p-4">
-
-                                <label v-for="item in descriptionItems" :key="item"
-                                    class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
-
-                                    <span class="tw:text-gray-700">{{ item }}</span>
-
-                                    <input type="checkbox" :value="item" v-model="selectedDescriptionItems"
-                                        class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
-                                </label>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Venue LOCATION SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
                     <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
@@ -206,13 +164,78 @@
                     </div>
                 </div>
 
+                <!-- DESCRIPTION OF VENUE SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                            Description of Venue
+                        </h3>
+                    </div>
+
+                    <div class="tw:relative" ref="descriptionDropdownRef">
+
+                        <!-- Trigger -->
+                        <div @click="toggleDescriptionDropdown"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
+                            <span class="tw:text-gray-700">
+                                {{ selectedDescriptionItems?.length ? `${selectedDescriptionItems.length} selected` : 'Select Description Items' }}
+                            </span>
+                            <ChevronDown :class="['tw:w-5 tw:h-5 tw:text-gray-400 tw:transition-transform', showDescriptionDropdown ? 'tw:rotate-180' : '']" />
+                        </div>
+
+                        <!-- Dropdown Box -->
+                        <div v-if="showDescriptionDropdown"
+                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
+
+                            <!-- Inner white container -->
+                            <div class="tw:bg-white tw:rounded-lg tw:p-4">
+
+                                <!-- Close Button -->
+                                <div class="tw:flex tw:justify-end tw:mb-3">
+                                    <button @click="showDescriptionDropdown = false"
+                                        class="tw:flex tw:items-center tw:gap-1 tw:text-sm tw:text-gray-500 hover:tw:text-gray-800 tw:border tw:border-gray-200 tw:rounded-lg tw:px-3 tw:py-1 tw:transition">
+                                        <X class="tw:w-4 tw:h-4" /> Close
+                                    </button>
+                                </div>
+
+                                <div class="tw:space-y-2">
+                                    <label v-for="item in descriptionItems" :key="item"
+                                        class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
+                                        <span class="tw:text-gray-700">{{ item }}</span>
+                                        <input type="checkbox" :value="item" v-model="selectedDescriptionItems"
+                                            class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
+                                    </label>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Tags -->
+                    <div v-if="selectedDescriptionItems.length > 0" class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-2">
+                        <span v-for="item in selectedDescriptionItems" :key="item"
+                            class="tw:inline-flex tw:items-center tw:gap-1 tw:bg-[#dbeafe] tw:text-[#1d4ed8] tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-[#bfdbfe]">
+                            {{ item }}
+                            <button @click="selectedDescriptionItems = selectedDescriptionItems.filter(i => i !== item)"
+                                class="tw:ml-1 tw:text-[#1d4ed8] tw:opacity-60 hover:tw:opacity-100 tw:transition">
+                                <svg class="tw:w-3.5 tw:h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+
                 <!-- Venue IMAGE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-6">
 
                     <!-- Header -->
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
                         <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-                            Venue Image
+                            Venue Image <span class="tw:text-red-500">*</span> <span
+                                class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
                         </h3>
 
                         <!-- <button type="button"
@@ -245,7 +268,8 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images
+                            Additional Images (Max. 5 images) <span class="tw:text-xs tw:text-gray-500"> Recommended
+                                (1200x800) </span>
                         </h3>
                     </div>
 
@@ -462,7 +486,7 @@
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
                                         'Select') }}
                                     </option>
-                                    <option v-for="category in categories" :key="category.id" :value="category.name">
+                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                                         {{ category.name }}
                                     </option>
                                 </select>
@@ -475,7 +499,7 @@
                         <!-- Subcategory Multi-Select -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories (Max 5) <span class="tw:text-red-500">*</span>
+                                Subcategories (Max 6) <span class="tw:text-red-500">*</span>
                             </label>
 
                             <!-- Multi-Select Input Field -->
@@ -506,11 +530,11 @@
                                         <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
                                             :class="{
                                                 'selected': selectedSubcategories.includes(subcategory),
-                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5
+                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6
                                             }" @click="toggleSubcategory(subcategory)">
                                             <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
                                                 v-model="selectedSubcategories"
-                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5"
+                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6"
                                                 @change="handleSubcategoryChange" @click.stop class="option-checkbox">
                                             <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
                                                 {{ subcategory }}
@@ -519,8 +543,8 @@
                                     </div>
 
                                     <!-- Max selection notice -->
-                                    <div v-if="selectedSubcategories.length >= 5" class="max-selection-notice">
-                                        Maximum 5 subcategories selected
+                                    <div v-if="selectedSubcategories.length >= 6" class="max-selection-notice">
+                                        Maximum 6 subcategories selected
                                     </div>
                                 </div>
                             </div>
@@ -600,48 +624,48 @@
                         </div>
 
                         <!-- START & END TIME -->
-                        <div style="display: flex; justify-content: space-between;">
+                        <div class="tw:flex tw:gap-4" style="flex: 1;">
 
                             <!-- START TIME -->
-                            <div style="width: 48%;">
+                            <div class="tw:flex-1">
                                 <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                                     Start Time <span class="tw:text-red-500">*</span>
                                 </label>
-                                <div class="tw:relative">
-                                    <input
-                                        ref="startTimeInput"
-                                        v-model="startTime"
-                                        placeholder="HH:MM"
-                                        :class="[
-                                            'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                                            hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'
-                                        ]"
-                                        @input="clearStartError"
-                                    />
-                                    <Clock class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                <div class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
+                                    :class="hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'">
+                                    <input type="text" inputmode="numeric" maxlength="2" v-model="startHH"
+                                        placeholder="12" @input="onTimeInput('startHH', $event)"
+                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                                    <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
+                                    <input type="text" inputmode="numeric" maxlength="2" v-model="startMM"
+                                        placeholder="00" @input="onTimeInput('startMM', $event)"
+                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                                    <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                                 </div>
-                                <p v-if="startError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ startError }}</p>
+                                <p v-if="hasStartError" class="tw:text-red-500 tw:text-sm tw:mt-1">Start time is
+                                    required</p>
                             </div>
 
                             <!-- END TIME -->
-                            <div style="width: 48%;">
+                            <div class="tw:flex-1">
                                 <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                                     End Time <span class="tw:text-red-500">*</span>
                                 </label>
-                                <div class="tw:relative">
-                                    <input
-                                        ref="endTimeInput"
-                                        v-model="endTime"
-                                        placeholder="HH:MM"
-                                        :class="[
-                                            'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                                            hasEndError ? 'tw:border-red-500' : 'tw:border-gray-200'
-                                        ]"
-                                        @input="clearEndError"
-                                    />
-                                    <Clock class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                <div class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
+                                    :class="(hasEndError || timeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'">
+                                    <input type="text" inputmode="numeric" maxlength="2" v-model="endHH"
+                                        placeholder="13" @input="onTimeInput('endHH', $event)"
+                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                                    <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
+                                    <input type="text" inputmode="numeric" maxlength="2" v-model="endMM"
+                                        placeholder="00" @input="onTimeInput('endMM', $event)"
+                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                                    <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                                 </div>
-                                <p v-if="endError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ endError }}</p>
+                                <p v-if="hasEndError" class="tw:text-red-500 tw:text-sm tw:mt-1">End time is required
+                                </p>
+                                <p v-if="timeRangeError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ timeRangeError }}
+                                </p>
                             </div>
 
                         </div>
@@ -699,8 +723,9 @@
                         Make your event stand out even more. These sections help attendees find information and answer their questions.
                     </p>
                     <div class="tw:space-y-1">
-                        <InviteSection role="talent" :has-border="true" />
-                        <InviteSection role="organiser" :has-border="false" />
+                        <!-- <InviteSection role="talent" :has-border="true" />
+                        <InviteSection role="organiser" :has-border="false" /> -->
+                        <InviteSection role="venue" :has-border="false" />
                     </div>
                 </div>
 
@@ -761,7 +786,8 @@ import {
     User,
     SkipBackIcon,
     Clock,
-    MessageSquareText
+    MessageSquareText,
+    X
 } from "lucide-vue-next"
 
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue"
@@ -826,20 +852,88 @@ const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstErro
 
 // Event Date and Time
 // const eventDate = ref("")
-const startTime = ref("")
-const endTime = ref("")
+// const startTime = ref("")
+// const endTime = ref("")
 const startTimeInput = ref(null)
 const endTimeInput = ref(null)
 
-const {
-    startError,
-    endError,
-    hasStartError,
-    hasEndError,
-    validateTimeRange,
-    clearStartError,
-    clearEndError,
-} = useTimeRangeValidation(startTime, endTime)
+// ── Time split refs ──────────────────────────────────────────────────
+const startHH = ref("")
+const startMM = ref("")
+const endHH = ref("")
+const endMM = ref("")
+const timeRangeError = ref("")
+const hasStartError = ref(false)
+const hasEndError = ref(false)
+
+// Computed HH:MM strings for API
+const startTime = computed(() => {
+    if (startHH.value === "" || startMM.value === "") return ""
+    return `${String(startHH.value).padStart(2, "0")}:${String(startMM.value).padStart(2, "0")}`
+})
+
+const endTime = computed(() => {
+    if (endHH.value === "" || endMM.value === "") return ""
+    return `${String(endHH.value).padStart(2, "0")}:${String(endMM.value).padStart(2, "0")}`
+})
+
+// Enforce max 2 digits + valid range, then validate end > start
+function onTimeInput(field, event) {
+    // Strip non-digits and limit to 2 characters
+    let raw = event.target.value.replace(/\D/g, "").slice(0, 2)
+    event.target.value = raw
+
+    let val = raw === "" ? "" : parseInt(raw)
+
+    if (val !== "") {
+        if (field === "startHH" || field === "endHH") {
+            if (val > 23) val = 23
+            if (val < 0) val = 0
+        } else {
+            if (val > 59) val = 59
+            if (val < 0) val = 0
+        }
+    }
+
+    if (field === "startHH") { startHH.value = val; hasStartError.value = false }
+    if (field === "startMM") { startMM.value = val; hasStartError.value = false }
+    if (field === "endHH") { endHH.value = val; hasEndError.value = false }
+    if (field === "endMM") { endMM.value = val; hasEndError.value = false }
+
+    validateEndAfterStart()
+}
+
+function validateEndAfterStart() {
+    timeRangeError.value = ""
+
+    const sHH = parseInt(startHH.value)
+    const sMM = parseInt(startMM.value)
+    const eHH = parseInt(endHH.value)
+    const eMM = parseInt(endMM.value)
+
+    // Only validate when all four fields are filled
+    if (
+        startHH.value === "" || startMM.value === "" ||
+        endHH.value === "" || endMM.value === ""
+    ) return
+
+    const startTotal = sHH * 60 + sMM
+    const endTotal = eHH * 60 + eMM
+
+    if (endTotal <= startTotal) {
+        timeRangeError.value = "End time must be later than start time"
+    }
+}
+
+// const {
+//     startError,
+//     endError,
+//     hasStartError,
+//     hasEndError,
+//     validateTimeRange,
+//     clearStartError,
+//     clearEndError,
+// } = useTimeRangeValidation(startTime, endTime)
 
 const selectedCategory = ref("")
 
@@ -898,7 +992,7 @@ function toggleSubcategoryDropdown() {
 }
 
 function toggleSubcategory(subcategory) {
-    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
+    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 6) {
         return
     }
     const index = selectedSubcategories.value.indexOf(subcategory)
@@ -918,8 +1012,8 @@ function handleClickOutside(event) {
 
 function handleSubcategoryChange() {
     subcategoryError.value = false
-    if (selectedSubcategories.value.length > 5) {
-        selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
+    if (selectedSubcategories.value.length > 6) {
+        selectedSubcategories.value = selectedSubcategories.value.slice(0, 6)
         subcategoryValidationError.value = true
         setTimeout(() => { subcategoryValidationError.value = false }, 3000)
     } else {
@@ -1115,7 +1209,13 @@ async function handleSubmit() {
 
     const isValid = validate()
     const genreValid = validateGenre()
-    const timeValid = validateTimeRange()
+    // const timeValid = validateTimeRange()
+
+    // ✅ Replace with:
+    if (!startTime.value) hasStartError.value = true
+    if (!endTime.value) hasEndError.value = true
+    validateEndAfterStart()
+    const timeValid = startTime.value !== "" && endTime.value !== "" && !timeRangeError.value
 
     if (!isValid || !genreValid || !timeValid) {
         await scrollToFirstError()
@@ -1169,8 +1269,23 @@ function selectSuggestion(suggestion) {
 }
 
 function updateMarker(lng, lat) {
-    if (marker.value) { marker.value.remove() }
-    marker.value = new maplibregl.Marker({ color: "#0061FF" })
+    // Remove existing marker
+    if (marker.value) {
+        marker.value.remove()
+    }
+
+    // Create custom marker element using marker.png
+    const el = document.createElement('div')
+    el.style.width = '60px'
+    el.style.height = '60px'
+    el.style.cursor = 'pointer'
+    el.style.backgroundImage = 'url(/marker.png)'
+    el.style.backgroundSize = 'contain'
+    el.style.backgroundRepeat = 'no-repeat'
+    el.style.backgroundPosition = 'center'
+
+    // Add new marker with custom element
+    marker.value = new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
         .addTo(map.value)
 }
@@ -1213,26 +1328,30 @@ onMounted(() => {
 
     /* ------------------ DATE PICKER ------------------ */
     flatpickr(dateInput.value, {
-        dateFormat: "m/d/Y",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        onChange: (selectedDates, dateStr) => {
+            eventDate.value = dateStr
+        }
     })
 
-    /* ------------------ START TIME PICKER ------------------ */
-    flatpickr(startTimeInput.value, {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
-        onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
-    })
+    // /* ------------------ START TIME PICKER ------------------ */
+    // flatpickr(startTimeInput.value, {
+    //     enableTime: true,
+    //     noCalendar: true,
+    //     dateFormat: "H:i",
+    //     time_24hr: true,
+    //     onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
+    // })
 
-    /* ------------------ END TIME PICKER ------------------ */
-    flatpickr(endTimeInput.value, {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
-        onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
-    })
+    // /* ------------------ END TIME PICKER ------------------ */
+    // flatpickr(endTimeInput.value, {
+    //     enableTime: true,
+    //     noCalendar: true,
+    //     dateFormat: "H:i",
+    //     time_24hr: true,
+    //     onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
+    // })
 })
 
 onBeforeUnmount(() => {

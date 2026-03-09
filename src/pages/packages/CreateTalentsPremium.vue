@@ -105,13 +105,12 @@
                     </div>
 
                     <input v-model="formData.talentTitle" type="text" placeholder="Enter Talent Title"
-                        data-field="talentTitle"
-                        @input="formErrors.talentTitle && clearError('talentTitle')"
-                        :class="[
-                          'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
-                          formErrors.talentTitle ? 'tw:border-red-500' : 'tw:border-gray-200'
+                        data-field="talentTitle" @input="formErrors.talentTitle && clearError('talentTitle')" :class="[
+                            'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
+                            formErrors.talentTitle ? 'tw:border-red-500' : 'tw:border-gray-200'
                         ]" />
-                    <p v-if="formErrors.talentTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.talentTitle }}</p>
+                    <p v-if="formErrors.talentTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{
+                        formErrors.talentTitle }}</p>
                     <!-- Description -->
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:text-gray-700">Description</label>
@@ -126,7 +125,8 @@
                     <!-- Header -->
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
                         <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-                            Talent main image
+                            Talent Main Image <span class="tw:text-red-500">*</span> <span
+                                class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
                         </h3>
 
                         <!-- <button type="button"
@@ -159,7 +159,8 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images (Max. 5 images)
+                            Additional Images (Max. 5 images) <span class="tw:text-xs tw:text-gray-500"> Recommended
+                                (1200x800) </span>
                         </h3>
                     </div>
 
@@ -179,7 +180,8 @@
                     </div>
 
                     <!-- Error Display -->
-                    <div v-if="categoriesError" class="tw:bg-red-50 tw:border tw:border-red-200 tw:rounded-lg tw:p-4 tw:mb-4">
+                    <div v-if="categoriesError"
+                        class="tw:bg-red-50 tw:border tw:border-red-200 tw:rounded-lg tw:p-4 tw:mb-4">
                         <div class="tw:flex tw:items-center">
                             <svg class="tw:w-5 tw:h-5 tw:text-red-400 tw:mr-2" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
@@ -209,10 +211,9 @@
                                         (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
                                     ]">
                                     <option value="">
-                                        {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                                        'SelectCategory') }}
+                                        {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'Select Category') }}
                                     </option>
-                                    <option v-for="category in categories" :key="category.id" :value="category.name">
+                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                                         {{ category.name }}
                                     </option>
                                 </select>
@@ -250,16 +251,16 @@
                                 </div>
 
                                 <!-- Dropdown Options -->
-                                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError" class="subcategory-dropdown"
-                                    ref="dropdownMenu">
+                                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError"
+                                    class="subcategory-dropdown" ref="dropdownMenu">
                                     <div class="dropdown-content">
-                                        <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
-                                            :class="{
+                                        <div v-for="subcategory in availableSubcategories" :key="subcategory"
+                                            class="dropdown-option" :class="{
                                                 'selected': selectedSubcategories.includes(subcategory),
                                                 'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 1
                                             }" @click="toggleSubcategory(subcategory)">
-                                            <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
-                                                v-model="selectedSubcategories"
+                                            <input type="checkbox" :id="`subcategory-${subcategory}`"
+                                                :value="subcategory" v-model="selectedSubcategories"
                                                 :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 1"
                                                 @change="handleSubcategoryChange" @click.stop class="option-checkbox">
                                             <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
@@ -277,7 +278,8 @@
 
                             <!-- Selected Tags Display -->
                             <div v-if="selectedSubcategories.length > 0" class="selected-tags">
-                                <span v-for="subcategory in selectedSubcategories" :key="subcategory" class="selected-tag">
+                                <span v-for="subcategory in selectedSubcategories" :key="subcategory"
+                                    class="selected-tag">
                                     {{ subcategory }}
                                     <button @click="removeSubcategory(subcategory)" class="tag-remove">
                                         <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
@@ -293,7 +295,8 @@
                             <p v-if="subcategoryValidationError" class="validation-error">
                                 You can select maximum 5 subcategories only.
                             </p>
-                            <p v-else-if="subcategoryError" class="validation-error">Please select at least one subcategory</p>
+                            <p v-else-if="subcategoryError" class="validation-error">Please select at least one
+                                subcategory</p>
                         </div>
                     </div>
                 </div>
@@ -350,48 +353,48 @@
                         </div>
 
                         <!-- START & END TIME -->
-                        <div style="display: flex; justify-content: space-between;">
+                        <div class="tw:flex tw:gap-4" style="flex: 1;">
 
                             <!-- START TIME -->
-                            <div style="width: 48%;">
+                            <div class="tw:flex-1">
                                 <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                                     Start Time <span class="tw:text-red-500">*</span>
                                 </label>
-                                <div class="tw:relative">
-                                    <input
-                                        ref="startTimeInput"
-                                        v-model="startTime"
-                                        placeholder="HH:MM"
-                                        :class="[
-                                            'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                                            hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'
-                                        ]"
-                                        @input="clearStartError"
-                                    />
-                                    <Clock class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                <div class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
+                                    :class="hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'">
+                                    <input type="text" inputmode="numeric" maxlength="2" v-model="startHH"
+                                        placeholder="12" @input="onTimeInput('startHH', $event)"
+                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                                    <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
+                                    <input type="text" inputmode="numeric" maxlength="2" v-model="startMM"
+                                        placeholder="00" @input="onTimeInput('startMM', $event)"
+                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                                    <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                                 </div>
-                                <p v-if="startError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ startError }}</p>
+                                <p v-if="hasStartError" class="tw:text-red-500 tw:text-sm tw:mt-1">Start time is
+                                    required</p>
                             </div>
 
                             <!-- END TIME -->
-                            <div style="width: 48%;">
+                            <div class="tw:flex-1">
                                 <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                                     End Time <span class="tw:text-red-500">*</span>
                                 </label>
-                                <div class="tw:relative">
-                                    <input
-                                        ref="endTimeInput"
-                                        v-model="endTime"
-                                        placeholder="HH:MM"
-                                        :class="[
-                                            'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                                            hasEndError ? 'tw:border-red-500' : 'tw:border-gray-200'
-                                        ]"
-                                        @input="clearEndError"
-                                    />
-                                    <Clock class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                <div class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
+                                    :class="(hasEndError || timeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'">
+                                    <input type="text" inputmode="numeric" maxlength="2" v-model="endHH"
+                                        placeholder="13" @input="onTimeInput('endHH', $event)"
+                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                                    <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
+                                    <input type="text" inputmode="numeric" maxlength="2" v-model="endMM"
+                                        placeholder="00" @input="onTimeInput('endMM', $event)"
+                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                                    <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                                 </div>
-                                <p v-if="endError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ endError }}</p>
+                                <p v-if="hasEndError" class="tw:text-red-500 tw:text-sm tw:mt-1">End time is required
+                                </p>
+                                <p v-if="timeRangeError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ timeRangeError }}
+                                </p>
                             </div>
 
                         </div>
@@ -402,7 +405,7 @@
                 <!-- Talent LOCATION SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
                     <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Talent Location
+                        State of living
                     </h3>
 
                     <!-- Address Search Input with Loading Spinner -->
@@ -541,15 +544,16 @@
                     <!-- Exact Nationality Input -->
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Enter Nationality</label>
-                        <input v-model="exactNationality" type="text" placeholder="e.g., American, British, German, French"
+                        <input v-model="exactNationality" type="text"
+                            placeholder="e.g., American, British, German, French"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
                     </div>
 
                     <!-- Yes/No Selection -->
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Can You Share Nationality?</label>
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Share info profile (Yes / No)</label>
                         <div class="tw:relative">
-                            <select v-model="talentNationality" 
+                            <select v-model="talentNationality"
                                 class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
                                 <option value="yes">Yes</option>
                                 <option value="no">No</option>
@@ -575,9 +579,9 @@
 
                     <!-- Yes/No Selection -->
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Can You Share Age?</label>
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Share info profile (Yes / No)</label>
                         <div class="tw:relative">
-                            <select v-model="showAge" 
+                            <select v-model="showAge"
                                 class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
                                 <option value="yes">Yes</option>
                                 <option value="no">No</option>
@@ -609,8 +613,10 @@
 
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Highlights</label>
-                        <input v-model="talentHighlightsText" type="text" placeholder="Enter talent highlights"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+
+                        <textarea v-model="talentHighlightsText" placeholder="Enter talent highlights" rows="3"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y"></textarea>
+
                     </div>
                 </div>
 
@@ -634,8 +640,9 @@
                     </p>
 
                     <div class="tw:space-y-3">
-                        <InviteSection role="organiser" :has-border="true" />
-                        <InviteSection role="venue"     :has-border="false" />
+                        <!-- <InviteSection role="organiser" :has-border="true" />
+                        <InviteSection role="venue" :has-border="false" /> -->
+                        <InviteSection role="talent" :has-border="false" />
                     </div>
                 </div>
 
@@ -730,15 +737,15 @@ const eventDescription = ref("")
 
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
-  talentTitle: '',
-  category: '',
-  subcategories: [],
+    talentTitle: '',
+    category: '',
+    subcategories: [],
 })
 
 const talentSchema = {
-  talentTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Talent Title' },
-  category: { type: 'select', required: true, label: 'Category' },
-  subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
+    talentTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Talent Title' },
+    category: { type: 'select', required: true, label: 'Category' },
+    subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
 }
 
 const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(talentSchema, formData)
@@ -777,21 +784,89 @@ const entranceFee = ref("")
 
 // Event Date and Time
 // const eventDate = ref("")
-const startTime = ref("")
-const endTime = ref("")
+// const startTime = ref("")
+// const endTime = ref("")
 const dateInput = ref(null)
 const startTimeInput = ref(null)
 const endTimeInput = ref(null)
 
-const {
-  startError,
-  endError,
-  hasStartError,
-  hasEndError,
-  validateTimeRange,
-  clearStartError,
-  clearEndError,
-} = useTimeRangeValidation(startTime, endTime)
+// ── Time split refs ──────────────────────────────────────────────────
+const startHH = ref("")
+const startMM = ref("")
+const endHH = ref("")
+const endMM = ref("")
+const timeRangeError = ref("")
+const hasStartError = ref(false)
+const hasEndError = ref(false)
+
+// Computed HH:MM strings for API
+const startTime = computed(() => {
+    if (startHH.value === "" || startMM.value === "") return ""
+    return `${String(startHH.value).padStart(2, "0")}:${String(startMM.value).padStart(2, "0")}`
+})
+
+const endTime = computed(() => {
+    if (endHH.value === "" || endMM.value === "") return ""
+    return `${String(endHH.value).padStart(2, "0")}:${String(endMM.value).padStart(2, "0")}`
+})
+
+// Enforce max 2 digits + valid range, then validate end > start
+function onTimeInput(field, event) {
+    // Strip non-digits and limit to 2 characters
+    let raw = event.target.value.replace(/\D/g, "").slice(0, 2)
+    event.target.value = raw
+
+    let val = raw === "" ? "" : parseInt(raw)
+
+    if (val !== "") {
+        if (field === "startHH" || field === "endHH") {
+            if (val > 23) val = 23
+            if (val < 0) val = 0
+        } else {
+            if (val > 59) val = 59
+            if (val < 0) val = 0
+        }
+    }
+
+    if (field === "startHH") { startHH.value = val; hasStartError.value = false }
+    if (field === "startMM") { startMM.value = val; hasStartError.value = false }
+    if (field === "endHH") { endHH.value = val; hasEndError.value = false }
+    if (field === "endMM") { endMM.value = val; hasEndError.value = false }
+
+    validateEndAfterStart()
+}
+
+function validateEndAfterStart() {
+    timeRangeError.value = ""
+
+    const sHH = parseInt(startHH.value)
+    const sMM = parseInt(startMM.value)
+    const eHH = parseInt(endHH.value)
+    const eMM = parseInt(endMM.value)
+
+    // Only validate when all four fields are filled
+    if (
+        startHH.value === "" || startMM.value === "" ||
+        endHH.value === "" || endMM.value === ""
+    ) return
+
+    const startTotal = sHH * 60 + sMM
+    const endTotal = eHH * 60 + eMM
+
+    if (endTotal <= startTotal) {
+        timeRangeError.value = "End time must be later than start time"
+    }
+}
+
+// const {
+//     startError,
+//     endError,
+//     hasStartError,
+//     hasEndError,
+//     validateTimeRange,
+//     clearStartError,
+//     clearEndError,
+// } = useTimeRangeValidation(startTime, endTime)
 
 // Event Location refs
 const searchAddress = ref("")
@@ -819,115 +894,115 @@ const dropdownMenu = ref(null)
 
 // Computed property for available subcategories
 const availableSubcategories = computed(() => {
-  if (!selectedCategory.value) return []
-  const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
-  return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
+    if (!selectedCategory.value) return []
+    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+    return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
 })
 
 // Fetch categories from API using eventService
 async function fetchCategories() {
-  try {
-    isLoadingCategories.value = true
-    categoriesError.value = null
+    try {
+        isLoadingCategories.value = true
+        categoriesError.value = null
 
-    const response = await eventService.getCategories()
+        const response = await eventService.getCategories()
 
-    if (response.success) {
-      categories.value = response.data
-    } else {
-      categoriesError.value = 'Failed to fetch categories'
+        if (response.success) {
+            categories.value = response.data
+        } else {
+            categoriesError.value = 'Failed to fetch categories'
+        }
+    } catch (error) {
+        console.error('Error fetching categories:', error)
+        categoriesError.value = 'Error loading categories. Please try again.'
+    } finally {
+        isLoadingCategories.value = false
     }
-  } catch (error) {
-    console.error('Error fetching categories:', error)
-    categoriesError.value = 'Error loading categories. Please try again.'
-  } finally {
-    isLoadingCategories.value = false
-  }
 }
 
 // Handle category change with validation clearing
 function handleCategoryChangeWithValidation() {
-  selectedSubcategories.value = []  // Reset array when category changes
-  subcategoryError.value = false
-  subcategoryValidationError.value = false  // Clear validation error
-  categoryError.value = false
-  showSubcategoryDropdown.value = false  // Close dropdown
+    selectedSubcategories.value = []  // Reset array when category changes
+    subcategoryError.value = false
+    subcategoryValidationError.value = false  // Clear validation error
+    categoryError.value = false
+    showSubcategoryDropdown.value = false  // Close dropdown
 }
 
 // Handle category change
 function handleCategoryChange() {
-  handleCategoryChangeWithValidation()
+    handleCategoryChangeWithValidation()
 }
 
 // Toggle subcategory dropdown
 function toggleSubcategoryDropdown() {
-  if (!selectedCategory.value || categoriesError.value) return
-  showSubcategoryDropdown.value = !showSubcategoryDropdown.value
+    if (!selectedCategory.value || categoriesError.value) return
+    showSubcategoryDropdown.value = !showSubcategoryDropdown.value
 }
 
 // Toggle individual subcategory selection
 function toggleSubcategory(subcategory) {
-  if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
-    return // Prevent selection if already at max 5
-  }
+    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
+        return // Prevent selection if already at max 5
+    }
 
-  const index = selectedSubcategories.value.indexOf(subcategory)
-  if (index > -1) {
-    selectedSubcategories.value.splice(index, 1)
-  } else {
-    selectedSubcategories.value.push(subcategory)
-  }
+    const index = selectedSubcategories.value.indexOf(subcategory)
+    if (index > -1) {
+        selectedSubcategories.value.splice(index, 1)
+    } else {
+        selectedSubcategories.value.push(subcategory)
+    }
 
-  handleSubcategoryChange()
+    handleSubcategoryChange()
 }
 
 // Click outside handler to close dropdown
 function handleClickOutside(event) {
-  if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
-    showSubcategoryDropdown.value = false
-  }
+    if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
+        showSubcategoryDropdown.value = false
+    }
 }
 
 // Handle subcategory change with max 5 validation
 function handleSubcategoryChange() {
-  subcategoryError.value = false
+    subcategoryError.value = false
 
-  // Maximum 5 subcategories selection logic
-  // Prevent selection if trying to add more than 5 items
-  if (selectedSubcategories.value.length > 5) {
-    // Remove the last added item to maintain the limit
-    const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
-    selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
+    // Maximum 5 subcategories selection logic
+    // Prevent selection if trying to add more than 5 items
+    if (selectedSubcategories.value.length > 5) {
+        // Remove the last added item to maintain the limit
+        const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
+        selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
 
-    // Show validation error
-    subcategoryValidationError.value = true
+        // Show validation error
+        subcategoryValidationError.value = true
 
-    // Auto-hide validation message after 3 seconds
-    setTimeout(() => {
-      subcategoryValidationError.value = false
-    }, 3000)
-  } else {
-    // Clear validation error when within limit
-    subcategoryValidationError.value = false
-  }
+        // Auto-hide validation message after 3 seconds
+        setTimeout(() => {
+            subcategoryValidationError.value = false
+        }, 3000)
+    } else {
+        // Clear validation error when within limit
+        subcategoryValidationError.value = false
+    }
 }
 
 // Remove subcategory from selection
 function removeSubcategory(subcategoryToRemove) {
-  const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
-  if (index > -1) {
-    selectedSubcategories.value.splice(index, 1)
-    // Clear validation error when removing items (going below limit)
-    subcategoryValidationError.value = false
-  }
+    const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
+    if (index > -1) {
+        selectedSubcategories.value.splice(index, 1)
+        // Clear validation error when removing items (going below limit)
+        subcategoryValidationError.value = false
+    }
 }
 
 // Validate genre fields
 function validateGenre() {
-  categoryError.value = !selectedCategory.value
-  subcategoryError.value = selectedSubcategories.value.length === 0
+    categoryError.value = !selectedCategory.value
+    subcategoryError.value = selectedSubcategories.value.length === 0
 
-  return selectedCategory.value && selectedSubcategories.value.length > 0
+    return selectedCategory.value && selectedSubcategories.value.length > 0
 }
 
 const showGenreDropdown = ref(false)
@@ -979,29 +1054,35 @@ onBeforeUnmount(() => {
 
 // Sync category/subcategory selections into formData for validation
 function syncFormData() {
-  formData.category = selectedCategory.value
-  formData.subcategories = selectedSubcategories.value
+    formData.category = selectedCategory.value
+    formData.subcategories = selectedSubcategories.value
 }
 
 async function handleSubmit() {
-  if (isSubmitting.value) return
-  isSubmitting.value = true
+    if (isSubmitting.value) return
+    isSubmitting.value = true
 
-  syncFormData()
+    syncFormData()
 
-  const isValid = validate()
-  const genreValid = validateGenre()
-  const timeValid = validateTimeRange()
+    const isValid = validate()
+    const genreValid = validateGenre()
+    // const timeValid = validateTimeRange()
 
-  if (!isValid || !genreValid || !timeValid) {
-    await scrollToFirstError()
+    // ✅ Replace with:
+    if (!startTime.value) hasStartError.value = true
+    if (!endTime.value) hasEndError.value = true
+    validateEndAfterStart()
+    const timeValid = startTime.value !== "" && endTime.value !== "" && !timeRangeError.value
+
+    if (!isValid || !genreValid || !timeValid) {
+        await scrollToFirstError()
+        isSubmitting.value = false
+        return
+    }
+
+    // No API call — show success toast
+    toast.success('This feature will be available in future')
     isSubmitting.value = false
-    return
-  }
-
-  // No API call — show success toast
-  toast.success('This feature will be available in future')
-  isSubmitting.value = false
 }
 
 function handleMenuClick(item) {
@@ -1089,8 +1170,18 @@ function updateMarker(lng, lat) {
         marker.value.remove()
     }
 
-    // Add new marker
-    marker.value = new maplibregl.Marker({ color: "#0061FF" })
+    // Create custom marker element using marker.png
+    const el = document.createElement('div')
+    el.style.width = '60px'
+    el.style.height = '60px'
+    el.style.cursor = 'pointer'
+    el.style.backgroundImage = 'url(/marker.png)'
+    el.style.backgroundSize = 'contain'
+    el.style.backgroundRepeat = 'no-repeat'
+    el.style.backgroundPosition = 'center'
+
+    // Add new marker with custom element
+    marker.value = new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
         .addTo(map.value)
 }
@@ -1149,28 +1240,35 @@ onMounted(() => {
     })
 
     /* ------------------ DATE PICKER ------------------ */
+    // flatpickr(dateInput.value, {
+    //     dateFormat: "m/d/Y",
+    // })
     flatpickr(dateInput.value, {
-        dateFormat: "m/d/Y",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        onChange: (selectedDates, dateStr) => {
+            eventDate.value = dateStr
+        }
     })
 
 
     /* ------------------ START TIME PICKER ------------------ */
-    flatpickr(startTimeInput.value, {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
-        onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
-    })
+    // flatpickr(startTimeInput.value, {
+    //     enableTime: true,
+    //     noCalendar: true,
+    //     dateFormat: "H:i",
+    //     time_24hr: true,
+    //     onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
+    // })
 
-    /* ------------------ END TIME PICKER ------------------ */
-    flatpickr(endTimeInput.value, {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: "H:i",
-        time_24hr: true,
-        onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
-    })
+    // /* ------------------ END TIME PICKER ------------------ */
+    // flatpickr(endTimeInput.value, {
+    //     enableTime: true,
+    //     noCalendar: true,
+    //     dateFormat: "H:i",
+    //     time_24hr: true,
+    //     onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
+    // })
 })
 
 function handleFileChange(event) {

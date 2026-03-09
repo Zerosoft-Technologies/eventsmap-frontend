@@ -131,12 +131,17 @@ async function handleLogin() {
       return router.push({ name: 'PaymentRequired' })
     }
 
+    // Ensure we have profile_type & account_type (e.g. if login response was minimal)
+    if (!authStore.user?.profile_type || !authStore.user?.account_type) {
+      await authStore.fetchUser()
+    }
+
     // Check if there's a redirect query param
     const redirect = route.query.redirect as string | undefined
     if (redirect) {
       router.push(redirect)
     } else {
-      // Redirect based on user's profile_type & account_type
+      // Redirect to user's create page based on profile_type & account_type
       router.push(getCreateRoute(authStore.user?.profile_type, authStore.user?.account_type))
     }
   } else if (!result.emailVerified) {

@@ -101,7 +101,8 @@
           <!-- Header -->
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
             <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-              Organiser Image (Max 1)
+              Organiser Image (Max 1) <span class="tw:text-red-500">*</span>
+              <span class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
             </h3>
 
             <!-- <button type="button"
@@ -173,9 +174,9 @@
                   ]">
                   <option value="">
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                    'SelectCategory') }}
+                    'Select Category') }}
                   </option>
-                  <option v-for="category in categories" :key="category.id" :value="category.name">
+                  <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                     {{ category.name }}
                   </option>
                 </select>
@@ -271,8 +272,9 @@
             questions.
           </p>
           <div class="tw:space-y-3">
-            <InviteSection role="talent" :has-border="true" />
-            <InviteSection role="venue"     :has-border="false" />
+            <!-- <InviteSection role="talent" :has-border="true" />
+            <InviteSection role="venue"     :has-border="false" /> -->
+            <InviteSection role="organiser" :has-border="false" />
           </div>
         </div>
 

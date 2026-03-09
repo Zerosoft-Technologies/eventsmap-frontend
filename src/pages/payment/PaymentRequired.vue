@@ -26,7 +26,7 @@
         Complete Your Premium Payment
       </h1>
       <p class="tw:text-gray-500 tw:text-sm tw:text-center tw:mb-7">
-        Your premium account is pending payment. Complete your payment to unlock full access to your dashboard and premium features.
+        Your premium account is pending payment. Complete your payment to unlock full access to your profile and premium features.
       </p>
 
       <!-- Error Banner -->
@@ -75,6 +75,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { getCreateRoute } from '@/utils/routeResolver'
 import api from '@/services/api'
 
 interface RetryResponse {
@@ -90,7 +91,7 @@ const retryError = ref<string | null>(null)
 
 onMounted(() => {
   if (authStore.user?.status === 'active') {
-    router.push('/dashboard')
+    router.push(getCreateRoute(authStore.user?.profile_type, authStore.user?.account_type))
   }
 })
 

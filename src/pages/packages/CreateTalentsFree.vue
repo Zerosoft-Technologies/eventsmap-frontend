@@ -99,7 +99,8 @@
           <!-- Header -->
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
             <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-              Talent Image (Max 1)
+              Talent Image (Max 1) <span class="tw:text-red-500">*</span>
+              <span class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
             </h3>
 
           </div>
@@ -165,7 +166,7 @@
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
                     'Select') }}
                   </option>
-                  <option v-for="category in categories" :key="category.id" :value="category.name">
+                  <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                     {{ category.name }}
                   </option>
                 </select>
@@ -458,8 +459,9 @@
           </p>
 
           <div class="tw:space-y-3">
-            <InviteSection role="organiser" :has-border="true" />
-            <InviteSection role="venue"     :has-border="false" />
+            <!-- <InviteSection role="organiser" :has-border="true" />
+            <InviteSection role="venue"     :has-border="false" /> -->
+            <InviteSection role="talent"    :has-border="false" />
           </div>
         </div>
 
@@ -803,15 +805,25 @@ function selectSuggestion(suggestion) {
 
 // Update or add marker
 function updateMarker(lng, lat) {
-  // Remove existing marker
-  if (marker.value) {
-    marker.value.remove()
-  }
+    // Remove existing marker
+    if (marker.value) {
+        marker.value.remove()
+    }
 
-  // Add new marker
-  marker.value = new maplibregl.Marker({ color: "#0061FF" })
-    .setLngLat([lng, lat])
-    .addTo(map.value)
+    // Create custom marker element using marker.png
+    const el = document.createElement('div')
+    el.style.width = '60px'
+    el.style.height = '60px'
+    el.style.cursor = 'pointer'
+    el.style.backgroundImage = 'url(/marker.png)'
+    el.style.backgroundSize = 'contain'
+    el.style.backgroundRepeat = 'no-repeat'
+    el.style.backgroundPosition = 'center'
+
+    // Add new marker with custom element
+    marker.value = new maplibregl.Marker({ element: el })
+        .setLngLat([lng, lat])
+        .addTo(map.value)
 }
 
 // Reverse geocode function

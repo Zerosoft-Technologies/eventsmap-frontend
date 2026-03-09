@@ -140,7 +140,8 @@
           <!-- Header -->
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
             <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-              Venue Image (Max 1)
+              Venue Image (Max 1) <span class="tw:text-red-500">*</span>
+              <span class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
             </h3>
 
             <!-- <button type="button"
@@ -212,9 +213,9 @@
                   ]">
                   <option value="">
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                    'SelectCategory') }}
+                    'Select Category') }}
                   </option>
-                  <option v-for="category in categories" :key="category.id" :value="category.name">
+                  <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                     {{ category.name }}
                   </option>
                 </select>
@@ -508,8 +509,34 @@
             Make your event stand out even more. These sections help attendees find information and answer their questions.
           </p>
           <div class="tw:space-y-1">
-            <InviteSection role="talent" :has-border="true" />
-            <InviteSection role="organiser" :has-border="false" />
+            <InviteSection role="venue" :has-border="false" />
+            <!-- <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
+              <div class="tw:flex tw:items-center tw:gap-3">
+                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
+                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
+                </div>
+                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Talent</span>
+              </div>
+              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
+            </div>
+            <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
+              <div class="tw:flex tw:items-center tw:gap-3">
+                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
+                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
+                </div>
+                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Organizer</span>
+              </div>
+              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
+            </div>
+            <div class="tw:flex tw:items-center tw:justify-between tw:py-3">
+              <div class="tw:flex tw:items-center tw:gap-3">
+                <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
+                  <User class="tw:w-5 tw:h-5 tw:text-gray-600" />
+                </div>
+                <span class="tw:text-sm tw:font-medium tw:text-gray-900">Invite Venue</span>
+              </div>
+              <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
+            </div> -->
           </div>
         </div>
 
@@ -896,15 +923,25 @@ function selectSuggestion(suggestion) {
 
 // Update or add marker
 function updateMarker(lng, lat) {
-  // Remove existing marker
-  if (marker.value) {
-    marker.value.remove()
-  }
+    // Remove existing marker
+    if (marker.value) {
+        marker.value.remove()
+    }
 
-  // Add new marker
-  marker.value = new maplibregl.Marker({ color: "#0061FF" })
-    .setLngLat([lng, lat])
-    .addTo(map.value)
+    // Create custom marker element using marker.png
+    const el = document.createElement('div')
+    el.style.width = '60px'
+    el.style.height = '60px'
+    el.style.cursor = 'pointer'
+    el.style.backgroundImage = 'url(/marker.png)'
+    el.style.backgroundSize = 'contain'
+    el.style.backgroundRepeat = 'no-repeat'
+    el.style.backgroundPosition = 'center'
+
+    // Add new marker with custom element
+    marker.value = new maplibregl.Marker({ element: el })
+        .setLngLat([lng, lat])
+        .addTo(map.value)
 }
 
 // Reverse geocode function

@@ -37,7 +37,7 @@
         </transition>         
       </div>
       <div>
-        <button class="tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg tw:shadow-[1px_1px_10px_5px_white]"><img src="../assets/calendar.png" alt="Calendar Icon"/><span>
+        <button class="tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg"><img src="../assets/calendar.png" alt="Calendar Icon"/><span>
           <DatePicker @update:dateRange="dateRange = $event" />
         </span></button>
       </div>      
@@ -72,7 +72,7 @@
               @mouseleave="stopCatDrag"
             >
               <button
-                v-for="category in categories"
+                v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')"
                 :key="category.id"
                 type="button"
                 @click="selectCategory(category)"
@@ -117,8 +117,8 @@
           <span v-if="wishlistStore.wishlistEvents.length > 0" class="tw:absolute tw:-top-1.5 tw:-right-1.5 tw:bg-red-500 tw:text-white tw:text-[10px] tw:font-bold tw:w-5 tw:h-5 tw:rounded-full tw:flex tw:items-center tw:justify-center">{{ wishlistStore.wishlistEvents.length }}</span>
         </button>
       </div>      
-      <div>        
-        <RouterLink to="/create-profile" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) tw:shadow-[1px_1px_10px_5px_white]"><img src="../assets/user.png" alt="User Icon"/><span>{{ $t('header.createProfile') }}</span></RouterLink>        
+      <div v-if="!authStore.isAuthenticated">
+        <RouterLink to="/register" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>{{ $t('header.createProfile') }}</span></RouterLink>
       </div>      
       <!-- Language Switcher -->
       <div class="tw:relative">
@@ -163,8 +163,8 @@
       <div>
         <!-- Authenticated: user menu -->
         <div v-if="authStore.isAuthenticated" class="tw:flex tw:items-center tw:gap-2">
-          <router-link to="/dashboard" style="height: 50px;" class="no-hover tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) hover:tw:bg-gray-50">
-            <span class="tw:text-sm tw:font-medium" style="color: var(--primary-color)">{{ authStore.user?.name || 'Dashboard' }}</span>
+          <router-link :to="userCreatePath" style="height: 50px;" class="no-hover tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) hover:tw:bg-gray-50">
+            <span class="tw:text-sm tw:font-medium" style="color: var(--primary-color)">{{ authStore.user?.name || 'Profile' }}</span>
           </router-link>
           <button @click="handleLogout" style="height: 50px;" class="no-hover tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) hover:tw:bg-gray-50">
             <span class="tw:text-sm">{{ $t('header.logout') || 'Logout' }}</span>
@@ -192,12 +192,12 @@
           <p>Link</p>
         </div>
 
-        <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
-          <p>{{ $t('header.createProfile') }}</p>
+        <div v-if="!authStore.isAuthenticated" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
+          <RouterLink to="/register"><p>{{ $t('header.createProfile') }}</p></RouterLink>
         </div>
 
         <div v-if="authStore.isAuthenticated" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
-          <router-link to="/dashboard"><p>{{ authStore.user?.name || 'Dashboard' }}</p></router-link>
+          <router-link :to="userCreatePath"><p>{{ authStore.user?.name || 'Profile' }}</p></router-link>
         </div>
         <div v-if="authStore.isAuthenticated" @click="handleLogout" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg tw:cursor-pointer">
           <p>{{ $t('header.logout') || 'Logout' }}</p>
@@ -252,6 +252,7 @@ import { useLocationPermission } from '../composables/useLocationPermission';
 import { useLanguageSwitch } from '../composables/useLanguageSwitch';
 import { useAuthStore } from '@/stores/auth';
 import { useWishlistStore } from '@/stores/wishlistStore';
+import { getCreateRoute } from '@/utils/routeResolver';
 
 // Lazy load AllEvents to avoid circular import issue
 const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
@@ -266,6 +267,10 @@ const { switchLanguage, getAvailableLanguages, initializeLanguage } = useLanguag
 const authStore = useAuthStore()
 const wishlistStore = useWishlistStore()
 const router = useRouter()
+
+const userCreatePath = computed(() =>
+  getCreateRoute(authStore.user?.profile_type, authStore.user?.account_type)
+)
 
 async function handleLogout() {
   await authStore.logout()
@@ -435,7 +440,10 @@ const isProfilePage = computed(() => {
          path.includes('organiser') ||
          path.includes('venue') ||
          path.includes('talent') ||
-         path.includes('event')
+         path.includes('event') ||
+         path.includes('login') ||
+         path.includes('register') ||
+         path.includes('forgot-password')
 })
 
 function toggleWishlistPanel() {

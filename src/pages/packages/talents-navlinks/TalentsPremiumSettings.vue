@@ -183,7 +183,8 @@
                         <div v-if="activeTab === 'account'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-8">
                             <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-6">Account Information</h2>
 
-                            <div v-if="authStore.user" class="tw:grid tw:grid-cols-1 md:tw:grid-cols-2 tw:gap-6">
+                            <template v-if="authStore.user">
+                            <div class="tw:grid tw:grid-cols-1 md:tw:grid-cols-2 tw:gap-6">
                                 <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:border tw:border-gray-200">
                                     <p class="tw:text-xs tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Name</p>
                                     <p class="tw:text-gray-800 tw:font-medium">{{ authStore.user.name }}</p>
@@ -206,6 +207,48 @@
                                     </span>
                                 </div>
                             </div>
+                            <!-- Account Status (read-only badges) -->
+                            <div class="tw:mt-6 tw:pt-6 tw:border-t tw:border-gray-200">
+                                <h3 class="tw:text-base tw:font-semibold tw:text-gray-900 tw:mb-3">Account Status</h3>
+                                <div class="tw:flex tw:flex-wrap tw:gap-2">
+                                    <span class="tw:inline-flex tw:items-center tw:px-3 tw:py-1 tw:rounded tw:text-xs tw:font-medium tw:bg-blue-100 tw:text-blue-700">
+                                        Profile: {{ authStore.user.profile_type }}
+                                    </span>
+                                    <span
+                                        :class="[
+                                            'tw:inline-flex tw:items-center tw:px-3 tw:py-1 tw:rounded tw:text-xs tw:font-medium',
+                                            authStore.user.account_type === 'premium'
+                                                ? 'tw:bg-purple-100 tw:text-purple-700'
+                                                : 'tw:bg-gray-100 tw:text-gray-600'
+                                        ]"
+                                    >
+                                        Plan: {{ authStore.user.account_type }}
+                                    </span>
+                                    <span
+                                        :class="[
+                                            'tw:inline-flex tw:items-center tw:px-3 tw:py-1 tw:rounded tw:text-xs tw:font-medium',
+                                            authStore.user.status === 'active'
+                                                ? 'tw:bg-green-100 tw:text-green-700'
+                                                : authStore.user.status === 'pending_payment'
+                                                    ? 'tw:bg-yellow-100 tw:text-yellow-700'
+                                                    : 'tw:bg-red-100 tw:text-red-700'
+                                        ]"
+                                    >
+                                        Status: {{ authStore.user.status }}
+                                    </span>
+                                    <span
+                                        :class="[
+                                            'tw:inline-flex tw:items-center tw:px-3 tw:py-1 tw:rounded tw:text-xs tw:font-medium',
+                                            authStore.user.email_verified
+                                                ? 'tw:bg-green-100 tw:text-green-700'
+                                                : 'tw:bg-red-100 tw:text-red-700'
+                                        ]"
+                                    >
+                                        Email Verified: {{ authStore.user.email_verified ? 'Yes' : 'No' }}
+                                    </span>
+                                </div>
+                            </div>
+                            </template>
                             <div v-else class="tw:bg-white tw:rounded-lg tw:p-6 tw:border tw:border-gray-200 tw:text-center">
                                 <p class="tw:text-gray-500">No account information available</p>
                             </div>

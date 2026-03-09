@@ -61,6 +61,39 @@ export interface MyEventsResponse {
   data: MyEvent[]
 }
 
+export interface EventDetailData {
+  id: number
+  title: string
+  event_type: string
+  category_id: number
+  subcategory_ids: number[]
+  event_date: string
+  start_time: string
+  end_time: string
+  address: string
+  description: string
+  image_url?: string
+  [key: string]: unknown
+}
+
+export interface EventDetailResponse {
+  success: boolean
+  message?: string
+  data: EventDetailData
+}
+
+export interface UpdateEventPayload {
+  title: string
+  event_type: string
+  category_id: number
+  subcategory_ids: number[]
+  event_date: string
+  start_time: string
+  end_time: string
+  address: string
+  description: string
+}
+
 export interface WishlistToggleResponse {
   success: boolean
   message?: string
@@ -131,6 +164,22 @@ const eventService = {
    */
   async deleteEvent(slug: string): Promise<EventResponse> {
     const response: AxiosResponse<EventResponse> = await api.delete(`/v2/events/${slug}`)
+    return response.data
+  },
+
+  /**
+   * Fetch a single event by id (for loading into form)
+   */
+  async getEventById(id: number): Promise<EventDetailResponse> {
+    const response: AxiosResponse<EventDetailResponse> = await api.get(`/v2/events/${id}`)
+    return response.data
+  },
+
+  /**
+   * Update an existing event by id (PUT)
+   */
+  async updateEventById(id: number, payload: UpdateEventPayload): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.put(`/v2/events/${id}`, payload)
     return response.data
   },
 

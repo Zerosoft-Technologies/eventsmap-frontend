@@ -112,22 +112,21 @@ export const useAuthStore = defineStore('auth', () => {
       
       // Backend returns: { success: true, data: { user, token } }
       const responseData = data.data || data
-      const user = responseData.user || responseData
-      const token = responseData.token || responseData.access_token
+      const userData = responseData.user || responseData
+      const tokenStr = responseData.token || responseData.access_token
       
-      if (!user) {
+      if (!userData) {
         throw new Error('No user data received from server')
       }
       
       // Set token first
-      if (token) {
-        setToken(token)
+      if (tokenStr) {
+        setToken(tokenStr)
       }
       
-      // Then set user data
-      user.value = user
+      user.value = normalizeUserPayload(userData as Record<string, unknown>)
       
-      return { success: true, emailVerified: user.email_verified || true }
+      return { success: true, emailVerified: userData.email_verified ?? userData.emailVerified ?? true }
     } catch (err) {
       const axiosErr = err as AxiosError<ApiErrorResponse>
       handleError(err)
@@ -156,13 +155,23 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  function normalizeUserPayload(raw: Record<string, unknown>): User {
+    const u = raw as User & { profileType?: string; accountType?: string }
+    return {
+      ...raw,
+      profile_type: u.profile_type ?? u.profileType ?? '',
+      account_type: u.account_type ?? u.accountType ?? 'free',
+    } as User
+  }
+
   async function fetchUser() {
     if (!token.value) return
     loading.value = true
     clearErrors()
     try {
       const { data } = await api.get('/auth/me')
-      user.value = data.data || data.user || data
+      const raw = data.data || data.user || data
+      user.value = raw ? normalizeUserPayload(raw as Record<string, unknown>) : null
     } catch (err) {
       handleError(err)
       // Token is invalid — clear it

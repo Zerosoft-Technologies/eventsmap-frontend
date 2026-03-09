@@ -137,48 +137,6 @@
                 </div>
             </div>
 
-            <!-- ── Section 3: Account Status (read-only badges) ── -->
-            <div class="tw:border-t tw:border-gray-200 tw:pt-6 tw:mb-6">
-                <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-3">Account Status</h2>
-                <div class="tw:flex tw:flex-wrap tw:gap-2">
-                    <span class="tw:inline-flex tw:items-center tw:px-3 tw:py-1 tw:rounded tw:text-xs tw:font-medium tw:bg-blue-100 tw:text-blue-700">
-                        Profile: {{ user.profile_type }}
-                    </span>
-                    <span
-                        :class="[
-                            'tw:inline-flex tw:items-center tw:px-3 tw:py-1 tw:rounded tw:text-xs tw:font-medium',
-                            user.account_type === 'premium'
-                                ? 'tw:bg-purple-100 tw:text-purple-700'
-                                : 'tw:bg-gray-100 tw:text-gray-600'
-                        ]"
-                    >
-                        Plan: {{ user.account_type }}
-                    </span>
-                    <span
-                        :class="[
-                            'tw:inline-flex tw:items-center tw:px-3 tw:py-1 tw:rounded tw:text-xs tw:font-medium',
-                            user.status === 'active'
-                                ? 'tw:bg-green-100 tw:text-green-700'
-                                : user.status === 'pending_payment'
-                                    ? 'tw:bg-yellow-100 tw:text-yellow-700'
-                                    : 'tw:bg-red-100 tw:text-red-700'
-                        ]"
-                    >
-                        Status: {{ user.status }}
-                    </span>
-                    <span
-                        :class="[
-                            'tw:inline-flex tw:items-center tw:px-3 tw:py-1 tw:rounded tw:text-xs tw:font-medium',
-                            user.email_verified
-                                ? 'tw:bg-green-100 tw:text-green-700'
-                                : 'tw:bg-red-100 tw:text-red-700'
-                        ]"
-                    >
-                        Email Verified: {{ user.email_verified ? 'Yes' : 'No' }}
-                    </span>
-                </div>
-            </div>
-
             <!-- ── Feedback messages ──────────────────────────── -->
             <div
                 v-if="successMsg"
