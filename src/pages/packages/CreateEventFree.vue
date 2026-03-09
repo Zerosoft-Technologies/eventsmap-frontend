@@ -128,11 +128,11 @@
                     categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
                     (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
                   ]">
-                  <!-- <option value="">
+                  <option value="">
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
                     'Select Category') }}
-                  </option> -->
-                  <option v-for="category in categories" :key="category.id" :value="category.name">
+                  </option>
+                  <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                     {{ category.name }}
                   </option>
                 </select>

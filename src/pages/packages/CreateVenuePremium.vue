@@ -120,6 +120,50 @@
                     </div>
                 </div>
 
+                <!-- Venue LOCATION SECTION -->
+                <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
+                    <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
+                        Venue Location
+                    </h3>
+
+                    <div class="tw:relative tw:mb-4">
+                        <input v-model="searchAddress" @input="onSearchInput" type="text"
+                            placeholder="Search Address..."
+                            class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+
+                        <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
+                            <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="tw:opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="tw:opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </div>
+
+                        <div v-if="suggestions.length > 0"
+                            class="tw:absolute tw-top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
+                            <button v-for="(suggestion, index) in suggestions" :key="index"
+                                @click="selectSuggestion(suggestion)"
+                                class="tw:w-full tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors tw:border-b tw:border-gray-100 last:tw:border-b-0">
+                                {{ suggestion.display_name }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="event-map" class="tw:w-full tw:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4">
+                    </div>
+
+                    <div class="tw:space-y-2">
+                        <label class="tw:block tw:text-sm tw:text-gray-600">
+                            Selected Address
+                        </label>
+                        <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
+                            class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+                    </div>
+                </div>
+
                 <!-- DESCRIPTION OF VENUE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
@@ -181,50 +225,6 @@
                                 </svg>
                             </button>
                         </span>
-                    </div>
-                </div>
-
-                <!-- Venue LOCATION SECTION -->
-                <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
-                    <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Venue Location
-                    </h3>
-
-                    <div class="tw:relative tw:mb-4">
-                        <input v-model="searchAddress" @input="onSearchInput" type="text"
-                            placeholder="Search Address..."
-                            class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
-
-                        <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
-                            <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="tw:opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="tw:opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                        </div>
-
-                        <div v-if="suggestions.length > 0"
-                            class="tw:absolute tw-top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
-                            <button v-for="(suggestion, index) in suggestions" :key="index"
-                                @click="selectSuggestion(suggestion)"
-                                class="tw:w-full tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors tw:border-b tw:border-gray-100 last:tw:border-b-0">
-                                {{ suggestion.display_name }}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="event-map" class="tw:w-full tw:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4">
-                    </div>
-
-                    <div class="tw:space-y-2">
-                        <label class="tw:block tw:text-sm tw:text-gray-600">
-                            Selected Address
-                        </label>
-                        <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
-                            class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
                     </div>
                 </div>
 
@@ -486,7 +486,7 @@
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
                                         'Select') }}
                                     </option>
-                                    <option v-for="category in categories" :key="category.id" :value="category.name">
+                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                                         {{ category.name }}
                                     </option>
                                 </select>

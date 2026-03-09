@@ -72,7 +72,7 @@
               @mouseleave="stopCatDrag"
             >
               <button
-                v-for="category in categories"
+                v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')"
                 :key="category.id"
                 type="button"
                 @click="selectCategory(category)"

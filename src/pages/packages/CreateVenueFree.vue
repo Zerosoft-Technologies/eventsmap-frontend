@@ -215,7 +215,7 @@
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
                     'Select Category') }}
                   </option>
-                  <option v-for="category in categories" :key="category.id" :value="category.name">
+                  <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                     {{ category.name }}
                   </option>
                 </select>

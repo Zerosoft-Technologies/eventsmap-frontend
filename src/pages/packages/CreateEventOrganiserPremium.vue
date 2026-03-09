@@ -100,13 +100,13 @@
                     </div>
 
                     <input v-model="formData.organiserTitle" type="text" placeholder="Enter Organiser Title"
-                        data-field="organiserTitle"
-                        @input="formErrors.organiserTitle && clearError('organiserTitle')"
+                        data-field="organiserTitle" @input="formErrors.organiserTitle && clearError('organiserTitle')"
                         :class="[
-                          'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
-                          formErrors.organiserTitle ? 'tw:border-red-500' : 'tw:border-gray-200'
+                            'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
+                            formErrors.organiserTitle ? 'tw:border-red-500' : 'tw:border-gray-200'
                         ]" />
-                    <p v-if="formErrors.organiserTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.organiserTitle }}</p>
+                    <p v-if="formErrors.organiserTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{
+                        formErrors.organiserTitle }}</p>
                     <!-- Description -->
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:text-gray-700">Description</label>
@@ -262,7 +262,7 @@
                     <AdditionalImageUpload v-model:files="additionalImages" :max-files="5" :max-size-m-b="5" />
                 </div>
 
-                                <!-- GENRE SECTION -->
+                <!-- GENRE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
@@ -275,7 +275,8 @@
                     </div>
 
                     <!-- Error Display -->
-                    <div v-if="categoriesError" class="tw:bg-red-50 tw:border tw:border-red-200 tw:rounded-lg tw:p-4 tw:mb-4">
+                    <div v-if="categoriesError"
+                        class="tw:bg-red-50 tw:border tw:border-red-200 tw:rounded-lg tw:p-4 tw:mb-4">
                         <div class="tw:flex tw:items-center">
                             <svg class="tw:w-5 tw:h-5 tw:text-red-400 tw:mr-2" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
@@ -305,12 +306,16 @@
                                         (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
                                     ]">
                                     <option value="">
-                                        {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                                        'Select Category') }}
+                                        {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'Select Category') }}
                                     </option>
-                                    <option v-for="category in categories" :key="category.id" :value="category.name">
+                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                                         {{ category.name }}
                                     </option>
+                                    <!-- <option
+                                        v-for="category in categories.filter(c => c.name.toLowerCase() === 'organiser')"
+                                        :key="category.id" :value="category.name">
+                                        {{ category.name }}
+                                    </option> -->
                                 </select>
                                 <ChevronDown
                                     class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
@@ -346,16 +351,16 @@
                                 </div>
 
                                 <!-- Dropdown Options -->
-                                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError" class="subcategory-dropdown"
-                                    ref="dropdownMenu">
+                                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError"
+                                    class="subcategory-dropdown" ref="dropdownMenu">
                                     <div class="dropdown-content">
-                                        <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
-                                            :class="{
+                                        <div v-for="subcategory in availableSubcategories" :key="subcategory"
+                                            class="dropdown-option" :class="{
                                                 'selected': selectedSubcategories.includes(subcategory),
                                                 'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6
                                             }" @click="toggleSubcategory(subcategory)">
-                                            <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
-                                                v-model="selectedSubcategories"
+                                            <input type="checkbox" :id="`subcategory-${subcategory}`"
+                                                :value="subcategory" v-model="selectedSubcategories"
                                                 :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6"
                                                 @change="handleSubcategoryChange" @click.stop class="option-checkbox">
                                             <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
@@ -373,7 +378,8 @@
 
                             <!-- Selected Tags Display -->
                             <div v-if="selectedSubcategories.length > 0" class="selected-tags">
-                                <span v-for="subcategory in selectedSubcategories" :key="subcategory" class="selected-tag">
+                                <span v-for="subcategory in selectedSubcategories" :key="subcategory"
+                                    class="selected-tag">
                                     {{ subcategory }}
                                     <button @click="removeSubcategory(subcategory)" class="tag-remove">
                                         <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
@@ -389,7 +395,8 @@
                             <p v-if="subcategoryValidationError" class="validation-error">
                                 You can select maximum 5 subcategories only.
                             </p>
-                            <p v-else-if="subcategoryError" class="validation-error">Please select at least one subcategory</p>
+                            <p v-else-if="subcategoryError" class="validation-error">Please select at least one
+                                subcategory</p>
                         </div>
                     </div>
                 </div>
@@ -611,9 +618,9 @@ import "maplibre-gl/dist/maplibre-gl.css"
 import flatpickr from "flatpickr"
 import "flatpickr/dist/flatpickr.css"
 
-    const router = useRouter()
-    const route = useRoute()
-    const toast = useToast()
+const router = useRouter()
+const route = useRoute()
+const toast = useToast()
 const activeTab = ref("home")
 const isSubmitting = ref(false)
 const eventDescription = ref("")
@@ -657,118 +664,118 @@ const dropdownMenu = ref(null)
 
 // Computed property for available subcategories
 const availableSubcategories = computed(() => {
-  if (!selectedCategory.value) return []
-  const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
-  return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
+    if (!selectedCategory.value) return []
+    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+    return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
 })
 
 // Fetch categories from API using eventService
 async function fetchCategories() {
-  try {
-    isLoadingCategories.value = true
-    categoriesError.value = null
+    try {
+        isLoadingCategories.value = true
+        categoriesError.value = null
 
-    const response = await eventService.getCategories()
+        const response = await eventService.getCategories()
 
-    if (response.success) {
-      categories.value = response.data
-    } else {
-      categoriesError.value = 'Failed to fetch categories'
+        if (response.success) {
+            categories.value = response.data
+        } else {
+            categoriesError.value = 'Failed to fetch categories'
+        }
+    } catch (error) {
+        console.error('Error fetching categories:', error)
+        categoriesError.value = 'Error loading categories. Please try again.'
+    } finally {
+        isLoadingCategories.value = false
     }
-  } catch (error) {
-    console.error('Error fetching categories:', error)
-    categoriesError.value = 'Error loading categories. Please try again.'
-  } finally {
-    isLoadingCategories.value = false
-  }
 }
 
 // Handle category change with validation clearing
 function handleCategoryChangeWithValidation() {
-  selectedSubcategories.value = []  // Reset array when category changes
-  subcategoryError.value = false
-  subcategoryValidationError.value = false  // Clear validation error
-  categoryError.value = false
-  showSubcategoryDropdown.value = false  // Close dropdown
+    selectedSubcategories.value = []  // Reset array when category changes
+    subcategoryError.value = false
+    subcategoryValidationError.value = false  // Clear validation error
+    categoryError.value = false
+    showSubcategoryDropdown.value = false  // Close dropdown
 }
 
 // Handle category change
 function handleCategoryChange() {
-  handleCategoryChangeWithValidation()
+    handleCategoryChangeWithValidation()
 }
 
 // Toggle subcategory dropdown
 function toggleSubcategoryDropdown() {
-  if (!selectedCategory.value || categoriesError.value) return
-  showSubcategoryDropdown.value = !showSubcategoryDropdown.value
+    if (!selectedCategory.value || categoriesError.value) return
+    showSubcategoryDropdown.value = !showSubcategoryDropdown.value
 }
 
 // Toggle individual subcategory selection
 function toggleSubcategory(subcategory) {
-  if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 6) {
-    return // Prevent selection if already at max 5
-  }
+    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 6) {
+        return // Prevent selection if already at max 5
+    }
 
-  const index = selectedSubcategories.value.indexOf(subcategory)
-  if (index > -1) {
-    selectedSubcategories.value.splice(index, 1)
-  } else {
-    selectedSubcategories.value.push(subcategory)
-  }
+    const index = selectedSubcategories.value.indexOf(subcategory)
+    if (index > -1) {
+        selectedSubcategories.value.splice(index, 1)
+    } else {
+        selectedSubcategories.value.push(subcategory)
+    }
 
-  handleSubcategoryChange()
+    handleSubcategoryChange()
 }
 
 // Click outside handler to close dropdown
 function handleClickOutside(event) {
-  if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
-    showSubcategoryDropdown.value = false
-  }
+    if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
+        showSubcategoryDropdown.value = false
+    }
 }
 
 // Handle subcategory change with max 5 validation
 function handleSubcategoryChange() {
-  subcategoryError.value = false
+    subcategoryError.value = false
 
-  // Maximum 5 subcategories selection logic
-  // Prevent selection if trying to add more than 5 items
-  if (selectedSubcategories.value.length > 6) {
-    // Remove the last added item to maintain the limit
-    const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
-    selectedSubcategories.value = selectedSubcategories.value.slice(0, 6)
+    // Maximum 5 subcategories selection logic
+    // Prevent selection if trying to add more than 5 items
+    if (selectedSubcategories.value.length > 6) {
+        // Remove the last added item to maintain the limit
+        const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
+        selectedSubcategories.value = selectedSubcategories.value.slice(0, 6)
 
-    // Show validation error
-    subcategoryValidationError.value = true
+        // Show validation error
+        subcategoryValidationError.value = true
 
-    // Auto-hide validation message after 3 seconds
-    setTimeout(() => {
-      subcategoryValidationError.value = false
-    }, 3000)
-  } else {
-    // Clear validation error when within limit
-    subcategoryValidationError.value = false
-  }
+        // Auto-hide validation message after 3 seconds
+        setTimeout(() => {
+            subcategoryValidationError.value = false
+        }, 3000)
+    } else {
+        // Clear validation error when within limit
+        subcategoryValidationError.value = false
+    }
 }
 
 // Validate genre fields
 function validateGenre() {
-  categoryError.value = !selectedCategory.value
-  subcategoryError.value = selectedSubcategories.value.length === 0
+    categoryError.value = !selectedCategory.value
+    subcategoryError.value = selectedSubcategories.value.length === 0
 
-  return selectedCategory.value && selectedSubcategories.value.length > 0
+    return selectedCategory.value && selectedSubcategories.value.length > 0
 }
 
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
-  organiserTitle: '',
-  category: '',
-  subcategories: [],
+    organiserTitle: '',
+    category: '',
+    subcategories: [],
 })
 
 const organiserSchema = {
-  organiserTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Organiser Title' },
-  category: { type: 'select', required: true, label: 'Category' },
-  subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
+    organiserTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Organiser Title' },
+    category: { type: 'select', required: true, label: 'Category' },
+    subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
 }
 
 const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(organiserSchema, formData)
@@ -806,29 +813,29 @@ function isActive(item) {
 
 // Sync category/subcategory selections into formData for validation
 function syncFormData() {
-  formData.category = selectedCategory.value
-  formData.subcategories = selectedSubcategories.value
+    formData.category = selectedCategory.value
+    formData.subcategories = selectedSubcategories.value
 }
 
 async function handleSubmit() {
-  if (isSubmitting.value) return
-  isSubmitting.value = true
+    if (isSubmitting.value) return
+    isSubmitting.value = true
 
-  syncFormData()
+    syncFormData()
 
-  const isValid = validate()
-  const genreValid = validateGenre()
-  const timeValid = validateTimeRange()
+    const isValid = validate()
+    const genreValid = validateGenre()
+    const timeValid = validateTimeRange()
 
-  if (!isValid || !genreValid || !timeValid) {
-    await scrollToFirstError()
+    if (!isValid || !genreValid || !timeValid) {
+        await scrollToFirstError()
+        isSubmitting.value = false
+        return
+    }
+
+    // No API call — show success toast
+    toast.success('This feature will be available in future')
     isSubmitting.value = false
-    return
-  }
-
-  // No API call — show success toast
-  toast.success('This feature will be available in future')
-  isSubmitting.value = false
 }
 
 // Debounce function

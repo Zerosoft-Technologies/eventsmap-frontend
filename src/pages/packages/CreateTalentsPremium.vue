@@ -213,7 +213,7 @@
                                     <option value="">
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'Select Category') }}
                                     </option>
-                                    <option v-for="category in categories" :key="category.id" :value="category.name">
+                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                                         {{ category.name }}
                                     </option>
                                 </select>
@@ -405,7 +405,7 @@
                 <!-- Talent LOCATION SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
                     <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Talent Location
+                        State of living
                     </h3>
 
                     <!-- Address Search Input with Loading Spinner -->

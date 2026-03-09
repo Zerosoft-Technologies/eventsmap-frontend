@@ -240,7 +240,7 @@
                                     <option value="">
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'Select') }}
                                     </option>
-                                    <option v-for="category in categories" :key="category.id" :value="category.name">
+                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
                                         {{ category.name }}
                                     </option>
                                 </select>
@@ -517,9 +517,13 @@
                                 <ChevronDown
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
-                            <input v-if="dressCode === 'different'" v-model="customDressCode" type="text"
+                            <textarea
+                                v-if="dressCode === 'different'"
+                                v-model="customDressCode"
                                 placeholder="Enter dress code details"
-                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2" />
+                                rows="3"
+                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2 tw:resize-y tw:min-h-[80px]"
+                            ></textarea>
                             <p v-if="errors.dressCode" class="tw:text-red-500 tw:text-sm tw:mt-1">Dress code is required
                             </p>
                         </div>
@@ -546,9 +550,13 @@
                                 <ChevronDown
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
-                            <input v-if="ageLimit === 'different'" v-model="customAgeLimit" type="text"
-                                placeholder="Enter age limit details"
-                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2" />
+                            <textarea 
+                            v-if="ageLimit === 'different'" 
+                            v-model="customAgeLimit"
+                            placeholder="Enter age limit details"
+                            rows="3"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2 tw:resize-y tw:min-h-[80px]"
+                            ></textarea>
                             <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm tw:mt-1">Age limit is required
                             </p>
                         </div>
@@ -570,9 +578,13 @@
                                 <ChevronDown
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
-                            <input v-if="entranceStatus === 'different'" v-model="customEntranceFee" type="text"
-                                placeholder="Enter entrance status details"
-                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2" />
+                            <textarea 
+                            v-if="entranceStatus === 'different'" 
+                            v-model="customEntranceFee"
+                            placeholder="Enter entrance status details"
+                            rows="3"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2 tw:resize-y tw:min-h-[80px]"
+                            ></textarea>
                             <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm tw:mt-1">Entrance status
                                 is required</p>
                         </div>
