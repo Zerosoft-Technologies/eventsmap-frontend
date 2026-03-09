@@ -156,12 +156,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function normalizeUserPayload(raw: Record<string, unknown>): User {
-    const u = raw as User & { profileType?: string; accountType?: string }
+    const u = raw as unknown as User & { profileType?: string; accountType?: string }
     return {
       ...raw,
       profile_type: u.profile_type ?? u.profileType ?? '',
       account_type: u.account_type ?? u.accountType ?? 'free',
-    } as User
+    } as unknown as User
   }
 
   async function fetchUser() {
