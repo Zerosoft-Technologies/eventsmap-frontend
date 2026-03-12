@@ -3,12 +3,13 @@ import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyBieoyEdnvh3l3Or1WSREHLbG72hwYmYaA",
+  authDomain: "eventsmap-d4fe8.firebaseapp.com",
+  projectId: "eventsmap-d4fe8",
+  storageBucket: "eventsmap-d4fe8.firebasestorage.app",
+  messagingSenderId: "759946757613",
+  appId: "1:759946757613:web:8a41e91e31b934080d53e4",
+  measurementId: "G-LHVEPJDKLC"
 }
 
 // Guard against double-initialization (Vite HMR)
