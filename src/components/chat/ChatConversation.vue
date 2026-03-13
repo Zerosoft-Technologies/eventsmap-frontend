@@ -29,7 +29,11 @@
   </div>
 
   <!-- Messages body -->
-  <div ref="messagesContainer" class="tw:flex-1 tw:overflow-y-auto tw:px-4 tw:py-4 tw:space-y-3 tw:bg-gray-50">
+  <div
+    ref="messagesContainer"
+    class="tw:flex-1 tw:overflow-y-auto tw:px-4 tw:py-4 tw:space-y-3 tw:bg-gray-50"
+    @scroll="onMessagesScroll"
+  >
     <!-- Loading messages -->
     <div v-if="loadingMessages" class="tw:flex tw:items-center tw:justify-center tw:py-8 tw:gap-2 tw:text-gray-400">
       <Loader2 class="tw:w-5 tw:h-5 tw:animate-spin" />
@@ -75,6 +79,29 @@
         </div>
       </div>
     </template>
+
+    <!-- Load older button -->
+    <div v-if="hasMoreOlder && !loadingOlder" class="tw:flex tw:justify-center tw:py-2">
+      <button
+        @click="loadMoreOlder"
+        class="tw:px-4 tw:py-2 tw:text-xs tw:text-blue-500 hover:tw:text-blue-600 tw:transition-colors"
+      >
+        Load older messages
+      </button>
+    </div>
+    <div v-if="loadingOlder" class="tw:flex tw:justify-center tw:py-2">
+      <Loader2 class="tw:w-4 tw:h-4 tw:animate-spin tw:text-gray-400" />
+    </div>
+
+    <!-- Typing indicator -->
+    <div v-if="isTyping" class="tw:flex tw:items-center tw:gap-2 tw:py-2 tw:text-gray-500 tw:text-sm">
+      <span class="tw:inline-flex tw:gap-1">
+        <span class="tw:w-2 tw:h-2 tw:bg-gray-400 tw:rounded-full tw:animate-bounce" style="animation-delay: 0ms" />
+        <span class="tw:w-2 tw:h-2 tw:bg-gray-400 tw:rounded-full tw:animate-bounce" style="animation-delay: 150ms" />
+        <span class="tw:w-2 tw:h-2 tw:bg-gray-400 tw:rounded-full tw:animate-bounce" style="animation-delay: 300ms" />
+      </span>
+      <span>{{ selectedUser.name }} is typing...</span>
+    </div>
   </div>
 
   <!-- Rate limit warning -->
@@ -97,9 +124,9 @@
   <!-- Footer: input -->
   <div
     class="tw:flex tw:items-end tw:gap-2 tw:px-4 tw:py-3 tw:border-t tw:border-gray-100 tw:bg-white tw:flex-shrink-0">
-    <input v-model="inputText" type="text" placeholder="Type a message..." maxlength="2000"
+    <input v-model="inputText" type="text" placeholder="Type a message..." maxlength="1000"
       class="tw:flex-1 tw:bg-gray-100 tw:rounded-full tw:px-4 tw:py-2.5 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-400 tw:transition-all"
-      @keydown.enter.prevent="sendMessage" :disabled="isSendDisabled" />
+      @input="onInputChange" @keydown.enter.prevent="sendMessage" :disabled="isSendDisabled" />
     <button @click="sendMessage" :disabled="isSendDisabled || !inputText.trim()"
       class="tw:w-10 tw:h-10 tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-blue-500 tw:text-white hover:tw:bg-blue-600 tw:transition-colors disabled:tw:opacity-50 disabled:tw:cursor-not-allowed tw:flex-shrink-0">
       <Send v-if="!isSending" class="tw:w-4 tw:h-4" />
@@ -114,13 +141,24 @@ import {
   ArrowLeft, X, Send, Loader2, MessageCircle, WifiOff, AlertTriangle,
 } from 'lucide-vue-next'
 import { Timestamp } from 'firebase/firestore'
-import { chatService, type ChatUser } from '@/services/chatService'
+import type { ChatUser } from '@/services/chatService'
+import { useAuthStore } from '@/stores/auth'
+import {
+  validateMessage,
+  createSpamState,
+  updateSpamState,
+  type SpamState,
+} from '@/utils/chatValidation'
 import {
   getConversationId,
   getOrCreateConversation,
   subscribeToMessages,
+  subscribeToConversation,
   sendMessage as firestoreSendMessage,
   markMessagesAsRead,
+  loadOlderMessages,
+  setTyping,
+  clearTyping,
   type MessageWithId,
 } from '@/services/chatFirestore'
 
@@ -135,14 +173,22 @@ defineEmits<{
 }>()
 
 // ── State ────────────────────────────────────────────────────────────
-const messages = ref<MessageWithId[]>([])
+const olderMessages = ref<MessageWithId[]>([])
+const recentMessages = ref<MessageWithId[]>([])
+const messages = computed(() => [...olderMessages.value, ...recentMessages.value])
 const inputText = ref('')
 const loadingMessages = ref(true)
 const isSending = ref(false)
 const rateLimitMessage = ref<string | null>(null)
 const connectionError = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
+const spamState = ref<SpamState>(createSpamState())
+const isTyping = ref(false)
+const loadingOlder = ref(false)
+const hasMoreOlder = ref(true)
+let typingDebounce: ReturnType<typeof setTimeout> | null = null
 let unsubscribe: (() => void) | null = null
+let unsubscribeConv: (() => void) | null = null
 let rateLimitTimer: ReturnType<typeof setTimeout> | null = null
 
 // ── Derived ─────────────────────────────────────────────────────────
@@ -170,6 +216,41 @@ async function scrollToBottom() {
   }
 }
 
+// ── Load older messages ───────────────────────────────────────────────
+async function loadMoreOlder() {
+  const all = messages.value
+  if (loadingOlder.value || all.length === 0) return
+  const oldest = olderMessages.value.length > 0 ? olderMessages.value[0] : recentMessages.value[0]
+  const ts = oldest?.timestamp
+  if (!ts) return
+  loadingOlder.value = true
+  try {
+    const older = await loadOlderMessages(conversationId.value, ts)
+    if (older.length < 50) hasMoreOlder.value = false
+    olderMessages.value = [...older, ...olderMessages.value]
+  } catch (err) {
+    console.error('Error loading older messages:', err)
+  } finally {
+    loadingOlder.value = false
+  }
+}
+
+function onMessagesScroll() {
+  const el = messagesContainer.value
+  if (!el || loadingOlder.value || !hasMoreOlder.value || messages.value.length === 0) return
+  if (el.scrollTop < 80) loadMoreOlder()
+}
+
+// ── Typing indicator ──────────────────────────────────────────────────
+function onInputChange() {
+  if (typingDebounce) clearTimeout(typingDebounce)
+  setTyping(conversationId.value, props.currentUserId)
+  typingDebounce = setTimeout(() => {
+    clearTyping(conversationId.value, props.currentUserId)
+    typingDebounce = null
+  }, 2000)
+}
+
 // ── Firestore: conversation setup + real-time messages ───────────────
 function startMessageListener() {
   unsubscribe = subscribeToMessages(
@@ -177,7 +258,7 @@ function startMessageListener() {
     props.currentUserId,
     async (incoming, snapshot) => {
       connectionError.value = false
-      messages.value = incoming
+      recentMessages.value = incoming
       loadingMessages.value = false
       scrollToBottom()
       await markMessagesAsRead(conversationId.value, props.currentUserId, snapshot)
@@ -187,17 +268,36 @@ function startMessageListener() {
       loadingMessages.value = false
     }
   )
+
+  unsubscribeConv = subscribeToConversation(
+    conversationId.value,
+    (data) => {
+      const otherTyping = data.typing_users?.[String(props.selectedUser.id)]
+      isTyping.value = !!otherTyping
+    },
+    () => {}
+  )
 }
 
 async function initAndListen() {
   loadingMessages.value = true
-  messages.value = []
+  olderMessages.value = []
+  recentMessages.value = []
+  isTyping.value = false
+  hasMoreOlder.value = true
+
+  const authStore = useAuthStore()
+  const participantNames: { [key: number]: string } = {
+    [props.currentUserId]: authStore.user?.name || authStore.user?.email || `User ${props.currentUserId}`,
+    [props.selectedUser.id]: props.selectedUser.name,
+  }
 
   try {
     await getOrCreateConversation(
       conversationId.value,
       props.currentUserId,
-      props.selectedUser.id
+      props.selectedUser.id,
+      participantNames
     )
 
     startMessageListener()
@@ -213,22 +313,30 @@ async function sendMessage() {
   const text = inputText.value.trim()
   if (!text || isSendDisabled.value) return
 
+  const validation = validateMessage(text, props.currentUserId, props.selectedUser.id, spamState.value)
+  if (!validation.valid) {
+    rateLimitMessage.value = validation.error ?? 'Cannot send message.'
+    if (rateLimitTimer) clearTimeout(rateLimitTimer)
+    rateLimitTimer = setTimeout(() => { rateLimitMessage.value = null }, 5000)
+    return
+  }
+
   isSending.value = true
 
-  try {
-    const validation = await chatService.validateMessage()
-    if (!validation.can_send) {
-      rateLimitMessage.value = 'You are not allowed to send messages.'
-      return
-    }
+  clearTyping(conversationId.value, props.currentUserId)
 
+  try {
+    const senderName = useAuthStore().user?.name || useAuthStore().user?.email || `User ${props.currentUserId}`
     await firestoreSendMessage(
       conversationId.value,
       props.currentUserId,
       props.selectedUser.id,
-      text
+      text,
+      senderName,
+      props.selectedUser.name
     )
 
+    spamState.value = updateSpamState(spamState.value, text)
     inputText.value = ''
   } catch (err: any) {
     if (err?.response?.status === 429) {
@@ -249,6 +357,10 @@ async function sendMessage() {
 // ── Lifecycle ────────────────────────────────────────────────────────
 watch(() => props.selectedUser.id, () => {
   if (unsubscribe) unsubscribe()
+  if (unsubscribeConv) unsubscribeConv()
+  if (typingDebounce) clearTimeout(typingDebounce)
+  clearTyping(conversationId.value, props.currentUserId)
+  spamState.value = createSpamState()
   initAndListen()
 })
 
@@ -258,6 +370,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (unsubscribe) unsubscribe()
+  if (unsubscribeConv) unsubscribeConv()
+  if (typingDebounce) clearTimeout(typingDebounce)
+  clearTyping(conversationId.value, props.currentUserId)
   if (rateLimitTimer) clearTimeout(rateLimitTimer)
 })
 </script>

@@ -13,7 +13,7 @@
     <Transition name="chat-panel">
       <div
         v-if="isOpen"
-        class="tw:fixed tw:top-0 tw:right-0 tw:h-full tw:w-[400px] tw:bg-white tw:z-50 tw:shadow-2xl tw:flex tw:flex-col"
+        class="tw:fixed tw:top-0 tw:right-0 tw:h-full tw:w-full sm:tw:w-[400px] tw:max-w-full tw:bg-white tw:z-50 tw:shadow-2xl tw:flex tw:flex-col"
       >
         <!-- ── CHECKING ACCESS ── -->
         <div v-if="view === 'checking'" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:flex-1 tw:gap-4 tw:text-gray-400">
@@ -90,6 +90,7 @@ import { Loader2, X, WifiOff, MessageSquareOff } from 'lucide-vue-next'
 import { signInWithCustomToken } from 'firebase/auth'
 import { firebaseAuth } from '@/services/firebase'
 import { chatService, type ChatUser } from '@/services/chatService'
+import { setOnline, setOffline } from '@/services/chatPresence'
 import { useAuthStore } from '@/stores/auth'
 import ChatUserList from './ChatUserList.vue'
 import ChatConversation from './ChatConversation.vue'
@@ -130,7 +131,11 @@ async function initChat() {
     // 3. Sign in to Firebase
     await signInWithCustomToken(firebaseAuth, firebaseToken)
 
-    // 4. Show user list
+    // 4. Set presence online
+    const name = authStore.user?.name || authStore.user?.email || `User ${authStore.user?.id}`
+    if (authStore.user?.id) await setOnline(authStore.user.id, name)
+
+    // 5. Show user list
     view.value = 'user-list'
 
   } catch (err: any) {
@@ -151,10 +156,14 @@ watch(
   () => props.isOpen,
   (open) => {
     if (open) {
-      // Reset state and initialize fresh each time panel opens
       view.value         = 'checking'
       selectedUser.value = null
       initChat()
+    } else {
+      // Set offline when chat panel closes
+      const uid = authStore.user?.id
+      const name = authStore.user?.name || authStore.user?.email || `User ${uid}`
+      if (uid) setOffline(uid, name)
     }
   },
   { immediate: false },

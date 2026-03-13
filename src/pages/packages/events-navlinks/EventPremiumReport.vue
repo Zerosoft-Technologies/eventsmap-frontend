@@ -3,10 +3,11 @@
     <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
 
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-      <EventSidebar 
+      <EventSidebar
         :menuItems="menuItems"
         @back="handleBack"
         @event-selected="handleEventSelected"
+        @chatbox-click="handleChatboxClick"
       />
 
       <!-- ================= RIGHT CARD ================= -->
@@ -53,10 +54,12 @@
 <script setup>
 import { ref } from "vue"
 import { useRouter } from "vue-router"
+import { useChatStore } from "@/stores/chatStore"
 import { Home, FileText, BarChart3, Settings, Calendar, MessageSquareText } from "lucide-vue-next"
 import EventSidebar from "../eventsidebar/Eventsidebar.vue"
 
 const router = useRouter()
+const chatStore = useChatStore()
 
 // Event data (you can fetch this from API or store)
 const monthlyViews = ref([
@@ -82,5 +85,9 @@ function handleBack() {
 
 function handleEventSelected(eventId) {
   console.log('Event selected for editing:', eventId)
+}
+
+function handleChatboxClick() {
+  chatStore.open()
 }
 </script>

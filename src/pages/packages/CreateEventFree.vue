@@ -1320,13 +1320,8 @@ async function createEvent() {
       // Show success toast
       toast.success('Event created successfully!')
 
-      // Redirect to event page using slug
-      const slug = response.data?.slug
-      if (slug) {
-        router.push(`/event/${slug}`)
-      } else {
-        router.push('/events')
-      }
+      // Stay on current page (no redirect to event details)
+      // User can continue creating or navigate via sidebar
     } else {
       // Handle API validation errors
       if (response.errors) {

@@ -3,7 +3,7 @@
         <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
 
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-            <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" />
+            <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" @chatbox-click="handleChatboxClick" />
 
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6">
@@ -263,9 +263,11 @@
     import EventSidebar from '../eventsidebar/Eventsidebar.vue'
     import PlanManagement from '@/components/PlanManagement.vue';
     import { useAuthStore } from '@/stores/auth';
+    import { useChatStore } from '@/stores/chatStore';
 
     const router = useRouter()
     const authStore = useAuthStore()
+    const chatStore = useChatStore()
 
     // Organiser data (you can fetch this from API or store)
     const menuItems = [
@@ -283,6 +285,10 @@
 
     function handleEventSelected(eventId) {
         console.log('Event selected for editing:', eventId)
+    }
+
+    function handleChatboxClick() {
+        chatStore.open()
     }
 
     const activeTab = ref('profile');

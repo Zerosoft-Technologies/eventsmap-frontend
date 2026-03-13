@@ -55,7 +55,12 @@
           />
           <span v-else>{{ getInitials(user.name) }}</span>
         </div>
-
+        <!-- Online indicator -->
+        <span
+          v-if="presenceMap[user.id]?.online"
+          class="tw:absolute tw:bottom-0 tw:right-0 tw:w-3 tw:h-3 tw:bg-green-500 tw:rounded-full tw:border-2 tw:border-white"
+          title="Online"
+        />
         <!-- Premium badge -->
         <span
           v-if="user.account_type === 'premium'"
@@ -97,10 +102,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { X, Loader2, MessageCircle, WifiOff } from 'lucide-vue-next'
 import { chatService, type ChatUser } from '@/services/chatService'
-import { getConversationsForUser } from '@/services/chatFirestore'
+import {
+  subscribeToConversationsForUser,
+  type ConversationWithMeta,
+} from '@/services/chatFirestore'
+import { subscribeToPresence, type PresenceDoc } from '@/services/chatPresence'
 import type { Timestamp } from 'firebase/firestore'
 
 const props = defineProps<{
@@ -112,67 +121,91 @@ defineEmits<{
   (e: 'close'): void
 }>()
 
-const users   = ref<ChatUser[]>([])
-const loading = ref(false)
-const error   = ref<string | null>(null)
+const users = ref<ChatUser[]>([])
+const apiUserMap = ref<Map<number, ChatUser>>(new Map())
+const loading = ref(true)
+const error = ref<string | null>(null)
+const presenceMap = reactive<Record<number, PresenceDoc | null>>({})
+const unsubPresence: (() => void)[] = []
 
-async function loadChatList() {
-  loading.value = true
-  error.value   = null
-  try {
-    const [apiUsers, conversations] = await Promise.all([
-      chatService.getChatUsers(),
-      getConversationsForUser(props.currentUserId),
-    ])
+function mergeConversationsToUsers(conversations: ConversationWithMeta[]) {
+  const premiumUsers = Array.from(apiUserMap.value.values())
+  const userMap = new Map(premiumUsers.map(u => [u.id, { ...u }]))
+  const result: ChatUser[] = []
+  const seenIds = new Set<number>()
 
-    const premiumUsers = apiUsers.filter(
-      u => u.id !== props.currentUserId && u.account_type === 'premium'
-    )
-    const userMap = new Map(premiumUsers.map(u => [u.id, { ...u }]))
-
-    const result: ChatUser[] = []
-    const seenIds = new Set<number>()
-
-    for (const conv of conversations) {
-      const otherId = conv.otherParticipantId
-      seenIds.add(otherId)
-      const base = userMap.get(otherId) ?? {
-        id: otherId,
-        name: `User ${otherId}`,
-        profile_type: 'user',
-        account_type: 'premium' as const,
-      }
-      const lastTime = conv.last_message_time as Timestamp | null | undefined
-      result.push({
-        ...base,
-        last_message: conv.last_message ?? base.last_message ?? null,
-        last_message_at: lastTime ? lastTime.toDate().toISOString() : base.last_message_at ?? null,
-        unread_count: conv.unread?.[String(props.currentUserId)] ?? base.unread_count ?? 0,
-      })
+  for (const conv of conversations) {
+    const otherId = conv.otherParticipantId
+    seenIds.add(otherId)
+    const base = userMap.get(otherId) ?? {
+      id: otherId,
+      name: conv.participant_names?.[String(otherId)] ?? `User ${otherId}`,
+      profile_type: 'user',
+      account_type: 'premium' as const,
     }
+    const lastTime = conv.last_message_time as Timestamp | null | undefined
+    result.push({
+      ...base,
+      name: conv.participant_names?.[String(otherId)] ?? base.name,
+      last_message: conv.last_message ?? base.last_message ?? null,
+      last_message_at: lastTime ? lastTime.toDate().toISOString() : base.last_message_at ?? null,
+      unread_count: conv.unread_count?.[String(props.currentUserId)] ?? base.unread_count ?? 0,
+    })
+  }
 
-    for (const u of premiumUsers) {
-      if (!seenIds.has(u.id)) {
-        result.push(u)
-      }
+  for (const u of premiumUsers) {
+    if (!seenIds.has(u.id)) {
+      result.push(u)
     }
+  }
 
-    users.value = result
-  } catch (err) {
-    error.value = 'Failed to load chat list. Please try again.'
-    console.error('Error loading chat list:', err)
-  } finally {
-    loading.value = false
+  users.value = result
+
+  // Subscribe to presence for displayed users
+  const ids = new Set(result.map(u => u.id))
+  for (const fn of unsubPresence) fn()
+  unsubPresence.length = 0
+  for (const id of ids) {
+    const unsub = subscribeToPresence(id, (data) => {
+      presenceMap[id] = data
+    })
+    unsubPresence.push(unsub)
   }
 }
 
+async function initChatList() {
+  loading.value = true
+  error.value = null
+  try {
+    const apiUsers = await chatService.getChatUsers()
+    const premium = apiUsers.filter(
+      u => u.id !== props.currentUserId && u.account_type === 'premium'
+    )
+    apiUserMap.value = new Map(premium.map(u => [u.id, { ...u }]))
+
+    const unsub = subscribeToConversationsForUser(props.currentUserId, (conversations) => {
+      mergeConversationsToUsers(conversations)
+    }, (err) => {
+      console.error('Conversations listener error:', err)
+      error.value = 'Failed to load conversations.'
+    })
+
+    loading.value = false
+    return unsub
+  } catch (err) {
+    error.value = 'Failed to load chat list. Please try again.'
+    console.error('Error loading chat list:', err)
+    loading.value = false
+    return () => {}
+  }
+}
+
+function loadChatList() {
+  initChatList()
+}
+
 function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .slice(0, 2)
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
+  return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
 }
 
 function capitalize(str: string): string {
@@ -181,18 +214,28 @@ function capitalize(str: string): string {
 
 function formatTime(isoString: string): string {
   const date = new Date(isoString)
-  const now  = new Date()
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
 
-  if (diffDays === 0) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  } else if (diffDays === 1) {
-    return 'Yesterday'
-  } else if (diffDays < 7) {
-    return date.toLocaleDateString([], { weekday: 'short' })
-  }
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffDays === 0) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays < 7) return date.toLocaleDateString([], { weekday: 'short' })
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }
 
-onMounted(loadChatList)
+let unsubConversations: (() => void) = () => {}
+
+onMounted(async () => {
+  unsubConversations = await initChatList()
+})
+
+onUnmounted(() => {
+  unsubConversations()
+  for (const fn of unsubPresence) fn()
+})
 </script>

@@ -41,16 +41,6 @@ export const chatService = {
   },
 
   /**
-   * Validate that the current user is allowed to send a message (global chat).
-   * POST /api/v2/chat/validate-message
-   * Returns { can_send: true } or throws 429.
-   */
-  async validateMessage(): Promise<{ can_send: boolean }> {
-    const { data } = await api.post('/v2/chat/validate-message')
-    return data as { can_send: boolean }
-  },
-
-  /**
    * Accept or reject an event invitation.
    * POST /api/v2/event-invitations/{id}/respond
    */

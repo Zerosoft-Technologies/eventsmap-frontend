@@ -7,6 +7,7 @@
         :menuItems="menuItems"
         @back="handleBack"
         @event-selected="handleEventSelected"
+        @chatbox-click="handleChatboxClick"
       />
 
       <!-- ================= RIGHT CARD ================= -->
@@ -82,5 +83,9 @@ function handleBack() {
 
 function handleEventSelected(eventId) {
   console.log('Event selected for editing:', eventId)
+}
+
+function handleChatboxClick() {
+  chatStore.open()
 }
 </script>
