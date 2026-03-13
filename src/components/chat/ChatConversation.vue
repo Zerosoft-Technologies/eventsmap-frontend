@@ -113,35 +113,16 @@ import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import {
   ArrowLeft, X, Send, Loader2, MessageCircle, WifiOff, AlertTriangle,
 } from 'lucide-vue-next'
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  addDoc,
-  serverTimestamp,
-  writeBatch,
-  doc,
-  Timestamp,
-  type QuerySnapshot,
-  type DocumentData,
-  type Unsubscribe,
-} from 'firebase/firestore'
-import { firestore } from '@/services/firebase'
+import { Timestamp } from 'firebase/firestore'
 import { chatService, type ChatUser } from '@/services/chatService'
-
-interface FirestoreMessage {
-  id: string
-  room_id: string
-  event_id: number
-  sender_id: number
-  receiver_id: number
-  message: string
-  message_type: string
-  timestamp: Timestamp | null
-  status: 'sent' | 'delivered' | 'read'
-}
+import {
+  getConversationId,
+  getOrCreateConversation,
+  subscribeToMessages,
+  sendMessage as firestoreSendMessage,
+  markMessagesAsRead,
+  type MessageWithId,
+} from '@/services/chatFirestore'
 
 const props = defineProps<{
   currentUserId: number
@@ -154,21 +135,20 @@ defineEmits<{
 }>()
 
 // ── State ────────────────────────────────────────────────────────────
-const messages = ref<FirestoreMessage[]>([])
+const messages = ref<MessageWithId[]>([])
 const inputText = ref('')
 const loadingMessages = ref(true)
 const isSending = ref(false)
 const rateLimitMessage = ref<string | null>(null)
 const connectionError = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
-let unsubscribe: Unsubscribe | null = null
+let unsubscribe: (() => void) | null = null
 let rateLimitTimer: ReturnType<typeof setTimeout> | null = null
 
 // ── Derived ─────────────────────────────────────────────────────────
-const roomId = computed(() => {
-  const ids = [props.currentUserId, props.selectedUser.id].sort((a, b) => a - b)
-  return `global_${ids[0]}_${ids[1]}`
-})
+const conversationId = computed(() =>
+  getConversationId(props.currentUserId, props.selectedUser.id)
+)
 
 const isSendDisabled = computed(() => isSending.value || !!rateLimitMessage.value)
 
@@ -177,7 +157,7 @@ function getInitials(name: string): string {
   return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
 }
 
-function formatMsgTime(ts: Timestamp | null): string {
+function formatMsgTime(ts: Timestamp | null | undefined): string {
   if (!ts) return ''
   const date = ts.toDate()
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -190,53 +170,41 @@ async function scrollToBottom() {
   }
 }
 
-// ── Firestore listener ───────────────────────────────────────────────
+// ── Firestore: conversation setup + real-time messages ───────────────
 function startMessageListener() {
-  const q = query(
-    collection(firestore, 'messages'),
-    where('room_id', '==', roomId.value),
-    orderBy('timestamp', 'asc'),
-  )
-
-  unsubscribe = onSnapshot(
-    q,
-    (snapshot) => {
+  unsubscribe = subscribeToMessages(
+    conversationId.value,
+    props.currentUserId,
+    async (incoming, snapshot) => {
       connectionError.value = false
-      const incoming = snapshot.docs.map(d => ({
-        id: d.id,
-        ...(d.data() as Omit<FirestoreMessage, 'id'>),
-      }))
       messages.value = incoming
       loadingMessages.value = false
       scrollToBottom()
-
-      // Mark messages from the other user as read
-      markMessagesAsRead(snapshot)
+      await markMessagesAsRead(conversationId.value, props.currentUserId, snapshot)
     },
-    (err) => {
-      console.error('Firestore listener error:', err)
+    () => {
       connectionError.value = true
       loadingMessages.value = false
-    },
+    }
   )
 }
 
-async function markMessagesAsRead(snapshot: QuerySnapshot<DocumentData>) {
+async function initAndListen() {
+  loadingMessages.value = true
+  messages.value = []
+
   try {
-    const batch   = writeBatch(firestore)
-    let   hasWork = false
+    await getOrCreateConversation(
+      conversationId.value,
+      props.currentUserId,
+      props.selectedUser.id
+    )
 
-    snapshot.docs.forEach((d) => {
-      const data = d.data() as FirestoreMessage
-      if (data.receiver_id === props.currentUserId && data.status !== 'read') {
-        batch.update(doc(firestore, 'messages', d.id), { status: 'read' })
-        hasWork = true
-      }
-    })
-
-    if (hasWork) await batch.commit()
+    startMessageListener()
   } catch (err) {
-    console.error('Error marking messages as read:', err)
+    console.error('Error initializing conversation:', err)
+    connectionError.value = true
+    loadingMessages.value = false
   }
 }
 
@@ -248,33 +216,23 @@ async function sendMessage() {
   isSending.value = true
 
   try {
-    // 1. Validate with Laravel backend
     const validation = await chatService.validateMessage()
-
     if (!validation.can_send) {
       rateLimitMessage.value = 'You are not allowed to send messages.'
       return
     }
 
-    // 2. Write to Firestore (event_id: 0 for global chat)
-    await addDoc(collection(firestore, 'messages'), {
-      room_id: roomId.value,
-      event_id: 0,
-      sender_id: props.currentUserId,
-      receiver_id: props.selectedUser.id,
-      message: text,
-      message_type: 'text',
-      timestamp: serverTimestamp(),
-      status: 'sent',
-    })
+    await firestoreSendMessage(
+      conversationId.value,
+      props.currentUserId,
+      props.selectedUser.id,
+      text
+    )
 
     inputText.value = ''
-
   } catch (err: any) {
     if (err?.response?.status === 429) {
-      // Rate limit
       rateLimitMessage.value = 'Too many messages. Please wait before sending more.'
-
       if (rateLimitTimer) clearTimeout(rateLimitTimer)
       rateLimitTimer = setTimeout(() => {
         rateLimitMessage.value = null
@@ -291,13 +249,11 @@ async function sendMessage() {
 // ── Lifecycle ────────────────────────────────────────────────────────
 watch(() => props.selectedUser.id, () => {
   if (unsubscribe) unsubscribe()
-  loadingMessages.value = true
-  messages.value = []
-  startMessageListener()
+  initAndListen()
 })
 
 onMounted(() => {
-  startMessageListener()
+  initAndListen()
 })
 
 onUnmounted(() => {

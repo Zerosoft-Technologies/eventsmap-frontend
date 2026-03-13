@@ -22,7 +22,7 @@
     <WifiOff class="tw:w-10 tw:h-10 tw:text-red-400" />
     <p class="tw:text-sm tw:text-red-500">{{ error }}</p>
     <button
-      @click="loadUsers"
+      @click="loadChatList"
       class="tw:px-4 tw:py-2 tw:text-sm tw:bg-blue-500 tw:text-white tw:rounded-lg hover:tw:bg-blue-600 tw:transition-colors"
     >
       Retry
@@ -97,9 +97,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { X, Loader2, MessageCircle, WifiOff } from 'lucide-vue-next'
 import { chatService, type ChatUser } from '@/services/chatService'
+import { getConversationsForUser } from '@/services/chatFirestore'
+import type { Timestamp } from 'firebase/firestore'
 
 const props = defineProps<{
   currentUserId: number
@@ -114,17 +116,51 @@ const users   = ref<ChatUser[]>([])
 const loading = ref(false)
 const error   = ref<string | null>(null)
 
-async function loadUsers() {
+async function loadChatList() {
   loading.value = true
   error.value   = null
   try {
-    const all = await chatService.getChatUsers()
-    // Filter out current user and show only premium users
-    users.value = all
-      .filter(u => u.id !== props.currentUserId && u.account_type === 'premium')
+    const [apiUsers, conversations] = await Promise.all([
+      chatService.getChatUsers(),
+      getConversationsForUser(props.currentUserId),
+    ])
+
+    const premiumUsers = apiUsers.filter(
+      u => u.id !== props.currentUserId && u.account_type === 'premium'
+    )
+    const userMap = new Map(premiumUsers.map(u => [u.id, { ...u }]))
+
+    const result: ChatUser[] = []
+    const seenIds = new Set<number>()
+
+    for (const conv of conversations) {
+      const otherId = conv.otherParticipantId
+      seenIds.add(otherId)
+      const base = userMap.get(otherId) ?? {
+        id: otherId,
+        name: `User ${otherId}`,
+        profile_type: 'user',
+        account_type: 'premium' as const,
+      }
+      const lastTime = conv.last_message_time as Timestamp | null | undefined
+      result.push({
+        ...base,
+        last_message: conv.last_message ?? base.last_message ?? null,
+        last_message_at: lastTime ? lastTime.toDate().toISOString() : base.last_message_at ?? null,
+        unread_count: conv.unread?.[String(props.currentUserId)] ?? base.unread_count ?? 0,
+      })
+    }
+
+    for (const u of premiumUsers) {
+      if (!seenIds.has(u.id)) {
+        result.push(u)
+      }
+    }
+
+    users.value = result
   } catch (err) {
-    error.value = 'Failed to load participants. Please try again.'
-    console.error('Error loading chat users:', err)
+    error.value = 'Failed to load chat list. Please try again.'
+    console.error('Error loading chat list:', err)
   } finally {
     loading.value = false
   }
@@ -158,5 +194,5 @@ function formatTime(isoString: string): string {
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }
 
-onMounted(loadUsers)
+onMounted(loadChatList)
 </script>
