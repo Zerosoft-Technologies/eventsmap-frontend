@@ -69,10 +69,6 @@
             <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected"
                 @chatbox-click="handleChatboxClick" />
 
-            <!-- ================= CHAT SIDEBAR ================= -->
-            <ChatSidebar :is-open="showChatSidebar" :event-id="chatEventId" :current-user-id="currentUserId"
-                @close="showChatSidebar = false" />
-
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6 tw:space-y-6">
 
@@ -820,12 +816,12 @@ import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
-import ChatSidebar from "@/components/chat/ChatSidebar.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import api from "@/services/api"
 import eventService from "@/services/eventService"
 import { useAuthStore } from "@/stores/auth"
 import { useMyEventStore } from "@/stores/myEventStore"
+import { useChatStore } from "@/stores/chatStore"
 import { useToast } from "@/composables/useToast"
 import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
@@ -839,13 +835,7 @@ const route = useRoute()
 const toast = useToast()
 const authStore = useAuthStore()
 const myEvtStore = useMyEventStore()
-
-// ── Chat sidebar state ───────────────────────────────────────────────
-const showChatSidebar = ref(false)
-
-const chatEventId = computed(() => myEvtStore.selectedEventId ?? 0)
-
-const currentUserId = computed(() => authStore.user?.id ?? 0)
+const chatStore = useChatStore()
 
 // Edit mode state
 const isEditMode = ref(false)
@@ -853,11 +843,11 @@ const editingEventId = ref(null)
 const eventType = ref('premium')
 
 function handleChatboxClick() {
-    if (!myEvtStore.selectedEventId) {
-        toast.warning('Please select an event from the sidebar first.')
+    if (authStore.user?.account_type !== 'premium') {
+        toast.warning('Chat is available only for premium users.')
         return
     }
-    showChatSidebar.value = true
+    chatStore.open()
 }
 
 // Event data

@@ -33,7 +33,7 @@
   <div v-else-if="users.length === 0" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:flex-1 tw:gap-3 tw:px-6 tw:text-center">
     <MessageCircle class="tw:w-12 tw:h-12 tw:text-gray-300" />
     <p class="tw:text-sm tw:font-medium tw:text-gray-500">No participants yet</p>
-    <p class="tw:text-xs tw:text-gray-400">Invite users to your event to start chatting</p>
+    <p class="tw:text-xs tw:text-gray-400">Premium users you can chat with will appear here</p>
   </div>
 
   <!-- User list -->
@@ -102,7 +102,6 @@ import { X, Loader2, MessageCircle, WifiOff } from 'lucide-vue-next'
 import { chatService, type ChatUser } from '@/services/chatService'
 
 const props = defineProps<{
-  eventId: number
   currentUserId: number
 }>()
 
@@ -119,9 +118,10 @@ async function loadUsers() {
   loading.value = true
   error.value   = null
   try {
-    users.value = await chatService.getChatUsers(props.eventId)
-    // Filter out the current user from the list
-    users.value = users.value.filter(u => u.id !== props.currentUserId)
+    const all = await chatService.getChatUsers()
+    // Filter out current user and show only premium users
+    users.value = all
+      .filter(u => u.id !== props.currentUserId && u.account_type === 'premium')
   } catch (err) {
     error.value = 'Failed to load participants. Please try again.'
     console.error('Error loading chat users:', err)

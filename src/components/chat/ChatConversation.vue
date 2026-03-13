@@ -144,7 +144,6 @@ interface FirestoreMessage {
 }
 
 const props = defineProps<{
-  eventId: number
   currentUserId: number
   selectedUser: ChatUser
 }>()
@@ -168,7 +167,7 @@ let rateLimitTimer: ReturnType<typeof setTimeout> | null = null
 // ── Derived ─────────────────────────────────────────────────────────
 const roomId = computed(() => {
   const ids = [props.currentUserId, props.selectedUser.id].sort((a, b) => a - b)
-  return `event_${props.eventId}_${ids[0]}_${ids[1]}`
+  return `global_${ids[0]}_${ids[1]}`
 })
 
 const isSendDisabled = computed(() => isSending.value || !!rateLimitMessage.value)
@@ -250,17 +249,17 @@ async function sendMessage() {
 
   try {
     // 1. Validate with Laravel backend
-    const validation = await chatService.validateMessage(props.eventId)
+    const validation = await chatService.validateMessage()
 
     if (!validation.can_send) {
       rateLimitMessage.value = 'You are not allowed to send messages.'
       return
     }
 
-    // 2. Write to Firestore
+    // 2. Write to Firestore (event_id: 0 for global chat)
     await addDoc(collection(firestore, 'messages'), {
       room_id: roomId.value,
-      event_id: props.eventId,
+      event_id: 0,
       sender_id: props.currentUserId,
       receiver_id: props.selectedUser.id,
       message: text,

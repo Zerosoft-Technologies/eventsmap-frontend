@@ -19,6 +19,14 @@
       :visible="isWishlistOpen" 
       @close="isWishlistOpen = false"
     />
+
+    <!-- Global Chat Sidebar (premium users) -->
+    <ChatSidebar
+      v-if="authStore.isAuthenticated"
+      :is-open="chatStore.isOpen"
+      :current-user-id="authStore.user?.id ?? 0"
+      @close="chatStore.close"
+    />
   </template>
   
   <!-- Toast Container (always visible) -->
@@ -32,14 +40,17 @@
   import GlobalProgressBar from './components/ui/GlobalProgressBar.vue'
   import FullPageLoader from './components/ui/FullPageLoader.vue'
   import RightWishlistSidebar from './components/RightWishlistSidebar.vue'
+  import ChatSidebar from './components/chat/ChatSidebar.vue'
   import { ref, watch, computed } from 'vue'
   import { useLoadingStore } from '@/stores/loading'
   import { useAuthStore } from '@/stores/auth'
   import { useWishlistStore } from '@/stores/wishlistStore'
+  import { useChatStore } from '@/stores/chatStore'
   
   const loadingStore = useLoadingStore()
   const authStore = useAuthStore()
   const wishlistStore = useWishlistStore()
+  const chatStore = useChatStore()
   const isLoginOpen = ref(false)
   const isWishlistOpen = ref(false)
   

@@ -443,6 +443,8 @@ const fileName = ref("")
 const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-organiser-free" },
   { id: "details", icon: FileText, label: "Details", route: "/create-organiser-free" },
+  { id: "analytics", icon: BarChart3, route: "/create-organiser-free/report", label: "Analytics" },
+  { id: "settings", icon: Settings, route: "/create-organiser-free/settings", label: "Settings" },
 ]
 
 function handleFileChange(event) {
