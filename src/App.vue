@@ -69,6 +69,16 @@
   watch(() => authStore.isAuthenticated, (isAuth) => {
     if (isAuth) {
       wishlistStore.fetchWishlist()
+      // Sign in to Firebase so notification (and chat) listeners can read Firestore
+      import('@/services/chatService').then(({ chatService }) =>
+        chatService.getFirebaseToken().then((token) =>
+          import('firebase/auth').then(({ signInWithCustomToken }) =>
+            import('@/services/firebase').then(({ firebaseAuth }) =>
+              signInWithCustomToken(firebaseAuth, token).catch(() => {})
+            )
+          )
+        ).catch(() => {})
+      )
     } else {
       wishlistStore.clearWishlist()
       isWishlistOpen.value = false // Close wishlist panel on logout

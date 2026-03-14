@@ -1464,11 +1464,8 @@ async function createEvent() {
         const response = await eventService.createEvent(formData)
 
         if (response.success) {
-            // Show success toast
             toast.success('Event created successfully!')
-
-            // Stay on current page (no redirect to event details)
-            // User can continue creating or navigate via sidebar
+            resetForm()
         } else {
             // Handle API validation errors
             if (response.errors) {
@@ -1786,8 +1783,35 @@ function resetForm() {
     subcategoryError.value = false
     subcategoryValidationError.value = false
     pastDateError.value = false
+    latitude.value = null
+    longitude.value = null
+    dressCode.value = ''
+    ageLimit.value = ''
+    entranceStatus.value = ''
+    customDressCode.value = ''
+    customAgeLimit.value = ''
+    customEntranceFee.value = ''
+    contactPhone.value = ''
+    contactEmail.value = ''
+    contactWebsite.value = ''
+    contactBoxMessage.value = ''
+    venueDetailsText.value = ''
+    facebookUrl.value = ''
+    instagramUrl.value = ''
+    tiktokUrl.value = ''
+    ticketUrl.value = ''
+    bookingInstructions.value = ''
+    eventOption.value = ''
+    conditionEntranceFee.value = ''
+    conditionDressCode.value = ''
+    conditionAgeLimit.value = ''
+    invitedTalentIds.value = []
+    invitedOrganiserIds.value = []
+    invitedVenueIds.value = []
+    additionalImages.value = []
     const fileInput = document.querySelector('input[type="file"]')
     if (fileInput) fileInput.value = ''
+    document.querySelectorAll('input[type="file"]').forEach(el => { el.value = '' })
 }
 
 async function updateEvent() {

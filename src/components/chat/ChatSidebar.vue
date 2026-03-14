@@ -13,7 +13,7 @@
     <Transition name="chat-panel">
       <div
         v-if="isOpen"
-        class="tw:fixed tw:top-0 tw:right-0 tw:h-full tw:w-full sm:tw:w-[400px] tw:max-w-full tw:bg-white tw:z-50 tw:shadow-2xl tw:flex tw:flex-col"
+        class="tw:fixed tw:top-0 tw:right-0 tw:h-full tw:w-[400px] tw:max-w-[calc(100vw-1rem)] tw:bg-white tw:z-50 tw:shadow-2xl tw:flex tw:flex-col"
       >
         <!-- ── CHECKING ACCESS ── -->
         <div v-if="view === 'checking'" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:flex-1 tw:gap-4 tw:text-gray-400">
