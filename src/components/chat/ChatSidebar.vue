@@ -13,7 +13,7 @@
     <Transition name="chat-panel">
       <div
         v-if="isOpen"
-        class="tw:fixed tw:top-0 tw:right-0 tw:h-full tw:w-[400px] tw:bg-white tw:z-50 tw:shadow-2xl tw:flex tw:flex-col"
+        class="tw:fixed tw:top-0 tw:right-0 tw:h-full tw:w-[400px] tw:max-w-[calc(100vw-1rem)] tw:bg-white tw:z-50 tw:shadow-2xl tw:flex tw:flex-col"
       >
         <!-- ── CHECKING ACCESS ── -->
         <div v-if="view === 'checking'" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:flex-1 tw:gap-4 tw:text-gray-400">
@@ -36,7 +36,7 @@
             <MessageSquareOff class="tw:w-14 tw:h-14 tw:text-gray-300" />
             <p class="tw:text-base tw:font-medium tw:text-gray-600">Chat not available</p>
             <p class="tw:text-sm tw:text-gray-400 tw:leading-relaxed">
-              You don't have invited users yet, so chat is not available.
+              Chat is available only for premium users.
             </p>
           </div>
         </div>
@@ -64,7 +64,6 @@
         <!-- ── USER LIST ── -->
         <template v-else-if="view === 'user-list'">
           <ChatUserList
-            :event-id="eventId"
             :current-user-id="currentUserId"
             @select-user="openConversation"
             @close="$emit('close')"
@@ -74,7 +73,6 @@
         <!-- ── CONVERSATION ── -->
         <template v-else-if="view === 'conversation' && selectedUser">
           <ChatConversation
-            :event-id="eventId"
             :current-user-id="currentUserId"
             :selected-user="selectedUser"
             @back="view = 'user-list'"
@@ -92,14 +90,15 @@ import { Loader2, X, WifiOff, MessageSquareOff } from 'lucide-vue-next'
 import { signInWithCustomToken } from 'firebase/auth'
 import { firebaseAuth } from '@/services/firebase'
 import { chatService, type ChatUser } from '@/services/chatService'
-import ChatUserList    from './ChatUserList.vue'
+import { setOnline, setOffline } from '@/services/chatPresence'
+import { useAuthStore } from '@/stores/auth'
+import ChatUserList from './ChatUserList.vue'
 import ChatConversation from './ChatConversation.vue'
 
 type ChatView = 'checking' | 'no-access' | 'user-list' | 'conversation' | 'error'
 
 const props = defineProps<{
-  isOpen:      boolean
-  eventId:     number
+  isOpen: boolean
   currentUserId: number
 }>()
 
@@ -107,8 +106,10 @@ defineEmits<{
   (e: 'close'): void
 }>()
 
+const authStore = useAuthStore()
+
 // ── State ────────────────────────────────────────────────────────────
-const view         = ref<ChatView>('checking')
+const view = ref<ChatView>('checking')
 const selectedUser = ref<ChatUser | null>(null)
 const errorMessage = ref<string>('')
 
@@ -118,21 +119,23 @@ async function initChat() {
   errorMessage.value = ''
 
   try {
-    // 1. Check chat access
-    const access = await chatService.checkAccess(props.eventId)
-
-    if (!access.can_chat) {
+    // 1. Check if user is premium (no event dependency)
+    if (authStore.user?.account_type !== 'premium') {
       view.value = 'no-access'
       return
     }
 
     // 2. Get Firebase custom token from backend
-    const firebaseToken = await chatService.getFirebaseToken(props.eventId)
+    const firebaseToken = await chatService.getFirebaseToken()
 
     // 3. Sign in to Firebase
     await signInWithCustomToken(firebaseAuth, firebaseToken)
 
-    // 4. Show user list
+    // 4. Set presence online
+    const name = authStore.user?.name || authStore.user?.email || `User ${authStore.user?.id}`
+    if (authStore.user?.id) await setOnline(authStore.user.id, name)
+
+    // 5. Show user list
     view.value = 'user-list'
 
   } catch (err: any) {
@@ -153,10 +156,14 @@ watch(
   () => props.isOpen,
   (open) => {
     if (open) {
-      // Reset state and initialize fresh each time panel opens
       view.value         = 'checking'
       selectedUser.value = null
       initChat()
+    } else {
+      // Set offline when chat panel closes
+      const uid = authStore.user?.id
+      const name = authStore.user?.name || authStore.user?.email || `User ${uid}`
+      if (uid) setOffline(uid, name)
     }
   },
   { immediate: false },

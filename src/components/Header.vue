@@ -116,7 +116,44 @@
           <img src="../assets/favourite.png" alt="Favourite Icon"/>
           <span v-if="wishlistStore.wishlistEvents.length > 0" class="tw:absolute tw:-top-1.5 tw:-right-1.5 tw:bg-red-500 tw:text-white tw:text-[10px] tw:font-bold tw:w-5 tw:h-5 tw:rounded-full tw:flex tw:items-center tw:justify-center">{{ wishlistStore.wishlistEvents.length }}</span>
         </button>
-      </div>      
+      </div>
+      <!-- Invitation notifications (authenticated only) -->
+      <div v-if="authStore.isAuthenticated" class="tw:relative">
+        <button
+          ref="notificationToggler"
+          @click="showNotificationDropdown = !showNotificationDropdown"
+          style="height: 50px;"
+          class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color) tw:relative hover:tw:bg-gray-50 tw:transition-colors"
+          :aria-label="$t('header.notifications') || 'Notifications'"
+        >
+          <Bell class="tw:w-5 tw:h-5 tw:text-gray-700" />
+          <span v-if="notificationStore.pendingCount > 0" class="tw:absolute tw:-top-1.5 tw:-right-1.5 tw:bg-amber-500 tw:text-white tw:text-[10px] tw:font-bold tw:min-w-[18px] tw:h-[18px] tw:rounded-full tw:flex tw:items-center tw:justify-center tw:px-1">{{ notificationStore.pendingCount }}</span>
+        </button>
+        <transition name="fade">
+          <div
+            v-if="showNotificationDropdown"
+            v-click-outside="handleNotificationDropdownOutsideClick"
+            class="tw:absolute tw:right-0 tw:top-full tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-(--secondary-color) tw:overflow-hidden tw:z-20 tw:min-w-[280px] tw:max-w-[360px]"
+          >
+            <div class="tw:px-3 tw:py-2 tw:border-b tw:border-gray-200 tw:font-medium tw:text-sm tw:text-gray-700">
+              {{ $t('header.invitationNotifications') || 'Invitation notifications' }}
+            </div>
+            <div v-if="notificationStore.pendingInvitations.length === 0" class="tw:px-3 tw:py-4 tw:text-sm tw:text-gray-500">
+              {{ $t('header.noPendingInvitations') || 'No pending invitations.' }}
+            </div>
+            <ul v-else class="tw:max-h-[320px] tw:overflow-y-auto">
+              <li
+                v-for="n in notificationStore.pendingInvitations"
+                :key="n.id"
+                class="tw:px-3 tw:py-3 tw:border-b tw:border-gray-100 last:tw:border-b-0 tw:text-sm"
+              >
+                <p class="tw:text-gray-800 tw:mb-0.5">{{ n.message }}</p>
+                <p class="tw:text-gray-500 tw:text-xs tw:mb-0">{{ n.event_title }}</p>
+              </li>
+            </ul>
+          </div>
+        </transition>
+      </div>
       <div v-if="!authStore.isAuthenticated">
         <RouterLink to="/register" style="height: 50px;" class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"><img src="../assets/user.png" alt="User Icon"/><span>{{ $t('header.createProfile') }}</span></RouterLink>
       </div>      
@@ -252,7 +289,9 @@ import { useLocationPermission } from '../composables/useLocationPermission';
 import { useLanguageSwitch } from '../composables/useLanguageSwitch';
 import { useAuthStore } from '@/stores/auth';
 import { useWishlistStore } from '@/stores/wishlistStore';
+import { useNotificationStore } from '@/stores/notificationStore';
 import { getCreateRoute } from '@/utils/routeResolver';
+import { Bell } from 'lucide-vue-next';
 
 // Lazy load AllEvents to avoid circular import issue
 const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
@@ -266,6 +305,7 @@ const { t, locale } = useI18n()
 const { switchLanguage, getAvailableLanguages, initializeLanguage } = useLanguageSwitch()
 const authStore = useAuthStore()
 const wishlistStore = useWishlistStore()
+const notificationStore = useNotificationStore()
 const router = useRouter()
 
 const userCreatePath = computed(() =>
@@ -276,6 +316,10 @@ async function handleLogout() {
   await authStore.logout()
   router.push({ name: 'Login' })
 }
+
+// Notification dropdown state
+const showNotificationDropdown = ref(false)
+const notificationToggler = ref(null)
 
 // Language switcher state
 const showLanguageDropdown = ref(false)
@@ -336,6 +380,13 @@ function handleLanguageDropdownOutsideClick(e) {
     return
   }
   showLanguageDropdown.value = false
+}
+
+function handleNotificationDropdownOutsideClick(e) {
+  if (notificationToggler.value && notificationToggler.value.contains(e.target)) {
+    return
+  }
+  showNotificationDropdown.value = false
 }
 
 function handleSuggestionBlur() {

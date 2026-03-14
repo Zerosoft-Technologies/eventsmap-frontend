@@ -13,7 +13,10 @@
     "currentLocation": "Current location",
     "defaultLocation": "Amsterdam",
     "language": "Language",
-    "link": "Link"
+    "link": "Link",
+    "notifications": "Notifications",
+    "invitationNotifications": "Invitation notifications",
+    "noPendingInvitations": "No pending invitations."
   },
   "eventCard": {
     "finished": "Event is Finished",

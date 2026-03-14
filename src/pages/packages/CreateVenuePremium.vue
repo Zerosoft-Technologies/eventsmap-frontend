@@ -70,7 +70,8 @@
             </div> -->
 
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-            <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" />
+            <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" 
+            @chatbox-click="handleChatboxClick" />
 
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-8 tw:space-y-6">
@@ -798,6 +799,8 @@ import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import { useAuthStore } from "@/stores/auth"
+import { useChatStore } from "@/stores/chatStore"
 import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -808,6 +811,18 @@ import "flatpickr/dist/flatpickr.css"
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+const authStore = useAuthStore()
+const chatStore = useChatStore()
+
+function handleChatboxClick() {
+    if (authStore.user?.account_type !== 'premium') {
+        toast.warning('Chat is available only for premium users.')
+        return
+    }
+    chatStore.open()
+}
+
+
 
 const activeTab = ref("home")
 const isSubmitting = ref(false)

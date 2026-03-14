@@ -1268,6 +1268,46 @@ async function handleSubmit() {
   await createEvent()
 }
 
+function resetForm() {
+  eventTitle.value = ''
+  eventDate.value = ''
+  startHH.value = ''
+  startMM.value = ''
+  endHH.value = ''
+  endMM.value = ''
+  selectedAddress.value = ''
+  searchAddress.value = ''
+  selectedCategory.value = ''
+  selectedSubcategories.value = []
+  imagePreview.value = null
+  selectedImageFile.value = null
+  fieldErrors.value = {}
+  errors.value.eventTitle = false
+  errors.value.eventImage = false
+  errors.value.category = false
+  errors.value.subcategories = false
+  errors.value.eventDate = false
+  errors.value.address = false
+  errors.value.dressCode = false
+  errors.value.ageLimit = false
+  errors.value.entranceStatus = false
+  hasStartError.value = false
+  hasEndError.value = false
+  timeRangeError.value = ''
+  categoryError.value = false
+  subcategoryError.value = false
+  subcategoryValidationError.value = false
+  pastDateError.value = false
+  latitude.value = null
+  longitude.value = null
+  dressCode.value = ''
+  ageLimit.value = ''
+  entranceFee.value = ''
+  entranceStatus.value = ''
+  const fileInput = document.querySelector('input[type="file"]')
+  if (fileInput) fileInput.value = ''
+}
+
 // Create Event function using eventService
 async function createEvent() {
   if (isSubmitting.value) return
@@ -1317,16 +1357,8 @@ async function createEvent() {
     const response = await eventService.createEvent(formData)
 
     if (response.success) {
-      // Show success toast
       toast.success('Event created successfully!')
-
-      // Redirect to event page using slug
-      const slug = response.data?.slug
-      if (slug) {
-        router.push(`/event/${slug}`)
-      } else {
-        router.push('/events')
-      }
+      resetForm()
     } else {
       // Handle API validation errors
       if (response.errors) {

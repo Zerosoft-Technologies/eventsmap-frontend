@@ -23,40 +23,21 @@ export interface InvitationRespondPayload {
 
 export const chatService = {
   /**
-   * Check whether the current user can chat in the given event.
-   * GET /api/v2/events/{eventId}/chat-access
+   * Get a Firebase custom token for global chat (user-scoped, no event).
+   * POST /api/v2/firebase/token
    */
-  async checkAccess(eventId: number): Promise<ChatAccessResponse> {
-    const { data } = await api.get(`/v2/events/${eventId}/chat-access`)
-    return (data.data ?? data) as ChatAccessResponse
-  },
-
-  /**
-   * Get a Firebase custom token scoped to this event.
-   * POST /api/v2/firebase/token/event/{eventId}
-   */
-  async getFirebaseToken(eventId: number): Promise<string> {
-    const { data } = await api.post(`/v2/firebase/token/event/${eventId}`)
+  async getFirebaseToken(): Promise<string> {
+    const { data } = await api.post('/v2/firebase/token')
     return (data.data?.token ?? data.token) as string
   },
 
   /**
-   * Get the list of participants for this event's chat.
-   * GET /api/v2/events/{eventId}/chat-users
+   * Get the list of premium users for global chat (no event).
+   * GET /api/v2/chat/users
    */
-  async getChatUsers(eventId: number): Promise<ChatUser[]> {
-    const { data } = await api.get(`/v2/events/${eventId}/chat-users`)
+  async getChatUsers(): Promise<ChatUser[]> {
+    const { data } = await api.get('/v2/chat/users')
     return (data.data ?? data ?? []) as ChatUser[]
-  },
-
-  /**
-   * Validate that the current user is allowed to send a message.
-   * POST /api/v2/events/{eventId}/chat/validate-message
-   * Returns { can_send: true } or throws 429.
-   */
-  async validateMessage(eventId: number): Promise<{ can_send: boolean }> {
-    const { data } = await api.post(`/v2/events/${eventId}/chat/validate-message`)
-    return data as { can_send: boolean }
   },
 
   /**
