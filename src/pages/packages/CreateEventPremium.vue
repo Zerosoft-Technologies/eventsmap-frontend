@@ -609,23 +609,20 @@
 
                     <div>
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Phone <span
-                                class="tw:text-red-500">*</span></label>
+                                class="tw:text-gray-400 tw:text-xs">(optional)</span></label>
                         <input v-model="contactPhone" type="text" placeholder="Telephone Number"
                             @input="clearFieldError('contactPhone')"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
-                        <p v-if="errors.contactPhone" class="tw:text-red-500 tw:text-sm tw:mt-1">Phone number is
-                            required</p>
                         <p v-if="fieldErrors.contact_phone" class="tw:text-red-500 tw:text-sm tw:mt-1">{{
                             fieldErrors.contact_phone[0] }}</p>
                     </div>
 
                     <div>
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Email <span
-                                class="tw:text-red-500">*</span></label>
+                                class="tw:text-gray-400 tw:text-xs">(optional)</span></label>
                         <input v-model="contactEmail" type="email" placeholder="Email"
                             @input="clearFieldError('contactEmail')"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
-                        <p v-if="errors.contactEmail" class="tw:text-red-500 tw:text-sm tw:mt-1">Email is required</p>
                         <p v-if="fieldErrors.contact_email" class="tw:text-red-500 tw:text-sm tw:mt-1">{{
                             fieldErrors.contact_email[0] }}</p>
                     </div>
@@ -1310,7 +1307,7 @@ async function scrollToFirstError() {
     await nextTick()
 
     // Find first field with error
-    const errorFields = ['eventTitle', 'eventImage', 'description', 'category', 'subcategories', 'eventDate', 'address', 'dressCode', 'ageLimit', 'entranceStatus', 'contactPhone', 'contactEmail']
+    const errorFields = ['eventTitle', 'eventImage', 'description', 'category', 'subcategories', 'eventDate', 'address', 'dressCode', 'ageLimit', 'entranceStatus']
     const firstErrorField = errorFields.find(field =>
         errors.value[field] ||
         (field === 'category' && categoryError.value) ||
@@ -1352,12 +1349,6 @@ async function scrollToFirstError() {
             case 'entranceStatus':
                 element = document.querySelectorAll('select')[3]
                 break
-            case 'contactPhone':
-                element = document.querySelector('input[placeholder="Telephone Number"]')
-                break
-            case 'contactEmail':
-                element = document.querySelector('input[placeholder="Email"]')
-                break
         }
 
         if (element) {
@@ -1395,8 +1386,7 @@ function validateForm() {
     errors.value.dressCode = !dressCode.value || (dressCode.value === 'different' && !customDressCode.value?.trim())
     errors.value.ageLimit = !ageLimit.value
     errors.value.entranceStatus = !entranceStatus.value
-    errors.value.contactPhone = !contactPhone.value.trim()
-    errors.value.contactEmail = !contactEmail.value.trim()
+    // Contact details are optional for premium users
 
     // Set category/subcategory specific errors
     categoryError.value = !selectedCategory.value
