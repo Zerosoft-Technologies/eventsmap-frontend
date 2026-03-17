@@ -126,7 +126,7 @@
           class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color) tw:relative hover:tw:bg-gray-50 tw:transition-colors"
           :aria-label="$t('header.notifications') || 'Notifications'"
         >
-          <Bell class="tw:w-5 tw:h-5 tw:text-gray-700" />
+          <Bell class="tw:w-5 tw:h-5 tw:text-(--primary-color)" />
           <span v-if="notificationStore.pendingCount > 0" class="tw:absolute tw:-top-1.5 tw:-right-1.5 tw:bg-amber-500 tw:text-white tw:text-[10px] tw:font-bold tw:min-w-[18px] tw:h-[18px] tw:rounded-full tw:flex tw:items-center tw:justify-center tw:px-1">{{ notificationStore.pendingCount }}</span>
         </button>
         <transition name="fade">
