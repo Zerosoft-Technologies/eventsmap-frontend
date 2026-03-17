@@ -130,15 +130,11 @@
                   ]">
                   <option value="">
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                    'Select Category') }}
+                      'Select Category') }}
                   </option>
-                  <option
-                    v-for="category in categories.filter(c =>
-                      !['sports','organiser','talent','venue'].includes(c.name.toLowerCase())
-                    )"
-                    :key="category.id"
-                    :value="category.name"
-                  >
+                  <option v-for="category in categories.filter(c =>
+                    !['sports', 'organiser', 'talent', 'venue'].includes(c.name.toLowerCase())
+                  )" :key="category.id" :value="category.name">
                     {{ category.name }}
                   </option>
                 </select>
@@ -316,22 +312,17 @@
                   Event Start Date <span class="tw:text-red-500">*</span>
                 </label>
                 <div class="tw:relative">
-                  <input
-                    ref="dateInput"
-                    v-model="eventDate"
-                    placeholder="YYYY-MM-DD"
-                    inputmode="numeric"
-                    :class="[
-                      'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                      (errors.eventDate || startDateFormatError || fieldErrors.event_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
-                    ]"
-                    @input="clearFieldError('eventDate'); startDateFormatError = ''"
-                  />
-                  <Calendar class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                  <input ref="dateInput" v-model="eventDate" placeholder="YYYY-MM-DD" inputmode="numeric" :class="[
+                    'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                    (errors.eventDate || startDateFormatError || fieldErrors.event_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                  ]" @input="clearFieldError('eventDate'); startDateFormatError = ''" />
+                  <Calendar
+                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                 </div>
                 <p v-if="errors.eventDate" class="tw:text-red-500 tw:text-sm">Start date is required</p>
                 <p v-else-if="startDateFormatError" class="tw:text-red-500 tw:text-sm">{{ startDateFormatError }}</p>
-                <p v-else-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm">{{ fieldErrors.event_date[0] }}</p>
+                <p v-else-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm">{{ fieldErrors.event_date[0] }}
+                </p>
                 <p v-if="pastDateError" class="tw:text-red-500 tw:text-sm">Cannot select a past date</p>
               </div>
 
@@ -342,27 +333,13 @@
                 <div
                   class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
                   :class="hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'">
-                  <input
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="2"
-                    v-model="startHH"
-                    placeholder="HH"
-                    @input="onTimeInput('startHH', $event)"
-                    @blur="onTimeBlur('startHH')"
-                    class="tw:w-10 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
-                  />
+                  <input type="text" inputmode="numeric" maxlength="2" v-model="startHH" placeholder="HH"
+                    @input="onTimeInput('startHH', $event)" @blur="onTimeBlur('startHH')"
+                    class="tw:w-10 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums" />
                   <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
-                  <input
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="2"
-                    v-model="startMM"
-                    placeholder="00"
-                    @input="onTimeInput('startMM', $event)"
-                    @blur="onTimeBlur('startMM')"
-                    class="tw:w-10 tw:text-center tw:text-gray-500 placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
-                  />
+                  <input type="text" inputmode="numeric" maxlength="2" v-model="startMM" placeholder="00"
+                    @input="onTimeInput('startMM', $event)" @blur="onTimeBlur('startMM')"
+                    class="tw:w-10 tw:text-center tw:text-gray-500 placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums" />
                   <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                 </div>
                 <p v-if="hasStartError" class="tw:text-red-500 tw:text-sm">Start time is required</p>
@@ -377,18 +354,12 @@
                   Event End Date <span class="tw:text-red-500">*</span>
                 </label>
                 <div class="tw:relative">
-                  <input
-                    ref="endDateInput"
-                    v-model="endDate"
-                    placeholder="YYYY-MM-DD"
-                    inputmode="numeric"
-                    :class="[
-                      'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                      (hasEndDateError || endDateFormatError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'
-                    ]"
-                    @input="hasEndDateError = false; datetimeRangeError = ''; endDateFormatError = ''"
-                  />
-                  <Calendar class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                  <input ref="endDateInput" v-model="endDate" placeholder="YYYY-MM-DD" inputmode="numeric" :class="[
+                    'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                    (hasEndDateError || endDateFormatError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                  ]" @input="hasEndDateError = false; datetimeRangeError = ''; endDateFormatError = ''" />
+                  <Calendar
+                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                 </div>
                 <p v-if="hasEndDateError" class="tw:text-red-500 tw:text-sm">End date is required</p>
                 <p v-else-if="endDateFormatError" class="tw:text-red-500 tw:text-sm">{{ endDateFormatError }}</p>
@@ -401,27 +372,13 @@
                 <div
                   class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
                   :class="(hasEndError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'">
-                  <input
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="2"
-                    v-model="endHH"
-                    placeholder="HH"
-                    @input="onTimeInput('endHH', $event)"
-                    @blur="onTimeBlur('endHH')"
-                    class="tw:w-10 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
-                  />
+                  <input type="text" inputmode="numeric" maxlength="2" v-model="endHH" placeholder="HH"
+                    @input="onTimeInput('endHH', $event)" @blur="onTimeBlur('endHH')"
+                    class="tw:w-10 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums" />
                   <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
-                  <input
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="2"
-                    v-model="endMM"
-                    placeholder="00"
-                    @input="onTimeInput('endMM', $event)"
-                    @blur="onTimeBlur('endMM')"
-                    class="tw:w-10 tw:text-center tw:text-gray-500 placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
-                  />
+                  <input type="text" inputmode="numeric" maxlength="2" v-model="endMM" placeholder="00"
+                    @input="onTimeInput('endMM', $event)" @blur="onTimeBlur('endMM')"
+                    class="tw:w-10 tw:text-center tw:text-gray-500 placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums" />
                   <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                 </div>
                 <p v-if="hasEndError" class="tw:text-red-500 tw:text-sm">End time is required</p>
@@ -431,9 +388,7 @@
                   <p class="tw:text-xs tw:text-gray-600">
                     End time is earlier than start time. Did you mean the end date to be the next day?
                   </p>
-                  <button
-                    type="button"
-                    @click="applyOvernightSuggestion"
+                  <button type="button" @click="applyOvernightSuggestion"
                     class="tw:text-xs tw:font-medium tw:text-blue-600 hover:tw:text-blue-700 tw:underline">
                     Set end date to next day
                   </button>
@@ -607,9 +562,7 @@
 
           </div>
 
-          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">
-            Soon you can show this button in your event description or event info window when appropriate.
-            This is still under consideration.
+          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available
           </span>
 
         </div>

@@ -293,8 +293,7 @@
               {{ isSubmitting ? 'Saving...' : 'Save Organiser' }}
             </button>
           </div>
-          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon you can show this button in your
-            event description or event info window when appropriate. This is still under consideration.</span>
+          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span>
         </div>
 
       </div>
