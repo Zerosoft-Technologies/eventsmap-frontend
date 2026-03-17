@@ -456,64 +456,98 @@
             </button> -->
           </div>
 
-          <div class="tw:grid tw:grid-cols-3 tw:gap-4">
+          <div class="tw:grid tw:grid-cols-1 md:tw:grid-cols-3 tw:gap-6">
             <!-- Dress Code -->
-            <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code <span
-                  class="tw:text-red-500">*</span></label>
+            <div class="tw:space-y-3">
+              <label class="tw:text-sm tw:font-medium tw:text-gray-700">
+                Dress Code <span class="tw:text-red-500">*</span>
+              </label>
               <div class="tw:relative">
-                <select v-model="dressCode" @change="clearFieldError('dressCode')"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                  <option value="">No Dress Code</option>
-                  <option value="casual">Dress Code</option>
+                <select
+                  v-model="dressCode"
+                  @change="clearFieldError('dressCode'); if (dressCode === 'none') dressCodeDescription = ''"
+                  :class="[
+                    'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                    errors.dressCode ? 'tw:border-red-500' : 'tw:border-gray-200'
+                  ]">
+                  <option value="">Select</option>
+                  <option value="none">No Dress Code</option>
+                  <option value="required">Dress Code Required</option>
                 </select>
-                <ChevronDown
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
-              <p v-if="errors.dressCode" class="tw:text-red-500 tw:text-sm tw:mt-1">Dress code is required</p>
+              <div v-if="dressCode === 'required'" class="tw:space-y-2">
+                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Dress Code</label>
+                <textarea
+                  v-model="dressCodeDescription"
+                  placeholder="e.g., Formal wear, White party, Business casual"
+                  rows="3"
+                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y tw:min-h-[84px]"
+                ></textarea>
+              </div>
+              <p v-if="errors.dressCode" class="tw:text-red-500 tw:text-sm">Please choose a dress code option</p>
             </div>
 
             <!-- Age Limit -->
-            <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit <span
-                  class="tw:text-red-500">*</span></label>
+            <div class="tw:space-y-3">
+              <label class="tw:text-sm tw:font-medium tw:text-gray-700">
+                Age Limit <span class="tw:text-red-500">*</span>
+              </label>
               <div class="tw:relative">
-                <select v-model="ageLimit" @change="clearFieldError('ageLimit')"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                  <option value="">Select Age</option>
-                  <option value="all_ages">All Ages</option>
-                  <option value="4+">4+</option>
-                  <option value="8+">8+</option>
-                  <option value="12+">12+</option>
-                  <option value="16+">16+</option>
-                  <option value="18+">18+</option>
-                  <option value="21+">21+</option>
-                  <option value="55+">55+</option>
-                  <option value="65+">65+</option>
+                <select
+                  v-model="ageLimit"
+                  @change="clearFieldError('ageLimit'); if (ageLimit === 'none') ageLimitDescription = ''"
+                  :class="[
+                    'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                    errors.ageLimit ? 'tw:border-red-500' : 'tw:border-gray-200'
+                  ]">
+                  <option value="">Select</option>
+                  <option value="none">No Age Limit</option>
+                  <option value="restricted">Age Restricted</option>
                 </select>
-                <ChevronDown
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
-              <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm tw:mt-1">Age limit is required</p>
+              <div v-if="ageLimit === 'restricted'" class="tw:space-y-2">
+                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Age Limit</label>
+                <input
+                  v-model="ageLimitDescription"
+                  type="text"
+                  placeholder="e.g., 18+, 21+, Adults only"
+                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all"
+                />
+              </div>
+              <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm">Please choose an age limit option</p>
             </div>
 
-            <!-- Entrance Fee -->
-            <div class="tw:space-y-2">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status <span
-                  class="tw:text-red-500">*</span></label>
+            <!-- Entrance Status -->
+            <div class="tw:space-y-3">
+              <label class="tw:text-sm tw:font-medium tw:text-gray-700">
+                Entrance Status <span class="tw:text-red-500">*</span>
+              </label>
               <div class="tw:relative">
-                <select v-model="entranceStatus" @change="clearFieldError('entranceStatus')"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                  <option value="">Select Entrance Status</option>
-                  <option value="free">Free Entrance</option>
-                  <option value="paid">Paid Entrance</option>
-                  <option value="donation">Sold Out</option>
-                  <option value="cancelled">Event is Cancelled</option>
+                <select
+                  v-model="entranceStatus"
+                  @change="clearFieldError('entranceStatus'); if (entranceStatus === 'open') entranceDescription = ''"
+                  :class="[
+                    'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                    errors.entranceStatus ? 'tw:border-red-500' : 'tw:border-gray-200'
+                  ]">
+                  <option value="">Select</option>
+                  <option value="open">Open to All</option>
+                  <option value="restricted">Restricted Entry</option>
                 </select>
-                <ChevronDown
-                  class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
-              <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm tw:mt-1">Entrance fee is required</p>
+              <div v-if="entranceStatus === 'restricted'" class="tw:space-y-2">
+                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Entrance Status</label>
+                <textarea
+                  v-model="entranceDescription"
+                  placeholder="e.g., Members only, Invite-only, VIP access"
+                  rows="3"
+                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y tw:min-h-[84px]"
+                ></textarea>
+              </div>
+              <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm">Please choose an entrance option</p>
             </div>
           </div>
         </div>
@@ -805,6 +839,9 @@ const dressCode = ref("")
 const ageLimit = ref("")
 const entranceFee = ref("")
 const entranceStatus = ref("")
+const dressCodeDescription = ref("")
+const ageLimitDescription = ref("")
+const entranceDescription = ref("")
 
 // Event Date and Time
 const eventDate = ref("")
@@ -1343,6 +1380,11 @@ function validateForm() {
     endDate.value !== "" &&
     !datetimeRangeError.value
 
+  // Overview validation
+  errors.value.dressCode = !dressCode.value || (dressCode.value === 'required' && !dressCodeDescription.value?.trim())
+  errors.value.ageLimit = !ageLimit.value || (ageLimit.value === 'restricted' && !ageLimitDescription.value?.trim())
+  errors.value.entranceStatus = !entranceStatus.value || (entranceStatus.value === 'restricted' && !entranceDescription.value?.trim())
+
   const hasOtherErrors = Object.values(errors.value).some(error => error) ||
     categoryError.value ||
     subcategoryError.value ||
@@ -1410,9 +1452,12 @@ function resetForm() {
   latitude.value = null
   longitude.value = null
   dressCode.value = ''
+  dressCodeDescription.value = ''
   ageLimit.value = ''
+  ageLimitDescription.value = ''
   entranceFee.value = ''
   entranceStatus.value = ''
+  entranceDescription.value = ''
   const fileInput = document.querySelector('input[type="file"]')
   if (fileInput) fileInput.value = ''
 }
@@ -1457,10 +1502,10 @@ async function createEvent() {
     formData.append('address', selectedAddress.value)
     formData.append('latitude', latitude.value)
     formData.append('longitude', longitude.value)
-    formData.append('dress_code', dressCode.value)
-    formData.append('age_limit', ageLimit.value)
+    formData.append('dress_code', dressCode.value === 'none' ? 'no_dress_code' : (dressCodeDescription.value || ''))
+    formData.append('age_limit', ageLimit.value === 'none' ? 'no_age_limit' : (ageLimitDescription.value || ''))
     formData.append('entrance_fee', entranceFee.value)
-    formData.append('entrance_status', entranceStatus.value)
+    formData.append('entrance_status', entranceStatus.value === 'open' ? 'open_to_all' : (entranceDescription.value || ''))
 
     // Add image file if exists
     if (selectedImageFile.value) {
