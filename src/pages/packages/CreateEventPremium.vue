@@ -110,11 +110,19 @@
                     </p>
                     <!-- Description -->
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:text-gray-700">Description <span
-                                class="tw:text-red-500">*</span></label>
+                        <div class="tw:flex tw:justify-between tw:items-center">
+                            <label class="tw:text-sm tw:text-gray-700">Description <span
+                                    class="tw:text-red-500">*</span></label>
+                            <button type="button"
+                                class="tw:inline-flex tw:items-center tw:gap-1.5 tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:text-blue-600 hover:tw:text-blue-700 hover:tw:bg-blue-50 tw:rounded-lg tw:transition-colors"
+                                @click="showDescriptionExpandModal = true" title="Expand to read full description">
+                                <Maximize2 class="tw:w-4 tw:h-4" />
+                                Expand
+                            </button>
+                        </div>
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Event..."
                             @input="clearFieldError('description')" :class="[
-                                'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none',
+                                'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y tw:min-h-[100px]',
                                 (errors.description || fieldErrors.description) ? 'tw:border-red-500' : 'tw:border-gray-200'
                             ]"></textarea>
                         <p v-if="errors.description" class="tw:text-red-500 tw:text-sm tw:mt-1">Description is required
@@ -236,7 +244,13 @@
                                     <option value="">
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'Select') }}
                                     </option>
-                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
+                                    <option
+                                        v-for="category in categories.filter(c =>
+                                        !['sports','organiser','talent','venue'].includes(c.name.toLowerCase())
+                                        )"
+                                        :key="category.id"
+                                        :value="category.name"
+                                    >
                                         {{ category.name }}
                                     </option>
                                 </select>
@@ -791,6 +805,33 @@
 
             </div>
         </div>
+
+        <!-- Description Expand Modal -->
+        <Teleport to="body">
+            <Transition name="modal-fade">
+                <div v-if="showDescriptionExpandModal"
+                    class="tw:fixed tw:inset-0 tw:z-50 tw:flex tw:items-center tw:justify-center tw:p-4">
+                    <div class="tw:absolute tw:inset-0 tw:bg-black/50 tw:backdrop-blur-sm"
+                        @click="showDescriptionExpandModal = false"></div>
+                    <div
+                        class="tw:relative tw:w-full tw:max-w-3xl tw:max-h-[85vh] tw:bg-white tw:rounded-2xl tw:shadow-2xl tw:overflow-hidden tw:flex tw:flex-col">
+                        <div class="tw:flex tw:items-center tw:justify-between tw:px-5 tw:py-4 tw:border-b tw:border-gray-200">
+                            <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900">Description</h3>
+                            <button type="button"
+                                class="tw:p-2 tw:rounded-lg tw:text-gray-500 hover:tw:text-gray-700 hover:tw:bg-gray-100 tw:transition-colors"
+                                @click="showDescriptionExpandModal = false">
+                                <X class="tw:w-5 tw:h-5" />
+                            </button>
+                        </div>
+                        <div class="tw:flex-1 tw:overflow-hidden tw:p-5">
+                            <textarea v-model="eventDescription" rows="16"
+                                class="tw:w-full tw:h-full tw:min-h-[300px] tw:bg-gray-50 tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:resize-none tw:overflow-y-auto"
+                                placeholder="Describe Your Event..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
@@ -809,7 +850,9 @@ import {
     User,
     SkipBackIcon,
     Clock,
-    MessageSquareText
+    MessageSquareText,
+    Maximize2,
+    X
 } from "lucide-vue-next"
 
 import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
@@ -858,6 +901,7 @@ const eventStatus = ref("Draft")
 const activeTab = ref("home")
 const isSubmitting = ref(false)
 const eventDescription = ref("")
+const showDescriptionExpandModal = ref(false)
 
 const selectedImageFile = ref(null)
 const imagePreview = ref(null)
