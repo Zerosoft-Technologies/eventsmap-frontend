@@ -658,6 +658,17 @@
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
                 </div>
 
+                <!-- OPENING HOURS VENUE SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Opening Hours Venue</h3>
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:text-gray-700">Opening hours</label>
+                        <textarea v-model="openingHoursText" rows="4"
+                            placeholder="e.g. Mon–Thu 10:00–22:00, Fri–Sat 10:00–02:00, Sun 10:00–20:00"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                    </div>
+                </div>
+
                 <!-- CONTACT BOX DESIGN SECTION -->
                 <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box Design</h3>
@@ -1101,7 +1112,7 @@ const openingHoursText = ref('')
 // Event Date and Time
 // const eventDate = ref("")
 const eventTime = ref("")
-const dateInput = ref(null)
+// const dateInput = ref(null)
 const timeInput = ref(null)
 
 // Event Location refs
@@ -1380,13 +1391,13 @@ onMounted(() => {
     })
 
     /* ------------------ DATE PICKER ------------------ */
-    flatpickr(dateInput.value, {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        onChange: (selectedDates, dateStr) => {
-            eventDate.value = dateStr
-        }
-    })
+    // flatpickr(dateInput.value, {
+    //     dateFormat: "Y-m-d",
+    //     minDate: "today",
+    //     onChange: (selectedDates, dateStr) => {
+    //         eventDate.value = dateStr
+    //     }
+    // })
 
     // /* ------------------ START TIME PICKER ------------------ */
     // flatpickr(startTimeInput.value, {
