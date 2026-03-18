@@ -90,7 +90,7 @@ const props = defineProps({
 
 const ROLE_CONFIG = {
   talent:    { label: 'Invite Registered Talent',    icon: Mic2    },
-  organiser: { label: 'Invite Registered Organizer', icon: User    },
+  organizer: { label: 'Invite Registered Organizer', icon: User    },
   venue:     { label: 'Invite Registered Venue',     icon: MapPin  },
 }
 

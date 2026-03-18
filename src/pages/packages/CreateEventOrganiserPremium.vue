@@ -309,7 +309,7 @@
                                     <option value="">
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'Select Category') }}
                                     </option>
-                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
+                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() == 'organiser')" :key="category.id" :value="category.name">
                                         {{ category.name }}
                                     </option>
                                     <!-- <option
@@ -502,7 +502,7 @@
                 </div> -->
 
                 <!-- BOOKING & TICKET INFO SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Booking & Ticket Info
                     </h3>
@@ -512,7 +512,7 @@
 
                     <textarea v-model="bookingInstructions" rows="4" placeholder="Booking Instructions"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
-                </div>
+                </div> -->
 
                 <!-- INVITE SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
@@ -536,41 +536,41 @@
                     <div class="tw:space-y-3">
                         <!-- <InviteSection role="talent" :has-border="true" />
                         <InviteSection role="venue"     :has-border="false" /> -->
-                        <InviteSection role="organiser" :has-border="false" />
+                        <InviteSection role="organizer" :has-border="false" />
                     </div>
                 </div>
 
                 <!-- Organiser OPTIONS SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Organiser Options
                     </h3>
 
                     <div class="tw:flex tw:gap-6 tw:items-center">
-                        <!-- Copy Organiser -->
+                        
                         <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
                             <input type="radio" value="copy" v-model="eventOption"
                                 class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500" />
                             <span class="tw:text-sm tw:text-gray-700">Copy Organiser</span>
                         </label>
 
-                        <!-- Recurring Organiser -->
+                        
                         <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
                             <input type="radio" value="recurring" v-model="eventOption"
                                 class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500" />
                             <span class="tw:text-sm tw:text-gray-700">Recurring Organiser</span>
                         </label>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- SAVE Organiser BUTTON -->
                 <div class="tw:w-full tw:pt-4">
-                    <div class="tw:flex tw:w-full tw:items-center tw:justify-between">
-                        <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                    <div class="tw:flex tw:w-full tw:items-center tw:justify-end">
+                        <!-- <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                            tw:border tw:border-orange-500 tw:text-[#0061FF]
                            tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
                             Buy Tickets
-                        </button>
+                        </button> -->
                         <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                            tw:border tw:border-blue-500 tw:text-blue-600
                            tw:bg-white hover:tw:bg-blue-50 tw:transition-all
@@ -578,7 +578,7 @@
                             {{ isSubmitting ? 'Saving...' : 'Save Organiser' }}
                         </button>
                     </div>
-                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span>
+                    <!-- <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span> -->
                 </div>
 
             </div>
@@ -646,8 +646,8 @@ const ageLimit = ref("")
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
-const bookingInstructions = ref('');
-const ticketUrl = ref('');
+// const bookingInstructions = ref('');
+// const ticketUrl = ref('');
 const eventOption = ref('');
 const showChatbox = ref(false)
 const contactBoxMessage = ref('')

@@ -804,7 +804,7 @@
                     <div class="tw:space-y-3">
                         <InviteSection role="talent" :profiles="talentUsers" :has-border="true"
                             v-model:selectedIds="invitedTalentIds" />
-                        <InviteSection role="organiser" :profiles="organiserUsers" :has-border="true"
+                        <InviteSection role="organizer" :profiles="organiserUsers" :has-border="true"
                             v-model:selectedIds="invitedOrganiserIds" />
                         <InviteSection role="venue" :profiles="venueUsers" :has-border="false"
                             v-model:selectedIds="invitedVenueIds" />
