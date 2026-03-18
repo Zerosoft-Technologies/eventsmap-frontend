@@ -186,10 +186,10 @@
 
                         <!-- Dropdown Box -->
                         <div v-if="showDescriptionDropdown"
-                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
+                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50 tw:max-h-80 tw:overflow-hidden">
 
                             <!-- Inner white container -->
-                            <div class="tw:bg-white tw:rounded-lg tw:p-4">
+                            <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:flex tw:flex-col tw:max-h-80">
 
                                 <!-- Close Button -->
                                 <div class="tw:flex tw:justify-end tw:mb-3">
@@ -199,7 +199,7 @@
                                     </button>
                                 </div>
 
-                                <div class="tw:space-y-2">
+                                <div class="tw:space-y-2 tw:overflow-y-auto tw:pr-1 tw:flex-1">
                                     <label v-for="item in descriptionItems" :key="item"
                                         class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
                                         <span class="tw:text-gray-700">{{ item }}</span>
@@ -284,38 +284,11 @@
                             Accessibility
                         </h3>
                     </div>
-                    <!-- Dropdown -->
-                    <div class="tw:relative" ref="accessibilityDropdownRef">
-
-                        <!-- Trigger -->
-                        <div @click="toggleAccessibilityDropdown"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
-
-                            <span class="tw:text-gray-700">
-                                {{ selectedAccessibilityItems?.length ? selectedAccessibilityItems.join(', ') : 'Select Accessibility Items' }}
-                            </span>
-
-                            <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
-                        </div>
-
-                        <!-- Dropdown Box -->
-                        <div v-if="showAccessibilityDropdown"
-                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
-
-                            <!-- Inner white container -->
-                            <div class="tw:bg-white tw:rounded-lg tw:space-y-4 tw:p-4">
-
-                                <label v-for="item in accessibilityItems" :key="item"
-                                    class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
-
-                                    <span class="tw:text-gray-700">{{ item }}</span>
-
-                                    <input type="checkbox" :value="item" v-model="selectedAccessibilityItems"
-                                        class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
-                                </label>
-
-                            </div>
-                        </div>
+                    <div class="tw:space-y-2">
+                        <label class="tw:block tw:text-sm tw:text-gray-700">Accessibility description</label>
+                        <textarea v-model="accessibilityDescription" rows="4"
+                            placeholder="Describe accessibility details (directions, parking, public transport, taxis, wheelchair access, etc.)"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
                 </div>
 
@@ -1091,10 +1064,18 @@ const showDescriptionDropdown = ref(false)
 const descriptionDropdownRef = ref(null)
 
 const descriptionItems = [
-    "Hall / theatre / stage / public place / boat / beach house",
+    "Hall",
+    "theatre",
+    "stage",
+    "public place",
+    "boat",
+    "beach house",
     "Elevator",
     "Cloakrooms (paid / non paid)",
-    "Bar / foyer / restaurant / food-truck",
+    "Bar",
+    "foyer",
+    "restaurant",
+    "food-truck",
     "Vending machines",
     "Ticket collection point(s) where to find",
     "Ticket sales on site",
@@ -1109,26 +1090,11 @@ const descriptionItems = [
 
 const selectedDescriptionItems = ref([])
 
-// Accessibility dropdown
-const showAccessibilityDropdown = ref(false)
-const accessibilityDropdownRef = ref(null)
-
-const accessibilityItems = [
-    "Directions to venue",
-    "Parking facilities",
-    "Public transport to the venue",
-    "Taxis nearby"
-]
-
-const selectedAccessibilityItems = ref([])
+const accessibilityDescription = ref("")
 
 // Toggle functions
 function toggleDescriptionDropdown() {
     showDescriptionDropdown.value = !showDescriptionDropdown.value
-}
-
-function toggleAccessibilityDropdown() {
-    showAccessibilityDropdown.value = !showAccessibilityDropdown.value
 }
 
 function toggleDropdown() {
