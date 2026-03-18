@@ -59,6 +59,13 @@ export function buildQueryParams(filters: EventFilters): URLSearchParams {
     params.set('radius', filters.radius.toString())
   }
 
+  // Map viewport (bbox) params
+  if (filters.min_lat != null && !isNaN(filters.min_lat)) params.set('min_lat', filters.min_lat.toString())
+  if (filters.max_lat != null && !isNaN(filters.max_lat)) params.set('max_lat', filters.max_lat.toString())
+  if (filters.min_lng != null && !isNaN(filters.min_lng)) params.set('min_lng', filters.min_lng.toString())
+  if (filters.max_lng != null && !isNaN(filters.max_lng)) params.set('max_lng', filters.max_lng.toString())
+  if (filters.zoom != null && !isNaN(filters.zoom)) params.set('zoom', Math.round(filters.zoom).toString())
+
   // Date params
   if (filters.from_date) {
     params.set('from_date', filters.from_date)
@@ -174,6 +181,32 @@ export async function fetchEvents(
       error instanceof Error ? error.message : 'Network error',
       0
     )
+  }
+}
+
+/**
+ * Fetch public events feed (map-friendly) with optional bbox/date filters.
+ * Uses API v2 public endpoint and the same adapter.
+ */
+export async function fetchPublicEvents(
+  filters: EventFilters = {}
+): Promise<{ data: Event[]; meta: PaginationMeta }> {
+  const params = buildQueryParams(filters)
+  const queryString = params.toString()
+  const endpoint = `/v2/public/events${queryString ? `?${queryString}` : ''}`
+
+  try {
+    const response = await api.get<EventsV2Response>(endpoint)
+
+    if (response.data.success === false) {
+      throw new ApiError(response.data.message || 'API returned success: false', 400, response.data)
+    }
+
+    const { events, meta } = extractEventsFromV2Response(response.data)
+    return { data: events, meta }
+  } catch (error) {
+    if (error instanceof ApiError) throw error
+    throw new ApiError(error instanceof Error ? error.message : 'Network error', 0)
   }
 }
 

@@ -281,7 +281,7 @@
 </template>
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { ref, onMounted, onBeforeUnmount, computed, defineAsyncComponent } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, defineAsyncComponent, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DatePicker from "./DatePicker.vue";
 import LocationPermissionPrompt from './LocationPermissionPrompt.vue';
@@ -568,7 +568,17 @@ const eventsLoading = ref(false);
 function formatDateToApi(dateStr) {
   if (!dateStr) return null;
   const [day, month, year] = dateStr.split('/');
-  return `${year}-${month}-${day}`;
+  const pad2 = (n) => String(n).padStart(2, '0')
+  return `${year}-${pad2(month)}-${pad2(day)}`;
+}
+
+// Debounce utility (avoid spamming API while user is selecting)
+function debounce(fn, delay = 450) {
+  let t = null
+  return (...args) => {
+    if (t) clearTimeout(t)
+    t = setTimeout(() => fn(...args), delay)
+  }
 }
 
 // Load events from API
@@ -622,6 +632,21 @@ async function loadEventsFromApi(searchQuery = '') {
     eventsLoading.value = false;
   }
 }
+
+const debouncedReloadEvents = debounce(() => {
+  loadEventsFromApi(searchTerm.value.trim())
+  showResults.value = true
+}, 500)
+
+// CRITICAL: trigger API call when date range changes
+watch(dateRange, () => {
+  debouncedReloadEvents()
+}, { deep: true })
+
+// Trigger API call when session filter changes
+watch(sessionFilter, () => {
+  debouncedReloadEvents()
+}, { deep: true })
 
 const searchCity = async () => {
   if (!city.value) {

@@ -1,11 +1,12 @@
 import { ref, computed, watch, type Ref } from 'vue'
-import { fetchEvents, fetchEventById } from '../api/events'
+import { fetchPublicEvents, fetchEvents, fetchEventById } from '../api/events'
 import type { 
   Event, 
   EventFilters, 
   PaginationMeta, 
   MapCenter,
-  EventCategory 
+  EventCategory,
+  MapBounds
 } from '../types/events'
 import { DEFAULT_MAP_CENTER, DEFAULT_RADIUS_KM, DEFAULT_PER_PAGE } from '../types/events'
 
@@ -37,6 +38,8 @@ export function useEvents() {
   // Filter state
   const search = ref<string | null>(null)
   const mapCenter = ref<MapCenter>({ ...DEFAULT_MAP_CENTER })
+  const mapBounds = ref<MapBounds | null>(null)
+  const mapZoom = ref<number | null>(null)
   const radius = ref<number>(DEFAULT_RADIUS_KM)
   const category = ref<EventCategory>('')
   const minPrice = ref<number | null>(null)
@@ -89,6 +92,17 @@ export function useEvents() {
       filters.radius = radius.value
     }
 
+    // Map viewport filters (preferred for map-based fetching when available)
+    if (mapBounds.value) {
+      filters.min_lat = mapBounds.value.minLat
+      filters.max_lat = mapBounds.value.maxLat
+      filters.min_lng = mapBounds.value.minLng
+      filters.max_lng = mapBounds.value.maxLng
+    }
+    if (mapZoom.value != null) {
+      filters.zoom = mapZoom.value
+    }
+
     // Category
     if (category.value) {
       filters.category = category.value
@@ -118,6 +132,42 @@ export function useEvents() {
     return filters
   }
 
+  // Simple in-memory cache for map viewport queries
+  type CacheEntry = { events: Event[]; meta: PaginationMeta; ts: number }
+  const cache = new Map<string, CacheEntry>()
+  const CACHE_TTL_MS = 2 * 60 * 1000
+
+  const roundForKey = (n: number, decimals: number) => {
+    const p = Math.pow(10, decimals)
+    return Math.round(n * p) / p
+  }
+
+  const makeCacheKey = (filters: EventFilters) => {
+    // Reduce key explosion by rounding bbox; precision based on zoom
+    const zoom = filters.zoom ?? 0
+    const decimals = zoom >= 14 ? 4 : zoom >= 11 ? 3 : zoom >= 8 ? 2 : 1
+
+    const bboxKey = (filters.min_lat != null && filters.max_lat != null && filters.min_lng != null && filters.max_lng != null)
+      ? [
+          roundForKey(filters.min_lat, decimals),
+          roundForKey(filters.max_lat, decimals),
+          roundForKey(filters.min_lng, decimals),
+          roundForKey(filters.max_lng, decimals)
+        ].join(',')
+      : 'no-bbox'
+
+    const dateKey = `${filters.from_date ?? ''}:${filters.to_date ?? ''}`
+    const catKey = `${filters.category ?? ''}:${filters.live_now ? 'live' : ''}`
+    return `publicEvents|z=${Math.round(zoom)}|bbox=${bboxKey}|date=${dateKey}|cat=${catKey}|page=${filters.page ?? 1}|pp=${filters.per_page ?? DEFAULT_PER_PAGE}`
+  }
+
+  const mergeById = (base: Event[], incoming: Event[]) => {
+    const map = new Map<number, Event>()
+    for (const e of base) map.set(e.id, e)
+    for (const e of incoming) map.set(e.id, e)
+    return Array.from(map.values())
+  }
+
   // Fetch events
   const load = async (append = false) => {
     loading.value = true
@@ -125,10 +175,32 @@ export function useEvents() {
 
     try {
       const filters = buildFilters()
+
+      // If we have a bbox, prefer the public endpoint (map-ready) + cache.
+      const shouldUsePublic = !!filters.min_lat && !!filters.max_lat && !!filters.min_lng && !!filters.max_lng
+      if (shouldUsePublic) {
+        const key = makeCacheKey(filters)
+        const cached = cache.get(key)
+        const now = Date.now()
+        if (cached && now - cached.ts < CACHE_TTL_MS) {
+          events.value = append ? mergeById(events.value, cached.events) : cached.events
+          meta.value = cached.meta
+          return
+        }
+
+        const result = await fetchPublicEvents(filters)
+        const nextEvents = append ? mergeById(events.value, result.data) : result.data
+        events.value = nextEvents
+        meta.value = result.meta
+        cache.set(key, { events: result.data, meta: result.meta, ts: now })
+        return
+      }
+
+      // Fallback to existing authenticated endpoint (list pages etc.)
       const result = await fetchEvents(filters)
       
       if (append) {
-        events.value = [...events.value, ...result.data]
+        events.value = mergeById(events.value, result.data)
       } else {
         events.value = result.data
       }
@@ -163,6 +235,14 @@ export function useEvents() {
   // Update map center
   const setMapCenter = (lat: number, lng: number) => {
     mapCenter.value = { lat, lng }
+    debouncedRefresh()
+  }
+
+  // Update map viewport (bounds + zoom + center)
+  const setMapViewport = (center: MapCenter, bounds: MapBounds, zoom: number) => {
+    mapCenter.value = center
+    mapBounds.value = bounds
+    mapZoom.value = zoom
     debouncedRefresh()
   }
 
@@ -271,6 +351,8 @@ export function useEvents() {
     // Filter state
     search,
     mapCenter,
+    mapBounds,
+    mapZoom,
     radius,
     category,
     minPrice,
@@ -296,6 +378,7 @@ export function useEvents() {
     refresh,
     setSearch,
     setMapCenter,
+    setMapViewport,
     setRadius,
     setCategory,
     setPriceRange,
