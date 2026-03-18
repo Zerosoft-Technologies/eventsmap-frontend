@@ -817,20 +817,97 @@
                         Event Options
                     </h3>
 
-                    <div class="tw:flex tw:gap-6 tw:items-center">
-                        <!-- Copy Event -->
-                        <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
-                            <input type="radio" value="copy" v-model="eventOption"
-                                class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500" />
-                            <span class="tw:text-sm tw:text-gray-700">Copy Event</span>
-                        </label>
-
-                        <!-- Recurring Event -->
-                        <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
-                            <input type="radio" value="recurring" v-model="eventOption"
-                                class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500" />
+                    <div class="tw:flex tw:flex-col tw:gap-3">
+                        <!-- Recurring Event - create mode only -->
+                        <label v-if="!isEditMode" class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                            <input
+                                type="checkbox"
+                                v-model="isRecurring"
+                                class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                            />
                             <span class="tw:text-sm tw:text-gray-700">Recurring Event</span>
                         </label>
+
+                        <!-- Copy Event - edit mode only -->
+                        <label v-if="isEditMode" class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                            <input
+                                type="checkbox"
+                                v-model="isCopyEvent"
+                                class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                            />
+                            <span class="tw:text-sm tw:text-gray-700">Copy Event</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- EVENT VISIBILITY SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-6">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Event Visibility
+                    </h3>
+
+                    <!-- Show Upcoming Events -->
+                    <div class="tw:flex tw:flex-col tw:gap-2">
+                        <p class="tw:text-sm tw:font-medium tw:text-gray-900">
+                            Show Upcoming Events (max 1 year)
+                        </p>
+                        <!-- <p class="tw:text-xs tw:text-gray-500">
+                            If YES, upcoming events within the next year will be visible.
+                        </p> -->
+                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-upcoming-events"
+                                    :checked="showUpcomingEvents"
+                                    @change="showUpcomingEvents = true"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-upcoming-events"
+                                    :checked="!showUpcomingEvents"
+                                    @change="showUpcomingEvents = false"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Show Past Events -->
+                    <div class="tw:flex tw:flex-col tw:gap-2">
+                        <p class="tw:text-sm tw:font-medium tw:text-gray-900">
+                            Show Past Events (max 1 year)
+                        </p>
+                        <!-- <p class="tw:text-xs tw:text-gray-500">
+                            If YES, past events within the last year will be visible.
+                        </p> -->
+                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-past-events"
+                                    :checked="showPastEvents"
+                                    @change="showPastEvents = true"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-past-events"
+                                    :checked="!showPastEvents"
+                                    @change="showPastEvents = false"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">No</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -1026,7 +1103,12 @@ const contactEmail = ref("")
 const contactWebsite = ref("")
 const bookingInstructions = ref('');
 const ticketUrl = ref('');
-const eventOption = ref('');
+
+// Event options
+const isRecurring = ref(false)
+const isCopyEvent = ref(false)
+const showUpcomingEvents = ref("")
+const showPastEvents = ref("")
 const showChatbox = ref(false)
 const contactBoxMessage = ref('')
 const venueDetailsText = ref('')
@@ -1618,7 +1700,11 @@ async function createEvent() {
         if (tiktokUrl.value) formData.append('tiktok_url', tiktokUrl.value)
         if (ticketUrl.value) formData.append('ticket_url', ticketUrl.value)
         if (bookingInstructions.value) formData.append('booking_instructions', bookingInstructions.value)
-        if (eventOption.value) formData.append('event_option', eventOption.value)
+        // Backend boolean flags
+        formData.append('is_recurring', isRecurring.value ? '1' : '0')
+        formData.append('is_copy_event', isCopyEvent.value ? '1' : '0')
+        formData.append('show_upcoming_events', showUpcomingEvents.value ? '1' : '0')
+        formData.append('show_past_events', showPastEvents.value ? '1' : '0')
         if (conditionEntranceFee.value) formData.append('condition_entrance_fee', conditionEntranceFee.value)
         if (conditionDressCode.value) formData.append('condition_dress_code', conditionDressCode.value)
         if (conditionAgeLimit.value) formData.append('condition_age_limit', conditionAgeLimit.value)
@@ -1971,6 +2057,16 @@ async function loadEvent(id) {
             selectedSubcategories.value = []
         }
 
+        // Event options / visibility (with sensible defaults)
+        isRecurring.value = !!d.is_recurring
+        isCopyEvent.value = !!d.is_copy_event
+        showUpcomingEvents.value = d.show_upcoming_events !== undefined
+            ? !!d.show_upcoming_events
+            : true
+        showPastEvents.value = d.show_past_events !== undefined
+            ? !!d.show_past_events
+            : false
+
         if (d.image_url) {
             imagePreview.value = d.image_url
         } else {
@@ -2045,7 +2141,10 @@ function resetForm() {
     tiktokUrl.value = ''
     ticketUrl.value = ''
     bookingInstructions.value = ''
-    eventOption.value = ''
+    isRecurring.value = false
+    isCopyEvent.value = false
+    showUpcomingEvents.value = true
+    showPastEvents.value = false
     conditionEntranceFee.value = ''
     conditionDressCode.value = ''
     conditionAgeLimit.value = ''
@@ -2090,7 +2189,11 @@ async function updateEvent() {
             dress_code: dressCode.value === 'none' ? 'no_dress_code' : (customDressCode.value || ''),
             age_limit: ageLimit.value === 'none' ? 'no_age_limit' : (customAgeLimit.value || ''),
             entrance_status: entranceStatus.value === 'open' ? 'open_to_all' : (customEntranceFee.value || ''),
-            description: eventDescription.value
+            description: eventDescription.value,
+            is_recurring: isRecurring.value,
+            is_copy_event: isCopyEvent.value,
+            show_upcoming_events: showUpcomingEvents.value,
+            show_past_events: showPastEvents.value
         }
 
         const response = await eventService.updateEventById(editingEventId.value, payload)

@@ -563,6 +563,77 @@
                     </div>
                 </div> -->
 
+                                <!-- EVENT VISIBILITY SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-6">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Event Visibility
+                    </h3>
+
+                    <!-- Show Upcoming Events -->
+                    <div class="tw:flex tw:flex-col tw:gap-2">
+                        <p class="tw:text-sm tw:font-medium tw:text-gray-900">
+                            Show Upcoming Events (max 1 year)
+                        </p>
+                        <!-- <p class="tw:text-xs tw:text-gray-500">
+                            If YES, upcoming events within the next year will be visible.
+                        </p> -->
+                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-upcoming-events"
+                                    :checked="showUpcomingEvents"
+                                    @change="showUpcomingEvents = true"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-upcoming-events"
+                                    :checked="!showUpcomingEvents"
+                                    @change="showUpcomingEvents = false"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Show Past Events -->
+                    <div class="tw:flex tw:flex-col tw:gap-2">
+                        <p class="tw:text-sm tw:font-medium tw:text-gray-900">
+                            Show Past Events (max 1 year)
+                        </p>
+                        <!-- <p class="tw:text-xs tw:text-gray-500">
+                            If YES, past events within the last year will be visible.
+                        </p> -->
+                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-past-events"
+                                    :checked="showPastEvents"
+                                    @change="showPastEvents = true"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-past-events"
+                                    :checked="!showPastEvents"
+                                    @change="showPastEvents = false"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- SAVE Organiser BUTTON -->
                 <div class="tw:w-full tw:pt-4">
                     <div class="tw:flex tw:w-full tw:items-center tw:justify-end">
@@ -648,7 +719,13 @@ const contactEmail = ref("")
 const contactWebsite = ref("")
 // const bookingInstructions = ref('');
 // const ticketUrl = ref('');
-const eventOption = ref('');
+// const eventOption = ref('');
+
+// Event options
+const isRecurring = ref(false)
+const isCopyEvent = ref(false)
+const showUpcomingEvents = ref("")
+const showPastEvents = ref("")
 const showChatbox = ref(false)
 const contactBoxMessage = ref('')
 
