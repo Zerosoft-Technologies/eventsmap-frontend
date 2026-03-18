@@ -871,7 +871,7 @@ const entranceFee = ref("")
 // const eventDate = ref("")
 // const startTime = ref("")
 // const endTime = ref("")
-const dateInput = ref(null)
+// const dateInput = ref(null)
 const startTimeInput = ref(null)
 const endTimeInput = ref(null)
 
@@ -1328,13 +1328,15 @@ onMounted(() => {
     // flatpickr(dateInput.value, {
     //     dateFormat: "m/d/Y",
     // })
-    flatpickr(dateInput.value, {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        onChange: (selectedDates, dateStr) => {
-            eventDate.value = dateStr
-        }
-    })
+    // if (dateInput.value) {
+    //     flatpickr(dateInput.value, {
+    //         dateFormat: "Y-m-d",
+    //         minDate: "today",
+    //         onChange: (selectedDates, dateStr) => {
+    //             eventDate.value = dateStr
+    //         }
+    //     })
+    // }
 
 
     /* ------------------ START TIME PICKER ------------------ */
