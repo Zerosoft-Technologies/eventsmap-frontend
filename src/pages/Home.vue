@@ -5,14 +5,16 @@
 <script setup>
 import maplibregl from 'maplibre-gl'
 import { addEventMarker, clearAllMarkers } from '../utils/useMapPopup.js'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { fetchEvents } from '../api/events'
+import { useMapStore } from '@/stores/mapStore'
 
 const mapContainer = ref(null);
 const events = ref([]);
 const loading = ref(false);
 const error = ref(null);
 let map;  
+const mapStore = useMapStore()
 
 const style = {
   version: 8,
@@ -75,7 +77,7 @@ onMounted(() => {
   map = new maplibregl.Map({
     container: mapContainer.value,
     style: style, 
-    center: [4.88428, 52.32797],
+    center: [mapStore.appliedLocation.lng, mapStore.appliedLocation.lat],
     zoom: 10
   });
 
@@ -84,6 +86,24 @@ onMounted(() => {
     loadEvents();
   });
 });
+
+// Recenter map when user changes location in Header
+watch(
+  () => mapStore.appliedLocation,
+  (loc) => {
+    if (!map || !loc) return
+    // Smooth "camera" animation (similar to the snippet you shared)
+    map.flyTo({
+      center: [loc.lng, loc.lat],
+      zoom: Math.max(map.getZoom(), 12),
+      speed: 1.2,
+      curve: 1.42,
+      easing: (t) => t,
+      essential: true
+    })
+  },
+  { deep: true }
+)
 
 </script>
 

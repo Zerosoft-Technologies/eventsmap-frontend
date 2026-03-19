@@ -292,6 +292,7 @@ import { useWishlistStore } from '@/stores/wishlistStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { getCreateRoute } from '@/utils/routeResolver';
 import { Bell } from 'lucide-vue-next';
+import { useMapStore } from '@/stores/mapStore'
 
 // Lazy load AllEvents to avoid circular import issue
 const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
@@ -306,6 +307,7 @@ const { switchLanguage, getAvailableLanguages, initializeLanguage } = useLanguag
 const authStore = useAuthStore()
 const wishlistStore = useWishlistStore()
 const notificationStore = useNotificationStore()
+const mapStore = useMapStore()
 const router = useRouter()
 
 const userCreatePath = computed(() =>
@@ -471,6 +473,13 @@ function filterBy(action){
     loadEventsFromApi(searchTerm.value.trim());
     showResults.value = true;
     searchInput.value.blur();
+
+    // Apply pending location to map only when user actually searches
+    mapStore.setAppliedLocation({
+      lat: selectedLocation.value.lat,
+      lng: selectedLocation.value.lng,
+      name: selectedLocation.value.name
+    })
   } else {
     // Load events without search filter
     loadEventsFromApi();
@@ -540,10 +549,17 @@ async function getLocation() {
         lng: location.longitude,
         name: cityName
       };
+      // Do not move map immediately; mark pending until user searches
+      mapStore.setPendingLocation({
+        lat: location.latitude,
+        lng: location.longitude,
+        name: cityName
+      })
     } catch (e) {
       console.error('Failed to reverse geocode location:', e);
       city.value = "Amsterdam";
       selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
+      mapStore.setPendingLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
     }
   } else {
     // Location access failed or was denied
@@ -551,12 +567,15 @@ async function getLocation() {
       city.value = "Amsterdam";
       // Keep Amsterdam as default
       selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
+      mapStore.setPendingLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
     } else if (locationError.value) {
       city.value = "Amsterdam";
       selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
+      mapStore.setPendingLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
     } else {
       city.value = "Amsterdam";
       selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
+      mapStore.setPendingLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
     }
   }
 }
@@ -691,6 +710,14 @@ const selectCity = (place) => {
     lng: parseFloat(place.lon),
     name: place.display_name.split(',')[0]
   };
+
+  // Share with map pages (Home / Events)
+  // Do not move map immediately; mark pending until user searches
+  mapStore.setPendingLocation({
+    lat: parseFloat(place.lat),
+    lng: parseFloat(place.lon),
+    name: place.display_name.split(',')[0]
+  })
 };
 
 const showLocation = ref(false)
