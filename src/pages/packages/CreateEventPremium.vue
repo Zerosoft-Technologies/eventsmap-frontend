@@ -1301,14 +1301,20 @@ const availableSubcategories = computed(() => {
     return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
 })
 
+function normalizeInviteRole(role) {
+    const r = String(role ?? '').toLowerCase().trim()
+    if (r === 'organiser') return 'organizer'
+    return r
+}
+
 const talentUsers = computed(() =>
-    allUsers.value.filter((u) => u.profile_type?.toLowerCase() === 'talent')
+    allUsers.value.filter((u) => normalizeInviteRole(u.profile_type) === 'talent')
 )
 const organiserUsers = computed(() =>
-    allUsers.value.filter((u) => u.profile_type?.toLowerCase() === 'organizer')
+    allUsers.value.filter((u) => normalizeInviteRole(u.profile_type) === 'organizer')
 )
 const venueUsers = computed(() =>
-    allUsers.value.filter((u) => u.profile_type?.toLowerCase() === 'venue')
+    allUsers.value.filter((u) => normalizeInviteRole(u.profile_type) === 'venue')
 )
 
 // Invite section selected IDs (optional - passed to API when user selects)

@@ -111,9 +111,16 @@ watch(selectedIds, (ids) => {
   emit('update:selectedIds', [...ids])
 }, { immediate: true })
 
+function normalizeInviteRole(role) {
+  const r = String(role ?? '').toLowerCase().trim()
+  if (r === 'organiser') return 'organizer'
+  return r
+}
+
 const roleProfiles = computed(() => {
   const source = props.profiles ?? mockProfiles
-  return source.filter((p) => p.profile_type === props.role)
+  const targetRole = normalizeInviteRole(props.role)
+  return source.filter((p) => normalizeInviteRole(p.profile_type) === targetRole)
 })
 
 const recommendedProfiles = computed(() =>
