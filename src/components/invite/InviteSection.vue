@@ -89,9 +89,9 @@ const props = defineProps({
 })
 
 const ROLE_CONFIG = {
-  talent:    { label: 'Invite Talent',    icon: Mic2    },
-  organizer: { label: 'Invite Organizer', icon: User    },
-  venue:     { label: 'Invite Venue',     icon: MapPin  },
+  talent:    { label: 'Invite Registered Talent',    icon: Mic2    },
+  organizer: { label: 'Invite Registered Organizer', icon: User    },
+  venue:     { label: 'Invite Registered Venue',     icon: MapPin  },
 }
 
 const containerRef   = ref(null)

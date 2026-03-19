@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import maplibregl from 'maplibre-gl'
-import type { Event, MapCenter } from '../../types/events'
+import type { Event, MapCenter, MapBounds } from '../../types/events'
 
 const props = defineProps<{
   events: Event[]
@@ -15,12 +15,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'mapMove', center: MapCenter): void
+  (e: 'mapViewport', payload: { center: MapCenter; bounds: MapBounds; zoom: number }): void
   (e: 'selectEvent', id: number): void
 }>()
 
 const mapContainer = ref<HTMLElement | null>(null)
 let map: maplibregl.Map | null = null
-let markers: maplibregl.Marker[] = []
+let markerById = new Map<number, { marker: maplibregl.Marker; el: HTMLElement }>()
 let moveTimeout: ReturnType<typeof setTimeout> | null = null
 
 const mapStyle = {
@@ -117,45 +118,60 @@ const createPopupContent = (event: Event): string => {
   `
 }
 
-const clearMarkers = () => {
-  markers.forEach(marker => marker.remove())
-  markers = []
+const removeAllMarkers = () => {
+  markerById.forEach(({ marker }) => marker.remove())
+  markerById.clear()
 }
 
-const addMarkers = () => {
+const syncMarkers = () => {
   if (!map) return
   
-  clearMarkers()
-  
+  const nextIds = new Set<number>()
+
   props.events.forEach(event => {
     if (event.latitude == null || event.longitude == null) return
+    nextIds.add(event.id)
     
     const isSelected = event.id === props.selectedEventId
-    const el = createMarkerElement(event, isSelected)
-    
-    const popup = new maplibregl.Popup({
-      closeButton: true,
-      closeOnClick: false,
-      maxWidth: '280px',
-      offset: [0, -20]
-    }).setHTML(createPopupContent(event))
-    
-    const marker = new maplibregl.Marker({ element: el })
-      .setLngLat([event.longitude, event.latitude])
-      .setPopup(popup)
-      .addTo(map!)
-    
-    el.addEventListener('click', () => {
-      emit('selectEvent', event.id)
-    })
-    
-    // Show popup for selected event
-    if (isSelected) {
-      marker.togglePopup()
+
+    const existing = markerById.get(event.id)
+    if (!existing) {
+      const el = createMarkerElement(event, isSelected)
+
+      const popup = new maplibregl.Popup({
+        closeButton: true,
+        closeOnClick: false,
+        maxWidth: '280px',
+        offset: [0, -20]
+      }).setHTML(createPopupContent(event))
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([event.longitude, event.latitude])
+        .setPopup(popup)
+        .addTo(map!)
+
+      el.addEventListener('click', () => {
+        emit('selectEvent', event.id)
+      })
+
+      if (isSelected) {
+        marker.togglePopup()
+      }
+
+      markerById.set(event.id, { marker, el })
+    } else {
+      // Update selection styling without recreating marker
+      existing.el.style.backgroundColor = isSelected ? '#0061FF' : event.is_live_now ? '#EF4444' : '#FF7700'
     }
-    
-    markers.push(marker)
   })
+
+  // Prune markers that are no longer in the current dataset
+  for (const [id, { marker }] of markerById.entries()) {
+    if (!nextIds.has(id)) {
+      marker.remove()
+      markerById.delete(id)
+    }
+  }
 }
 
 const centerOnEvent = (eventId: number) => {
@@ -192,13 +208,49 @@ onMounted(async () => {
     moveTimeout = setTimeout(() => {
       if (!map) return
       const center = map.getCenter()
+      const b = map.getBounds()
+      const bounds: MapBounds = {
+        minLat: b.getSouthWest().lat,
+        maxLat: b.getNorthEast().lat,
+        minLng: b.getSouthWest().lng,
+        maxLng: b.getNorthEast().lng
+      }
+      const zoom = map.getZoom()
       emit('mapMove', { lat: center.lat, lng: center.lng })
+      emit('mapViewport', { center: { lat: center.lat, lng: center.lng }, bounds, zoom })
+    }, 300)
+  })
+
+  map.on('zoomend', () => {
+    if (moveTimeout) clearTimeout(moveTimeout)
+    moveTimeout = setTimeout(() => {
+      if (!map) return
+      const center = map.getCenter()
+      const b = map.getBounds()
+      const bounds: MapBounds = {
+        minLat: b.getSouthWest().lat,
+        maxLat: b.getNorthEast().lat,
+        minLng: b.getSouthWest().lng,
+        maxLng: b.getNorthEast().lng
+      }
+      const zoom = map.getZoom()
+      emit('mapViewport', { center: { lat: center.lat, lng: center.lng }, bounds, zoom })
     }, 300)
   })
   
   // Add markers when map loads
   map.on('load', () => {
-    addMarkers()
+    syncMarkers()
+    // Emit initial viewport so parent can fetch by bounds
+    const center = map!.getCenter()
+    const b = map!.getBounds()
+    const bounds: MapBounds = {
+      minLat: b.getSouthWest().lat,
+      maxLat: b.getNorthEast().lat,
+      minLng: b.getSouthWest().lng,
+      maxLng: b.getNorthEast().lng
+    }
+    emit('mapViewport', { center: { lat: center.lat, lng: center.lng }, bounds, zoom: map!.getZoom() })
   })
   
   // Listen for viewEvent custom event from popup
@@ -211,7 +263,7 @@ onMounted(async () => {
 // Cleanup
 onUnmounted(() => {
   if (moveTimeout) clearTimeout(moveTimeout)
-  clearMarkers()
+  removeAllMarkers()
   if (map) {
     map.remove()
     map = null
@@ -221,14 +273,14 @@ onUnmounted(() => {
 // Watch for events changes
 watch(() => props.events, () => {
   if (map && map.loaded()) {
-    addMarkers()
+    syncMarkers()
   }
 }, { deep: true })
 
 // Watch for selected event changes
 watch(() => props.selectedEventId, (newId) => {
   if (map && map.loaded()) {
-    addMarkers()
+    syncMarkers()
     if (newId != null) {
       centerOnEvent(newId)
     }

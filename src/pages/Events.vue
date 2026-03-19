@@ -107,6 +107,7 @@
           :center="mapCenter"
           :selectedEventId="selectedEventId"
           @mapMove="handleMapMove"
+          @mapViewport="handleMapViewport"
           @selectEvent="handleEventSelect"
         />
 
@@ -164,7 +165,7 @@ import EventsFilters from '../components/events/EventsFilters.vue'
 import EventsList from '../components/events/EventsList.vue'
 import EventsMap from '../components/events/EventsMap.vue'
 import { useEvents, useLiveNowRefresh } from '../composables/useEvents'
-import type { MapCenter } from '../types/events'
+import type { MapCenter, MapBounds } from '../types/events'
 
 // Get route to access query parameters
 const route = useRoute()
@@ -194,6 +195,7 @@ const {
   refresh,
   setSearch,
   setMapCenter,
+  setMapViewport,
   setRadius,
   setCategory,
   setPriceRange,
@@ -237,6 +239,10 @@ const sidebarWidth = computed(() => {
 // Handlers
 const handleMapMove = (center: MapCenter) => {
   setMapCenter(center.lat, center.lng)
+}
+
+const handleMapViewport = (payload: { center: MapCenter; bounds: MapBounds; zoom: number }) => {
+  setMapViewport(payload.center, payload.bounds, payload.zoom)
 }
 
 const handleEventSelect = (id: number) => {

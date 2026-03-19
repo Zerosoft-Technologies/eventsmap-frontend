@@ -360,6 +360,13 @@ export interface EventFilters {
   lng?: number | null
   radius?: number | null // in km
 
+  // Map viewport filters (bounding box)
+  min_lat?: number | null
+  max_lat?: number | null
+  min_lng?: number | null
+  max_lng?: number | null
+  zoom?: number | null
+
   // Date filters
   from_date?: string | null // YYYY-MM-DD
   to_date?: string | null   // YYYY-MM-DD
@@ -394,6 +401,16 @@ export interface EventFilters {
 export interface MapCenter {
   lat: number
   lng: number
+}
+
+/**
+ * Map viewport bounds (south-west / north-east)
+ */
+export interface MapBounds {
+  minLat: number
+  maxLat: number
+  minLng: number
+  maxLng: number
 }
 
 /**

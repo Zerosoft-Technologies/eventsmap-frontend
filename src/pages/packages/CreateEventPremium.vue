@@ -110,11 +110,19 @@
                     </p>
                     <!-- Description -->
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:text-gray-700">Description <span
-                                class="tw:text-red-500">*</span></label>
+                        <div class="tw:flex tw:justify-between tw:items-center">
+                            <label class="tw:text-sm tw:text-gray-700">Description <span
+                                    class="tw:text-red-500">*</span></label>
+                            <button type="button"
+                                class="tw:inline-flex tw:items-center tw:gap-1.5 tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:text-blue-600 hover:tw:text-blue-700 hover:tw:bg-blue-50 tw:rounded-lg tw:transition-colors"
+                                @click="showDescriptionExpandModal = true" title="Expand to read full description">
+                                <Maximize2 class="tw:w-4 tw:h-4" />
+                                Expand
+                            </button>
+                        </div>
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Event..."
                             @input="clearFieldError('description')" :class="[
-                                'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none',
+                                'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y tw:min-h-[100px]',
                                 (errors.description || fieldErrors.description) ? 'tw:border-red-500' : 'tw:border-gray-200'
                             ]"></textarea>
                         <p v-if="errors.description" class="tw:text-red-500 tw:text-sm tw:mt-1">Description is required
@@ -236,7 +244,13 @@
                                     <option value="">
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'Select') }}
                                     </option>
-                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
+                                    <option
+                                        v-for="category in categories.filter(c =>
+                                        !['sports','organiser','talent','venue'].includes(c.name.toLowerCase())
+                                        )"
+                                        :key="category.id"
+                                        :value="category.name"
+                                    >
                                         {{ category.name }}
                                     </option>
                                 </select>
@@ -356,80 +370,138 @@
                         Event Date & Time <span class="tw:text-red-500">*</span>
                     </h3>
 
-                    <!-- Horizontal Layout -->
-                    <div class="tw:flex tw:gap-6">
-
-                        <!-- EVENT DATE -->
-                        <div class="tw:flex-1">
-                            <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                Event Date <span class="tw:text-red-500">*</span>
-                            </label>
-
-                            <div class="tw:relative">
-                                <input ref="dateInput" v-model="eventDate" placeholder="MM/DD/YYYY" :class="[
-                                    'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                                    fieldErrors.event_date ? 'tw:border-red-500' : 'tw:border-gray-200'
-                                ]" @input="clearFieldError('eventDate')" />
-
-                                <!-- Custom Calendar Icon -->
-                                <Calendar
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
-                            </div>
-                            <p v-if="errors.eventDate" class="tw:text-red-500 tw:text-sm tw:mt-1">Event date is required
-                            </p>
-                            <p v-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm tw:mt-1">{{
-                                fieldErrors.event_date[0] }}</p>
-                            <p v-if="pastDateError" class="tw:text-red-500 tw:text-sm tw:mt-1">Cannot select a past date
-                            </p>
-                        </div>
-
-                        <!-- START & END TIME -->
-                        <div class="tw:flex tw:gap-4" style="flex: 1;">
-
-                            <!-- START TIME -->
-                            <div class="tw:flex-1">
-                                <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                    Start Time <span class="tw:text-red-500">*</span>
+                    <div class="tw:space-y-4">
+                        <!-- Row: Event Start -->
+                        <div class="tw:grid tw:grid-cols-2 tw:gap-4">
+                            <div class="tw:space-y-2">
+                                <label class="tw:block tw:text-sm tw:text-gray-600">
+                                    Event Start Date <span class="tw:text-red-500">*</span>
                                 </label>
-                                <div class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
+                                <div class="tw:relative">
+                                    <input
+                                        ref="dateInput"
+                                        v-model="eventDate"
+                                        placeholder="YYYY-MM-DD"
+                                        inputmode="numeric"
+                                        :class="[
+                                            'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                                            (errors.eventDate || startDateFormatError || fieldErrors.event_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                        ]"
+                                        @input="clearFieldError('eventDate'); startDateFormatError = ''"
+                                    />
+                                    <Calendar class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                </div>
+                                <p v-if="errors.eventDate" class="tw:text-red-500 tw:text-sm">Start date is required</p>
+                                <p v-else-if="startDateFormatError" class="tw:text-red-500 tw:text-sm">{{ startDateFormatError }}</p>
+                                <p v-else-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm">{{ fieldErrors.event_date[0] }}</p>
+                                <p v-if="pastDateError" class="tw:text-red-500 tw:text-sm">Cannot select a past date</p>
+                            </div>
+
+                            <div class="tw:space-y-2">
+                                <label class="tw:block tw:text-sm tw:text-gray-600">
+                                    Event Start Time <span class="tw:text-red-500">*</span>
+                                </label>
+                                <div
+                                    class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
                                     :class="hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'">
-                                    <input type="text" inputmode="numeric" maxlength="2" v-model="startHH"
-                                        placeholder="12" @input="onTimeInput('startHH', $event)"
-                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                                    <input
+                                        type="text"
+                                        inputmode="numeric"
+                                        maxlength="2"
+                                        v-model="startHH"
+                                        placeholder="HH"
+                                        @input="onTimeInput('startHH', $event)"
+                                        @blur="onTimeBlur('startHH')"
+                                        class="tw:w-10 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
+                                    />
                                     <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
-                                    <input type="text" inputmode="numeric" maxlength="2" v-model="startMM"
-                                        placeholder="00" @input="onTimeInput('startMM', $event)"
-                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
+                                    <input
+                                        type="text"
+                                        inputmode="numeric"
+                                        maxlength="2"
+                                        v-model="startMM"
+                                        placeholder="00"
+                                        @input="onTimeInput('startMM', $event)"
+                                        @blur="onTimeBlur('startMM')"
+                                        class="tw:w-10 tw:text-center tw:text-gray-500 placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
+                                    />
                                     <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                                 </div>
-                                <p v-if="hasStartError" class="tw:text-red-500 tw:text-sm tw:mt-1">Start time is
-                                    required</p>
+                                <p v-if="hasStartError" class="tw:text-red-500 tw:text-sm">Start time is required</p>
+                                <p class="tw:text-xs tw:text-gray-500">Format: HH:mm (24-hour). “00:00” represents midnight.</p>
                             </div>
-
-                            <!-- END TIME -->
-                            <div class="tw:flex-1">
-                                <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
-                                    End Time <span class="tw:text-red-500">*</span>
-                                </label>
-                                <div class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
-                                    :class="(hasEndError || timeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'">
-                                    <input type="text" inputmode="numeric" maxlength="2" v-model="endHH"
-                                        placeholder="13" @input="onTimeInput('endHH', $event)"
-                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
-                                    <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
-                                    <input type="text" inputmode="numeric" maxlength="2" v-model="endMM"
-                                        placeholder="00" @input="onTimeInput('endMM', $event)"
-                                        class="tw:w-8 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent" />
-                                    <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
-                                </div>
-                                <p v-if="hasEndError" class="tw:text-red-500 tw:text-sm tw:mt-1">End time is required
-                                </p>
-                                <p v-if="timeRangeError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ timeRangeError }}
-                                </p>
-                            </div>
-
                         </div>
 
+                        <!-- Row: Event End -->
+                        <div class="tw:grid tw:grid-cols-2 tw:gap-4">
+                            <div class="tw:space-y-2">
+                                <label class="tw:block tw:text-sm tw:text-gray-600">
+                                    Event End Date <span class="tw:text-red-500">*</span>
+                                </label>
+                                <div class="tw:relative">
+                                    <input
+                                        ref="endDateInput"
+                                        v-model="endDate"
+                                        placeholder="YYYY-MM-DD"
+                                        inputmode="numeric"
+                                        :class="[
+                                            'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                                            (hasEndDateError || endDateFormatError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                        ]"
+                                        @input="hasEndDateError = false; datetimeRangeError = ''; endDateFormatError = ''"
+                                    />
+                                    <Calendar class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                </div>
+                                <p v-if="hasEndDateError" class="tw:text-red-500 tw:text-sm">End date is required</p>
+                                <p v-else-if="endDateFormatError" class="tw:text-red-500 tw:text-sm">{{ endDateFormatError }}</p>
+                            </div>
+
+                            <div class="tw:space-y-2">
+                                <label class="tw:block tw:text-sm tw:text-gray-600">
+                                    Event End Time <span class="tw:text-red-500">*</span>
+                                </label>
+                                <div
+                                    class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
+                                    :class="(hasEndError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'">
+                                    <input
+                                        type="text"
+                                        inputmode="numeric"
+                                        maxlength="2"
+                                        v-model="endHH"
+                                        placeholder="HH"
+                                        @input="onTimeInput('endHH', $event)"
+                                        @blur="onTimeBlur('endHH')"
+                                        class="tw:w-10 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
+                                    />
+                                    <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
+                                    <input
+                                        type="text"
+                                        inputmode="numeric"
+                                        maxlength="2"
+                                        v-model="endMM"
+                                        placeholder="00"
+                                        @input="onTimeInput('endMM', $event)"
+                                        @blur="onTimeBlur('endMM')"
+                                        class="tw:w-10 tw:text-center tw:text-gray-500 placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
+                                    />
+                                    <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                                </div>
+                                <p v-if="hasEndError" class="tw:text-red-500 tw:text-sm">End time is required</p>
+                                <p v-if="datetimeRangeError" class="tw:text-red-500 tw:text-sm">{{ datetimeRangeError }}</p>
+
+                                <div v-if="showOvernightSuggestion" class="tw:mt-2 tw:flex tw:flex-wrap tw:items-center tw:gap-2">
+                                    <p class="tw:text-xs tw:text-gray-600">
+                                        End time is earlier than start time. Did you mean the end date to be the next day?
+                                    </p>
+                                    <button
+                                        type="button"
+                                        @click="applyOvernightSuggestion"
+                                        class="tw:text-xs tw:font-medium tw:text-blue-600 hover:tw:text-blue-700 tw:underline">
+                                        Set end date to next day
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -495,94 +567,98 @@
                         </button> -->
                     </div>
 
-                    <div class="tw:grid tw:grid-cols-3 tw:gap-4">
+                    <div class="tw:grid tw:grid-cols-1 md:tw:grid-cols-3 tw:gap-6">
                         <!-- Dress Code -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code <span
-                                    class="tw:text-red-500">*</span></label>
+                        <div class="tw:space-y-3">
+                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">
+                                Dress Code <span class="tw:text-red-500">*</span>
+                            </label>
                             <div class="tw:relative">
-                                <select v-model="dressCode" @change="clearFieldError('dressCode')" :class="[
-                                    'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
-                                    errors.dressCode ? 'tw:border-red-500' : 'tw:border-gray-200'
-                                ]">
-                                    <option value="">Select Dress Code</option>
-                                    <option value="no_dress_code">No Dress Code</option>
-                                    <option value="casual">Casual</option>
-                                    <option value="different">+ If different to above</option>
+                                <select
+                                    v-model="dressCode"
+                                    @change="clearFieldError('dressCode'); if (dressCode === 'none') customDressCode = ''"
+                                    :class="[
+                                        'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                                        errors.dressCode ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                    ]">
+                                    <option value="">Select</option>
+                                    <option value="none">No Dress Code</option>
+                                    <option value="required">Dress Code Required</option>
                                 </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                                <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
-                            <textarea
-                                v-if="dressCode === 'different'"
-                                v-model="customDressCode"
-                                placeholder="Enter dress code details"
-                                rows="3"
-                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2 tw:resize-y tw:min-h-[80px]"
-                            ></textarea>
-                            <p v-if="errors.dressCode" class="tw:text-red-500 tw:text-sm tw:mt-1">Dress code is required
-                            </p>
+                            <div v-if="dressCode === 'required'" class="tw:space-y-2">
+                                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Dress Code</label>
+                                <textarea
+                                    v-model="customDressCode"
+                                    placeholder="e.g., Formal wear, White party, Business casual"
+                                    rows="3"
+                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y tw:min-h-[84px]"
+                                ></textarea>
+                            </div>
+                            <p v-if="errors.dressCode" class="tw:text-red-500 tw:text-sm">Please choose a dress code option</p>
                         </div>
 
                         <!-- Age Limit -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit <span
-                                    class="tw:text-red-500">*</span></label>
+                        <div class="tw:space-y-3">
+                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">
+                                Age Limit <span class="tw:text-red-500">*</span>
+                            </label>
                             <div class="tw:relative">
-                                <select v-model="ageLimit" @change="clearFieldError('ageLimit')"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">Select Age</option>
-                                    <option value="all_ages">All Ages</option>
-                                    <option value="4+">4+</option>
-                                    <option value="8+">8+</option>
-                                    <option value="12+">12+</option>
-                                    <option value="16+">16+</option>
-                                    <option value="18+">18+</option>
-                                    <option value="21+">21+</option>
-                                    <option value="55+">55+</option>
-                                    <option value="65+">65+</option>
-                                    <option value="different">+ If different to above</option>
+                                <select
+                                    v-model="ageLimit"
+                                    @change="clearFieldError('ageLimit'); if (ageLimit === 'none') customAgeLimit = ''"
+                                    :class="[
+                                        'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                                        errors.ageLimit ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                    ]">
+                                    <option value="">Select</option>
+                                    <option value="none">No Age Limit</option>
+                                    <option value="restricted">Age Restricted</option>
                                 </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                                <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
-                            <textarea 
-                            v-if="ageLimit === 'different'" 
-                            v-model="customAgeLimit"
-                            placeholder="Enter age limit details"
-                            rows="3"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2 tw:resize-y tw:min-h-[80px]"
-                            ></textarea>
-                            <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm tw:mt-1">Age limit is required
-                            </p>
+                            <div v-if="ageLimit === 'restricted'" class="tw:space-y-2">
+                                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Age Limit</label>
+                                <input
+                                    v-model="customAgeLimit"
+                                    type="text"
+                                    placeholder="e.g., 18+, 21+, Adults only"
+                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all"
+                                />
+                            </div>
+                            <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm">Please choose an age limit option</p>
                         </div>
 
-                        <!-- Entrance Fee -->
-                        <div class="tw:space-y-2">
-                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status <span
-                                    class="tw:text-red-500">*</span></label>
+                        <!-- Entrance Status -->
+                        <div class="tw:space-y-3">
+                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">
+                                Entrance Status <span class="tw:text-red-500">*</span>
+                            </label>
                             <div class="tw:relative">
-                                <select v-model="entranceStatus" @change="clearFieldError('entranceStatus')"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                    <option value="">Select Entrance Status</option>
-                                    <option value="free">Free Entrance</option>
-                                    <option value="paid">Paid Entrance</option>
-                                    <option value="donation">Sold Out</option>
-                                    <option value="cancelled">Event is Cancelled</option>
-                                    <option value="different">+ If different to above</option>
+                                <select
+                                    v-model="entranceStatus"
+                                    @change="clearFieldError('entranceStatus'); if (entranceStatus === 'open') customEntranceFee = ''"
+                                    :class="[
+                                        'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                                        errors.entranceStatus ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                    ]">
+                                    <option value="">Select</option>
+                                    <option value="open">Open to All</option>
+                                    <option value="restricted">Restricted Entry</option>
                                 </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
+                                <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
-                            <textarea 
-                            v-if="entranceStatus === 'different'" 
-                            v-model="customEntranceFee"
-                            placeholder="Enter entrance status details"
-                            rows="3"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:mt-2 tw:resize-y tw:min-h-[80px]"
-                            ></textarea>
-                            <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm tw:mt-1">Entrance status
-                                is required</p>
+                            <div v-if="entranceStatus === 'restricted'" class="tw:space-y-2">
+                                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Entrance Status</label>
+                                <textarea
+                                    v-model="customEntranceFee"
+                                    placeholder="e.g., Members only, Invite-only, VIP access"
+                                    rows="3"
+                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y tw:min-h-[84px]"
+                                ></textarea>
+                            </div>
+                            <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm">Please choose an entrance option</p>
                         </div>
                     </div>
                 </div>
@@ -595,23 +671,20 @@
 
                     <div>
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Phone <span
-                                class="tw:text-red-500">*</span></label>
+                                class="tw:text-gray-400 tw:text-xs">(optional)</span></label>
                         <input v-model="contactPhone" type="text" placeholder="Telephone Number"
                             @input="clearFieldError('contactPhone')"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
-                        <p v-if="errors.contactPhone" class="tw:text-red-500 tw:text-sm tw:mt-1">Phone number is
-                            required</p>
                         <p v-if="fieldErrors.contact_phone" class="tw:text-red-500 tw:text-sm tw:mt-1">{{
                             fieldErrors.contact_phone[0] }}</p>
                     </div>
 
                     <div>
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Email <span
-                                class="tw:text-red-500">*</span></label>
+                                class="tw:text-gray-400 tw:text-xs">(optional)</span></label>
                         <input v-model="contactEmail" type="email" placeholder="Email"
                             @input="clearFieldError('contactEmail')"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
-                        <p v-if="errors.contactEmail" class="tw:text-red-500 tw:text-sm tw:mt-1">Email is required</p>
                         <p v-if="fieldErrors.contact_email" class="tw:text-red-500 tw:text-sm tw:mt-1">{{
                             fieldErrors.contact_email[0] }}</p>
                     </div>
@@ -744,20 +817,97 @@
                         Event Options
                     </h3>
 
-                    <div class="tw:flex tw:gap-6 tw:items-center">
-                        <!-- Copy Event -->
-                        <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
-                            <input type="radio" value="copy" v-model="eventOption"
-                                class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500" />
-                            <span class="tw:text-sm tw:text-gray-700">Copy Event</span>
-                        </label>
-
-                        <!-- Recurring Event -->
-                        <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
-                            <input type="radio" value="recurring" v-model="eventOption"
-                                class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500" />
+                    <div class="tw:flex tw:flex-col tw:gap-3">
+                        <!-- Recurring Event - create mode only -->
+                        <label v-if="!isEditMode" class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                            <input
+                                type="checkbox"
+                                v-model="isRecurring"
+                                class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                            />
                             <span class="tw:text-sm tw:text-gray-700">Recurring Event</span>
                         </label>
+
+                        <!-- Copy Event - edit mode only -->
+                        <label v-if="isEditMode" class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                            <input
+                                type="checkbox"
+                                v-model="isCopyEvent"
+                                class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                            />
+                            <span class="tw:text-sm tw:text-gray-700">Copy Event</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- EVENT VISIBILITY SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-6">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Event Visibility
+                    </h3>
+
+                    <!-- Show Upcoming Events -->
+                    <div class="tw:flex tw:flex-col tw:gap-2">
+                        <p class="tw:text-sm tw:font-medium tw:text-gray-900">
+                            Show Upcoming Events (max 1 year)
+                        </p>
+                        <!-- <p class="tw:text-xs tw:text-gray-500">
+                            If YES, upcoming events within the next year will be visible.
+                        </p> -->
+                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-upcoming-events"
+                                    :checked="showUpcomingEvents"
+                                    @change="showUpcomingEvents = true"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-upcoming-events"
+                                    :checked="!showUpcomingEvents"
+                                    @change="showUpcomingEvents = false"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Show Past Events -->
+                    <div class="tw:flex tw:flex-col tw:gap-2">
+                        <p class="tw:text-sm tw:font-medium tw:text-gray-900">
+                            Show Past Events (max 1 year)
+                        </p>
+                        <!-- <p class="tw:text-xs tw:text-gray-500">
+                            If YES, past events within the last year will be visible.
+                        </p> -->
+                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-past-events"
+                                    :checked="showPastEvents"
+                                    @change="showPastEvents = true"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-past-events"
+                                    :checked="!showPastEvents"
+                                    @change="showPastEvents = false"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">No</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -784,13 +934,38 @@
                             </button>
                         </div>
                     </div>
-                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon you can show this button in
-                        your event description or event info window when appropriate. This is still under
-                        consideration.</span>
+                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span>
                 </div>
 
             </div>
         </div>
+
+        <!-- Description Expand Modal -->
+        <Teleport to="body">
+            <Transition name="modal-fade">
+                <div v-if="showDescriptionExpandModal"
+                    class="tw:fixed tw:inset-0 tw:z-50 tw:flex tw:items-center tw:justify-center tw:p-4">
+                    <div class="tw:absolute tw:inset-0 tw:bg-black/50 tw:backdrop-blur-sm"
+                        @click="showDescriptionExpandModal = false"></div>
+                    <div
+                        class="tw:relative tw:w-full tw:max-w-3xl tw:max-h-[85vh] tw:bg-white tw:rounded-2xl tw:shadow-2xl tw:overflow-hidden tw:flex tw:flex-col">
+                        <div class="tw:flex tw:items-center tw:justify-between tw:px-5 tw:py-4 tw:border-b tw:border-gray-200">
+                            <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900">Description</h3>
+                            <button type="button"
+                                class="tw:p-2 tw:rounded-lg tw:text-gray-500 hover:tw:text-gray-700 hover:tw:bg-gray-100 tw:transition-colors"
+                                @click="showDescriptionExpandModal = false">
+                                <X class="tw:w-5 tw:h-5" />
+                            </button>
+                        </div>
+                        <div class="tw:flex-1 tw:overflow-hidden tw:p-5">
+                            <textarea v-model="eventDescription" rows="16"
+                                class="tw:w-full tw:h-full tw:min-h-[300px] tw:bg-gray-50 tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:resize-none tw:overflow-y-auto"
+                                placeholder="Describe Your Event..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
@@ -809,7 +984,9 @@ import {
     User,
     SkipBackIcon,
     Clock,
-    MessageSquareText
+    MessageSquareText,
+    Maximize2,
+    X
 } from "lucide-vue-next"
 
 import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
@@ -823,7 +1000,6 @@ import { useAuthStore } from "@/stores/auth"
 import { useMyEventStore } from "@/stores/myEventStore"
 import { useChatStore } from "@/stores/chatStore"
 import { useToast } from "@/composables/useToast"
-import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -853,11 +1029,13 @@ function handleChatboxClick() {
 // Event data
 const eventTitle = ref("")
 const eventDate = ref("")
+const endDate = ref("")
 const eventStatus = ref("Draft")
 
 const activeTab = ref("home")
 const isSubmitting = ref(false)
 const eventDescription = ref("")
+const showDescriptionExpandModal = ref(false)
 
 const selectedImageFile = ref(null)
 const imagePreview = ref(null)
@@ -909,6 +1087,10 @@ const additionalImages = ref([])
 const selectedVenue = ref("")
 const fileName = ref("")
 const selectedGenre = ref("")
+// Overview (clean UX modes)
+// dressCode: 'none' | 'required'
+// ageLimit: 'none' | 'restricted'
+// entranceStatus: 'open' | 'restricted'
 const dressCode = ref("")
 const ageLimit = ref("")
 // const entranceFee = ref("")
@@ -921,7 +1103,12 @@ const contactEmail = ref("")
 const contactWebsite = ref("")
 const bookingInstructions = ref('');
 const ticketUrl = ref('');
-const eventOption = ref('');
+
+// Event options
+const isRecurring = ref(false)
+const isCopyEvent = ref(false)
+const showUpcomingEvents = ref("")
+const showPastEvents = ref("")
 const showChatbox = ref(false)
 const contactBoxMessage = ref('')
 const venueDetailsText = ref('')
@@ -939,14 +1126,26 @@ const tiktokUrl = ref("")
 // const startTime = ref("")
 // const endTime = ref("")
 const dateInput = ref(null)
+const endDateInput = ref(null)
 // ── Time split refs ──────────────────────────────────────────────────
 const startHH = ref("")
 const startMM = ref("")
 const endHH = ref("")
 const endMM = ref("")
-const timeRangeError = ref("")
+const datetimeRangeError = ref("")
 const hasStartError = ref(false)
 const hasEndError = ref(false)
+const hasEndDateError = ref(false)
+const startDateFormatError = ref("")
+const endDateFormatError = ref("")
+const showOvernightSuggestion = computed(() => {
+    if (!eventDate.value || !endDate.value || !startTime.value || !endTime.value) return false
+    if (eventDate.value !== endDate.value) return false
+    const s = parseTimeToMinutes(startTime.value)
+    const e = parseTimeToMinutes(endTime.value)
+    if (s == null || e == null) return false
+    return e < s
+})
 
 // Computed HH:MM strings for API
 const startTime = computed(() => {
@@ -959,52 +1158,104 @@ const endTime = computed(() => {
     return `${String(endHH.value).padStart(2, "0")}:${String(endMM.value).padStart(2, "0")}`
 })
 
-// Enforce max 2 digits + valid range, then validate end > start
+const DATE_YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/
+
+function parseYmd(dateStr) {
+    if (!DATE_YMD_REGEX.test(String(dateStr || ''))) return null
+    const [y, m, d] = dateStr.split('-').map(Number)
+    if (!y || !m || !d) return null
+    const dt = new Date(y, m - 1, d)
+    // ensure round-trip (catches 2026-02-31 etc)
+    if (dt.getFullYear() !== y || dt.getMonth() !== (m - 1) || dt.getDate() !== d) return null
+    dt.setHours(0, 0, 0, 0)
+    return dt
+}
+
+function parseTimeToMinutes(timeStr) {
+    if (!timeStr || typeof timeStr !== 'string') return null
+    const m = timeStr.trim().match(/^([01]\d|2[0-3]):([0-5]\d)$/)
+    if (!m) return null
+    return Number(m[1]) * 60 + Number(m[2])
+}
+
+function buildDateTime(dateStr, timeStr) {
+    const date = parseYmd(dateStr)
+    const mins = parseTimeToMinutes(timeStr)
+    if (!date || mins == null) return null
+    const h = Math.floor(mins / 60)
+    const m = mins % 60
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, m, 0, 0)
+}
+
+function buildLocalIso(dateStr, timeStr) {
+    const dt = buildDateTime(dateStr, timeStr)
+    if (!dt) return ""
+    const pad2 = (n) => String(n).padStart(2, '0')
+    return `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}T${pad2(dt.getHours())}:${pad2(dt.getMinutes())}:00`
+}
+
+function onTimeBlur(field) {
+    const pad2 = (v) => (v === "" || v == null ? "" : String(v).padStart(2, "0").slice(-2))
+    if (field === "startHH") startHH.value = pad2(startHH.value)
+    if (field === "startMM") startMM.value = pad2(startMM.value)
+    if (field === "endHH") endHH.value = pad2(endHH.value)
+    if (field === "endMM") endMM.value = pad2(endMM.value)
+}
+
+function validateEndAfterStartDateTime() {
+    datetimeRangeError.value = ""
+    startDateFormatError.value = ""
+    endDateFormatError.value = ""
+
+    if (!eventDate.value || !endDate.value || !startTime.value || !endTime.value) return
+
+    const startDt = buildDateTime(eventDate.value, startTime.value)
+    const endDt = buildDateTime(endDate.value, endTime.value)
+    if (!startDt) {
+        startDateFormatError.value = "Use YYYY-MM-DD (e.g., 2026-03-17)"
+        return
+    }
+    if (!endDt) {
+        endDateFormatError.value = "Use YYYY-MM-DD (e.g., 2026-03-18)"
+        return
+    }
+
+    if (endDt.getTime() <= startDt.getTime()) {
+        datetimeRangeError.value = "End date & time must be after start date & time"
+    }
+}
+
+function applyOvernightSuggestion() {
+    if (!eventDate.value) return
+    const d = parseYmd(eventDate.value)
+    if (!d) return
+    d.setDate(d.getDate() + 1)
+    const pad2 = (n) => String(n).padStart(2, '0')
+    endDate.value = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+    hasEndDateError.value = false
+    validateEndAfterStartDateTime()
+}
+
+// Enforce max 2 digits + valid range, then validate end > start (full datetime)
 function onTimeInput(field, event) {
     // Strip non-digits and limit to 2 characters
     let raw = event.target.value.replace(/\D/g, "").slice(0, 2)
     event.target.value = raw
 
-    let val = raw === "" ? "" : parseInt(raw)
+    const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
+    const isEmpty = raw === ""
+    const asNumber = isEmpty ? null : Number(raw)
+    const isHour = field === "startHH" || field === "endHH"
+    const max = isHour ? 23 : 59
+    const nextVal = isEmpty ? "" : String(clamp(isNaN(asNumber) ? 0 : asNumber, 0, max))
 
-    if (val !== "") {
-        if (field === "startHH" || field === "endHH") {
-            if (val > 23) val = 23
-            if (val < 0) val = 0
-        } else {
-            if (val > 59) val = 59
-            if (val < 0) val = 0
-        }
-    }
+    if (field === "startHH") { startHH.value = nextVal; hasStartError.value = false }
+    if (field === "startMM") { startMM.value = nextVal; hasStartError.value = false }
+    if (field === "endHH") { endHH.value = nextVal; hasEndError.value = false }
+    if (field === "endMM") { endMM.value = nextVal; hasEndError.value = false }
 
-    if (field === "startHH") { startHH.value = val; hasStartError.value = false }
-    if (field === "startMM") { startMM.value = val; hasStartError.value = false }
-    if (field === "endHH") { endHH.value = val; hasEndError.value = false }
-    if (field === "endMM") { endMM.value = val; hasEndError.value = false }
-
-    validateEndAfterStart()
-}
-
-function validateEndAfterStart() {
-    timeRangeError.value = ""
-
-    const sHH = parseInt(startHH.value)
-    const sMM = parseInt(startMM.value)
-    const eHH = parseInt(endHH.value)
-    const eMM = parseInt(endMM.value)
-
-    // Only validate when all four fields are filled
-    if (
-        startHH.value === "" || startMM.value === "" ||
-        endHH.value === "" || endMM.value === ""
-    ) return
-
-    const startTotal = sHH * 60 + sMM
-    const endTotal = eHH * 60 + eMM
-
-    if (endTotal <= startTotal) {
-        timeRangeError.value = "End time must be later than start time"
-    }
+    if (!endDate.value && eventDate.value) endDate.value = eventDate.value
+    validateEndAfterStartDateTime()
 }
 
 // const {
@@ -1246,8 +1497,15 @@ function removeImage() {
 }
 
 // Past date validation
-watch(eventDate, () => {
+watch([eventDate, endDate, startTime, endTime], () => {
     validatePastDate()
+    if (!endDate.value && eventDate.value) endDate.value = eventDate.value
+    const s = parseYmd(eventDate.value)
+    const e = parseYmd(endDate.value)
+    if (s && e && e.getTime() < s.getTime()) {
+        endDate.value = eventDate.value
+    }
+    validateEndAfterStartDateTime()
 })
 
 function validatePastDate() {
@@ -1266,7 +1524,7 @@ async function scrollToFirstError() {
     await nextTick()
 
     // Find first field with error
-    const errorFields = ['eventTitle', 'eventImage', 'description', 'category', 'subcategories', 'eventDate', 'address', 'dressCode', 'ageLimit', 'entranceStatus', 'contactPhone', 'contactEmail']
+    const errorFields = ['eventTitle', 'eventImage', 'description', 'category', 'subcategories', 'eventDate', 'address', 'dressCode', 'ageLimit', 'entranceStatus']
     const firstErrorField = errorFields.find(field =>
         errors.value[field] ||
         (field === 'category' && categoryError.value) ||
@@ -1308,12 +1566,6 @@ async function scrollToFirstError() {
             case 'entranceStatus':
                 element = document.querySelectorAll('select')[3]
                 break
-            case 'contactPhone':
-                element = document.querySelector('input[placeholder="Telephone Number"]')
-                break
-            case 'contactEmail':
-                element = document.querySelector('input[placeholder="Email"]')
-                break
         }
 
         if (element) {
@@ -1347,12 +1599,12 @@ function validateForm() {
     errors.value.category = !selectedCategory.value
     errors.value.subcategories = selectedSubcategories.value.length === 0
     errors.value.eventDate = !eventDate.value
+    hasEndDateError.value = !endDate.value
     errors.value.address = !selectedAddress.value
-    errors.value.dressCode = !dressCode.value || (dressCode.value === 'different' && !customDressCode.value?.trim())
-    errors.value.ageLimit = !ageLimit.value
-    errors.value.entranceStatus = !entranceStatus.value
-    errors.value.contactPhone = !contactPhone.value.trim()
-    errors.value.contactEmail = !contactEmail.value.trim()
+    errors.value.dressCode = !dressCode.value || (dressCode.value === 'required' && !customDressCode.value?.trim())
+    errors.value.ageLimit = !ageLimit.value || (ageLimit.value === 'restricted' && !customAgeLimit.value?.trim())
+    errors.value.entranceStatus = !entranceStatus.value || (entranceStatus.value === 'restricted' && !customEntranceFee.value?.trim())
+    // Contact details are optional for premium users
 
     // Set category/subcategory specific errors
     categoryError.value = !selectedCategory.value
@@ -1361,14 +1613,18 @@ function validateForm() {
     // ✅ Replace with:
     if (!startTime.value) hasStartError.value = true
     if (!endTime.value) hasEndError.value = true
-    validateEndAfterStart()
-    const timeValid = startTime.value !== "" && endTime.value !== "" && !timeRangeError.value
+    validateEndAfterStartDateTime()
+    const timeValid =
+        startTime.value !== "" &&
+        endTime.value !== "" &&
+        endDate.value !== "" &&
+        !datetimeRangeError.value
     const hasOtherErrors = Object.values(errors.value).some(error => error) ||
         categoryError.value ||
         subcategoryError.value ||
         pastDateError.value
 
-    return !hasOtherErrors && timeValid
+    return !hasOtherErrors && !hasEndDateError.value && timeValid
 }
 
 // Submit handler function
@@ -1415,16 +1671,22 @@ async function createEvent() {
         formData.append('event_type', 'premium')
         formData.append('category_id', categoryId)
         subcategoryIds.forEach(id => formData.append('subcategory_ids[]', id))
+        // Backwards-compatible fields (legacy)
         formData.append('event_date', eventDate.value)
         formData.append('start_time', startTime.value)
         formData.append('end_time', endTime.value)
+        // New datetime fields (preferred)
+        formData.append('end_date', endDate.value)
+        formData.append('start_datetime', buildLocalIso(eventDate.value, startTime.value))
+        formData.append('end_datetime', buildLocalIso(endDate.value, endTime.value))
         formData.append('address', selectedAddress.value)
         formData.append('latitude', latitude.value)
         formData.append('longitude', longitude.value)
-        formData.append('dress_code', dressCode.value === 'different' ? (customDressCode.value || '') : (dressCode.value || ''))
-        formData.append('age_limit', ageLimit.value === 'different' ? (customAgeLimit.value || '') : ageLimit.value)
+        // Overview fields (backwards-compatible keys)
+        formData.append('dress_code', dressCode.value === 'none' ? 'no_dress_code' : (customDressCode.value || ''))
+        formData.append('age_limit', ageLimit.value === 'none' ? 'no_age_limit' : (customAgeLimit.value || ''))
         // formData.append('entrance_fee', entranceFee.value)
-        formData.append('entrance_status', entranceStatus.value === 'different' ? (customEntranceFee.value || '') : entranceStatus.value)
+        formData.append('entrance_status', entranceStatus.value === 'open' ? 'open_to_all' : (customEntranceFee.value || ''))
         formData.append('contact_phone', contactPhone.value)
         formData.append('contact_email', contactEmail.value)
         formData.append('description', eventDescription.value)
@@ -1438,7 +1700,11 @@ async function createEvent() {
         if (tiktokUrl.value) formData.append('tiktok_url', tiktokUrl.value)
         if (ticketUrl.value) formData.append('ticket_url', ticketUrl.value)
         if (bookingInstructions.value) formData.append('booking_instructions', bookingInstructions.value)
-        if (eventOption.value) formData.append('event_option', eventOption.value)
+        // Backend boolean flags
+        formData.append('is_recurring', isRecurring.value ? '1' : '0')
+        formData.append('is_copy_event', isCopyEvent.value ? '1' : '0')
+        formData.append('show_upcoming_events', showUpcomingEvents.value ? '1' : '0')
+        formData.append('show_past_events', showPastEvents.value ? '1' : '0')
         if (conditionEntranceFee.value) formData.append('condition_entrance_fee', conditionEntranceFee.value)
         if (conditionDressCode.value) formData.append('condition_dress_code', conditionDressCode.value)
         if (conditionAgeLimit.value) formData.append('condition_age_limit', conditionAgeLimit.value)
@@ -1470,7 +1736,6 @@ async function createEvent() {
             // Handle API validation errors
             if (response.errors) {
                 fieldErrors.value = response.errors
-                applyTimeServerErrors(fieldErrors.value)
                 toast.error(response.message || 'Please correct the errors in the form.')
                 await scrollToFirstError()
             } else {
@@ -1484,7 +1749,6 @@ async function createEvent() {
         // Handle API validation errors from Laravel
         if (error.response?.data?.errors) {
             fieldErrors.value = error.response.data.errors
-            applyTimeServerErrors(fieldErrors.value)
             toast.error(error.response.data.message || 'Please correct the errors in the form.')
             await scrollToFirstError()
         } else if (error.response?.data?.message) {
@@ -1664,8 +1928,20 @@ onMounted(() => {
     flatpickr(dateInput.value, {
         dateFormat: "Y-m-d",
         minDate: "today",
+        allowInput: false,
         onChange: (selectedDates, dateStr) => {
             eventDate.value = dateStr
+        }
+    })
+
+    flatpickr(endDateInput.value, {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        allowInput: false,
+        onChange: (selectedDates, dateStr) => {
+            endDate.value = dateStr
+            hasEndDateError.value = false
+            validateEndAfterStartDateTime()
         }
     })
 })
@@ -1690,10 +1966,50 @@ async function loadEvent(id) {
         eventType.value = d.event_type ?? 'premium'
         eventDescription.value = d.description ?? ''
         eventDate.value = d.event_date ?? ''
+        endDate.value = d.end_date ?? d.event_date ?? ''
         selectedAddress.value = d.address ?? ''
         searchAddress.value = d.address ?? ''
 
-        if (d.start_time) {
+        // Overview hydration (backwards-compatible with whatever backend stored)
+        const dc = (d.dress_code ?? '').toString()
+        if (!dc || dc === 'no_dress_code') {
+            dressCode.value = 'none'
+            customDressCode.value = ''
+        } else {
+            dressCode.value = 'required'
+            customDressCode.value = dc
+        }
+
+        const al = (d.age_limit ?? '').toString()
+        if (!al || al === 'no_age_limit' || al === 'all_ages') {
+            ageLimit.value = 'none'
+            customAgeLimit.value = ''
+        } else {
+            ageLimit.value = 'restricted'
+            customAgeLimit.value = al
+        }
+
+        const es = (d.entrance_status ?? '').toString()
+        if (!es || es === 'open_to_all') {
+            entranceStatus.value = 'open'
+            customEntranceFee.value = ''
+        } else {
+            entranceStatus.value = 'restricted'
+            customEntranceFee.value = es
+        }
+
+        const startFrom = d.start_datetime ? String(d.start_datetime) : null
+        const endFrom = d.end_datetime ? String(d.end_datetime) : null
+
+        if (startFrom && startFrom.includes('T')) {
+            const [sd, st] = startFrom.split('T')
+            eventDate.value = sd ?? eventDate.value
+            const parts = (st ?? '').split(':')
+            const sh = parts[0] ?? ''
+            const sm = parts[1] ?? ''
+            startHH.value = String(sh).padStart(2, '0').slice(0, 2)
+            startMM.value = String(sm).padStart(2, '0').slice(0, 2)
+        } else if (d.start_time) {
             const parts = d.start_time.toString().split(':')
             const sh = parts[0] ?? ''
             const sm = parts[1] ?? ''
@@ -1703,7 +2019,16 @@ async function loadEvent(id) {
             startHH.value = ''
             startMM.value = ''
         }
-        if (d.end_time) {
+
+        if (endFrom && endFrom.includes('T')) {
+            const [ed, et] = endFrom.split('T')
+            endDate.value = ed ?? endDate.value
+            const parts = (et ?? '').split(':')
+            const eh = parts[0] ?? ''
+            const em = parts[1] ?? ''
+            endHH.value = String(eh).padStart(2, '0').slice(0, 2)
+            endMM.value = String(em).padStart(2, '0').slice(0, 2)
+        } else if (d.end_time) {
             const parts = d.end_time.toString().split(':')
             const eh = parts[0] ?? ''
             const em = parts[1] ?? ''
@@ -1713,6 +2038,9 @@ async function loadEvent(id) {
             endHH.value = ''
             endMM.value = ''
         }
+
+        if (!endDate.value && eventDate.value) endDate.value = eventDate.value
+        validateEndAfterStartDateTime()
 
         if (categories.value.length && d.category_id) {
             const cat = categories.value.find(c => c.id === d.category_id)
@@ -1728,6 +2056,16 @@ async function loadEvent(id) {
             selectedCategory.value = ''
             selectedSubcategories.value = []
         }
+
+        // Event options / visibility (with sensible defaults)
+        isRecurring.value = !!d.is_recurring
+        isCopyEvent.value = !!d.is_copy_event
+        showUpcomingEvents.value = d.show_upcoming_events !== undefined
+            ? !!d.show_upcoming_events
+            : true
+        showPastEvents.value = d.show_past_events !== undefined
+            ? !!d.show_past_events
+            : false
 
         if (d.image_url) {
             imagePreview.value = d.image_url
@@ -1756,6 +2094,7 @@ function resetForm() {
     eventTitle.value = ''
     eventDescription.value = ''
     eventDate.value = ''
+    endDate.value = ''
     startHH.value = ''
     startMM.value = ''
     endHH.value = ''
@@ -1778,7 +2117,8 @@ function resetForm() {
     errors.value.address = false
     hasStartError.value = false
     hasEndError.value = false
-    timeRangeError.value = ''
+    hasEndDateError.value = false
+    datetimeRangeError.value = ''
     categoryError.value = false
     subcategoryError.value = false
     subcategoryValidationError.value = false
@@ -1801,7 +2141,10 @@ function resetForm() {
     tiktokUrl.value = ''
     ticketUrl.value = ''
     bookingInstructions.value = ''
-    eventOption.value = ''
+    isRecurring.value = false
+    isCopyEvent.value = false
+    showUpcomingEvents.value = true
+    showPastEvents.value = false
     conditionEntranceFee.value = ''
     conditionDressCode.value = ''
     conditionAgeLimit.value = ''
@@ -1839,8 +2182,18 @@ async function updateEvent() {
             event_date: eventDate.value,
             start_time: startTime.value,
             end_time: endTime.value,
+            end_date: endDate.value,
+            start_datetime: buildLocalIso(eventDate.value, startTime.value),
+            end_datetime: buildLocalIso(endDate.value, endTime.value),
             address: selectedAddress.value,
-            description: eventDescription.value
+            dress_code: dressCode.value === 'none' ? 'no_dress_code' : (customDressCode.value || ''),
+            age_limit: ageLimit.value === 'none' ? 'no_age_limit' : (customAgeLimit.value || ''),
+            entrance_status: entranceStatus.value === 'open' ? 'open_to_all' : (customEntranceFee.value || ''),
+            description: eventDescription.value,
+            is_recurring: isRecurring.value,
+            is_copy_event: isCopyEvent.value,
+            show_upcoming_events: showUpcomingEvents.value,
+            show_past_events: showPastEvents.value
         }
 
         const response = await eventService.updateEventById(editingEventId.value, payload)

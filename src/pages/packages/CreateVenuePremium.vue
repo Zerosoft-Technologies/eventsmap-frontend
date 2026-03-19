@@ -186,10 +186,10 @@
 
                         <!-- Dropdown Box -->
                         <div v-if="showDescriptionDropdown"
-                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
+                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50 tw:max-h-80 tw:overflow-hidden">
 
                             <!-- Inner white container -->
-                            <div class="tw:bg-white tw:rounded-lg tw:p-4">
+                            <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:flex tw:flex-col tw:max-h-80">
 
                                 <!-- Close Button -->
                                 <div class="tw:flex tw:justify-end tw:mb-3">
@@ -199,7 +199,7 @@
                                     </button>
                                 </div>
 
-                                <div class="tw:space-y-2">
+                                <div class="tw:space-y-2 tw:overflow-y-auto tw:pr-1 tw:flex-1">
                                     <label v-for="item in descriptionItems" :key="item"
                                         class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
                                         <span class="tw:text-gray-700">{{ item }}</span>
@@ -284,38 +284,11 @@
                             Accessibility
                         </h3>
                     </div>
-                    <!-- Dropdown -->
-                    <div class="tw:relative" ref="accessibilityDropdownRef">
-
-                        <!-- Trigger -->
-                        <div @click="toggleAccessibilityDropdown"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
-
-                            <span class="tw:text-gray-700">
-                                {{ selectedAccessibilityItems?.length ? selectedAccessibilityItems.join(', ') : 'Select Accessibility Items' }}
-                            </span>
-
-                            <ChevronDown class="tw:w-5 tw:h-5 tw:text-gray-400" />
-                        </div>
-
-                        <!-- Dropdown Box -->
-                        <div v-if="showAccessibilityDropdown"
-                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50">
-
-                            <!-- Inner white container -->
-                            <div class="tw:bg-white tw:rounded-lg tw:space-y-4 tw:p-4">
-
-                                <label v-for="item in accessibilityItems" :key="item"
-                                    class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
-
-                                    <span class="tw:text-gray-700">{{ item }}</span>
-
-                                    <input type="checkbox" :value="item" v-model="selectedAccessibilityItems"
-                                        class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
-                                </label>
-
-                            </div>
-                        </div>
+                    <div class="tw:space-y-2">
+                        <label class="tw:block tw:text-sm tw:text-gray-700">Accessibility description</label>
+                        <textarea v-model="accessibilityDescription" rows="4"
+                            placeholder="Describe accessibility details (directions, parking, public transport, taxis, wheelchair access, etc.)"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
                 </div>
 
@@ -487,7 +460,7 @@
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
                                         'Select') }}
                                     </option>
-                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
+                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() == 'venue')" :key="category.id" :value="category.name">
                                         {{ category.name }}
                                     </option>
                                 </select>
@@ -599,16 +572,16 @@
                 </div> -->
 
                 <!-- Venue DATE & TIME SECTION -->
-                <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
+                <!-- <div class="tw:bg-white tw:rounded-xl tw:border tw:border-gray-200 tw:p-6">
 
                     <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
                         Venue Date & Time
                     </h3>
 
-                    <!-- Horizontal Layout -->
+                    
                     <div class="tw:flex tw:gap-6">
 
-                        <!-- Venue DATE -->
+                        
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                                 Venue Date
@@ -618,16 +591,16 @@
                                 <input ref="dateInput" placeholder="MM/DD/YYYY"
                                     class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500" />
 
-                                <!-- Custom Calendar Icon -->
+                                
                                 <Calendar
                                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                             </div>
                         </div>
 
-                        <!-- START & END TIME -->
+                        
                         <div class="tw:flex tw:gap-4" style="flex: 1;">
 
-                            <!-- START TIME -->
+                            
                             <div class="tw:flex-1">
                                 <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                                     Start Time <span class="tw:text-red-500">*</span>
@@ -647,7 +620,7 @@
                                     required</p>
                             </div>
 
-                            <!-- END TIME -->
+                            
                             <div class="tw:flex-1">
                                 <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-2">
                                     End Time <span class="tw:text-red-500">*</span>
@@ -672,7 +645,7 @@
                         </div>
 
                     </div>
-                </div>
+                </div> -->
 
                 <!-- CONTACT DETAILS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
@@ -683,6 +656,17 @@
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
                     <input v-model="contactWebsite" type="text" placeholder="Website"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                </div>
+
+                <!-- OPENING HOURS VENUE SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Opening Hours Venue</h3>
+                    <div class="tw:space-y-2">
+                        <label class="tw:text-sm tw:text-gray-700">Opening hours</label>
+                        <textarea v-model="openingHoursText" rows="4"
+                            placeholder="e.g. Mon–Thu 10:00–22:00, Fri–Sat 10:00–02:00, Sun 10:00–20:00"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                    </div>
                 </div>
 
                 <!-- CONTACT BOX DESIGN SECTION -->
@@ -707,16 +691,16 @@
                 </div>
 
                 <!-- BOOKING & TICKET INFO SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Booking & Ticket Info</h3>
                     <input v-model="ticketUrl" type="text" placeholder="Ticket / Booking URL"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
                     <textarea v-model="bookingInstructions" rows="4" placeholder="Booking Instructions"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
-                </div>
+                </div> -->
 
                 <!-- INVITE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Invite</h3>
                     </div>
@@ -724,14 +708,14 @@
                         Make your event stand out even more. These sections help attendees find information and answer their questions.
                     </p>
                     <div class="tw:space-y-1">
-                        <!-- <InviteSection role="talent" :has-border="true" />
-                        <InviteSection role="organiser" :has-border="false" /> -->
+                        <InviteSection role="talent" :has-border="true" />
+                        <InviteSection role="organiser" :has-border="false" />
                         <InviteSection role="venue" :has-border="false" />
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Venue OPTIONS SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Venue Options</h3>
                     <div class="tw:flex tw:gap-6 tw:items-center">
                         <label class="tw:flex tw:items-center tw:gap-2 tw:cursor-pointer">
@@ -745,16 +729,87 @@
                             <span class="tw:text-sm tw:text-gray-700">Recurring Venue</span>
                         </label>
                     </div>
+                </div> -->
+
+                                <!-- EVENT VISIBILITY SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-6">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        Event Visibility
+                    </h3>
+
+                    <!-- Show Upcoming Events -->
+                    <div class="tw:flex tw:flex-col tw:gap-2">
+                        <p class="tw:text-sm tw:font-medium tw:text-gray-900">
+                            Show Upcoming Events (max 1 year)
+                        </p>
+                        <!-- <p class="tw:text-xs tw:text-gray-500">
+                            If YES, upcoming events within the next year will be visible.
+                        </p> -->
+                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-upcoming-events"
+                                    :checked="showUpcomingEvents"
+                                    @change="showUpcomingEvents = true"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-upcoming-events"
+                                    :checked="!showUpcomingEvents"
+                                    @change="showUpcomingEvents = false"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Show Past Events -->
+                    <div class="tw:flex tw:flex-col tw:gap-2">
+                        <p class="tw:text-sm tw:font-medium tw:text-gray-900">
+                            Show Past Events (max 1 year)
+                        </p>
+                        <!-- <p class="tw:text-xs tw:text-gray-500">
+                            If YES, past events within the last year will be visible.
+                        </p> -->
+                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-past-events"
+                                    :checked="showPastEvents"
+                                    @change="showPastEvents = true"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-past-events"
+                                    :checked="!showPastEvents"
+                                    @change="showPastEvents = false"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-700">No</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- SAVE Venue BUTTON -->
                 <div class="tw:w-full tw:pt-4">
-                    <div class="tw:flex tw:w-full tw:items-center tw:justify-between">
-                        <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                    <div class="tw:flex tw:w-full tw:items-center tw:justify-end">
+                        <!-- <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                            tw:border tw:border-orange-500 tw:text-[#0061FF]
                            tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
                             Buy Tickets
-                        </button>
+                        </button> -->
                         <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                            tw:border tw:border-blue-500 tw:text-blue-600
                            tw:bg-white hover:tw:bg-blue-50 tw:transition-all
@@ -762,9 +817,7 @@
                             {{ isSubmitting ? 'Saving...' : 'Save Venue' }}
                         </button>
                     </div>
-                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon you can show this button in
-                        your event description or event info window when appropriate. This is still under
-                        consideration.</span>
+                    <!-- <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span> -->
                 </div>
 
             </div>
@@ -844,6 +897,9 @@ const childrensPlayArea = ref("")
 const facebookUrl = ref("")
 const instagramUrl = ref("")
 const tiktokUrl = ref("")
+
+const showUpcomingEvents = ref("")
+const showPastEvents = ref("")
 
 const notifications = ref({
     receiveEmail: false,
@@ -1056,7 +1112,7 @@ const openingHoursText = ref('')
 // Event Date and Time
 // const eventDate = ref("")
 const eventTime = ref("")
-const dateInput = ref(null)
+// const dateInput = ref(null)
 const timeInput = ref(null)
 
 // Event Location refs
@@ -1093,10 +1149,18 @@ const showDescriptionDropdown = ref(false)
 const descriptionDropdownRef = ref(null)
 
 const descriptionItems = [
-    "Hall / theatre / stage / public place / boat / beach house",
+    "Hall",
+    "theatre",
+    "stage",
+    "public place",
+    "boat",
+    "beach house",
     "Elevator",
     "Cloakrooms (paid / non paid)",
-    "Bar / foyer / restaurant / food-truck",
+    "Bar",
+    "foyer",
+    "restaurant",
+    "food-truck",
     "Vending machines",
     "Ticket collection point(s) where to find",
     "Ticket sales on site",
@@ -1111,26 +1175,11 @@ const descriptionItems = [
 
 const selectedDescriptionItems = ref([])
 
-// Accessibility dropdown
-const showAccessibilityDropdown = ref(false)
-const accessibilityDropdownRef = ref(null)
-
-const accessibilityItems = [
-    "Directions to venue",
-    "Parking facilities",
-    "Public transport to the venue",
-    "Taxis nearby"
-]
-
-const selectedAccessibilityItems = ref([])
+const accessibilityDescription = ref("")
 
 // Toggle functions
 function toggleDescriptionDropdown() {
     showDescriptionDropdown.value = !showDescriptionDropdown.value
-}
-
-function toggleAccessibilityDropdown() {
-    showAccessibilityDropdown.value = !showAccessibilityDropdown.value
 }
 
 function toggleDropdown() {
@@ -1342,13 +1391,13 @@ onMounted(() => {
     })
 
     /* ------------------ DATE PICKER ------------------ */
-    flatpickr(dateInput.value, {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        onChange: (selectedDates, dateStr) => {
-            eventDate.value = dateStr
-        }
-    })
+    // flatpickr(dateInput.value, {
+    //     dateFormat: "Y-m-d",
+    //     minDate: "today",
+    //     onChange: (selectedDates, dateStr) => {
+    //         eventDate.value = dateStr
+    //     }
+    // })
 
     // /* ------------------ START TIME PICKER ------------------ */
     // flatpickr(startTimeInput.value, {
