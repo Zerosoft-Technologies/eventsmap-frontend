@@ -571,7 +571,7 @@
 
           <div class="tw:space-y-3">
             <InviteSection role="talent" :has-border="true" />
-            <InviteSection role="organiser" :has-border="true" />
+            <InviteSection role="organizer" :has-border="true" />
             <InviteSection role="venue" :has-border="false" />
           </div>
         </div>

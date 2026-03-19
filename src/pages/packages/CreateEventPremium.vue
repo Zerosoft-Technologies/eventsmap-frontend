@@ -385,7 +385,7 @@
                                         inputmode="numeric"
                                         :class="[
                                             'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                                            (errors.eventDate || startDateFormatError || fieldErrors.event_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                            (errors.eventDate || startDateFormatError || fieldErrors.start_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
                                         ]"
                                         @input="clearFieldError('eventDate'); startDateFormatError = ''"
                                     />
@@ -393,7 +393,7 @@
                                 </div>
                                 <p v-if="errors.eventDate" class="tw:text-red-500 tw:text-sm">Start date is required</p>
                                 <p v-else-if="startDateFormatError" class="tw:text-red-500 tw:text-sm">{{ startDateFormatError }}</p>
-                                <p v-else-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm">{{ fieldErrors.event_date[0] }}</p>
+                                <p v-else-if="fieldErrors.start_date" class="tw:text-red-500 tw:text-sm">{{ fieldErrors.start_date[0] }}</p>
                                 <p v-if="pastDateError" class="tw:text-red-500 tw:text-sm">Cannot select a past date</p>
                             </div>
 
@@ -1672,7 +1672,7 @@ async function createEvent() {
         formData.append('category_id', categoryId)
         subcategoryIds.forEach(id => formData.append('subcategory_ids[]', id))
         // Backwards-compatible fields (legacy)
-        formData.append('event_date', eventDate.value)
+        formData.append('start_date', eventDate.value)
         formData.append('start_time', startTime.value)
         formData.append('end_time', endTime.value)
         // New datetime fields (preferred)
@@ -1965,8 +1965,8 @@ async function loadEvent(id) {
         eventTitle.value = d.title ?? ''
         eventType.value = d.event_type ?? 'premium'
         eventDescription.value = d.description ?? ''
-        eventDate.value = d.event_date ?? ''
-        endDate.value = d.end_date ?? d.event_date ?? ''
+        eventDate.value = d.start_date ?? ''
+        endDate.value = d.end_date ?? d.start_date ?? ''
         selectedAddress.value = d.address ?? ''
         searchAddress.value = d.address ?? ''
 
@@ -2179,7 +2179,7 @@ async function updateEvent() {
             event_type: eventType.value,
             category_id: categoryId,
             subcategory_ids: subcategoryIds,
-            event_date: eventDate.value,
+            start_date: eventDate.value,
             start_time: startTime.value,
             end_time: endTime.value,
             end_date: endDate.value,
