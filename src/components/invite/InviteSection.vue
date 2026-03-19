@@ -86,6 +86,10 @@ const props = defineProps({
     type: Array,
     default: undefined,
   },
+  selectedIds: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const ROLE_CONFIG = {
@@ -107,15 +111,37 @@ watch(selectedIds, (ids) => {
   emit('update:selectedIds', [...ids])
 }, { immediate: true })
 
+function normalizeInviteRole(role) {
+  const r = String(role ?? '').toLowerCase().trim()
+  if (r === 'organiser') return 'organizer'
+  return r
+}
+
 const roleProfiles = computed(() => {
   const source = props.profiles ?? mockProfiles
-  return source.filter((p) => p.profile_type === props.role)
+  const targetRole = normalizeInviteRole(props.role)
+  return source.filter((p) => normalizeInviteRole(p.profile_type) === targetRole)
 })
 
 const recommendedProfiles = computed(() =>
   roleProfiles.value
     .filter((p) => p.account_type === 'premium')
     .slice(0, 4)
+)
+
+// Hydrate selected chips from parent v-model (edit mode) and keep in sync
+watch(
+  [() => props.selectedIds, roleProfiles],
+  ([incomingIds, availableProfiles]) => {
+    const wanted = Array.isArray(incomingIds) ? incomingIds.map((id) => String(id)) : []
+    if (!wanted.length) {
+      selectedUsers.value = []
+      return
+    }
+
+    selectedUsers.value = availableProfiles.filter((p) => wanted.includes(String(p.id)))
+  },
+  { immediate: true, deep: true }
 )
 
 function togglePanel() {

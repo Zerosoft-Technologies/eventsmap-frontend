@@ -385,7 +385,7 @@
                                         inputmode="numeric"
                                         :class="[
                                             'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                                            (errors.eventDate || startDateFormatError || fieldErrors.event_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                            (errors.eventDate || startDateFormatError || fieldErrors.start_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
                                         ]"
                                         @input="clearFieldError('eventDate'); startDateFormatError = ''"
                                     />
@@ -393,7 +393,7 @@
                                 </div>
                                 <p v-if="errors.eventDate" class="tw:text-red-500 tw:text-sm">Start date is required</p>
                                 <p v-else-if="startDateFormatError" class="tw:text-red-500 tw:text-sm">{{ startDateFormatError }}</p>
-                                <p v-else-if="fieldErrors.event_date" class="tw:text-red-500 tw:text-sm">{{ fieldErrors.event_date[0] }}</p>
+                                <p v-else-if="fieldErrors.start_date" class="tw:text-red-500 tw:text-sm">{{ fieldErrors.start_date[0] }}</p>
                                 <p v-if="pastDateError" class="tw:text-red-500 tw:text-sm">Cannot select a past date</p>
                             </div>
 
@@ -802,11 +802,11 @@
                     </p>
 
                     <div class="tw:space-y-3">
-                        <InviteSection role="talent" :profiles="talentUsers" :has-border="true"
+                        <InviteSection :key="`invite-talent-${inviteSectionResetKey}`" role="talent" :profiles="talentUsers" :has-border="true"
                             v-model:selectedIds="invitedTalentIds" />
-                        <InviteSection role="organizer" :profiles="organiserUsers" :has-border="true"
+                        <InviteSection :key="`invite-organizer-${inviteSectionResetKey}`" role="organizer" :profiles="organiserUsers" :has-border="true"
                             v-model:selectedIds="invitedOrganiserIds" />
-                        <InviteSection role="venue" :profiles="venueUsers" :has-border="false"
+                        <InviteSection :key="`invite-venue-${inviteSectionResetKey}`" role="venue" :profiles="venueUsers" :has-border="false"
                             v-model:selectedIds="invitedVenueIds" />
                     </div>
                 </div>
@@ -817,9 +817,9 @@
                         Event Options
                     </h3>
 
-                    <div class="tw:flex tw:flex-col tw:gap-3">
+                    <div class="tw:flex tw:gap-3">
                         <!-- Recurring Event - create mode only -->
-                        <label v-if="!isEditMode" class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                        <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
                             <input
                                 type="checkbox"
                                 v-model="isRecurring"
@@ -859,7 +859,7 @@
                                 <input
                                     type="radio"
                                     name="show-upcoming-events"
-                                    :checked="showUpcomingEvents"
+                                    :checked="showUpcomingEvents === true"
                                     @change="showUpcomingEvents = true"
                                     class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
                                 />
@@ -869,7 +869,7 @@
                                 <input
                                     type="radio"
                                     name="show-upcoming-events"
-                                    :checked="!showUpcomingEvents"
+                                    :checked="showUpcomingEvents === false"
                                     @change="showUpcomingEvents = false"
                                     class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
                                 />
@@ -891,7 +891,7 @@
                                 <input
                                     type="radio"
                                     name="show-past-events"
-                                    :checked="showPastEvents"
+                                    :checked="showPastEvents === true"
                                     @change="showPastEvents = true"
                                     class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
                                 />
@@ -901,7 +901,7 @@
                                 <input
                                     type="radio"
                                     name="show-past-events"
-                                    :checked="!showPastEvents"
+                                    :checked="showPastEvents === false"
                                     @change="showPastEvents = false"
                                     class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
                                 />
@@ -1107,11 +1107,12 @@ const ticketUrl = ref('');
 // Event options
 const isRecurring = ref(false)
 const isCopyEvent = ref(false)
-const showUpcomingEvents = ref("")
-const showPastEvents = ref("")
+const showUpcomingEvents = ref(null)
+const showPastEvents = ref(null)
 const showChatbox = ref(false)
 const contactBoxMessage = ref('')
 const venueDetailsText = ref('')
+const inviteSectionResetKey = ref(0)
 
 const notifications = ref({
     receiveEmail: false,
@@ -1300,14 +1301,20 @@ const availableSubcategories = computed(() => {
     return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
 })
 
+function normalizeInviteRole(role) {
+    const r = String(role ?? '').toLowerCase().trim()
+    if (r === 'organiser') return 'organizer'
+    return r
+}
+
 const talentUsers = computed(() =>
-    allUsers.value.filter((u) => u.profile_type?.toLowerCase() === 'talent')
+    allUsers.value.filter((u) => normalizeInviteRole(u.profile_type) === 'talent')
 )
 const organiserUsers = computed(() =>
-    allUsers.value.filter((u) => u.profile_type?.toLowerCase() === 'organizer')
+    allUsers.value.filter((u) => normalizeInviteRole(u.profile_type) === 'organizer')
 )
 const venueUsers = computed(() =>
-    allUsers.value.filter((u) => u.profile_type?.toLowerCase() === 'venue')
+    allUsers.value.filter((u) => normalizeInviteRole(u.profile_type) === 'venue')
 )
 
 // Invite section selected IDs (optional - passed to API when user selects)
@@ -1672,7 +1679,7 @@ async function createEvent() {
         formData.append('category_id', categoryId)
         subcategoryIds.forEach(id => formData.append('subcategory_ids[]', id))
         // Backwards-compatible fields (legacy)
-        formData.append('event_date', eventDate.value)
+        formData.append('start_date', eventDate.value)
         formData.append('start_time', startTime.value)
         formData.append('end_time', endTime.value)
         // New datetime fields (preferred)
@@ -1703,8 +1710,8 @@ async function createEvent() {
         // Backend boolean flags
         formData.append('is_recurring', isRecurring.value ? '1' : '0')
         formData.append('is_copy_event', isCopyEvent.value ? '1' : '0')
-        formData.append('show_upcoming_events', showUpcomingEvents.value ? '1' : '0')
-        formData.append('show_past_events', showPastEvents.value ? '1' : '0')
+        formData.append('show_upcoming_events', showUpcomingEvents.value === null ? '' : (showUpcomingEvents.value ? '1' : '0'))
+        formData.append('show_past_events', showPastEvents.value === null ? '' : (showPastEvents.value ? '1' : '0'))
         if (conditionEntranceFee.value) formData.append('condition_entrance_fee', conditionEntranceFee.value)
         if (conditionDressCode.value) formData.append('condition_dress_code', conditionDressCode.value)
         if (conditionAgeLimit.value) formData.append('condition_age_limit', conditionAgeLimit.value)
@@ -1965,10 +1972,23 @@ async function loadEvent(id) {
         eventTitle.value = d.title ?? ''
         eventType.value = d.event_type ?? 'premium'
         eventDescription.value = d.description ?? ''
-        eventDate.value = d.event_date ?? ''
-        endDate.value = d.end_date ?? d.event_date ?? ''
+        eventDate.value = d.start_date ?? ''
+        endDate.value = d.end_date ?? d.start_date ?? ''
         selectedAddress.value = d.address ?? ''
         searchAddress.value = d.address ?? ''
+        latitude.value = d.latitude ?? null
+        longitude.value = d.longitude ?? null
+
+        // Contact + links
+        contactPhone.value = d.contact_phone ?? ''
+        contactEmail.value = d.contact_email ?? ''
+        contactWebsite.value = d.contact_website ?? ''
+        contactBoxMessage.value = d.contact_box_message ?? ''
+        facebookUrl.value = d.facebook_url ?? ''
+        instagramUrl.value = d.instagram_url ?? ''
+        tiktokUrl.value = d.tiktok_url ?? ''
+        ticketUrl.value = d.ticket_url ?? ''
+        bookingInstructions.value = d.booking_instructions ?? ''
 
         // Overview hydration (backwards-compatible with whatever backend stored)
         const dc = (d.dress_code ?? '').toString()
@@ -2043,11 +2063,11 @@ async function loadEvent(id) {
         validateEndAfterStartDateTime()
 
         if (categories.value.length && d.category_id) {
-            const cat = categories.value.find(c => c.id === d.category_id)
+            const cat = categories.value.find(c => String(c.id) === String(d.category_id))
             selectedCategory.value = cat ? cat.name : ''
             if (cat && Array.isArray(d.subcategory_ids)) {
                 selectedSubcategories.value = d.subcategory_ids
-                    .map(sid => cat.subcategories.find(s => s.id === sid)?.name)
+                    .map(sid => cat.subcategories.find(s => String(s.id) === String(sid))?.name)
                     .filter(Boolean)
             } else {
                 selectedSubcategories.value = []
@@ -2066,6 +2086,12 @@ async function loadEvent(id) {
         showPastEvents.value = d.show_past_events !== undefined
             ? !!d.show_past_events
             : false
+
+        // Invite selections
+        invitedTalentIds.value = Array.isArray(d.invited_talents) ? d.invited_talents.map(id => String(id)) : []
+        invitedOrganiserIds.value = Array.isArray(d.invited_organisers) ? d.invited_organisers.map(id => String(id)) : []
+        invitedVenueIds.value = Array.isArray(d.invited_venues) ? d.invited_venues.map(id => String(id)) : []
+        inviteSectionResetKey.value += 1
 
         if (d.image_url) {
             imagePreview.value = d.image_url
@@ -2143,14 +2169,15 @@ function resetForm() {
     bookingInstructions.value = ''
     isRecurring.value = false
     isCopyEvent.value = false
-    showUpcomingEvents.value = true
-    showPastEvents.value = false
+    showUpcomingEvents.value = null
+    showPastEvents.value = null
     conditionEntranceFee.value = ''
     conditionDressCode.value = ''
     conditionAgeLimit.value = ''
     invitedTalentIds.value = []
     invitedOrganiserIds.value = []
     invitedVenueIds.value = []
+    inviteSectionResetKey.value += 1
     additionalImages.value = []
     const fileInput = document.querySelector('input[type="file"]')
     if (fileInput) fileInput.value = ''
@@ -2179,7 +2206,7 @@ async function updateEvent() {
             event_type: eventType.value,
             category_id: categoryId,
             subcategory_ids: subcategoryIds,
-            event_date: eventDate.value,
+            start_date: eventDate.value,
             start_time: startTime.value,
             end_time: endTime.value,
             end_date: endDate.value,
