@@ -387,7 +387,7 @@
                                             'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
                                             (errors.eventDate || startDateFormatError || fieldErrors.start_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
                                         ]"
-                                        @input="clearFieldError('eventDate'); startDateFormatError = ''"
+                                        @input="clearFieldError('eventDate'); startDateFormatError = ''; handleStartDateChange(eventDate)"
                                     />
                                     <Calendar class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                                 </div>
@@ -448,7 +448,7 @@
                                             'tw:w-full tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
                                             (hasEndDateError || endDateFormatError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'
                                         ]"
-                                        @input="hasEndDateError = false; datetimeRangeError = ''; endDateFormatError = ''"
+                                        @input="hasEndDateError = false; datetimeRangeError = ''; endDateFormatError = ''; handleEndDateChange(endDate)"
                                     />
                                     <Calendar class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                                 </div>
@@ -1237,6 +1237,29 @@ function applyOvernightSuggestion() {
     validateEndAfterStartDateTime()
 }
 
+function clearStartTimeSelection() {
+    startHH.value = ""
+    startMM.value = ""
+    hasStartError.value = false
+}
+
+function clearEndTimeSelection() {
+    endHH.value = ""
+    endMM.value = ""
+    hasEndError.value = false
+}
+
+function handleStartDateChange() {
+    clearStartTimeSelection()
+    clearEndTimeSelection()
+    datetimeRangeError.value = ""
+}
+
+function handleEndDateChange() {
+    clearEndTimeSelection()
+    datetimeRangeError.value = ""
+}
+
 // Enforce max 2 digits + valid range, then validate end > start (full datetime)
 function onTimeInput(field, event) {
     // Strip non-digits and limit to 2 characters
@@ -1938,6 +1961,7 @@ onMounted(() => {
         allowInput: false,
         onChange: (selectedDates, dateStr) => {
             eventDate.value = dateStr
+            handleStartDateChange(dateStr)
         }
     })
 
@@ -1948,6 +1972,7 @@ onMounted(() => {
         onChange: (selectedDates, dateStr) => {
             endDate.value = dateStr
             hasEndDateError.value = false
+            handleEndDateChange(dateStr)
             validateEndAfterStartDateTime()
         }
     })

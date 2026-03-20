@@ -107,7 +107,23 @@ const roleIcon  = computed(() => ROLE_CONFIG[props.role]?.icon  ?? User)
 
 const selectedIds = computed(() => selectedUsers.value.map((u) => u.id))
 
+function normalizeIds(ids) {
+  return (Array.isArray(ids) ? ids : []).map((id) => String(id)).sort()
+}
+
+function areSameIdSets(a, b) {
+  const aa = normalizeIds(a)
+  const bb = normalizeIds(b)
+  if (aa.length !== bb.length) return false
+  for (let i = 0; i < aa.length; i += 1) {
+    if (aa[i] !== bb[i]) return false
+  }
+  return true
+}
+
 watch(selectedIds, (ids) => {
+  // Prevent parent-child update ping-pong when ids are already in sync.
+  if (areSameIdSets(ids, props.selectedIds)) return
   emit('update:selectedIds', [...ids])
 }, { immediate: true })
 
@@ -135,13 +151,16 @@ watch(
   ([incomingIds, availableProfiles]) => {
     const wanted = Array.isArray(incomingIds) ? incomingIds.map((id) => String(id)) : []
     if (!wanted.length) {
+      if (!selectedUsers.value.length) return
       selectedUsers.value = []
       return
     }
 
-    selectedUsers.value = availableProfiles.filter((p) => wanted.includes(String(p.id)))
+    const nextSelectedUsers = availableProfiles.filter((p) => wanted.includes(String(p.id)))
+    if (areSameIdSets(nextSelectedUsers.map((u) => u.id), selectedUsers.value.map((u) => u.id))) return
+    selectedUsers.value = nextSelectedUsers
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 )
 
 function togglePanel() {
