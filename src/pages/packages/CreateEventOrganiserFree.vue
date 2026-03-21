@@ -77,7 +77,7 @@
         <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-              Company Name
+              Name Event Organiser
             </h3>
             <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -262,8 +262,52 @@
           </div>
         </div>
 
+        <!-- EVENT LOCATION SECTION -->
+        <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
+          <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
+            Event Location <span class="tw:text-red-500">*</span>
+          </h3>
+
+          <!-- Address Search Input with Loading Spinner -->
+          <div class="tw:relative tw:mb-4">
+            <input v-model="searchAddress" @input="onSearchInput" type="text" placeholder="Search Address..."
+              class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+
+            <!-- Loading Spinner -->
+            <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
+              <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="tw:opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="tw:opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+
+            <!-- Suggestions Dropdown -->
+            <div v-if="suggestions.length > 0"
+              class="tw:absolute tw:top-full tw:left-0 tw:right-0 tw:mt-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:z-10 tw:max-h-60 tw:overflow-y-auto">
+              <button v-for="(suggestion, index) in suggestions" :key="index" @click="selectSuggestion(suggestion)"
+                class="tw:w-full tw:px-4 tw:py-3 tw:text-left tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors tw:border-b tw:border-gray-100 last:tw:border-b-0">
+                {{ suggestion.display_name }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Map Container -->
+          <div id="event-map" class="tw:w-full tw:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4"></div>
+
+          <!-- Selected Address -->
+          <div class="tw:space-y-2">
+            <label class="tw:block tw:text-sm tw:text-gray-600">
+              Selected Address
+            </label>
+            <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
+              class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+          </div>
+        </div>
+
         <!-- INVITE SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Invite</h3>
           </div>
@@ -272,11 +316,11 @@
             questions.
           </p>
           <div class="tw:space-y-3">
-            <!-- <InviteSection role="talent" :has-border="true" />
-            <InviteSection role="venue"     :has-border="false" /> -->
+            <InviteSection role="talent" :has-border="true" />
+            <InviteSection role="venue"     :has-border="false" />
             <InviteSection role="organizer" :has-border="false" />
           </div>
-        </div>
+        </div> -->
 
         <!-- SAVE Organiser BUTTON -->
         <div class="tw:w-full tw:pt-4">
@@ -323,6 +367,8 @@ import InviteSection from "@/components/invite/InviteSection.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import maplibregl from "maplibre-gl"
+import "maplibre-gl/dist/maplibre-gl.css"
 
 const router = useRouter()
 const route = useRoute()
@@ -434,6 +480,104 @@ function validateGenre() {
   return selectedCategory.value && selectedSubcategories.value.length > 0
 }
 
+// Event Location refs (same behavior as CreateEventFree)
+const searchAddress = ref("")
+const selectedAddress = ref("")
+const map = ref(null)
+const marker = ref(null)
+const suggestions = ref([])
+const isLoading = ref(false)
+const debounceTimer = ref(null)
+
+const latitude = ref(null)
+const longitude = ref(null)
+
+function debounce(func, delay) {
+  return function (...args) {
+    clearTimeout(debounceTimer.value)
+    debounceTimer.value = setTimeout(() => func.apply(this, args), delay)
+  }
+}
+
+const onSearchInput = debounce(async () => {
+  if (!searchAddress.value.trim()) {
+    suggestions.value = []
+    return
+  }
+
+  isLoading.value = true
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress.value)}&limit=5&addressdetails=1`,
+      { headers: { "User-Agent": "EventMap App" } }
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      suggestions.value = data
+    } else {
+      suggestions.value = []
+    }
+  } catch (error) {
+    console.error("Error fetching suggestions:", error)
+    suggestions.value = []
+  } finally {
+    isLoading.value = false
+  }
+}, 400)
+
+function selectSuggestion(suggestion) {
+  const { lat, lon, display_name } = suggestion
+  searchAddress.value = display_name
+  suggestions.value = []
+  selectedAddress.value = display_name
+
+  latitude.value = parseFloat(lat)
+  longitude.value = parseFloat(lon)
+
+  if (map.value) {
+    map.value.flyTo({ center: [lon, lat], zoom: 15, essential: true })
+    updateMarker(lon, lat)
+  }
+}
+
+function updateMarker(lng, lat) {
+  if (marker.value) marker.value.remove()
+
+  const el = document.createElement("div")
+  el.style.width = "60px"
+  el.style.height = "60px"
+  el.style.cursor = "pointer"
+  el.style.backgroundImage = "url(/marker.png)"
+  el.style.backgroundSize = "contain"
+  el.style.backgroundRepeat = "no-repeat"
+  el.style.backgroundPosition = "center"
+
+  marker.value = new maplibregl.Marker({ element: el })
+    .setLngLat([lng, lat])
+    .addTo(map.value)
+}
+
+async function reverseGeocode(lng, lat) {
+  isLoading.value = true
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
+      { headers: { "User-Agent": "EventMap App" } }
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      selectedAddress.value = data.display_name || "Address not found"
+    }
+  } catch (error) {
+    console.error("Error reverse geocoding:", error)
+    selectedAddress.value = "Error fetching address"
+  } finally {
+    isLoading.value = false
+  }
+}
+
 const selectedOrganiser = ref("")
 const selectedTalent = ref("")
 const eventDate = ref("05.03.2026, 18:30 CET")
@@ -505,8 +649,25 @@ async function handleSubmit() {
 
 onMounted(() => {
   fetchCategories()
+
+  // Initialize map
+  map.value = new maplibregl.Map({
+    container: "event-map",
+    style: "https://api.maptiler.com/maps/streets-v2/style.json?key=4Rm2OIdojZoTFcWWjJPY",
+    center: [4.895168, 52.370216],
+    zoom: 12
+  })
+
+  map.value.on("click", async (e) => {
+    const { lng, lat } = e.lngLat
+    latitude.value = lat
+    longitude.value = lng
+    updateMarker(lng, lat)
+    await reverseGeocode(lng, lat)
+  })
 })
 
 onBeforeUnmount(() => {
+  if (map.value) map.value.remove()
 })
 </script>

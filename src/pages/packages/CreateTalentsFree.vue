@@ -166,7 +166,7 @@
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
                     'Select') }}
                   </option>
-                  <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
+                  <option v-for="category in categories.filter(c => c.name.toLowerCase() == 'talent')" :key="category.id" :value="category.name">
                     {{ category.name }}
                   </option>
                 </select>
@@ -384,7 +384,7 @@
         </div>
 
         <!-- OVERVIEW SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Overview
@@ -392,7 +392,7 @@
           </div>
 
           <div class="tw:grid tw:grid-cols-3 tw:gap-4">
-            <!-- Dress Code -->
+            
             <div class="tw:space-y-2">
               <label class="tw:text-sm tw:font-medium tw:text-gray-700">Dress Code</label>
               <div class="tw:relative">
@@ -406,7 +406,7 @@
               </div>
             </div>
 
-            <!-- Age Limit -->
+            
             <div class="tw:space-y-2">
               <label class="tw:text-sm tw:font-medium tw:text-gray-700">Age Limit</label>
               <div class="tw:relative">
@@ -427,7 +427,7 @@
               </div>
             </div>
 
-            <!-- Entrance Fee -->
+            
             <div class="tw:space-y-2">
               <label class="tw:text-sm tw:font-medium tw:text-gray-700">Entrance Status</label>
               <div class="tw:relative">
@@ -443,10 +443,10 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- INVITE SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Invite
@@ -459,11 +459,11 @@
           </p>
 
           <div class="tw:space-y-3">
-            <!-- <InviteSection role="organiser" :has-border="true" />
-            <InviteSection role="venue"     :has-border="false" /> -->
+            <InviteSection role="organiser" :has-border="true" />
+            <InviteSection role="venue"     :has-border="false" />
             <InviteSection role="talent"    :has-border="false" />
           </div>
-        </div>
+        </div> -->
 
         <!-- SAVE Talent BUTTON -->
         <div class="tw:w-full tw:pt-4">

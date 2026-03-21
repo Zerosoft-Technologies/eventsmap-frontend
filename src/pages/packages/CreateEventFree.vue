@@ -172,27 +172,29 @@
                 </div>
 
                 <!-- Dropdown Options -->
-                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError" class="subcategory-dropdown"
-                  ref="dropdownMenu">
-                  <div class="dropdown-content">
+                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError"
+                  class="subcategory-dropdown tw:flex tw:flex-col" ref="dropdownMenu">
+                  <div class="dropdown-content tw:flex-1 tw:min-h-0" :style="{ maxHeight: 'none' }">
                     <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
                       :class="{
-                        'selected': selectedSubcategories.includes(subcategory),
-                        'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 1
-                      }" @click="toggleSubcategory(subcategory)">
-                      <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
-                        v-model="selectedSubcategories"
-                        :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 1"
-                        @change="handleSubcategoryChange" @click.stop class="option-checkbox">
+                        'selected': isSubcategorySelected(subcategory),
+                        'disabled': isSubcategoryLocked(subcategory)
+                      }" @click.stop="handleSubcategoryClick(subcategory)">
+                      <input type="checkbox" :id="`subcategory-${subcategory}`" class="option-checkbox tw:pointer-events-none"
+                        :checked="isSubcategorySelected(subcategory)"
+                        :disabled="isSubcategoryLocked(subcategory)" />
                       <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
                         {{ subcategory }}
                       </label>
+                      <Lock v-if="isSubcategoryLocked(subcategory)" class="tw:w-4 tw:h-4 tw:text-gray-400 tw:ml-3" />
                     </div>
                   </div>
 
-                  <!-- Max selection notice -->
-                  <div v-if="selectedSubcategories.length >= 5" class="max-selection-notice">
-                    Maximum 5 subcategories selected
+                  <!-- Upgrade message (always visible, separated by divider) -->
+                  <div class="tw:border-t tw:bg-white tw:px-4 tw:py-3">
+                    <p class="tw:text-xs tw:font-medium tw:text-[#1d4ed8] tw:text-center">
+                      Upgrade to Premium to select more subcategories
+                    </p>
                   </div>
                 </div>
               </div>
@@ -212,9 +214,6 @@
               </div>
 
               <!-- Validation Message -->
-              <p v-if="subcategoryValidationError" class="validation-error">
-                You can select maximum 5 subcategories only.
-              </p>
               <p v-else-if="subcategoryError" class="validation-error">Please select at least one subcategory</p>
             </div>
           </div>
@@ -571,8 +570,8 @@
 
           <div class="tw:space-y-3">
             <InviteSection role="talent" :has-border="true" />
-            <InviteSection role="organizer" :has-border="true" />
             <InviteSection role="venue" :has-border="false" />
+            <InviteSection role="organizer" :has-border="true" />
           </div>
         </div>
 
@@ -622,6 +621,7 @@ import {
   User,
   SkipBackIcon,
   Clock,
+  Lock,
   Loader2,
 } from "lucide-vue-next"
 
@@ -767,20 +767,30 @@ function toggleSubcategoryDropdown() {
   showSubcategoryDropdown.value = !showSubcategoryDropdown.value
 }
 
-// Toggle individual subcategory selection
-function toggleSubcategory(subcategory) {
-  if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 1) {
-    return // Prevent selection if already at max 5
-  }
+function isSubcategorySelected(subcategory) {
+  return selectedSubcategories.value.includes(subcategory)
+}
 
-  const index = selectedSubcategories.value.indexOf(subcategory)
-  if (index > -1) {
-    selectedSubcategories.value.splice(index, 1)
+function isSubcategoryLocked(subcategory) {
+  // Free plan: once one option is selected, lock all other options.
+  return selectedSubcategories.value.length >= 1 && !isSubcategorySelected(subcategory)
+}
+
+function handleSubcategoryClick(subcategory) {
+  if (isSubcategoryLocked(subcategory)) return
+
+  // Allow toggling off the selected option.
+  if (isSubcategorySelected(subcategory)) {
+    selectedSubcategories.value = []
   } else {
-    selectedSubcategories.value.push(subcategory)
+    selectedSubcategories.value = [subcategory]
   }
 
-  handleSubcategoryChange()
+  subcategoryError.value = false
+  subcategoryValidationError.value = false
+
+  // Clear field errors
+  clearFieldError('subcategories')
 }
 
 // Click outside handler to close dropdown
@@ -790,31 +800,10 @@ function handleClickOutside(event) {
   }
 }
 
-// Handle subcategory change with max 5 validation
+// Kept for backwards compatibility (legacy code path).
+// Free plan now enforces 1 option via handleSubcategoryClick + disabled UI.
 function handleSubcategoryChange() {
-  subcategoryError.value = false
-
-  // Clear field errors
-  clearFieldError('subcategories')
-
-  // Maximum 5 subcategories selection logic
-  // Prevent selection if trying to add more than 5 items
-  if (selectedSubcategories.value.length > 5) {
-    // Remove the last added item to maintain the limit
-    const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
-    selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
-
-    // Show validation error
-    subcategoryValidationError.value = true
-
-    // Auto-hide validation message after 3 seconds
-    setTimeout(() => {
-      subcategoryValidationError.value = false
-    }, 3000)
-  } else {
-    // Clear validation error when within limit
-    subcategoryValidationError.value = false
-  }
+  subcategoryValidationError.value = false
 }
 
 // Remove subcategory from selection

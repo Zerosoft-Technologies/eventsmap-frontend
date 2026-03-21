@@ -215,7 +215,7 @@
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
                     'Select Category') }}
                   </option>
-                  <option v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')" :key="category.id" :value="category.name">
+                  <option v-for="category in categories.filter(c => c.name.toLowerCase() == 'venue')" :key="category.id" :value="category.name">
                     {{ category.name }}
                   </option>
                 </select>
@@ -501,7 +501,7 @@
         </div> -->
 
         <!-- INVITE SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Invite</h3>
           </div>
@@ -509,7 +509,7 @@
             Make your event stand out even more. These sections help attendees find information and answer their questions.
           </p>
           <div class="tw:space-y-1">
-            <InviteSection role="venue" :has-border="false" />
+            <InviteSection role="venue" :has-border="false" /> -->
             <!-- <div class="tw:flex tw:items-center tw:justify-between tw:py-3 tw:border-b tw:border-gray-100">
               <div class="tw:flex tw:items-center tw:gap-3">
                 <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gray-100 tw:flex tw:items-center tw:justify-center">
@@ -537,8 +537,8 @@
               </div>
               <button class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700">+ Add</button>
             </div> -->
-          </div>
-        </div>
+          <!-- </div>
+        </div> -->
 
         <!-- SAVE Venue BUTTON -->
         <div class="tw:w-full tw:pt-4">
