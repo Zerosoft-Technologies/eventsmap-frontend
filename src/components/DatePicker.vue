@@ -5,6 +5,8 @@
       v-model="dateValue" 
       v-model:session-value="sessionValue"
       :auto-apply="false" 
+      :inline="inline"
+      :no-input="noInput"
       @update:model-value="onDateUpdate"
       @update:session-value="onSessionUpdate"
     >
@@ -15,8 +17,15 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, onMounted } from "vue";
+import { ref, defineEmits, onMounted, defineProps } from "vue";
 import VueTailwindDatepicker from "vue-tailwind-datepicker";
+
+const { inline, noInput } = defineProps({
+  // When used inside the mobile overlay dropdown we want the calendar
+  // to be part of normal document flow (no popover overlap).
+  inline: { type: Boolean, default: false },
+  noInput: { type: Boolean, default: false },
+})
 
 const today = new Date();
 const pad = (n) => String(n).padStart(2, "0");

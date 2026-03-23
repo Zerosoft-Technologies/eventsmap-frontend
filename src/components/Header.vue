@@ -108,7 +108,7 @@
         </div>
       </transition>
     </div>
-    <button class="tw:lg:hidden tw:text-2xl" @click="menuOpen = !menuOpen">☰</button>
+    <button class="tw:lg:hidden tw:text-2xl" type="button" @click="toggleMobileMenu" aria-label="Open menu">☰</button>
 
     <div class="tw:hidden tw:lg:flex tw:items-center tw:gap-4">
       <div>
@@ -213,7 +213,7 @@
     </div>
 
     <transition name="slide-right">
-      <div v-if="menuOpen" class="tw:absolute tw:top-full tw:left-0 tw:md:left-auto tw:md:right-0 tw:w-full tw:md:w-1/2 tw:bg-transparent tw:shadow-md tw:p-4 tw:flex tw:flex-col tw:gap-3 tw:lg:hidden tw:transition-all tw:duration-300">
+      <div v-if="false" class="tw:absolute tw:top-full tw:left-0 tw:md:left-auto tw:md:right-0 tw:w-full tw:md:w-1/2 tw:bg-transparent tw:shadow-md tw:p-4 tw:flex tw:flex-col tw:gap-3 tw:lg:hidden tw:transition-all tw:duration-300">
         <div class="tw:flex tw:bg-white tw:md:hidden tw:gap-4 tw:items-center tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
           <p>{{ $t('header.search.placeholder') }}</p>
         </div>
@@ -262,6 +262,277 @@
       </div>
     </transition>
   </header>
+
+  <!-- Mobile Overlay Menu -->
+  <transition name="slide-right">
+    <div
+      v-if="isMobileMenuOpen"
+      class="tw:fixed tw:inset-0 tw:w-full tw:h-screen tw:bg-white tw:z-50 tw:flex tw:flex-col tw:transition-all tw:duration-300"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Mobile menu"
+    >
+      <!-- Close button -->
+      <button
+        type="button"
+        class="tw:absolute tw:top-4 tw:right-4 tw:border tw:border-orange-400 tw:rounded-md tw:p-2 tw:z-[70]"
+        @click="closeMobileHeader"
+        aria-label="Close menu"
+      >
+        X
+      </button>
+
+      <!-- Scrollable content -->
+      <div class="tw:flex-1 tw:overflow-y-auto tw:px-4 tw:pb-4 tw:pt-20 tw:flex tw:flex-col tw:gap-4">
+        <!-- Icons Row -->
+        <div class="tw:flex tw:items-center tw:justify-end tw:gap-3">
+          <button
+            type="button"
+            @click="toggleWishlistPanelMobile"
+            style="height: 50px;"
+            class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color) tw:relative hover:tw:border-red-400 hover:tw:bg-red-50 tw:transition-colors"
+            aria-label="Wishlist"
+          >
+            <img src="../assets/favourite.png" alt="Favourite Icon"/>
+            <span
+              v-if="wishlistStore.wishlistEvents.length > 0"
+              class="tw:absolute tw:-top-1.5 tw:-right-1.5 tw:bg-red-500 tw:text-white tw:text-[10px] tw:font-bold tw:w-5 tw:h-5 tw:rounded-full tw:flex tw:items-center tw:justify-center"
+            >
+              {{ wishlistStore.wishlistEvents.length }}
+            </span>
+          </button>
+
+          <!-- Invitation notifications icon (authenticated only) -->
+          <button
+            v-if="authStore.isAuthenticated"
+            type="button"
+            ref="notificationToggler"
+            @click="showNotificationDropdown = !showNotificationDropdown"
+            style="height: 50px;"
+            class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1 tw:items-center tw:border tw:border-(--secondary-color) tw:relative hover:tw:bg-gray-50 tw:transition-colors"
+            :aria-label="$t('header.notifications') || 'Notifications'"
+          >
+            <Bell class="tw:w-5 tw:h-5 tw:text-(--primary-color)" />
+            <span
+              v-if="notificationStore.pendingCount > 0"
+              class="tw:absolute tw:-top-1.5 tw:-right-1.5 tw:bg-amber-500 tw:text-white tw:text-[10px] tw:font-bold tw:min-w-[18px] tw:h-[18px] tw:rounded-full tw:flex tw:items-center tw:justify-center tw:px-1"
+            >
+              {{ notificationStore.pendingCount }}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            ref="languageToggler"
+            @click="toggleField('language')"
+            style="height: 50px;"
+            class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-2 tw:border-(--secondary-color) tw:cursor-pointer"
+            :aria-label="$t('header.language') || 'Language'"
+          >
+            <img
+              :src="currentLanguage.flag"
+              :alt="currentLanguage.name + ' flag'"
+              class="tw:w-4 tw:h-4 tw-object-cover tw-rounded-sm"
+            />
+            <img
+              src="../assets/chevron-down.png"
+              alt="Chevron Down"
+              class="tw:w-3 tw:h-3 tw:ml-1"
+              style="height: 8px;"
+              :class="activeField === 'language' ? 'tw:rotate-180' : ''"
+            />
+          </button>
+        </div>
+
+        <!-- Language Dropdown (mobile) -->
+        <div
+          v-if="activeField === 'language'"
+          class="tw:w-full tw:mt-2 tw:bg-white tw:border tw:rounded-lg tw:p-4 tw:shadow-md tw:max-h-[60vh] tw:overflow-y-auto"
+        >
+          <div class="tw:mb-2 tw-font-medium tw:text-sm tw:text-gray-700">
+            {{ $t('header.language') || 'Language' }}
+          </div>
+          <div class="tw:flex tw:flex-col tw:gap-2">
+            <button
+              v-for="lang in availableLanguages"
+              :key="lang.code"
+              type="button"
+              @click="handleMobileLanguageSelect(lang.code)"
+              class="tw:w-full tw:px-4 tw:py-2 tw:flex tw:items-center tw:gap-3 tw:hover:bg-gray-50 tw-transition-colors tw:text-left tw:rounded-md"
+              :class="lang.code === currentLocale ? 'tw:bg-gray-100' : 'tw:bg-white'"
+            >
+              <img :src="lang.flag" :alt="lang.name + ' flag'" class="tw:w-4 tw:h-4 tw-object-cover tw-rounded-sm" />
+              <span class="tw:text-sm">{{ lang.name }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- In-flow notifications dropdown (mobile) -->
+        <div v-if="showNotificationDropdown && authStore.isAuthenticated" class="tw:w-full tw:bg-white tw:rounded-lg tw:shadow-md tw:border tw:border-(--secondary-color) tw:p-4">
+          <div class="tw:px-1 tw:pb-2 tw:border-b tw:border-gray-200 tw:font-medium tw:text-sm tw:text-gray-700">
+            {{ $t('header.invitationNotifications') || 'Invitation notifications' }}
+          </div>
+          <div v-if="notificationStore.pendingInvitations.length === 0" class="tw:pt-3 tw:text-sm tw:text-gray-500">
+            {{ $t('header.noPendingInvitations') || 'No pending invitations.' }}
+          </div>
+          <ul v-else class="tw:mt-2 tw:max-h-[320px] tw:overflow-y-auto">
+            <li
+              v-for="n in notificationStore.pendingInvitations"
+              :key="n.id"
+              class="tw:px-2 tw:py-3 tw:border-b tw:border-gray-100 last:tw:border-b-0 tw:text-sm"
+            >
+              <p class="tw:text-gray-800 tw:mb-0.5">{{ n.message }}</p>
+              <p class="tw:text-gray-500 tw:text-xs tw:mb-0">{{ n.event_title }}</p>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Search Field -->
+        <input
+          ref="searchInput"
+          v-model="searchTerm"
+          @focus="activeField = null"
+          @keyup.enter="filterBy('search'); closeMobileHeader()"
+          type="text"
+          :placeholder="$t('header.search.placeholder')"
+          class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none"
+          aria-label="Search events"
+        />
+
+        <!-- Location Field -->
+        <div class="tw:w-full">
+          <button
+            type="button"
+            class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:text-left"
+            @click="toggleField('location')"
+            aria-label="Select location"
+          >
+            <div class="tw:flex tw:items-center tw:justify-between tw:gap-3">
+              <span>{{ city || $t('header.defaultLocation') }}</span>
+              <img
+                src="../assets/chevron-down.png"
+                alt="Chevron Down"
+                class="tw:w-3 tw:h-3"
+                :class="activeField === 'location' ? 'tw:rotate-180' : ''"
+              />
+            </div>
+          </button>
+
+          <div
+            v-if="activeField === 'location'"
+            class="tw:w-full tw:mt-2 tw:bg-white tw:border tw:rounded-lg tw:p-4 tw:shadow-md tw:max-h-[60vh] tw:overflow-y-auto"
+          >
+            <div class="tw:relative tw:z-10 tw:flex tw:flex-col tw:gap-3">
+              <input
+                v-model="searchLocation"
+                @keyup.enter="debouncedSearch"
+                @input="debouncedSearch"
+                type="text"
+                :placeholder="$t('header.location.placeholder')"
+                class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none"
+                aria-label="Search location"
+              />
+
+              <div v-if="searchResults.length > 0" class="tw:flex tw:flex-col tw:gap-1">
+                <button
+                  v-for="(result, index) in searchResults"
+                  :key="index"
+                  type="button"
+                  class="tw:text-left tw:px-3 tw:py-2 tw:border tw:border-(--secondary-color) tw:rounded-md tw:bg-white hover:tw:bg-gray-50"
+                  @click="selectCity(result)"
+                >
+                  {{ result.display_name }}
+                </button>
+              </div>
+
+              <button
+                type="button"
+                class="tw:bg-white tw:border tw:border-(--secondary-color) tw:rounded-lg tw:px-4 tw:py-3 tw:flex tw:items-center tw:justify-center tw:gap-2 hover:tw:bg-gray-50"
+                @click="useCurrentLocationFromMobile"
+                aria-label="Use current location"
+              >
+                <img src="../assets/location-01.png" width="16" height="16" alt="Location Icon" />
+                <span>{{ $t('header.currentLocation') }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date Picker -->
+        <div class="tw:w-full">
+          <button
+            type="button"
+            class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:text-left"
+            @click="toggleField('date')"
+            aria-label="Select dates"
+          >
+            <div class="tw:flex tw:items-center tw:justify-between tw:gap-3">
+              <span>
+                {{
+                  dateRange[0] && dateRange[1]
+                    ? `${dateRange[0]} - ${dateRange[1]}`
+                    : 'Date'
+                }}
+              </span>
+              <img
+                src="../assets/chevron-down.png"
+                alt="Chevron Down"
+                class="tw:w-3 tw:h-3"
+                :class="activeField === 'date' ? 'tw:rotate-180' : ''"
+              />
+            </div>
+          </button>
+
+          <div
+            v-if="activeField === 'date'"
+            class="tw:w-full tw:mt-2 tw:bg-white tw:border tw:rounded-lg tw:p-4 tw:shadow-md tw:max-h-[60vh] tw:overflow-y-auto"
+            @click.capture="handleMobileDatepickerContainerClick"
+          >
+            <div class="tw:relative tw:z-50">
+              <DatePicker
+                :inline="true"
+                :noInput="false"
+                @update:dateRange="handleMobileDateRangeUpdate"
+                @update:session="sessionFilter = $event"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Email Box -->
+        <button
+          v-if="authStore.isAuthenticated"
+          type="button"
+          @click="handleMobileEmailClick"
+          :class="activeField === 'date' ? 'tw:pointer-events-none' : ''"
+          class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none tw:text-left"
+          aria-label="Go to profile"
+        >
+          {{ authStore.user?.email || '' }}
+        </button>
+        <input
+          v-else
+          type="text"
+          readonly
+          :value="''"
+          :placeholder="$t('auth.email')"
+          class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none"
+          aria-label="Email"
+        />
+
+        <!-- Logout Button -->
+        <button
+          type="button"
+          class="tw:bg-white tw:py-3 tw:rounded-lg tw:flex tw:gap-2 tw:items-center tw:justify-center tw:px-4 tw:border tw:border-(--secondary-color) hover:tw:bg-gray-50 tw:transition-colors tw:font-medium"
+          @click="closeMobileHeader(); handleLogout()"
+          aria-label="Logout"
+        >
+          {{ $t('header.logout') || 'Logout' }}
+        </button>
+      </div>
+    </div>
+  </transition>
+
   <!-- Location permission prompt -->
   <!-- <LocationPermissionPrompt
     v-show="showManualEnablePrompt"
@@ -315,8 +586,82 @@ const userCreatePath = computed(() =>
 )
 
 async function handleLogout() {
+  closeMobileHeader()
   await authStore.logout()
   router.push({ name: 'Login' })
+}
+
+function toggleMobileMenu() {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
+  if (!isMobileMenuOpen.value) activeField.value = null
+}
+
+function closeMobileHeader() {
+  isMobileMenuOpen.value = false
+  activeField.value = null
+  showNotificationDropdown.value = false
+}
+
+function toggleField(field) {
+  // Close any other dropdown-like UI inside the mobile menu
+  showNotificationDropdown.value = false
+  activeField.value = activeField.value === field ? null : field
+  if (field === 'date' && activeField.value === 'date') {
+    // Avoid auto-closing right after the DatePicker mounts and emits its initial value.
+    mobileDatePickerInitialized.value = false
+  }
+}
+
+function toggleWishlistPanelMobile() {
+  toggleWishlistPanel()
+  closeMobileHeader()
+}
+
+function handleLanguageIconClick() {
+  const idx = availableLanguages.findIndex((l) => l.code === currentLocale.value)
+  const next = availableLanguages[(idx + 1) % availableLanguages.length]
+  if (next) switchLanguage(next.code)
+  closeMobileHeader()
+}
+
+function useCurrentLocationFromMobile() {
+  // getLocation handles closing when the mobile menu is open
+  getLocation()
+}
+
+function handleMobileLanguageSelect(langCode) {
+  switchLanguage(langCode)
+  activeField.value = null
+  showNotificationDropdown.value = false
+}
+
+function handleMobileDatepickerContainerClick(e) {
+  const target = e?.target
+  if (!target?.closest) return
+  // vue-tailwind-datepicker close icon has class `text-vtd-orange`
+  const closeIcon = target.closest('.text-vtd-orange')
+  if (closeIcon && activeField.value === 'date') {
+    activeField.value = null
+  }
+}
+
+async function handleMobileEmailClick() {
+  if (!authStore.isAuthenticated) return
+  closeMobileHeader()
+  await router.push(userCreatePath.value)
+}
+
+function handleMobileDateRangeUpdate(newRange) {
+  dateRange.value = newRange
+  if (!mobileDatePickerInitialized.value) {
+    mobileDatePickerInitialized.value = true
+    return
+  }
+  closeMobileHeader()
+}
+
+function handleMobileMenuKeydown(e) {
+  if (e.key === 'Escape' && isMobileMenuOpen.value) closeMobileHeader()
 }
 
 // Notification dropdown state
@@ -333,8 +678,17 @@ const currentLanguage = computed(() =>
 )
 
 const showSuggestion = ref(false)
-const menuOpen = ref(false);
-const showResults = ref(false);
+const isMobileMenuOpen = ref(false)
+// 'search' | 'location' | 'date' | null
+const activeField = ref(null)
+const mobileDatePickerInitialized = ref(false)
+
+// Prevent background scroll when the mobile overlay is open
+watch(isMobileMenuOpen, (val) => {
+  document.body.style.overflow = val ? 'hidden' : ''
+})
+
+const showResults = ref(false)
 const searchInput = ref(null)
 const route = useRoute()
 const city = ref("");
@@ -465,7 +819,14 @@ function clearCategoryFilter() {
 onMounted(() => {
   getLocation();
   loadCategories();
+  window.addEventListener('keydown', handleMobileMenuKeydown)
 });
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleMobileMenuKeydown)
+  // Restore default scroll behavior
+  document.body.style.overflow = ''
+})
 
 function filterBy(action){
   if(action == 'search'){
@@ -578,6 +939,8 @@ async function getLocation() {
       mapStore.setPendingLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
     }
   }
+
+  if (isMobileMenuOpen.value) closeMobileHeader()
 }
 
 const events = ref([]);
@@ -668,9 +1031,9 @@ watch(sessionFilter, () => {
 }, { deep: true })
 
 const searchCity = async () => {
-  if (!city.value) {
-    searchResults.value = [];
-    return;
+  if (!searchLocation.value?.trim()) {
+    searchResults.value = []
+    return
   }
 
   try {
@@ -718,6 +1081,8 @@ const selectCity = (place) => {
     lng: parseFloat(place.lon),
     name: place.display_name.split(',')[0]
   })
+
+  if (isMobileMenuOpen.value) closeMobileHeader()
 };
 
 const showLocation = ref(false)
