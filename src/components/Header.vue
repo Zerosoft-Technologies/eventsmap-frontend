@@ -412,7 +412,6 @@
               <img
                 src="../assets/chevron-down.png"
                 alt="Chevron Down"
-                class="tw:w-3 tw:h-3"
                 :class="activeField === 'location' ? 'tw:rotate-180' : ''"
               />
             </div>
@@ -477,7 +476,6 @@
               <img
                 src="../assets/chevron-down.png"
                 alt="Chevron Down"
-                class="tw:w-3 tw:h-3"
                 :class="activeField === 'date' ? 'tw:rotate-180' : ''"
               />
             </div>

@@ -2,8 +2,8 @@
   <div>
     <!-- ── Loading Skeleton ─────────────────────────────────── -->
     <div v-if="loadingUser" class="tw:animate-pulse">
-      <div class="tw:grid tw:grid-cols-12 tw:gap-6 tw:mb-8">
-        <div class="tw:col-span-7">
+      <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-12 tw:gap-6 tw:mb-8">
+        <div class="tw:col-span-1 tw:md:col-span-7">
           <div class="tw:h-5 tw:bg-gray-200 tw:rounded tw:w-32 tw:mb-4"></div>
           <div class="tw:bg-gray-100 tw:rounded-xl tw:p-6 tw:min-h-[200px]">
             <div class="tw:h-5 tw:bg-gray-200 tw:rounded tw:w-20 tw:mb-3"></div>
@@ -11,7 +11,7 @@
             <div class="tw:h-4 tw:bg-gray-200 tw:rounded tw:w-48"></div>
           </div>
         </div>
-        <div class="tw:col-span-5">
+        <div class="tw:col-span-1 tw:md:col-span-5">
           <div class="tw:h-5 tw:bg-gray-200 tw:rounded tw:w-40 tw:mb-4"></div>
           <div class="tw:bg-gray-100 tw:rounded-xl tw:p-6 tw:min-h-[200px] tw:flex tw:items-center tw:justify-center">
             <div class="tw:h-9 tw:bg-gray-200 tw:rounded-lg tw:w-32"></div>
@@ -22,7 +22,7 @@
 
     <!-- ── Premium Member Card ──────────────────────────────── -->
     <div v-else-if="isPremium" class="plan-fade-in">
-      <div class="premium-card tw:rounded-2xl tw:p-10 tw:text-center tw:relative tw:overflow-hidden tw:group">
+      <div class="premium-card tw:rounded-2xl tw:p-5 tw:md:p-10 tw:text-center tw:relative tw:overflow-hidden tw:group">
         <!-- Subtle background shimmer -->
         <div class="premium-shimmer"></div>
         
@@ -54,7 +54,7 @@
         </div>
 
         <!-- Title -->
-        <h2 class="tw:text-3xl tw:font-bold tw:text-gray-800 tw:mb-2 tw:relative tw:z-10">
+        <h2 class="tw:text-2xl tw:md:text-3xl tw:font-bold tw:text-gray-800 tw:mb-2 tw:relative tw:z-10">
           You're on the Premium Plan
         </h2>
         
@@ -69,7 +69,7 @@
         </div>
 
         <!-- Benefits Grid -->
-        <div class="tw:grid tw:grid-cols-2 tw:gap-3 tw:mb-8 tw:relative tw:z-10">
+        <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-3 tw:mb-8 tw:relative tw:z-10">
           <div v-for="benefit in premiumBenefits" :key="benefit"
             class="tw:flex tw:items-center tw:gap-2.5 tw:bg-white/70 tw:backdrop-blur-sm tw:rounded-xl tw:px-4 tw:py-3 tw:text-left tw:border tw:border-white/50 tw:shadow-sm hover:tw:shadow-md tw:transition-all">
             <div class="tw:w-5 tw:h-5 tw:rounded-full tw:bg-gradient-to-br tw:from-amber-400 tw:to-amber-600 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0">
@@ -82,7 +82,7 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="tw:flex tw:gap-3 tw:mb-6 tw:relative tw:z-10">
+        <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-3 tw:mb-6 tw:relative tw:z-10">
           <button
             @click="manageSubscription"
             class="no-hover tw:flex-1 tw:bg-gradient-to-r tw:from-amber-500 tw:to-amber-600 tw:text-white tw:font-semibold tw:py-3 tw:px-4 tw:rounded-xl tw:transition-all tw:shadow-md hover:tw:shadow-lg hover:tw:scale-[1.02] tw:flex tw:items-center tw:justify-center tw:gap-2">
@@ -118,11 +118,11 @@
     <div v-else class="plan-fade-in">
 
       <!-- Plan Cards Row -->
-      <div class="tw:bg-[#F6F1E7] tw:rounded-xl tw:p-6 tw:mb-6">
-        <div class="tw:grid tw:grid-cols-12 tw:gap-6">
+      <div class="tw:bg-[#F6F1E7] tw:rounded-xl tw:p-4 tw:md:p-6 tw:mb-6">
+        <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-12 tw:gap-6">
 
           <!-- Current Plan (Free) -->
-          <div class="tw:col-span-7">
+          <div class="tw:col-span-1 tw:md:col-span-7">
             <h2 class="tw:text-base tw:font-semibold tw:text-gray-900 tw:mb-4">Event Package</h2>
             <div class="tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:p-6 tw:flex tw:flex-col tw:min-h-[200px]">
               <span class="tw:inline-block tw:bg-blue-100 tw:text-blue-700 tw:px-2.5 tw:py-1 tw:rounded-md tw:text-xs tw:font-semibold tw:w-fit tw:mb-3">
@@ -143,9 +143,9 @@
           </div>
 
           <!-- Upgrade Card -->
-          <div class="tw:col-span-5">
+          <div class="tw:col-span-1 tw:md:col-span-5">
             <h2 class="tw:text-base tw:font-semibold tw:text-gray-900 tw:mb-4">Upgrade to Premium</h2>
-            <div class="tw:bg-white tw:border-2 tw:border-dashed tw:border-amber-300 tw:rounded-xl tw:p-6 tw:flex tw:flex-col tw:min-h-[200px]">
+            <div class="tw:bg-white tw:border-2 tw:border-dashed tw:border-amber-300 tw:rounded-xl tw:p-5 tw:md:p-6 tw:flex tw:flex-col tw:min-h-[200px]">
               <div class="tw:flex tw:items-center tw:gap-2 tw:mb-3">
                 <svg class="tw:w-5 tw:h-5 tw:text-amber-500" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M2.5 7l2.5 8h14l2.5-8-4.5 3-3-5-3 5L6.5 7z"/>
@@ -182,21 +182,21 @@
 
       <!-- ── Inline Upgrade Flow ─────────────────────────────── -->
       <Transition name="slide-down">
-        <div v-if="upgradeStep !== 'idle'" class="tw:bg-white tw:border tw:border-gray-200 tw:rounded-2xl tw:p-6 tw:mb-4 plan-fade-in">
+        <div v-if="upgradeStep !== 'idle'" class="tw:bg-white tw:border tw:border-gray-200 tw:rounded-2xl tw:p-4 tw:md:p-6 tw:mb-4 plan-fade-in">
 
           <!-- Step Header -->
           <div class="tw:flex tw:items-center tw:justify-between tw:mb-5">
             <div class="tw:flex tw:items-center tw:gap-3">
               <!-- Step Dots -->
-              <div class="tw:flex tw:items-center tw:gap-1.5">
+              <div class="tw:hidden tw:md:flex tw:items-center tw:gap-1.5">
                 <span class="tw:w-6 tw:h-6 tw:rounded-full tw:flex tw:items-center tw:justify-center tw:text-xs tw:font-bold tw:text-white"
                   :style="{ backgroundColor: 'var(--primary-color)' }">
                   {{ upgradeStep === 'select-type' ? '1' : '✓' }}
                 </span>
                 <span class="tw:text-xs tw:text-gray-400 tw:font-medium">Billing Type</span>
               </div>
-              <div class="tw:w-8 tw:h-px tw:bg-gray-200"></div>
-              <div class="tw:flex tw:items-center tw:gap-1.5">
+              <div class="tw:hidden tw:md:block tw:w-8 tw:h-px tw:bg-gray-200"></div>
+              <div class="tw:hidden tw:md:flex tw:items-center tw:gap-1.5">
                 <span class="tw:w-6 tw:h-6 tw:rounded-full tw:flex tw:items-center tw:justify-center tw:text-xs tw:font-bold"
                   :class="upgradeStep === 'billing-details' ? 'tw:text-white' : 'tw:text-gray-500 tw:bg-gray-200'"
                   :style="upgradeStep === 'billing-details' ? { backgroundColor: 'var(--primary-color)' } : {}">
@@ -366,7 +366,7 @@
               </div>
 
               <!-- Postal Code + City -->
-              <div class="tw:grid tw:grid-cols-2 tw:gap-3">
+              <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-3">
                 <div>
                   <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-1">Postal Code <span class="tw:text-red-400">*</span></label>
                   <input
@@ -393,7 +393,7 @@
                 </div>
               </div>
 
-              <div class="tw:flex tw:gap-3 tw:pt-1">
+              <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-3 tw:pt-1">
                 <button type="button" @click="upgradeStep = 'select-type'"
                   class="no-hover tw:flex-1 tw:border tw:border-gray-300 tw:text-gray-600 tw:font-semibold tw:py-2.5 tw:rounded-lg tw:transition hover:tw:bg-gray-50">
                   ← Back

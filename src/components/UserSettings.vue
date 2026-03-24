@@ -7,7 +7,7 @@
             <div class="tw:mb-6">
                 <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Profile</h2>
 
-                <div class="tw:grid tw:grid-cols-2 tw:gap-x-6 tw:gap-y-4">
+                <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-x-6 tw:gap-y-4">
                     <!-- Name (editable) -->
                     <div class="tw:flex tw:flex-col tw:gap-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-900">Name</label>
@@ -15,7 +15,7 @@
                             v-model="form.name"
                             type="text"
                             placeholder="Full name"
-                            class="tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition"
+                            class="tw:w-full tw:h-12 tw:md:h-auto tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-base tw:md:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition"
                         />
                     </div>
 
@@ -30,7 +30,7 @@
                             type="email"
                             readonly
                             disabled
-                            class="tw:px-4 tw:py-2.5 tw:border tw:border-gray-200 tw:rounded-md tw:text-sm tw:text-gray-500 tw:bg-gray-100 tw:cursor-not-allowed"
+                            class="tw:w-full tw:h-12 tw:md:h-auto tw:px-4 tw:py-2.5 tw:border tw:border-gray-200 tw:rounded-md tw:text-base tw:md:text-sm tw:text-gray-500 tw:bg-gray-100 tw:cursor-not-allowed"
                         />
                     </div>
 
@@ -42,7 +42,7 @@
                                 v-model="form.password"
                                 :type="showPassword ? 'text' : 'password'"
                                 placeholder="••••••••"
-                                class="tw:w-full tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition tw:pr-10"
+                                class="tw:w-full tw:h-12 tw:md:h-auto tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-base tw:md:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition tw:pr-10"
                             />
                             <button
                                 type="button"
@@ -63,13 +63,13 @@
             <div v-if="isPremium" class="tw:border-t tw:border-gray-200 tw:pt-6 tw:mb-6">
                 <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Billing</h2>
 
-                <div class="tw:grid tw:grid-cols-2 tw:gap-x-6 tw:gap-y-4">
+                <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-x-6 tw:gap-y-4">
                     <!-- Billing Type -->
                     <div class="tw:flex tw:flex-col tw:gap-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-900">Billing Type</label>
                         <select
                             v-model="form.billing_type"
-                            class="tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition"
+                            class="tw:w-full tw:h-12 tw:md:h-auto tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-base tw:md:text-sm tw:text-gray-900 tw:bg-white focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition"
                         >
                             <option value="individual">Individual</option>
                             <option value="business">Business</option>
@@ -83,7 +83,7 @@
                             v-model="form.company_name"
                             type="text"
                             placeholder="Company name"
-                            class="tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition"
+                            class="tw:w-full tw:h-12 tw:md:h-auto tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-base tw:md:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition"
                         />
                     </div>
 
@@ -105,7 +105,7 @@
                             :readonly="!!user.vat_validated"
                             :disabled="!!user.vat_validated"
                             :class="[
-                                'tw:px-4 tw:py-2.5 tw:border tw:rounded-md tw:text-sm tw:transition',
+                                'tw:w-full tw:h-12 tw:md:h-auto tw:px-4 tw:py-2.5 tw:border tw:rounded-md tw:text-base tw:md:text-sm tw:transition',
                                 user.vat_validated
                                     ? 'tw:border-gray-200 tw:bg-gray-100 tw:text-gray-500 tw:cursor-not-allowed'
                                     : 'tw:border-gray-300 tw:bg-white tw:text-gray-900 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb]'
@@ -120,7 +120,7 @@
                             v-model="form.address"
                             type="text"
                             placeholder="Street address"
-                            class="tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition"
+                            class="tw:w-full tw:h-12 tw:md:h-auto tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-base tw:md:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition"
                         />
                     </div>
 
@@ -131,7 +131,7 @@
                             v-model="form.country"
                             type="text"
                             placeholder="e.g. NL, DE, FR"
-                            class="tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition"
+                            class="tw:w-full tw:h-12 tw:md:h-auto tw:px-4 tw:py-2.5 tw:border tw:border-gray-300 tw:rounded-md tw:text-base tw:md:text-sm tw:text-gray-900 tw:bg-white tw:placeholder-gray-400 focus:tw:outline-none focus:tw:ring-1 focus:tw:ring-[#2563eb] focus:tw:border-[#2563eb] tw:transition"
                         />
                     </div>
                 </div>
@@ -155,7 +155,7 @@
             <button
                 :disabled="saving"
                 :class="[
-                    'tw:px-6 tw:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:border tw:transition',
+                    'tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:border tw:transition',
                     saving
                         ? 'tw:bg-gray-100 tw:text-gray-400 tw:border-gray-300 tw:cursor-not-allowed'
                         : 'tw:bg-white tw:text-[#2563eb] tw:border-orange-500 hover:tw:bg-blue-50'
