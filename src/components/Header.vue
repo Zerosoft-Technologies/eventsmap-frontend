@@ -387,115 +387,117 @@
           </ul>
         </div>
 
-        <!-- Search Field -->
-        <input
-          ref="searchInput"
-          v-model="searchTerm"
-          @focus="activeField = null"
-          @keyup.enter="filterBy('search'); closeMobileHeader()"
-          type="text"
-          :placeholder="$t('header.search.placeholder')"
-          class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none"
-          aria-label="Search events"
-        />
+        <template v-if="fixedMenu">
+          <!-- Search Field -->
+          <input
+            ref="searchInput"
+            v-model="searchTerm"
+            @focus="activeField = null"
+            @keyup.enter="filterBy('search'); closeMobileHeader()"
+            type="text"
+            :placeholder="$t('header.search.placeholder')"
+            class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none"
+            aria-label="Search events"
+          />
 
-        <!-- Location Field -->
-        <div class="tw:w-full">
-          <button
-            type="button"
-            class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:text-left"
-            @click="toggleField('location')"
-            aria-label="Select location"
-          >
-            <div class="tw:flex tw:items-center tw:justify-between tw:gap-3">
-              <span>{{ city || $t('header.defaultLocation') }}</span>
-              <img
-                src="../assets/chevron-down.png"
-                alt="Chevron Down"
-                :class="activeField === 'location' ? 'tw:rotate-180' : ''"
-              />
-            </div>
-          </button>
+          <!-- Location Field -->
+          <div class="tw:w-full">
+            <button
+              type="button"
+              class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:text-left"
+              @click="toggleField('location')"
+              aria-label="Select location"
+            >
+              <div class="tw:flex tw:items-center tw:justify-between tw:gap-3">
+                <span>{{ city || $t('header.defaultLocation') }}</span>
+                <img
+                  src="../assets/chevron-down.png"
+                  alt="Chevron Down"
+                  :class="activeField === 'location' ? 'tw:rotate-180' : ''"
+                />
+              </div>
+            </button>
 
-          <div
-            v-if="activeField === 'location'"
-            class="tw:w-full tw:mt-2 tw:bg-white tw:border tw:rounded-lg tw:p-4 tw:shadow-md tw:max-h-[60vh] tw:overflow-y-auto"
-          >
-            <div class="tw:relative tw:z-10 tw:flex tw:flex-col tw:gap-3">
-              <input
-                v-model="searchLocation"
-                @keyup.enter="debouncedSearch"
-                @input="debouncedSearch"
-                type="text"
-                :placeholder="$t('header.location.placeholder')"
-                class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none"
-                aria-label="Search location"
-              />
+            <div
+              v-if="activeField === 'location'"
+              class="tw:w-full tw:mt-2 tw:bg-white tw:border tw:rounded-lg tw:p-4 tw:shadow-md tw:max-h-[60vh] tw:overflow-y-auto"
+            >
+              <div class="tw:relative tw:z-10 tw:flex tw:flex-col tw:gap-3">
+                <input
+                  v-model="searchLocation"
+                  @keyup.enter="debouncedSearch"
+                  @input="debouncedSearch"
+                  type="text"
+                  :placeholder="$t('header.location.placeholder')"
+                  class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none"
+                  aria-label="Search location"
+                />
 
-              <div v-if="searchResults.length > 0" class="tw:flex tw:flex-col tw:gap-1">
+                <div v-if="searchResults.length > 0" class="tw:flex tw:flex-col tw:gap-1">
+                  <button
+                    v-for="(result, index) in searchResults"
+                    :key="index"
+                    type="button"
+                    class="tw:text-left tw:px-3 tw:py-2 tw:border tw:border-(--secondary-color) tw:rounded-md tw:bg-white hover:tw:bg-gray-50"
+                    @click="selectCity(result)"
+                  >
+                    {{ result.display_name }}
+                  </button>
+                </div>
+
                 <button
-                  v-for="(result, index) in searchResults"
-                  :key="index"
                   type="button"
-                  class="tw:text-left tw:px-3 tw:py-2 tw:border tw:border-(--secondary-color) tw:rounded-md tw:bg-white hover:tw:bg-gray-50"
-                  @click="selectCity(result)"
+                  class="tw:bg-white tw:border tw:border-(--secondary-color) tw:rounded-lg tw:px-4 tw:py-3 tw:flex tw:items-center tw:justify-center tw:gap-2 hover:tw:bg-gray-50"
+                  @click="useCurrentLocationFromMobile"
+                  aria-label="Use current location"
                 >
-                  {{ result.display_name }}
+                  <img src="../assets/location-01.png" width="16" height="16" alt="Location Icon" />
+                  <span>{{ $t('header.currentLocation') }}</span>
                 </button>
               </div>
-
-              <button
-                type="button"
-                class="tw:bg-white tw:border tw:border-(--secondary-color) tw:rounded-lg tw:px-4 tw:py-3 tw:flex tw:items-center tw:justify-center tw:gap-2 hover:tw:bg-gray-50"
-                @click="useCurrentLocationFromMobile"
-                aria-label="Use current location"
-              >
-                <img src="../assets/location-01.png" width="16" height="16" alt="Location Icon" />
-                <span>{{ $t('header.currentLocation') }}</span>
-              </button>
             </div>
           </div>
-        </div>
 
-        <!-- Date Picker -->
-        <div class="tw:w-full">
-          <button
-            type="button"
-            class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:text-left"
-            @click="toggleField('date')"
-            aria-label="Select dates"
-          >
-            <div class="tw:flex tw:items-center tw:justify-between tw:gap-3">
-              <span>
-                {{
-                  dateRange[0] && dateRange[1]
-                    ? `${dateRange[0]} - ${dateRange[1]}`
-                    : 'Date'
-                }}
-              </span>
-              <img
-                src="../assets/chevron-down.png"
-                alt="Chevron Down"
-                :class="activeField === 'date' ? 'tw:rotate-180' : ''"
-              />
-            </div>
-          </button>
+          <!-- Date Picker -->
+          <div class="tw:w-full">
+            <button
+              type="button"
+              class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:text-left"
+              @click="toggleField('date')"
+              aria-label="Select dates"
+            >
+              <div class="tw:flex tw:items-center tw:justify-between tw:gap-3">
+                <span>
+                  {{
+                    dateRange[0] && dateRange[1]
+                      ? `${dateRange[0]} - ${dateRange[1]}`
+                      : 'Date'
+                  }}
+                </span>
+                <img
+                  src="../assets/chevron-down.png"
+                  alt="Chevron Down"
+                  :class="activeField === 'date' ? 'tw:rotate-180' : ''"
+                />
+              </div>
+            </button>
 
-          <div
-            v-if="activeField === 'date'"
-            class="tw:w-full tw:mt-2 tw:bg-white tw:border tw:rounded-lg tw:p-4 tw:shadow-md tw:max-h-[60vh] tw:overflow-y-auto"
-            @click.capture="handleMobileDatepickerContainerClick"
-          >
-            <div class="tw:relative tw:z-50">
-              <DatePicker
-                :inline="true"
-                :noInput="false"
-                @update:dateRange="handleMobileDateRangeUpdate"
-                @update:session="sessionFilter = $event"
-              />
+            <div
+              v-if="activeField === 'date'"
+              class="tw:w-full tw:mt-2 tw:bg-white tw:border tw:rounded-lg tw:p-4 tw:shadow-md tw:max-h-[60vh] tw:overflow-y-auto"
+              @click.capture="handleMobileDatepickerContainerClick"
+            >
+              <div class="tw:relative tw:z-50">
+                <DatePicker
+                  :inline="true"
+                  :noInput="false"
+                  @update:dateRange="handleMobileDateRangeUpdate"
+                  @update:session="sessionFilter = $event"
+                />
+              </div>
             </div>
           </div>
-        </div>
+        </template>
 
         <!-- Email Box -->
         <button
