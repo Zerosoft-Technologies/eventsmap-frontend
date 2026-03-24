@@ -1,20 +1,37 @@
 <template>
-    <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-10 tw:px-6">
-        <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
+    <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-4 tw:px-3 tw:md:py-10 tw:md:px-6 tw:overflow-x-hidden">
+        <div class="tw:w-full tw:max-w-7xl tw:flex tw:flex-col tw:md:flex-row tw:gap-4 tw:md:gap-6">
+            <!-- Mobile Header -->
+            <div class="tw:md:hidden tw:flex tw:items-center tw:justify-between tw:bg-white tw:rounded-xl tw:shadow-sm tw:px-4 tw:py-3">
+                <button type="button" @click="handleBack" class="tw:text-sm tw:font-medium tw:text-[#0061FF]">Event Map</button>
+                <button type="button" @click="toggleMobileSidebar" aria-label="Open menu" class="tw:text-2xl tw:leading-none tw:text-gray-700">☰</button>
+            </div>
+
+            <!-- Mobile Sidebar Drawer -->
+            <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
+                <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar"></div>
+                <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
+                    <EventSidebar :menuItems="menuItems"
+                        @back="handleBack" @event-selected="handleEventSelected"
+                        @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar" />
+                </div>
+            </div>
 
 
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-            <EventSidebar :menuItems="menuItems"
-                @back="handleBack" @event-selected="handleEventSelected"
-                @chatbox-click="handleChatboxClick" />
+            <div class="tw:hidden tw:md:block">
+                <EventSidebar :menuItems="menuItems"
+                    @back="handleBack" @event-selected="handleEventSelected"
+                    @chatbox-click="handleChatboxClick" />
+            </div>
 
             <!-- ================= RIGHT CARD ================= -->
-            <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6">
-                <div class="tw:bg-white tw:rounded-2xl tw:p-8 md:tw:p-12">
-                    <h1 class="tw:text-3xl tw:font-bold tw:text-[#2563eb] tw:mb-6">Event Settings</h1>
+            <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6">
+                <div class="tw:bg-white tw:rounded-2xl tw:p-5 tw:md:p-12">
+                    <h1 class="tw:text-2xl tw:md:text-3xl tw:font-bold tw:text-[#2563eb] tw:mb-4 tw:md:mb-6">Event Settings</h1>
 
-                    <!-- Tab Navigation -->
-                    <div class="tw:flex tw:gap-8 tw:border-b tw:border-gray-200 tw:mb-6">
+                    <!-- Tab Navigation (Desktop only) -->
+                    <div class="tw:hidden tw:md:flex tw:gap-8 tw:border-b tw:border-gray-200 tw:mb-6">
                         <button v-for="tab in tabs" :key="tab.id" :class="[
                             'tw:pb-3 tw:text-sm tw:font-normal tw:transition-colors tw:relative',
                             activeTab === tab.id
@@ -27,15 +44,35 @@
                         </button>
                     </div>
 
+                    <!-- Tab Accordion (Mobile only) -->
+                    <div class="tw:md:hidden tw:space-y-2 tw:mb-6">
+                        <button
+                            v-for="tab in tabs"
+                            :key="`mobile-${tab.id}`"
+                            type="button"
+                            @click="activeTab = tab.id"
+                            :class="[
+                                'tw:w-full tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:transition-colors',
+                                activeTab === tab.id
+                                    ? 'tw:bg-blue-50 tw:border-blue-200 tw:text-[#2563eb]'
+                                    : 'tw:bg-white tw:border-gray-200 tw:text-[#1E3A8A]'
+                            ]"
+                        >
+                            <span class="tw:text-sm tw:font-medium">{{ tab.label }}</span>
+                            <!-- <span class="tw:text-base" :class="activeTab === tab.id ? 'tw:rotate-180' : ''">⌄</span> -->
+                             <img src="../../../assets/chevron-down.png" alt="Category" :class="activeTab === tab.id ? 'tw:rotate-180' : ''">
+                        </button>
+                    </div>
+
                     <!-- Tab Content -->
                     <div class="tw:transition-opacity tw:duration-300">
                         <!-- Event Profile Tab -->
-                        <div v-if="activeTab === 'profile'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-8">
+                        <div v-if="activeTab === 'profile'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-4 tw:md:p-8">
                             <UserSettings />
                         </div>
 
                         <!-- Notification Tab -->
-                        <div v-if="activeTab === 'notification'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-8">
+                        <div v-if="activeTab === 'notification'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-4 tw:md:p-8">
                             <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-6">Notifications</h2>
 
                             <div class="tw:flex tw:flex-col tw:gap-4 tw:mb-6">
@@ -84,21 +121,21 @@
                             </div>
 
                             <button
-                                class="tw:bg-white tw:text-[#2563eb] tw:border tw:border-orange-500 tw:px-6 tw:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:transition hover:tw:bg-blue-50"
+                                class="tw:w-full tw:md:w-auto tw:bg-white tw:text-[#2563eb] tw:border tw:border-orange-500 tw:px-6 tw:py-3 tw:md:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:transition hover:tw:bg-blue-50"
                                 @click="saveNotifications">
                                 Save Preferences
                             </button>
                         </div>
 
                         <!-- Plan Management Tab -->
-                        <div v-if="activeTab === 'plan'" class="tw:rounded-lg tw:p-8">
+                        <div v-if="activeTab === 'plan'" class="tw:rounded-lg tw:p-4 tw:md:p-8">
                             <PlanManagement />
 
                             <!-- Billing History Section -->
                             <div class="tw:mt-8">
-                                <div class="tw:flex tw:gap-8 tw:border-b tw:border-gray-200 tw:mb-6">
+                                <div class="tw:flex tw:gap-4 tw:md:gap-8 tw:border-b tw:border-gray-200 tw:mb-6 tw:overflow-x-auto tw:whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:tw:hidden">
                                     <button :class="[
-                                        'tw:pb-3 tw:text-sm tw:font-normal tw:transition-colors tw:relative',
+                                        'tw:shrink-0 tw:pb-3 tw:text-base tw:md:text-sm tw:font-normal tw:transition-colors tw:relative',
                                         billingTab === 'history'
                                             ? 'tw:text-[#2563eb]'
                                             : 'tw:text-gray-600 hover:tw:text-[#2563eb]'
@@ -108,7 +145,7 @@
                                             class="tw:absolute tw:bottom-0 tw:left-0 tw:right-0 tw:h-0.5 tw:bg-[#2563eb] tw:-mb-px"></span>
                                     </button>
                                     <button :class="[
-                                        'tw:pb-3 tw:text-sm tw:font-normal tw:transition-colors tw:relative',
+                                        'tw:shrink-0 tw:pb-3 tw:text-base tw:md:text-sm tw:font-normal tw:transition-colors tw:relative',
                                         billingTab === 'invoices'
                                             ? 'tw:text-[#2563eb]'
                                             : 'tw:text-gray-600 hover:tw:text-[#2563eb]'
@@ -121,7 +158,7 @@
 
                                 <div v-if="billingTab === 'history'"
                                     class="tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:p-6">
-                                    <div class="tw:flex tw:flex-row tw:justify-between md:tw:items-center tw:gap-4">
+                                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:justify-between tw:md:items-center tw:gap-4">
                                         <div class="tw:flex tw:gap-3 tw:items-center">
                                             <svg class="tw:w-10 tw:h-10 tw:text-gray-400 tw:flex-shrink-0"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -151,7 +188,7 @@
 
                                 <div v-if="billingTab === 'invoices'"
                                     class="tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:p-6">
-                                    <div class="tw:flex tw:flex-row tw:justify-between md:tw:items-center tw:gap-4">
+                                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:justify-between tw:md:items-center tw:gap-4">
                                         <div class="tw:flex tw:gap-3 tw:items-center">
                                             <svg class="tw:w-10 tw:h-10 tw:text-gray-400 tw:flex-shrink-0"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -182,11 +219,11 @@
                         </div>
 
                         <!-- Account Information Tab -->
-                        <div v-if="activeTab === 'account'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-8">
+                        <div v-if="activeTab === 'account'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-4 tw:md:p-8">
                             <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-6">Account Information</h2>
                             
                             <template v-if="authStore.user">
-                            <div class="tw:grid tw:grid-cols-1 md:tw:grid-cols-2 tw:gap-6">
+                            <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-6">
                                 <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:border tw:border-gray-200">
                                     <p class="tw:text-xs tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Name</p>
                                     <p class="tw:text-gray-800 tw:font-medium">{{ authStore.user.name }}</p>
@@ -272,6 +309,15 @@
     const router = useRouter()
     const chatStore = useChatStore()
     const authStore = useAuthStore()
+    const mobileSidebarOpen = ref(false)
+
+    function toggleMobileSidebar() {
+        mobileSidebarOpen.value = !mobileSidebarOpen.value
+    }
+
+    function closeMobileSidebar() {
+        mobileSidebarOpen.value = false
+    }
 
     const activeTab = ref('profile');
     const billingTab = ref('history');
@@ -299,14 +345,17 @@
     ]
 
     function handleBack() {
+      closeMobileSidebar()
       router.push('/') // Navigate to events list or wherever you need
     }
 
     function handleEventSelected(eventId) {
+      closeMobileSidebar()
       console.log('Event selected for editing:', eventId)
     }
 
     function handleChatboxClick() {
+      closeMobileSidebar()
       chatStore.open()
     }
 
