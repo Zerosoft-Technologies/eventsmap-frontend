@@ -1,6 +1,19 @@
 <template>
-    <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-10 tw:px-6">
-        <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
+    <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-4 tw:px-3 tw:md:py-10 tw:md:px-6 tw:overflow-x-hidden">
+        <div class="tw:w-full tw:max-w-7xl tw:flex tw:flex-col tw:md:flex-row tw:gap-4 tw:md:gap-6">
+            <!-- Mobile Header -->
+            <div class="tw:md:hidden tw:flex tw:items-center tw:justify-between tw:bg-white tw:rounded-xl tw:shadow-sm tw:px-4 tw:py-3">
+                <button type="button" @click="handleBack" class="tw:text-sm tw:font-medium tw:text-[#0061FF]">Event Map</button>
+                <button type="button" @click="toggleMobileSidebar" aria-label="Open menu" class="tw:text-2xl tw:leading-none tw:text-gray-700">☰</button>
+            </div>
+
+            <!-- Mobile Sidebar Drawer -->
+            <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
+                <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar"></div>
+                <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
+                    <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar"/>
+                </div>
+            </div>
 
             <!-- ================= LEFT CARD ================= -->
             <!-- <div
@@ -65,11 +78,13 @@
 
                         </div>
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-            <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" 
-            @chatbox-click="handleChatboxClick"/>
+            <div class="tw:hidden tw:md:block">
+                <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" 
+                @chatbox-click="handleChatboxClick"/>
+            </div>
 
             <!-- ================= RIGHT CARD ================= -->
-            <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6 tw:space-y-6">
+            <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
 
                 <!-- IMAGE UPLOAD SECTION -->
                 <!-- <div
@@ -89,7 +104,7 @@
                 </div> -->
 
                 <!-- Organiser TITLE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                             Create Premium Organiser
@@ -216,7 +231,7 @@
                 </div> -->
 
                 <!-- Organiser IMAGE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-6">
+                <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
 
                     <!-- Header -->
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
@@ -252,7 +267,7 @@
                 </div>
 
                 <!-- ADDITIONAL IMAGES SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                             Additional Images (Max. 5 Images) <span class="tw:text-xs tw:text-gray-500"> Recommended
@@ -264,7 +279,7 @@
                 </div>
 
                 <!-- GENRE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                             Genre <span class="tw:text-red-500">*</span>
@@ -470,7 +485,7 @@
                 </div> -->
 
                 <!-- SOCIAL MEDIA LINKS SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Social Media Links
                     </h3>
@@ -515,7 +530,7 @@
                 </div> -->
 
                 <!-- INVITE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                             Invite
@@ -564,7 +579,7 @@
                 </div> -->
 
                                 <!-- EVENT VISIBILITY SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-6">
+                <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-6">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Event Visibility
                     </h3>
@@ -636,13 +651,13 @@
 
                 <!-- SAVE Organiser BUTTON -->
                 <div class="tw:w-full tw:pt-4">
-                    <div class="tw:flex tw:w-full tw:items-center tw:justify-end">
+                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:w-full tw:items-stretch tw:md:items-center tw:justify-end">
                         <!-- <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                            tw:border tw:border-orange-500 tw:text-[#0061FF]
                            tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
                             Buy Tickets
                         </button> -->
-                        <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                        <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                            tw:border tw:border-blue-500 tw:text-blue-600
                            tw:bg-white hover:tw:bg-blue-50 tw:transition-all
                            disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
@@ -695,9 +710,19 @@ const route = useRoute()
 const toast = useToast()
 const authStore = useAuthStore()
 const chatStore = useChatStore()
+const mobileSidebarOpen = ref(false)
+
+function toggleMobileSidebar() {
+    mobileSidebarOpen.value = !mobileSidebarOpen.value
+}
+
+function closeMobileSidebar() {
+    mobileSidebarOpen.value = false
+}
 
 
 function handleChatboxClick() {
+    closeMobileSidebar()
     if (authStore.user?.account_type !== 'premium') {
         toast.warning('Chat is available only for premium users.')
         return
@@ -1092,10 +1117,12 @@ onMounted(() => {
     // })
 })
 function handleBack() {
+    closeMobileSidebar()
     router.push('/') // Navigate to talents list
 }
 
 function handleEventSelected(eventId) {
+    closeMobileSidebar()
     console.log('Event selected for editing:', eventId)
 }
 </script>

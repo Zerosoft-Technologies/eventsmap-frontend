@@ -1,6 +1,17 @@
 <template>
-  <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-10 tw:px-6">
-    <div class="tw:w-full tw:max-w-7xl tw:flex tw:gap-6">
+  <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-4 tw:px-3 tw:md:py-10 tw:md:px-6 tw:overflow-x-hidden">
+    <div class="tw:w-full tw:max-w-7xl tw:flex tw:flex-col tw:md:flex-row tw:gap-4 tw:md:gap-6">
+      <div class="tw:md:hidden tw:flex tw:items-center tw:justify-between tw:bg-white tw:rounded-xl tw:shadow-sm tw:px-4 tw:py-3">
+        <button type="button" @click="handleBack" class="tw:text-sm tw:font-medium tw:text-[#0061FF]">Event Map</button>
+        <button type="button" @click="toggleMobileSidebar" aria-label="Open menu" class="tw:text-2xl tw:leading-none tw:text-gray-700">☰</button>
+      </div>
+      <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
+        <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar"></div>
+        <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
+          <EventSidebar :menuItems="menuItems"
+            @back="handleBack" @event-selected="handleEventSelected" @menu-click="closeMobileSidebar" />
+        </div>
+      </div>
 
       <!-- ================= LEFT CARD ================= -->
       <!-- <div
@@ -69,13 +80,15 @@
         </div>
       </div> -->
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-      <EventSidebar :menuItems="menuItems"
-        @back="handleBack" @event-selected="handleEventSelected" />
+      <div class="tw:hidden tw:md:block">
+        <EventSidebar :menuItems="menuItems"
+          @back="handleBack" @event-selected="handleEventSelected" />
+      </div>
 
       <!-- ================= RIGHT CARD ================= -->
-      <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-3xl tw:shadow-sm tw:p-6 tw:space-y-6">
+      <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
         <!-- Venue TITLE SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Venue Title
@@ -97,14 +110,14 @@
         </div>
 
         <!-- Venue LOCATION SECTION -->
-        <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-6">
+        <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
           <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
             Venue Location
           </h3>
 
           <div class="tw:relative tw:mb-4">
             <input v-model="searchAddress" @input="onSearchInput" type="text" placeholder="Search Address..."
-              class="tw:w-full tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+              class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
 
             <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
               <svg class="tw:animate-spin tw:h-5 tw:w-5 tw:text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -125,17 +138,17 @@
             </div>
           </div>
 
-          <div id="event-map" class="tw:w-full tw:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4"></div>
+          <div id="event-map" class="tw:w-full tw:h-[240px] tw:md:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4"></div>
 
           <div class="tw:space-y-2">
             <label class="tw:block tw:text-sm tw:text-gray-600">Selected Address</label>
             <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
-              class="tw:w-full tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+              class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
           </div>
         </div>
 
         <!-- Venue IMAGE SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-6">
+        <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
 
           <!-- Header -->
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
@@ -170,7 +183,7 @@
         </div>
 
         <!-- GENRE SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Genre <span class="tw:text-red-500">*</span>
@@ -198,7 +211,7 @@
           </div>
 
           <!-- Category and Subcategory Dropdowns -->
-          <div class="tw:flex tw:gap-4">
+          <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-4">
             <!-- Category Dropdown -->
             <div class="tw:flex-1">
               <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
@@ -302,7 +315,7 @@
         </div>
 
         <!-- ALLOWANCE OF DOGS SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Allowance of dogs
@@ -328,7 +341,7 @@
         </div>
 
         <!-- WHEELCHAIR ACCESSIBLE SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Wheelchair accessible
@@ -352,7 +365,7 @@
         </div>
 
         <!-- ACCESSIBLE PARKING SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Accessible parking close to entrance
@@ -376,7 +389,7 @@
         </div>
 
         <!-- VALET PARKING SECTION -->
-        <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+        <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
               Valet-Parking
@@ -542,13 +555,13 @@
 
         <!-- SAVE Venue BUTTON -->
         <div class="tw:w-full tw:pt-4">
-          <div class="tw:flex tw:w-full tw:items-center tw:justify-between">
-            <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+          <div class="tw:flex tw:flex-col tw:md:flex-row tw:w-full tw:items-stretch tw:md:items-center tw:justify-between tw:gap-3 tw:md:gap-0">
+            <button class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                tw:border tw:border-orange-500 tw:text-[#0061FF]
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
               Buy Tickets
             </button>
-            <button @click="handleSubmit" :disabled="isSubmitting" class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+            <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                tw:border tw:border-blue-500 tw:text-blue-600
                tw:bg-white hover:tw:bg-blue-50 tw:transition-all
                disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
@@ -598,6 +611,9 @@ import "flatpickr/dist/flatpickr.css"
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+const mobileSidebarOpen = ref(false)
+function toggleMobileSidebar() { mobileSidebarOpen.value = !mobileSidebarOpen.value }
+function closeMobileSidebar() { mobileSidebarOpen.value = false }
 
 const activeTab = ref("home")
 const isSubmitting = ref(false)
@@ -808,10 +824,12 @@ function handleFileChange(event) {
 }
 
 function handleBack() {
+  closeMobileSidebar()
   router.push('/') // Navigate to events list
 }
 
 function handleEventSelected(eventId) {
+  closeMobileSidebar()
   console.log('Event selected for editing:', eventId)
 }
 
