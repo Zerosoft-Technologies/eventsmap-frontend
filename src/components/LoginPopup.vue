@@ -38,9 +38,23 @@
 
                 <div>
                     <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-1">{{ $t('auth.password') }}</label>
-                    <input type="password" v-model="password"
-                        class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none"
-                        :placeholder="$t('auth.password')" required />
+                    <div class="tw:relative">
+                        <input
+                            :type="showPassword ? 'text' : 'password'"
+                            v-model="password"
+                            class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2 tw:focus:border-(--secondary-color) tw:outline-none tw:pr-12"
+                            :placeholder="$t('auth.password')"
+                            required
+                        />
+                        <button
+                            type="button"
+                            @click="showPassword = !showPassword"
+                            class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-8 tw:h-8 tw:flex tw:items-center tw:justify-center tw:rounded-full tw:text-gray-400 hover:tw:text-gray-600 tw:transition"
+                            aria-label="Toggle password visibility"
+                        >
+                            <component :is="showPassword ? EyeOff : Eye" class="tw:w-5 tw:h-5" />
+                        </button>
+                    </div>
                 </div>
 
                 <button type="submit"
@@ -66,6 +80,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { Eye, EyeOff } from 'lucide-vue-next';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
@@ -86,6 +101,7 @@ const emit = defineEmits(["close"]);
 
 const email = ref("");
 const password = ref("");
+const showPassword = ref(false);
 const showResendBanner = ref(false);
 const resending = ref(false);
 const resendMessage = ref("");

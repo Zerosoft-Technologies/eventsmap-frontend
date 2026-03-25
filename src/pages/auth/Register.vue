@@ -75,28 +75,48 @@
           <!-- Password -->
           <div>
             <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-1">Password</label>
-            <input
-              ref="el_password"
-              v-model="form.password"
-              type="password"
-              placeholder="Min 8 characters"
-              @input="clearFieldError('password')"
-              :class="inputClass(formErrors.password)"
-            />
+            <div class="tw:relative">
+              <input
+                ref="el_password"
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="Min 8 characters"
+                @input="clearFieldError('password')"
+                :class="[...inputClass(formErrors.password), 'tw:pr-12']"
+              />
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-8 tw:h-8 tw:flex tw:items-center tw:justify-center tw:rounded-full tw:text-gray-400 hover:tw:text-gray-600 tw:transition"
+                aria-label="Toggle password visibility"
+              >
+                <component :is="showPassword ? EyeOff : Eye" class="tw:w-5 tw:h-5" />
+              </button>
+            </div>
             <p v-if="formErrors.password" class="tw:text-red-500 tw:text-xs tw:mt-1">{{ formErrors.password }}</p>
           </div>
 
           <!-- Confirm Password -->
           <div>
             <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-1">Confirm Password</label>
-            <input
-              ref="el_password_confirmation"
-              v-model="form.password_confirmation"
-              type="password"
-              placeholder="Repeat your password"
-              @input="clearFieldError('password_confirmation')"
-              :class="inputClass(formErrors.password_confirmation)"
-            />
+            <div class="tw:relative">
+              <input
+                ref="el_password_confirmation"
+                v-model="form.password_confirmation"
+                :type="showPasswordConfirmation ? 'text' : 'password'"
+                placeholder="Repeat your password"
+                @input="clearFieldError('password_confirmation')"
+                :class="[...inputClass(formErrors.password_confirmation), 'tw:pr-12']"
+              />
+              <button
+                type="button"
+                @click="showPasswordConfirmation = !showPasswordConfirmation"
+                class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-8 tw:h-8 tw:flex tw:items-center tw:justify-center tw:rounded-full tw:text-gray-400 hover:tw:text-gray-600 tw:transition"
+                aria-label="Toggle confirm password visibility"
+              >
+                <component :is="showPasswordConfirmation ? EyeOff : Eye" class="tw:w-5 tw:h-5" />
+              </button>
+            </div>
             <p v-if="formErrors.password_confirmation" class="tw:text-red-500 tw:text-xs tw:mt-1">{{ formErrors.password_confirmation }}</p>
           </div>
 
@@ -354,6 +374,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
+import { Eye, EyeOff } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import PaymentLoadingOverlay from '@/components/ui/PaymentLoadingOverlay.vue'
@@ -414,6 +435,9 @@ const form = ref({
 })
 
 const formErrors = ref<Record<string, string>>({})
+
+const showPassword = ref(false)
+const showPasswordConfirmation = ref(false)
 
 const el_name                 = ref<HTMLInputElement | null>(null)
 const el_email                = ref<HTMLInputElement | null>(null)

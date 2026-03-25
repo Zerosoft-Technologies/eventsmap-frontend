@@ -26,25 +26,45 @@
 
         <div>
           <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-1">New Password</label>
-          <input
-            v-model="form.password"
-            type="password"
-            required
-            placeholder="Min 8 characters"
-            class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2.5 tw:outline-none tw:transition focus:tw:border-[var(--secondary-color)]"
-          />
+          <div class="tw:relative">
+            <input
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
+              required
+              placeholder="Min 8 characters"
+              class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2.5 tw:outline-none tw:transition focus:tw:border-[var(--secondary-color)] tw:pr-12"
+            />
+            <button
+              type="button"
+              @click="showPassword = !showPassword"
+              class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-8 tw:h-8 tw:flex tw:items-center tw:justify-center tw:rounded-full tw:text-gray-400 hover:tw:text-gray-600 tw:transition"
+              aria-label="Toggle password visibility"
+            >
+              <component :is="showPassword ? EyeOff : Eye" class="tw:w-5 tw:h-5" />
+            </button>
+          </div>
           <p v-if="fieldError('password')" class="tw:text-red-500 tw:text-xs tw:mt-1">{{ fieldError('password') }}</p>
         </div>
 
         <div>
           <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-1">Confirm Password</label>
-          <input
-            v-model="form.password_confirmation"
-            type="password"
-            required
-            placeholder="Repeat your password"
-            class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2.5 tw:outline-none tw:transition focus:tw:border-[var(--secondary-color)]"
-          />
+          <div class="tw:relative">
+            <input
+              v-model="form.password_confirmation"
+              :type="showPasswordConfirmation ? 'text' : 'password'"
+              required
+              placeholder="Repeat your password"
+              class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2.5 tw:outline-none tw:transition focus:tw:border-[var(--secondary-color)] tw:pr-12"
+            />
+            <button
+              type="button"
+              @click="showPasswordConfirmation = !showPasswordConfirmation"
+              class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-8 tw:h-8 tw:flex tw:items-center tw:justify-center tw:rounded-full tw:text-gray-400 hover:tw:text-gray-600 tw:transition"
+              aria-label="Toggle confirm password visibility"
+            >
+              <component :is="showPasswordConfirmation ? EyeOff : Eye" class="tw:w-5 tw:h-5" />
+            </button>
+          </div>
         </div>
 
         <button
@@ -69,6 +89,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Eye, EyeOff } from 'lucide-vue-next'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -81,6 +102,9 @@ const form = ref({
   password: '',
   password_confirmation: '',
 })
+
+const showPassword = ref(false)
+const showPasswordConfirmation = ref(false)
 
 function fieldError(field: string): string | null | undefined {
   const errors = authStore.validationErrors[field]

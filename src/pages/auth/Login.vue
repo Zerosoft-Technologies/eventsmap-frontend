@@ -50,13 +50,23 @@
 
         <div>
           <label class="tw:block tw:text-sm tw:text-gray-600 tw:mb-1">Password</label>
-          <input
-            v-model="form.password"
-            type="password"
-            required
-            placeholder="Enter your password"
-            class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2.5 tw:outline-none tw:transition focus:tw:border-[var(--secondary-color)]"
-          />
+          <div class="tw:relative">
+            <input
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
+              required
+              placeholder="Enter your password"
+              class="tw:w-full tw:border tw:border-gray-300 tw:rounded-lg tw:px-4 tw:py-2.5 tw:outline-none tw:transition focus:tw:border-[var(--secondary-color)] tw:pr-12"
+            />
+            <button
+              type="button"
+              @click="showPassword = !showPassword"
+              class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-8 tw:h-8 tw:flex tw:items-center tw:justify-center tw:rounded-full tw:text-gray-400 hover:tw:text-gray-600 tw:transition"
+              aria-label="Toggle password visibility"
+            >
+              <component :is="showPassword ? EyeOff : Eye" class="tw:w-5 tw:h-5" />
+            </button>
+          </div>
         </div>
 
         <div class="tw:flex tw:justify-end">
@@ -98,6 +108,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Eye, EyeOff } from 'lucide-vue-next'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getCreateRoute } from '@/utils/routeResolver'
@@ -110,6 +121,8 @@ const form = ref({
   email: '',
   password: '',
 })
+
+const showPassword = ref(false)
 
 const showResendBanner = ref(false)
 const resending = ref(false)
