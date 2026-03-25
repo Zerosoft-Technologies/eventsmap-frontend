@@ -370,11 +370,19 @@
                   :class="hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'">
                   <input type="text" inputmode="numeric" maxlength="2" v-model="startHH" placeholder="HH"
                     @input="onTimeInput('startHH', $event)" @blur="onTimeBlur('startHH')"
-                    class="tw:w-10 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums" />
+                    class="tw:w-10 tw:text-center tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
+                    :class="startHH ? 'tw:text-black' : 'tw:text-gray-700'" />
                   <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
-                  <input type="text" inputmode="numeric" maxlength="2" v-model="startMM" placeholder="00"
+                  <input
+                    ref="startMMInput"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="2"
+                    v-model="startMM"
+                    placeholder="00"
                     @input="onTimeInput('startMM', $event)" @blur="onTimeBlur('startMM')"
-                    class="tw:w-10 tw:text-center tw:text-gray-500 placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums" />
+                    class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
+                    :class="startMM ? 'tw:text-black' : 'tw:text-gray-500'" />
                   <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                 </div>
                 <p v-if="hasStartError" class="tw:text-red-500 tw:text-sm">Start time is required</p>
@@ -409,11 +417,19 @@
                   :class="(hasEndError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'">
                   <input type="text" inputmode="numeric" maxlength="2" v-model="endHH" placeholder="HH"
                     @input="onTimeInput('endHH', $event)" @blur="onTimeBlur('endHH')"
-                    class="tw:w-10 tw:text-center tw:text-gray-700 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums" />
+                    class="tw:w-10 tw:text-center tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
+                    :class="endHH ? 'tw:text-black' : 'tw:text-gray-700'" />
                   <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
-                  <input type="text" inputmode="numeric" maxlength="2" v-model="endMM" placeholder="00"
+                  <input
+                    ref="endMMInput"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="2"
+                    v-model="endMM"
+                    placeholder="00"
                     @input="onTimeInput('endMM', $event)" @blur="onTimeBlur('endMM')"
-                    class="tw:w-10 tw:text-center tw:text-gray-500 placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums" />
+                    class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
+                    :class="endMM ? 'tw:text-black' : 'tw:text-gray-500'" />
                   <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                 </div>
                 <p v-if="hasEndError" class="tw:text-red-500 tw:text-sm">End time is required</p>
@@ -893,6 +909,8 @@ const startHH = ref("")
 const startMM = ref("")
 const endHH = ref("")
 const endMM = ref("")
+const startMMInput = ref(null)
+const endMMInput = ref(null)
 const datetimeRangeError = ref("")
 const hasStartError = ref(false)
 const hasEndError = ref(false)
@@ -1005,14 +1023,38 @@ function onTimeInput(field, event) {
   const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
   const isEmpty = raw === ""
   const asNumber = isEmpty ? null : Number(raw)
-  const isHour = field === "startHH" || field === "endHH"
-  const max = isHour ? 23 : 59
+  const isHourField = field === "startHH" || field === "endHH"
+  const max = isHourField ? 23 : 59
   const nextVal = isEmpty ? "" : String(clamp(isNaN(asNumber) ? 0 : asNumber, 0, max))
 
   if (field === "startHH") { startHH.value = nextVal; hasStartError.value = false }
   if (field === "startMM") { startMM.value = nextVal; hasStartError.value = false }
   if (field === "endHH") { endHH.value = nextVal; hasEndError.value = false }
   if (field === "endMM") { endMM.value = nextVal; hasEndError.value = false }
+
+  // When HH reaches 2 digits, auto-fill minutes with "00" and move focus.
+  const hourJustCompleted = isHourField && raw.length === 2
+  const hourJustCleared = isHourField && raw.length === 0
+
+  if (hourJustCompleted) {
+    if (field === "startHH") {
+      startMM.value = "00"
+      nextTick(() => {
+        startMMInput.value?.focus?.()
+        startMMInput.value?.select?.()
+      })
+    }
+    if (field === "endHH") {
+      endMM.value = "00"
+      nextTick(() => {
+        endMMInput.value?.focus?.()
+        endMMInput.value?.select?.()
+      })
+    }
+  } else if (hourJustCleared) {
+    if (field === "startHH") startMM.value = ""
+    if (field === "endHH") endMM.value = ""
+  }
 
   if (!endDate.value && eventDate.value) endDate.value = eventDate.value
   validateEndAfterStartDateTime()
