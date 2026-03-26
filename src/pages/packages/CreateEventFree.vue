@@ -523,7 +523,7 @@
                   ]">
                   <option value="">Select</option>
                   <option value="none">No Dress Code</option>
-                  <option value="required">Dress Code Required</option>
+                  <option value="required">+ If describe, dress code required.</option>
                 </select>
                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
@@ -683,6 +683,7 @@ import InviteSection from "@/components/invite/InviteSection.vue"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import eventService from "@/services/eventService"
 import { useToast } from "@/composables/useToast"
+import { useMyEventStore } from "@/stores/myEventStore"
 
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -693,6 +694,7 @@ import "flatpickr/dist/flatpickr.css"
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+const myEvtStore = useMyEventStore()
 const mobileSidebarOpen = ref(false)
 
 function toggleMobileSidebar() {
@@ -1538,6 +1540,10 @@ function resetForm() {
   if (fileInput) fileInput.value = ''
 }
 
+async function refreshMyEventsAfterCreate() {
+  await myEvtStore.fetchMyEvents()
+}
+
 // Create Event function using eventService
 async function createEvent() {
   if (isSubmitting.value) return
@@ -1594,6 +1600,7 @@ async function createEvent() {
     if (response.success) {
       toast.success('Event created successfully!')
       resetForm()
+      await refreshMyEventsAfterCreate()
     } else {
       // Handle API validation errors
       if (response.errors) {

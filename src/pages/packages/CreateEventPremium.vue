@@ -609,7 +609,7 @@
                                     ]">
                                     <option value="">Select</option>
                                     <option value="none">No Dress Code</option>
-                                    <option value="required">Dress Code Required</option>
+                                    <option value="required">+ If describe, dress code required.</option>
                                 </select>
                                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
@@ -1143,8 +1143,9 @@ const ticketUrl = ref('');
 // Event options
 const isRecurring = ref(false)
 const isCopyEvent = ref(false)
-const showUpcomingEvents = ref(null)
-const showPastEvents = ref(null)
+// Default visibility: "No"
+const showUpcomingEvents = ref(false)
+const showPastEvents = ref(false)
 const showChatbox = ref(false)
 const contactBoxMessage = ref('')
 const venueDetailsText = ref('')
@@ -1734,6 +1735,10 @@ async function handleSubmit() {
     }
 }
 
+async function refreshMyEventsAfterCreate() {
+    await myEvtStore.fetchMyEvents()
+}
+
 // Create Event function using eventService
 async function createEvent() {
     if (isSubmitting.value) return
@@ -1824,6 +1829,7 @@ async function createEvent() {
         if (response.success) {
             toast.success('Event created successfully!')
             resetForm()
+            await refreshMyEventsAfterCreate()
         } else {
             // Handle API validation errors
             if (response.errors) {
@@ -2169,7 +2175,7 @@ async function loadEvent(id) {
         isCopyEvent.value = !!d.is_copy_event
         showUpcomingEvents.value = d.show_upcoming_events !== undefined
             ? !!d.show_upcoming_events
-            : true
+            : false
         showPastEvents.value = d.show_past_events !== undefined
             ? !!d.show_past_events
             : false
@@ -2256,8 +2262,8 @@ function resetForm() {
     bookingInstructions.value = ''
     isRecurring.value = false
     isCopyEvent.value = false
-    showUpcomingEvents.value = null
-    showPastEvents.value = null
+    showUpcomingEvents.value = false
+    showPastEvents.value = false
     conditionEntranceFee.value = ''
     conditionDressCode.value = ''
     conditionAgeLimit.value = ''
