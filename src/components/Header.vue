@@ -500,35 +500,51 @@
         </template>
 
         <!-- Email Box -->
-        <button
-          v-if="authStore.isAuthenticated"
-          type="button"
-          @click="handleMobileEmailClick"
-          :class="activeField === 'date' ? 'tw:pointer-events-none' : ''"
-          class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none tw:text-left"
-          aria-label="Go to profile"
-        >
-          {{ authStore.user?.email || '' }}
-        </button>
-        <input
-          v-else
-          type="text"
-          readonly
-          :value="''"
-          :placeholder="$t('auth.email')"
-          class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none"
-          aria-label="Email"
-        />
+        <template v-if="authStore.isAuthenticated">
+          <button
+            type="button"
+            @click="handleMobileEmailClick"
+            :class="activeField === 'date' ? 'tw:pointer-events-none' : ''"
+            class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none tw:text-left"
+            aria-label="Go to profile"
+          >
+            {{ authStore.user?.email || '' }}
+          </button>
 
-        <!-- Logout Button -->
-        <button
-          type="button"
-          class="tw:bg-white tw:py-3 tw:rounded-lg tw:flex tw:gap-2 tw:items-center tw:justify-center tw:px-4 tw:border tw:border-(--secondary-color) hover:tw:bg-gray-50 tw:transition-colors tw:font-medium"
-          @click="closeMobileHeader(); handleLogout()"
-          aria-label="Logout"
-        >
-          {{ $t('header.logout') || 'Logout' }}
-        </button>
+          <!-- Logout Button -->
+          <button
+            type="button"
+            class="tw:bg-white tw:py-3 tw:rounded-lg tw:flex tw:gap-2 tw:items-center tw:justify-center tw:px-4 tw:border tw:border-(--secondary-color) hover:tw:bg-gray-50 tw:transition-colors tw:font-medium"
+            @click="closeMobileHeader(); handleLogout()"
+            aria-label="Logout"
+          >
+            {{ $t('header.logout') || 'Logout' }}
+          </button>
+        </template>
+
+        <template v-else>
+          <!-- Register Button (mobile) -->
+          <RouterLink
+            to="/register"
+            style="height: 50px;"
+            @click="closeMobileHeader()"
+            class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"
+          >
+            <img src="../assets/user.png" alt="User Icon"/>
+            <span>{{ $t('header.createProfile') }}</span>
+          </RouterLink>
+
+          <!-- Login Button (mobile) -->
+          <button
+            type="button"
+            style="height: 50px;"
+            @click="closeMobileHeader(); $emit('open-login')"
+            class="tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color)"
+          >
+            <img src="../assets/login.png" alt="Login Icon"/>
+            <span>{{ $t('header.login') }}</span>
+          </button>
+        </template>
       </div>
     </div>
   </transition>
