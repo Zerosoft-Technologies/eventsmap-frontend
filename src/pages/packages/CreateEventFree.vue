@@ -639,7 +639,7 @@
             </button>
 
             <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-             tw:border tw:border-blue-500 tw:text-blue-600
+             tw:border tw:border-orange-500 tw:text-blue-600
              tw:bg-white hover:tw:bg-blue-50 tw:transition-all
              disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
               {{ isSubmitting ? 'Creating...' : 'Create Event' }}
