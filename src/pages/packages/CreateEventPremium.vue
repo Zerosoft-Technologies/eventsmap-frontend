@@ -609,7 +609,7 @@
                                     ]">
                                     <option value="">Select</option>
                                     <option value="none">No Dress Code</option>
-                                    <option value="required">+ If describe, dress code required.</option>
+                                    <option value="required">Other, Please Specify</option>
                                 </select>
                                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
@@ -640,7 +640,7 @@
                                     ]">
                                     <option value="">Select</option>
                                     <option value="none">No Age Limit</option>
-                                    <option value="restricted">Age Restricted</option>
+                                    <option value="restricted">Other, Please Specify</option>
                                 </select>
                                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
@@ -671,7 +671,7 @@
                                     ]">
                                     <option value="">Select</option>
                                     <option value="open">Open to All</option>
-                                    <option value="restricted">Restricted Entry</option>
+                                    <option value="restricted">Other, Please Specify</option>
                                 </select>
                                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>

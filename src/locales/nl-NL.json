@@ -45,7 +45,8 @@
     "delete": "Verwijderen",
     "confirm": "Bevestigen",
     "yes": "Ja",
-    "no": "Nee"
+    "no": "Nee",
+    "apply": "Toepassen"
   },
   "auth": {
     "loginTitle": "Log in op uw account",

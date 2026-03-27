@@ -272,10 +272,10 @@
       aria-modal="true"
       aria-label="Mobile menu"
     >
-      <!-- Close button -->
       <button
+        v-if="activeField !== 'date'"
         type="button"
-        class="tw:absolute tw:top-4 tw:right-4 tw:border tw:border-orange-400 tw:rounded-md tw:p-2 tw:z-[70]"
+        class="tw:absolute tw:top-4 tw:right-4 tw:border tw:border-orange-400 tw:rounded-md tw:p-2 tw:z-[90] tw:pointer-events-auto tw:bg-white"
         @click="closeMobileHeader"
         aria-label="Close menu"
       >
@@ -396,7 +396,7 @@
             @keyup.enter="filterBy('search'); closeMobileHeader()"
             type="text"
             :placeholder="$t('header.search.placeholder')"
-            class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none"
+            class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none tw:placeholder-(--primary-color)"
             aria-label="Search events"
           />
 
@@ -484,15 +484,22 @@
 
             <div
               v-if="activeField === 'date'"
-              class="tw:w-full tw:mt-2 tw:bg-white tw:border tw:rounded-lg tw:p-4 tw:shadow-md tw:max-h-[60vh] tw:overflow-y-auto"
+              class="mobile-datepicker-panel tw:relative tw:z-40 tw:w-full tw:mt-2 tw:overflow-visible tw:rounded-lg tw:border tw:border-gray-200 tw:bg-white"
               @click.capture="handleMobileDatepickerContainerClick"
             >
-              <div class="tw:relative tw:z-50">
+              <!-- Apply/Cancel live inside vue-tailwind-datepicker (auto-apply=false); no extra header actions -->
+              <div
+                class="tw:relative tw:z-40 tw:max-h-[min(60vh,520px)] tw:overflow-y-auto tw:overflow-x-visible tw:px-4 tw:py-3 tw:border tw:border-orange-400 tw:rounded-lg tw:bg-white"
+              >
                 <DatePicker
+                  :key="mobilePickerKey"
                   :inline="true"
                   :noInput="false"
+                  :initial-date-range="mobileInitialDateRange"
+                  :initial-session="tempSessionFilter"
+                  :persist-session-to-storage="false"
                   @update:dateRange="handleMobileDateRangeUpdate"
-                  @update:session="sessionFilter = $event"
+                  @update:session="handleMobileSessionUpdate"
                 />
               </div>
             </div>
@@ -609,7 +616,9 @@ async function handleLogout() {
 
 function toggleMobileMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
-  if (!isMobileMenuOpen.value) activeField.value = null
+  if (!isMobileMenuOpen.value) {
+    activeField.value = null
+  }
 }
 
 function closeMobileHeader() {
@@ -623,8 +632,8 @@ function toggleField(field) {
   showNotificationDropdown.value = false
   activeField.value = activeField.value === field ? null : field
   if (field === 'date' && activeField.value === 'date') {
-    // Avoid auto-closing right after the DatePicker mounts and emits its initial value.
-    mobileDatePickerInitialized.value = false
+    tempSessionFilter.value = { ...sessionFilter.value }
+    mobilePickerKey.value++
   }
 }
 
@@ -661,6 +670,10 @@ function handleMobileDatepickerContainerClick(e) {
   }
 }
 
+function handleMobileSessionUpdate(newSession) {
+  if (newSession) tempSessionFilter.value = { ...newSession }
+}
+
 async function handleMobileEmailClick() {
   if (!authStore.isAuthenticated) return
   closeMobileHeader()
@@ -668,11 +681,11 @@ async function handleMobileEmailClick() {
 }
 
 function handleMobileDateRangeUpdate(newRange) {
-  dateRange.value = newRange
-  if (!mobileDatePickerInitialized.value) {
-    mobileDatePickerInitialized.value = true
-    return
-  }
+  // auto-apply=false: emitted when user taps Apply inside the calendar footer
+  if (!newRange) return
+  dateRange.value = Array.isArray(newRange) ? [...newRange] : newRange
+  sessionFilter.value = { ...tempSessionFilter.value }
+  localStorage.setItem('datepicker-session', JSON.stringify(sessionFilter.value))
   closeMobileHeader()
 }
 
@@ -697,7 +710,17 @@ const showSuggestion = ref(false)
 const isMobileMenuOpen = ref(false)
 // 'search' | 'location' | 'date' | null
 const activeField = ref(null)
-const mobileDatePickerInitialized = ref(false)
+/** Mobile: session draft until user confirms range via calendar Apply (auto-apply=false). */
+const tempSessionFilter = ref({
+  morning: false,
+  afternoon: false,
+  evening: false,
+  night: false
+})
+const mobilePickerKey = ref(0)
+const isCalendarOpen = computed(
+  () => isMobileMenuOpen.value && activeField.value === 'date'
+)
 
 // Prevent background scroll when the mobile overlay is open
 watch(isMobileMenuOpen, (val) => {
@@ -725,6 +748,13 @@ const sessionFilter = ref({
   afternoon: false,
   evening: false,
   night: false
+})
+/** Seed mobile inline picker from applied filters when opening the date field. */
+const mobileInitialDateRange = computed(() => {
+  if (activeField.value !== 'date') return null
+  return dateRange.value[0] && dateRange.value[1]
+    ? [dateRange.value[0], dateRange.value[1]]
+    : null
 })
 const selectedLocation = ref({ lat: 52.3676, lng: 4.9041, name: "Amsterdam" }) // Default to Amsterdam
 
@@ -1036,12 +1066,11 @@ const debouncedReloadEvents = debounce(() => {
   showResults.value = true
 }, 500)
 
-// CRITICAL: trigger API call when date range changes
+// Trigger API when applied date range changes (desktop picker updates dateRange directly; mobile uses Apply)
 watch(dateRange, () => {
   debouncedReloadEvents()
 }, { deep: true })
 
-// Trigger API call when session filter changes
 watch(sessionFilter, () => {
   debouncedReloadEvents()
 }, { deep: true })
@@ -1208,4 +1237,48 @@ export default {
   transition: all 0.25s ease;
 }
 /* Menu animation */
+
+/* Mobile datepicker layering and close affordance inside the calendar */
+.mobile-datepicker-panel {
+  z-index: 40;
+  overflow: visible;
+}
+
+.mobile-datepicker-panel :deep(.vtd-datepicker) {
+  position: relative;
+  z-index: 40;
+  padding-top: 2.75rem;
+}
+
+.mobile-datepicker-panel :deep(.text-vtd-orange) {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  left: auto !important;
+  z-index: 60;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 40px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f97316;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  color: #f97316;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.mobile-datepicker-panel :deep(.text-vtd-orange:hover) {
+  background-color: #fff7ed;
+  border-color: #ea580c;
+  color: #ea580c;
+}
+
+.mobile-datepicker-panel :deep(.text-vtd-orange svg) {
+  width: 1.1rem;
+  height: 1.1rem;
+}
 </style>

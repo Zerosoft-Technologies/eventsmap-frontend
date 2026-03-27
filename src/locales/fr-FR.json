@@ -45,7 +45,8 @@
     "delete": "Supprimer",
     "confirm": "Confirmer",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "apply": "Appliquer"
   },
   "auth": {
     "loginTitle": "Connexion à votre compte",

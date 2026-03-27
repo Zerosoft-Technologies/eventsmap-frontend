@@ -85,7 +85,8 @@
     "yes": "Yes",
     "no": "No",
     "clear": "Clear",
-    "clearFilters": "Clear Filters"
+    "clearFilters": "Clear Filters",
+    "apply": "Apply"
   },
   "allEvents": {
     "title": "All Events",
