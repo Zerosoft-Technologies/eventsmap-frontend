@@ -10,7 +10,7 @@
       <div v-if="route.query.verified === 'pending'" class="tw:bg-blue-50 tw:border tw:border-blue-200 tw:text-blue-700 tw:rounded-lg tw:px-4 tw:py-3 tw:mb-4 tw:text-sm">
         Verification email sent. Please check your inbox and verify your email before signing in.
       </div>
-      <div v-if="route.query.verified === 'success'" class="tw:bg-green-50 tw:border tw:border-green-200 tw:text-green-700 tw:rounded-lg tw:px-4 tw:py-3 tw:mb-4 tw:text-sm">
+      <div v-if="route.query.verified === 'success'" class="tw:bg-orange-50 tw:border tw:border-orange-200 tw:text-orange-700 tw:rounded-lg tw:px-4 tw:py-3 tw:mb-4 tw:text-sm">
         Email verified successfully! You may now sign in.
       </div>
       <div v-if="route.query.reset === 'success'" class="tw:bg-green-50 tw:border tw:border-green-200 tw:text-green-700 tw:rounded-lg tw:px-4 tw:py-3 tw:mb-4 tw:text-sm">
@@ -96,7 +96,8 @@
         </router-link>
       </div> -->
 
-      <p class="tw:text-center tw:text-sm tw:text-gray-500 tw:mt-6">
+      <!-- Hide "Create Account" link when email is successfully verified -->
+      <p v-if="route.query.verified !== 'success'" class="tw:text-center tw:text-sm tw:text-gray-500 tw:mt-6">
         Don't have an account?
         <router-link to="/register" class="no-hover tw:font-semibold hover:tw:underline" style="color: var(--primary-color)">
           Create Account

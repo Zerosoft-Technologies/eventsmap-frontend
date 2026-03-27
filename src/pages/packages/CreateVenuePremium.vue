@@ -217,7 +217,7 @@
                                         class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
                                         <span class="tw:text-gray-700">{{ item }}</span>
                                         <input type="checkbox" :value="item" v-model="selectedDescriptionItems"
-                                            class="tw:w-5 tw:h-5 tw:accent-[#FF7700] tw:cursor-pointer" />
+                                            class="tw:w-5 tw:h-5 tw:cursor-pointer" />
                                     </label>
                                 </div>
 
