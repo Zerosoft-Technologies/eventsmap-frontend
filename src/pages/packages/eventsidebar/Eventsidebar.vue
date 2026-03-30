@@ -116,7 +116,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['back', 'event-selected', 'chatbox-click'])
+const emit = defineEmits(['back', 'event-selected', 'chatbox-click', 'menu-click'])
 
 onMounted(() => {
   myEventStore.fetchMyEvents()

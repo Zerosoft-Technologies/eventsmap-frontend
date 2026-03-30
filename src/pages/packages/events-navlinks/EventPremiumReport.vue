@@ -104,7 +104,7 @@ const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-event-premium" },
   { id: "details", icon: FileText, label: "Details", route: "/create-event-premium" },
   { id: "analytics", icon: BarChart3, route: "/create-event-premium/report", label: "Analytics" },
-  { id: "gallery", icon: Images, route: "/gallery-images", label: "Gallery" },
+  { id: "gallery", icon: Images, route: "/create-event-premium/gallery-images", label: "Gallery" },
   { id: "settings", icon: Settings, route: "/create-event-premium/settings", label: "Settings" },
   { id: "calendar", icon: Calendar, label: "Calendar" },
   { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },

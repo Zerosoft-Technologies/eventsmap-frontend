@@ -85,6 +85,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/create-event-premium', name: 'CreateEventPremium', component: CreateEventPremium, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-event-premium/report', name: 'EventPremiumReport', component: EventPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-event-premium/settings', name: 'EventPremiumSettings', component: EventPremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-event-premium/gallery-images', name: 'EventPremiumGallery', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
 
   { path: '/create-organiser-free', name: 'CreateEventOrganiserFree', component: CreateEventOrganiserFree, meta: { requiresAuth: true } },
   { path: '/create-organiser-free/report', name: 'EventOrganiserReport', component: EventOrganiserReport, meta: { requiresAuth: true } },
@@ -93,6 +94,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/create-organiser-premium', name: 'CreateEventOrganiserPremium', component: CreateEventOrganiserPremium, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-organiser-premium/report', name: 'EventOrganiserPremiumReport', component: EventOrganiserPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-organiser-premium/settings', name: 'EventOrganiserPremiumSettings', component: EventOrganiserPremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-organiser-premium/gallery-images', name: 'EventOrganiserPremiumGallery', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
 
   { path: '/create-talents-free', name: 'CreateTalentsFree', component: CreateTalentsFree, meta: { requiresAuth: true } },
   { path: '/create-talents-free/report', name: 'TalentsReport', component: TalentsReport, meta: { requiresAuth: true } },
@@ -101,6 +103,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/create-talents-premium', name: 'CreateTalentsPremium', component: CreateTalentsPremium, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-talents-premium/report', name: 'TalentsPremiumReport', component: TalentsPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-talents-premium/settings', name: 'TalentsPremiumSettings', component: TalentsPremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-talents-premium/gallery-images', name: 'TalentsPremiumGallery', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
 
   { path: '/create-venue-free', name: 'CreateVenueFree', component: CreateVenueFree, meta: { requiresAuth: true } },
   { path: '/create-venue-free/report', name: 'VenueReport', component: VenueReport, meta: { requiresAuth: true } },
@@ -109,10 +112,9 @@ const routes: RouteRecordRaw[] = [
   { path: '/create-venue-premium', name: 'CreateVenuePremium', component: CreateVenuePremium, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-venue-premium/report', name: 'VenuePremiumReport', component: VenuePremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-venue-premium/settings', name: 'VenuePremiumSettings', component: VenuePremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-venue-premium/gallery-images', name: 'VenuePremiumGallery', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
 
-  // ── Gallery (Premium Only) ────────────────────────────
-  { path: '/gallery-images', name: 'GalleryImages', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
-]
+  ]
 
 const router = createRouter({
   history: createWebHistory(),

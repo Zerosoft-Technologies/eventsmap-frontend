@@ -971,7 +971,7 @@ const menuItems = [
     { id: "home", icon: Home, label: "Home", route: "/create-organiser-premium" },
     { id: "details", icon: FileText, label: "Details", route: "/create-organiser-premium" },
     { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
-    { id: "gallery", icon: Images, route: "/gallery-images", label: "Gallery" },
+    { id: 'gallery', label: 'Gallery', icon: Images, route: `/create-organiser-premium/gallery-images` },
     { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },

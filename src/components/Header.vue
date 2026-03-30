@@ -203,7 +203,8 @@
           <!-- Gallery link (premium only) -->
           <router-link
             v-if="authStore.user?.account_type === 'premium'"
-            to="/gallery-images"
+            :to="galleryRoute"
+            @click="handleGalleryClick"
             style="height: 50px;"
             class="no-hover tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) hover:tw:bg-gray-50"
           >
@@ -534,7 +535,7 @@
           <!-- Gallery link (premium only, mobile) -->
           <RouterLink
             v-if="authStore.user?.account_type === 'premium'"
-            to="/gallery-images"
+            :to="galleryRoute"
             @click="closeMobileHeader()"
             class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:flex tw:items-center tw:gap-2"
           >
@@ -633,10 +634,42 @@ const userCreatePath = computed(() =>
   getCreateRoute(authStore.user?.profile_type, authStore.user?.account_type)
 )
 
+const galleryRoute = computed(() => {
+  if (!authStore.user?.account_type || authStore.user.account_type !== 'premium') {
+    return '#'
+  }
+  
+  const profileType = authStore.user.profile_type
+  let basePath = ''
+  
+  switch (profileType) {
+    case 'event':
+      basePath = '/create-event-premium'
+      break
+    case 'organizer':
+      basePath = '/create-organiser-premium'
+      break
+    case 'venue':
+      basePath = '/create-venue-premium'
+      break
+    case 'talent':
+      basePath = '/create-talents-premium'
+      break
+    default:
+      basePath = '/create-event-premium'
+  }
+  
+  return `${basePath}/gallery-images`
+})
+
 async function handleLogout() {
   closeMobileHeader()
   await authStore.logout()
   router.push({ name: 'Login' })
+}
+
+function handleGalleryClick() {
+  router.push(galleryRoute.value)
 }
 
 function toggleMobileMenu() {
