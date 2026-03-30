@@ -742,7 +742,8 @@ import {
     MapPin,
     User,
     SkipBackIcon,
-    MessageSquareText
+    MessageSquareText,
+    Images
 } from "lucide-vue-next"
 
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue"
@@ -970,6 +971,7 @@ const menuItems = [
     { id: "home", icon: Home, label: "Home", route: "/create-organiser-premium" },
     { id: "details", icon: FileText, label: "Details", route: "/create-organiser-premium" },
     { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
+    { id: "gallery", icon: Images, route: "/gallery-images", label: "Gallery" },
     { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },

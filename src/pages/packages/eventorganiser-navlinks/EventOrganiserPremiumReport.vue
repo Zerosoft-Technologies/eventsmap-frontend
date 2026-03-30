@@ -76,7 +76,7 @@
 import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { useChatStore } from "@/stores/chatStore"
-import { Home, FileText, BarChart3, Settings, Calendar, MessageSquareText } from "lucide-vue-next"
+import { Home, FileText, BarChart3, Settings, Calendar, MessageSquareText, Images } from "lucide-vue-next"
 import EventSidebar from "../eventsidebar/Eventsidebar.vue"
 
 const router = useRouter()
@@ -104,6 +104,7 @@ const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-organiser-premium" },
   { id: "details", icon: FileText, label: "Details", route: "/create-organiser-premium" },
   { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
+  { id: "gallery", icon: Images, route: "/gallery-images", label: "Gallery" },
   { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
   { id: "calendar", icon: Calendar, label: "Calendar" },
   { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },

@@ -281,7 +281,7 @@
     import { ref, reactive } from 'vue';
     import { useRouter } from "vue-router"
     import UserSettings from '@/components/UserSettings.vue'
-    import { Home, FileText, BarChart3, Settings, Calendar, MessageSquareText } from "lucide-vue-next"
+    import { Home, FileText, BarChart3, Settings, Calendar, MessageSquareText, Images } from "lucide-vue-next"
     import EventSidebar from '../eventsidebar/Eventsidebar.vue'
     import PlanManagement from '@/components/PlanManagement.vue';
     import { useAuthStore } from '@/stores/auth';
@@ -322,6 +322,7 @@
         { id: "home", icon: Home, label: "Home", route: "/create-venue-premium" },
         { id: "details", icon: FileText, label: "Details", route: "/create-venue-premium" },
         { id: "analytics", icon: BarChart3, route: "/create-venue-premium/report", label: "Analytics" },
+        { id: "gallery", icon: Images, route: "/gallery-images", label: "Gallery" },
         { id: "settings", icon: Settings, route: "/create-venue-premium/settings", label: "Settings" },
         { id: "calendar", icon: Calendar, label: "Calendar" },
         { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },

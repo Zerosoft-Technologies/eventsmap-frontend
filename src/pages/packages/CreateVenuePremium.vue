@@ -854,7 +854,8 @@ import {
     SkipBackIcon,
     Clock,
     MessageSquareText,
-    X
+    X,
+    Images
 } from "lucide-vue-next"
 
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue"
@@ -1242,6 +1243,7 @@ const menuItems = [
     { id: "home", icon: Home, label: "Home", route: "/create-venue-premium" },
     { id: "details", icon: FileText, label: "Details", route: "/create-venue-premium" },
     { id: "analytics", icon: BarChart3, route: "/create-venue-premium/report", label: "Analytics" },
+    { id: "gallery", icon: Images, route: "/gallery-images", label: "Gallery" },
     { id: "settings", icon: Settings, route: "/create-venue-premium/settings", label: "Settings" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },

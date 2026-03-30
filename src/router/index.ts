@@ -54,6 +54,7 @@ const PaymentSuccess = () => import('../pages/payment/PaymentSuccess.vue')
 const PaymentCancel = () => import('../pages/payment/PaymentCancel.vue')
 const PaymentRequired     = () => import('../pages/payment/PaymentRequired.vue')
 const InvitationResponse  = () => import('../pages/InvitationResponse.vue')
+const GalleryImagesPage   = () => import('../pages/GalleryImagesPage.vue')
 
 const routes: RouteRecordRaw[] = [
   // ── Public Routes ───────────────────────────────────────
@@ -108,6 +109,9 @@ const routes: RouteRecordRaw[] = [
   { path: '/create-venue-premium', name: 'CreateVenuePremium', component: CreateVenuePremium, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-venue-premium/report', name: 'VenuePremiumReport', component: VenuePremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-venue-premium/settings', name: 'VenuePremiumSettings', component: VenuePremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
+
+  // ── Gallery (Premium Only) ────────────────────────────
+  { path: '/gallery-images', name: 'GalleryImages', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
 ]
 
 const router = createRouter({
@@ -161,6 +165,11 @@ router.beforeEach(async (to, _from, next) => {
       authStore.user.status === 'pending_payment'
     ) {
       return next({ name: 'PaymentRequired' })
+    }
+
+    // Premium-only route accessed by free user → redirect to home
+    if (to.meta.requiresPremium && authStore.user.account_type !== 'premium') {
+      return next({ name: 'Home' })
     }
 
     // Restrict create pages: user may only access their own create page (profile_type + account_type)

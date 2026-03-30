@@ -200,6 +200,16 @@
       <div>
         <!-- Authenticated: user menu -->
         <div v-if="authStore.isAuthenticated" class="tw:flex tw:items-center tw:gap-2">
+          <!-- Gallery link (premium only) -->
+          <router-link
+            v-if="authStore.user?.account_type === 'premium'"
+            to="/gallery-images"
+            style="height: 50px;"
+            class="no-hover tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) hover:tw:bg-gray-50"
+          >
+            <Images class="tw:w-5 tw:h-5" style="color: var(--primary-color)" />
+            <span class="tw:text-sm tw:font-medium" style="color: var(--primary-color)">Gallery</span>
+          </router-link>
           <router-link :to="userCreatePath" style="height: 50px;" class="no-hover tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) hover:tw:bg-gray-50">
             <span class="tw:text-sm tw:font-medium" style="color: var(--primary-color)">{{ authStore.user?.name || 'Profile' }}</span>
           </router-link>
@@ -213,7 +223,10 @@
     </div>
 
     <transition name="slide-right">
-      <div v-if="false" class="tw:absolute tw:top-full tw:left-0 tw:md:left-auto tw:md:right-0 tw:w-full tw:md:w-1/2 tw:bg-transparent tw:shadow-md tw:p-4 tw:flex tw:flex-col tw:gap-3 tw:lg:hidden tw:transition-all tw:duration-300">
+      <div
+        v-if="false"
+        class="tw:absolute tw:top-full tw:left-0 tw:md:left-auto tw:md:right-0 tw:w-full tw:md:w-1/2 tw:bg-transparent tw:shadow-md tw:p-4 tw:flex tw:flex-col tw:gap-3 tw:lg:hidden tw:transition-all tw:duration-300"
+      >
         <div class="tw:flex tw:bg-white tw:md:hidden tw:gap-4 tw:items-center tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
           <p>{{ $t('header.search.placeholder') }}</p>
         </div>
@@ -518,6 +531,18 @@
             {{ authStore.user?.email || '' }}
           </button>
 
+          <!-- Gallery link (premium only, mobile) -->
+          <RouterLink
+            v-if="authStore.user?.account_type === 'premium'"
+            to="/gallery-images"
+            @click="closeMobileHeader()"
+            class="tw:border tw:border-orange-400 tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:flex tw:items-center tw:gap-2"
+          >
+            <Images class="tw:w-5 tw:h-5" style="color: var(--primary-color)" />
+            <span style="color: var(--primary-color)" class="tw:font-medium">Gallery</span>
+            <span class="tw:ml-auto tw:text-xs tw:bg-emerald-100 tw:text-emerald-700 tw:px-2 tw:py-0.5 tw:rounded-full">PREMIUM</span>
+          </RouterLink>
+
           <!-- Logout Button -->
           <button
             type="button"
@@ -585,7 +610,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { getCreateRoute } from '@/utils/routeResolver';
-import { Bell } from 'lucide-vue-next';
+import { Bell, Images } from 'lucide-vue-next';
 import { useMapStore } from '@/stores/mapStore'
 
 // Lazy load AllEvents to avoid circular import issue
