@@ -1,5 +1,5 @@
 <template>
-  <div class="tw:relative tw:group tw:aspect-square tw:rounded-lg tw:overflow-hidden tw:shadow-sm tw:border tw:border-gray-200 tw:bg-gray-100">
+  <div class="tw:relative tw:group tw:aspect-square tw:rounded-lg tw:overflow-hidden tw:shadow-sm tw:border tw:border-gray-200 tw:bg-gray-100" :data-image-id="image.image_id">
     <!-- Image -->
     <img
       v-if="!imgError"
@@ -43,7 +43,7 @@
       <div class="tw:relative" ref="moreMenuRef">
         <button
           type="button"
-          @click.stop="showMenu = !showMenu"
+          @click.stop="toggleMenu"
           class="tw:w-9 tw:h-9 md:tw:w-8 md:tw:h-8 tw:flex tw:items-center tw:justify-center tw:rounded-lg tw:bg-white/90 tw:text-gray-600 hover:tw:bg-gray-200 tw:transition-colors tw:shadow-sm"
           aria-label="More options"
         >
@@ -51,47 +51,50 @@
         </button>
 
         <!-- Dropdown Menu -->
-        <Transition
-          enter-active-class="tw:transition tw:duration-150 tw:ease-out"
-          enter-from-class="tw:opacity-0 tw:scale-95"
-          enter-to-class="tw:opacity-100 tw:scale-100"
-          leave-active-class="tw:transition tw:duration-100 tw:ease-in"
-          leave-from-class="tw:opacity-100 tw:scale-100"
-          leave-to-class="tw:opacity-0 tw:scale-95"
-        >
-          <div
-            v-if="showMenu"
-            class="tw:absolute tw:right-0 tw:bottom-full tw:mb-1 tw:w-48 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-gray-200 tw:py-1 tw:z-50"
+        <Teleport to="body">
+          <Transition
+            enter-active-class="tw:transition tw:duration-150 tw:ease-out"
+            enter-from-class="tw:opacity-0 tw:scale-95"
+            enter-to-class="tw:opacity-100 tw:scale-100"
+            leave-active-class="tw:transition tw:duration-100 tw:ease-in"
+            leave-from-class="tw:opacity-100 tw:scale-100"
+            leave-to-class="tw:opacity-0 tw:scale-95"
           >
+            <div
+              v-if="showMenu"
+              v-click-outside="closeMenu"
+              class="tw:fixed tw:w-48 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-[#E8E1D5] tw:py-1 tw:z-[200]"
+              :style="getDropdownPosition()"
+            >
             <button
               type="button"
               @click.stop="handleAction('details')"
-              class="tw:w-full tw:flex tw:items-center tw:gap-2 tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors"
+              class="tw:w-full tw:flex tw:items-center tw:gap-2 tw:px-3.5 tw:py-2 tw:text-sm tw:text-gray-700 hover:tw:bg-[#F6F1E7] tw:transition-colors"
             >
               <Eye class="tw:w-4 tw:h-4" /> View Details
             </button>
             <button
               type="button"
               @click.stop="handleAction('editAlt')"
-              class="tw:w-full tw:flex tw:items-center tw:gap-2 tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors"
+              class="tw:w-full tw:flex tw:items-center tw:gap-2 tw:px-3.5 tw:py-2 tw:text-sm tw:text-gray-700 hover:tw:bg-[#F6F1E7] tw:transition-colors"
             >
               <Pencil class="tw:w-4 tw:h-4" /> Edit Alt Text
             </button>
             <button
               type="button"
               @click.stop="handleAction('copyUrl')"
-              class="tw:w-full tw:flex tw:items-center tw:gap-2 tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors"
+              class="tw:w-full tw:flex tw:items-center tw:gap-2 tw:px-3.5 tw:py-2 tw:text-sm tw:text-gray-700 hover:tw:bg-[#F6F1E7] tw:transition-colors"
             >
               <Copy class="tw:w-4 tw:h-4" /> Copy Image URL
             </button>
             <button
               type="button"
               @click.stop="handleAction('download')"
-              class="tw:w-full tw:flex tw:items-center tw:gap-2 tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50 tw:transition-colors"
+              class="tw:w-full tw:flex tw:items-center tw:gap-2 tw:px-3.5 tw:py-2 tw:text-sm tw:text-gray-700 hover:tw:bg-[#F6F1E7] tw:transition-colors"
             >
               <Download class="tw:w-4 tw:h-4" /> Download
             </button>
-            <div class="tw:border-t tw:border-gray-100 tw:my-1"></div>
+            <div class="tw:border-t tw:border-[#E8E1D5] tw:my-1"></div>
             <button
               type="button"
               @click.stop="handleAction('delete')"
@@ -101,15 +104,17 @@
             </button>
           </div>
         </Transition>
+        </Teleport>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Trash2, MoreVertical, Eye, Pencil, Copy, Download, ImageOff } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
+import { useDropdownState } from '@/composables/useDropdownState'
 import type { GalleryImage } from '@/api/gallery'
 
 const props = defineProps<{
@@ -123,12 +128,30 @@ const emit = defineEmits<{
 }>()
 
 const toast = useToast()
-const showMenu = ref(false)
 const imgError = ref(false)
 const moreMenuRef = ref<HTMLElement | null>(null)
+const { toggleDropdown, isDropdownOpen, activeDropdownId } = useDropdownState()
+const dropdownPosition = ref({ top: 0, left: 0 })
+
+const showMenu = computed(() => isDropdownOpen(props.image.image_id))
+
+// Register click outside directive
+const vClickOutside = {
+  beforeMount(el: HTMLElement, binding: any) {
+    el.__clickOutside__ = (event: MouseEvent) => {
+      if (!(el === event.target || el.contains(event.target as Node))) {
+        binding.value(event)
+      }
+    }
+    document.addEventListener('click', el.__clickOutside__)
+  },
+  unmounted(el: HTMLElement) {
+    document.removeEventListener('click', el.__clickOutside__)
+  }
+}
 
 function handleAction(action: string) {
-  showMenu.value = false
+  closeMenu()
   switch (action) {
     case 'details':
       emit('view-details', props.image)
@@ -152,6 +175,46 @@ function handleAction(action: string) {
   }
 }
 
+function closeMenu() {
+  if (showMenu.value) {
+    toggleDropdown(props.image.image_id)
+  }
+}
+
+function toggleMenu() {
+  if (!isDropdownOpen(props.image.image_id) && moreMenuRef.value) {
+    const rect = moreMenuRef.value.getBoundingClientRect()
+    const dropdownWidth = 192 // w-48 = 12rem = 192px
+    const viewportHeight = window.innerHeight
+    
+    // Calculate position
+    let top = rect.bottom + window.scrollY + 4
+    let left = rect.right + window.scrollX - dropdownWidth
+    
+    // Check if dropdown goes below viewport and show above instead
+    if (top + 220 > viewportHeight + window.scrollY) {
+      top = rect.top + window.scrollY - 220 - 4
+    }
+    
+    // Ensure dropdown doesn't go beyond left edge
+    if (left < 0) {
+      left = rect.right + window.scrollX - dropdownWidth
+    }
+    
+    dropdownPosition.value = { top, left }
+  }
+  toggleDropdown(props.image.image_id)
+}
+
+function getDropdownPosition() {
+  const pos = dropdownPosition.value
+  if (!pos) return {}
+  return {
+    top: `${pos.top}px`,
+    left: `${pos.left}px`
+  }
+}
+
 function downloadImage() {
   const a = document.createElement('a')
   a.href = props.image.image_url
@@ -164,8 +227,10 @@ function downloadImage() {
 }
 
 function handleClickOutside(e: MouseEvent) {
-  if (showMenu.value && moreMenuRef.value && !moreMenuRef.value.contains(e.target as Node)) {
-    showMenu.value = false
+  if (moreMenuRef.value && !moreMenuRef.value.contains(e.target as Node)) {
+    if (showMenu.value) {
+      closeMenu()
+    }
   }
 }
 

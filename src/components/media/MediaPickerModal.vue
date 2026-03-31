@@ -104,10 +104,11 @@
                 </div>
 
                 <!-- Grid -->
-                <div v-else class="tw:grid tw:grid-cols-2 tw:sm:grid-cols-3 tw:md:grid-cols-4 tw:gap-3">
+                <div class="tw:grid tw:grid-cols-2 tw:sm:grid-cols-3 tw:md:grid-cols-4 tw:gap-3">
                   <div
                     v-for="image in filteredImages"
                     :key="image.image_id"
+                    :data-image-id="image.image_id"
                     @click="toggleImageSelection(image)"
                     :class="[
                       'tw:relative tw:cursor-pointer tw:rounded-xl tw:overflow-hidden tw:border-2 tw:transition-all tw:group',
@@ -134,6 +135,46 @@
                     <!-- Hover filename -->
                     <div class="tw:absolute tw:bottom-0 tw:inset-x-0 tw:bg-gradient-to-t tw:from-black/60 tw:to-transparent tw:px-2 tw:py-2 tw:opacity-0 group-hover:tw:opacity-100 tw:transition-opacity">
                       <p class="tw:text-white tw:text-xs tw:truncate">{{ image.file_name }}</p>
+                    </div>
+
+                    <!-- 3-dot menu button -->
+                    <div class="tw:absolute tw:top-2 tw:left-2 tw:opacity-0 group-hover:tw:opacity-100 tw:transition-opacity">
+                      <button
+                        @click.stop="toggleDropdown(image.image_id)"
+                        class="tw:w-7 tw:h-7 tw:rounded-lg tw:bg-white/90 tw:backdrop-blur-sm tw:shadow-sm tw:flex tw:items-center tw:justify-center hover:tw:bg-white tw:transition-colors"
+                      >
+                        <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                        </svg>
+                      </button>
+                    </div>
+
+                    <!-- Dropdown menu -->
+                    <div
+                      v-if="isDropdownOpen(image.image_id)"
+                      v-click-outside="() => toggleDropdownState(image.image_id)"
+                      class="tw:fixed tw:z-[200] tw:mt-1 tw:py-1 tw:bg-white tw:rounded-lg tw:shadow-lg tw:border tw:border-[#E8E1D5] tw:min-w-[140px]"
+                      :style="getDropdownPosition(image.image_id)"
+                    >
+                      <button
+                        @click.stop="viewImage(image)"
+                        class="tw:w-full tw:px-3.5 tw:py-2 tw:text-sm tw:text-gray-700 hover:tw:bg-[#F6F1E7] tw:transition-colors tw:flex tw:items-center tw:gap-2"
+                      >
+                        <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        View
+                      </button>
+                      <button
+                        @click.stop="deleteImage(image)"
+                        class="tw:w-full tw:px-3.5 tw:py-2 tw:text-sm tw:text-red-600 hover:tw:bg-red-50 tw:transition-colors tw:flex tw:items-center tw:gap-2"
+                      >
+                        <svg class="tw:w-4 tw:h-4 tw:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -224,8 +265,25 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { galleryApi } from '@/api/gallery'
+import { Loader2, Search, X, Upload, Image as ImageIcon, FolderOpen } from 'lucide-vue-next'
+import { useDropdownState } from '@/composables/useDropdownState'
+
+// Simple click outside directive
+const vClickOutside = {
+  mounted(el, binding) {
+    el._clickOutside = (event) => {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value(event)
+      }
+    }
+    document.addEventListener('click', el._clickOutside)
+  },
+  unmounted(el) {
+    document.removeEventListener('click', el._clickOutside)
+  }
+}
 
 const props = defineProps({
   visible: Boolean,
@@ -237,7 +295,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['select', 'close'])
+const emit = defineEmits(['select', 'close', 'image-updated'])
 
 // State
 const activeTab = ref('library')
@@ -250,6 +308,8 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const hasMore = ref(true)
 const fileInput = ref()
+const { toggleDropdown: toggleDropdownState, isDropdownOpen } = useDropdownState()
+const dropdownPositions = ref({})
 
 // Computed
 const filteredImages = computed(() => {
@@ -331,6 +391,9 @@ const handleFileSelect = async (event) => {
     const newImages = responses.map(res => res.data)
     images.value = [...newImages, ...images.value]
     
+    // Emit uploaded images to parent to update their gallery state
+    emit('image-updated', newImages)
+    
     // Auto-select uploaded images
     if (props.multiple) {
       const availableSlots = props.maxSelection ? props.maxSelection - selectedImages.value.length : files.length
@@ -352,6 +415,62 @@ const handleFileSelect = async (event) => {
   } finally {
     uploading.value = false
     uploadProgress.value = 0
+  }
+}
+
+// Dropdown methods
+const toggleDropdown = (imageId) => {
+  if (isDropdownOpen(imageId)) {
+    toggleDropdownState(imageId) // Close it
+  } else {
+    toggleDropdownState(imageId) // Open it
+    // Store position for dropdown
+    nextTick(() => {
+      const element = document.querySelector(`[data-image-id="${imageId}"]`)
+      if (element) {
+        const rect = element.getBoundingClientRect()
+        dropdownPositions.value[imageId] = {
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX
+        }
+      }
+    })
+  }
+}
+
+const getDropdownPosition = (imageId) => {
+  const pos = dropdownPositions.value[imageId]
+  if (!pos) return {}
+  return {
+    top: `${pos.top}px`,
+    left: `${pos.left}px`
+  }
+}
+
+const viewImage = (image) => {
+  window.open(image.image_url, '_blank')
+  toggleDropdownState(image.image_id)
+}
+
+const deleteImage = async (image) => {
+  if (confirm('Are you sure you want to delete this image?')) {
+    try {
+      await galleryApi.deleteImage(image.image_id)
+      // Remove from local state
+      const index = images.value.findIndex(img => img.image_id === image.image_id)
+      if (index > -1) {
+        images.value.splice(index, 1)
+      }
+      // Remove from selection if selected
+      const selectedIndex = selectedImages.value.indexOf(image.image_id)
+      if (selectedIndex > -1) {
+        selectedImages.value.splice(selectedIndex, 1)
+      }
+      toggleDropdownState(image.image_id)
+    } catch (error) {
+      console.error('Error deleting image:', error)
+      alert('Failed to delete image')
+    }
   }
 }
 

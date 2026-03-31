@@ -1055,6 +1055,7 @@
                 :preselected-ids="selectedMediaType === 'main' ? (form.image_path ? [form.image_path] : []) : form.additional_images"
                 @select="handleMediaSelect"
                 @close="showMediaModal = false"
+                @image-updated="handleImageUpdated"
             />
         </Teleport>
     </div>
@@ -1694,6 +1695,11 @@ const handleMediaSelect = (ids) => {
     } else {
         form.additional_images = ids.slice(0, 5)
     }
+}
+
+const handleImageUpdated = (newImages) => {
+    // Add newly uploaded images to the galleryImages ref
+    galleryImages.value = [...newImages, ...galleryImages.value]
 }
 
 const handleMainImageClick = () => {
