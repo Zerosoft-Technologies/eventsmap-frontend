@@ -201,7 +201,7 @@
         <!-- Authenticated: user menu -->
         <div v-if="authStore.isAuthenticated" class="tw:flex tw:items-center tw:gap-2">
           <!-- Gallery link (premium only) -->
-          <router-link
+          <!-- <router-link
             v-if="authStore.user?.account_type === 'premium'"
             :to="galleryRoute"
             @click="handleGalleryClick"
@@ -210,7 +210,7 @@
           >
             <Images class="tw:w-5 tw:h-5" style="color: var(--primary-color)" />
             <span class="tw:text-sm tw:font-medium" style="color: var(--primary-color)">Gallery</span>
-          </router-link>
+          </router-link> -->
           <router-link :to="userCreatePath" style="height: 50px;" class="no-hover tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:border tw:gap-1 tw:border-(--secondary-color) hover:tw:bg-gray-50">
             <span class="tw:text-sm tw:font-medium" style="color: var(--primary-color)">{{ authStore.user?.name || 'Profile' }}</span>
           </router-link>
@@ -668,9 +668,9 @@ async function handleLogout() {
   router.push({ name: 'Login' })
 }
 
-function handleGalleryClick() {
-  router.push(galleryRoute.value)
-}
+// function handleGalleryClick() {
+//   router.push(galleryRoute.value)
+// }
 
 function toggleMobileMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value

@@ -1,6 +1,6 @@
 <template>
     <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-4 tw:px-3 tw:md:py-10 tw:md:px-6 tw:overflow-x-hidden">
-        <div class="tw:w-full tw:max-w-7xl tw:max-w-full tw:flex tw:flex-col tw:md:flex-row tw:gap-4 tw:md:gap-6">
+        <div class="tw:w-full tw:max-w-7xl tw:flex tw:flex-col tw:md:flex-row tw:gap-4 tw:md:gap-6">
             <!-- Mobile Header -->
             <div class="tw:md:hidden tw:flex tw:items-center tw:justify-between tw:bg-white tw:rounded-xl tw:shadow-sm tw:px-4 tw:py-3">
                 <button type="button" @click="handleBack" class="tw:text-sm tw:font-medium tw:text-[#0061FF]">
