@@ -8,6 +8,10 @@ on:
       - stage
       - master
 
+permissions:
+  contents: read
+  packages: write      
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: zerosoft-technologies/eventsmap-frontend-vue
