@@ -89,18 +89,28 @@ export function useUpgradePlan() {
     const e: Record<string, string> = {}
     const b = billing.value
 
+    // Alphabetic validation regex (allows letters, spaces, hyphens, apostrophes)
+    const alphabeticRegex = /^[A-Za-z\s\-']+$/
+    // Numeric validation regex
+    const numericRegex = /^[0-9]+$/
+
     if (b.type === 'private') {
       if (!b.fullName.trim()) e.fullName = 'Full name is required.'
+      else if (!alphabeticRegex.test(b.fullName.trim())) e.fullName = 'Full name must contain only alphabetic characters.'
     } else {
       if (!b.companyName.trim()) e.companyName = 'Company name is required.'
+      else if (!alphabeticRegex.test(b.companyName.trim())) e.companyName = 'Company name must contain only alphabetic characters.'
       if (!b.vatNumber.trim())   e.vatNumber   = 'VAT number is required.'
       else if (vatValidationState.value !== 'valid') e.vatNumber = 'Please enter a valid VAT number.'
     }
 
     if (!b.country.trim())    e.country    = 'Country is required.'
+    else if (!alphabeticRegex.test(b.country.trim())) e.country = 'Country must contain only alphabetic characters.'
     if (!b.address.trim())    e.address    = 'Address is required.'
     if (!b.postalCode.trim()) e.postalCode = 'Postal code is required.'
+    else if (!numericRegex.test(b.postalCode.trim())) e.postalCode = 'Postal code must contain only numbers.'
     if (!b.city.trim())       e.city       = 'City is required.'
+    else if (!alphabeticRegex.test(b.city.trim())) e.city = 'City must contain only alphabetic characters.'
 
     billingErrors.value = e
 
