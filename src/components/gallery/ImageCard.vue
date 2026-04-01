@@ -130,7 +130,7 @@ const emit = defineEmits<{
 const toast = useToast()
 const imgError = ref(false)
 const moreMenuRef = ref<HTMLElement | null>(null)
-const { toggleDropdown, isDropdownOpen, activeDropdownId } = useDropdownState()
+const { toggleDropdown, isDropdownOpen } = useDropdownState()
 const dropdownPosition = ref({ top: 0, left: 0 })
 
 const showMenu = computed(() => isDropdownOpen(props.image.image_id))
@@ -138,15 +138,15 @@ const showMenu = computed(() => isDropdownOpen(props.image.image_id))
 // Register click outside directive
 const vClickOutside = {
   beforeMount(el: HTMLElement, binding: any) {
-    el.__clickOutside__ = (event: MouseEvent) => {
+    (el as any).__clickOutside__ = (event: MouseEvent) => {
       if (!(el === event.target || el.contains(event.target as Node))) {
         binding.value(event)
       }
     }
-    document.addEventListener('click', el.__clickOutside__)
+    document.addEventListener('click', (el as any).__clickOutside__)
   },
   unmounted(el: HTMLElement) {
-    document.removeEventListener('click', el.__clickOutside__)
+    document.removeEventListener('click', (el as any).__clickOutside__)
   }
 }
 

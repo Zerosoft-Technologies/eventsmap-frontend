@@ -241,7 +241,7 @@ function handleBack() {
   router.push({ name: 'Home' })
 }
 
-function handleEventSelected(eventId: string) {
+function handleEventSelected(_eventId: string) {
   // Handle event selection if needed
 }
 
