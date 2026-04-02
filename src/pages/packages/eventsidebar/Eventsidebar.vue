@@ -166,13 +166,14 @@ function isActive(item) {
     return true
   }
   
-  // For home: active only on base route (not /report or /settings)
+  // For home: active only on base route (not /report, /settings, /gallery-images, or /calendar)
   if (item.id === 'home') {
     const basePath = item.route
     return currentPath === basePath || 
            (currentPath.startsWith(basePath + '/') && 
             !currentPath.includes('/report') && 
             !currentPath.includes('/settings') &&
+            !currentPath.includes('/gallery-images') &&
             !currentPath.includes('/calendar'))
   }
   

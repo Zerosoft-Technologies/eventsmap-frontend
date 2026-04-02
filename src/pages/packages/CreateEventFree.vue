@@ -42,7 +42,8 @@
       </div>
 
       <!-- ================= RIGHT CARD ================= -->
-      <div class="tw:flex-1 tw:max-w-full tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
+      <div class="tw:flex-1 tw:max-w-full tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6 tw:relative">
+
         <!-- EVENT TITLE SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
@@ -63,12 +64,12 @@
           <p v-if="fieldErrors.title" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.title[0] }}</p>
 
           <!-- Slug Preview -->
-          <div v-if="eventTitle.trim()" class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
+          <!-- <div v-if="eventTitle.trim()" class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
             <span class="tw:text-xs tw:text-gray-500">URL Preview:</span>
             <span class="tw:text-xs tw:font-mono tw:bg-gray-100 tw:px-2 tw:py-1 tw:rounded tw:text-blue-600">
               /event/{{ slugPreview }}
             </span>
-          </div>
+          </div> -->
         </div>
 
         <!-- EVENT IMAGE SECTION -->
@@ -638,12 +639,20 @@
               Buy Tickets
             </button>
 
-            <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-             tw:border tw:border-orange-500 tw:text-blue-600
-             tw:bg-white hover:tw:bg-blue-50 tw:transition-all
-             disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
-              {{ isSubmitting ? 'Creating...' : 'Create Event' }}
-            </button>
+            <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-2">
+              <button v-if="isEditMode" @click="cancelEdit" type="button"
+                class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                 tw:border tw:border-orange-500 tw:text-blue-600
+                 tw:bg-white hover:tw:bg-blue-50 tw:transition-all">
+                Cancel
+              </button>
+              <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+               tw:border tw:border-orange-500 tw:text-blue-600
+               tw:bg-white hover:tw:bg-blue-50 tw:transition-all
+               disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
+                {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Event' : 'Create Event') }}
+              </button>
+            </div>
 
           </div>
 
@@ -696,6 +705,12 @@ const route = useRoute()
 const toast = useToast()
 const myEvtStore = useMyEventStore()
 const mobileSidebarOpen = ref(false)
+
+// Edit mode state
+const isEditMode = ref(false)
+const editEventId = ref(null)
+const existingImageUrl = ref(null)
+const isLoadingEvent = ref(false)
 
 function toggleMobileSidebar() {
   mobileSidebarOpen.value = !mobileSidebarOpen.value
@@ -750,9 +765,10 @@ const slugPreview = computed(() => {
 
 // Form validation computed property
 const isFormValid = computed(() => {
+  const hasImage = selectedImageFile.value !== null || (isEditMode.value && existingImageUrl.value)
   return (
     eventTitle.value.trim() !== '' &&
-    selectedImageFile.value !== null &&
+    hasImage &&
     selectedCategory.value !== '' &&
     selectedSubcategories.value.length > 0 &&
     eventDate.value !== '' &&
@@ -1264,9 +1280,9 @@ async function reverseGeocode(lng, lat) {
 }
 
 // Initialize map on component mount
-onMounted(() => {
+onMounted(async () => {
   // Fetch categories from API
-  fetchCategories()
+  await fetchCategories()
 
   // Add click outside listener for dropdown
   document.addEventListener('click', handleClickOutside)
@@ -1341,6 +1357,7 @@ function removeImage() {
   selectedImageFile.value = null
   fileName.value = 'No File Chosen'
   imagePreview.value = null
+  existingImageUrl.value = null
   errors.value.eventImage = true
 
   // Clear the file input
@@ -1437,7 +1454,9 @@ function validateForm() {
 
   // Validate each field
   errors.value.eventTitle = !eventTitle.value.trim()
-  errors.value.eventImage = !selectedImageFile.value
+  errors.value.eventImage = isEditMode.value
+    ? (!selectedImageFile.value && !existingImageUrl.value)
+    : !selectedImageFile.value
   errors.value.category = !selectedCategory.value
   errors.value.subcategories = selectedSubcategories.value.length === 0
   errors.value.eventDate = !eventDate.value
@@ -1484,15 +1503,18 @@ async function handleSubmit() {
   const isValid = validateForm()
 
   if (!isValid) {
-    console.log('❌ Validation failed, scrolling to first error')
+    console.log(' Validation failed, scrolling to first error')
     await scrollToFirstError()
     return
   }
 
-  console.log('✅ Validation passed, proceeding with submission')
+  console.log(' Validation passed, proceeding with submission')
 
-  // Call the original createEvent function
-  await createEvent()
+  if (isEditMode.value) {
+    await updateEvent()
+  } else {
+    await createEvent()
+  }
 }
 
 function resetForm() {
@@ -1591,7 +1613,7 @@ async function createEvent() {
 
     // Add image file if exists
     if (selectedImageFile.value) {
-      formData.append('image', selectedImageFile.value)
+      formData.append('image_path', selectedImageFile.value)
     }
 
     // Submit to API v2 using eventService
@@ -1630,20 +1652,216 @@ async function createEvent() {
 
 function handleBack() {
   closeMobileSidebar()
-  router.push('/') // Navigate to events list
 }
 
-async function handleEventSelected(eventId) {
+function cancelEdit() {
+  isEditMode.value = false
+  editEventId.value = null
+  existingImageUrl.value = null
+  resetForm()
+}
+
+async function handleEventSelected(evtId) {
   closeMobileSidebar()
+  // Set edit mode directly without changing URL
+  editEventId.value = evtId
+  isEditMode.value = true
+  fetchEventDetails(evtId)
+}
+
+// Fetch event details and populate form for editing
+async function fetchEventDetails(id) {
+  if (!id) return
+
+  isLoadingEvent.value = true
   try {
-    const response = await eventService.getEventBySlug(String(eventId))
+    const response = await eventService.getEventBySlug(String(id))
     if (response.success && response.data) {
-      const event = response.data
-      // Fill form with event data
-      eventTitle.value = event.title || ''
+      const data = response.data
+
+      // Map response to form fields
+      eventTitle.value = data.title || ''
+
+      // Category & subcategory
+      if (data.category_id && categories.value.length > 0) {
+        const cat = categories.value.find(c => c.id === data.category_id)
+        if (cat) {
+          selectedCategory.value = cat.name
+          // Wait a tick for subcategories to become available
+          await nextTick()
+          if (data.subcategory_ids && data.subcategory_ids.length > 0) {
+            // Convert string IDs to numbers for comparison
+            const subcategoryIdsAsNumbers = data.subcategory_ids.map(id => parseInt(id))
+            const subNames = cat.subcategories
+              .filter(sub => subcategoryIdsAsNumbers.includes(sub.id))
+              .map(sub => sub.name)
+            selectedSubcategories.value = subNames.length > 0 ? subNames : []
+          }
+        }
+      } else if (data.category) {
+        selectedCategory.value = data.category || ''
+        await nextTick()
+        if (data.subcategories && data.subcategories.length > 0) {
+          selectedSubcategories.value = [data.subcategories[0]]
+        }
+      }
+
+      // Dates
+      eventDate.value = data.event_date || data.start_date || ''
+      endDate.value = data.end_date || ''
+
+      // Times
+      if (data.start_time) {
+        const [sh, sm] = data.start_time.split(':')
+        startHH.value = sh || ''
+        startMM.value = sm || ''
+      }
+      if (data.end_time) {
+        const [eh, em] = data.end_time.split(':')
+        endHH.value = eh || ''
+        endMM.value = em || ''
+      }
+
+      // Location
+      selectedAddress.value = data.address || ''
+      searchAddress.value = data.address || ''
+      latitude.value = data.latitude ? parseFloat(data.latitude) : null
+      longitude.value = data.longitude ? parseFloat(data.longitude) : null
+
+      // Center map and add marker if coordinates exist
+      if (latitude.value && longitude.value && map.value) {
+        map.value.flyTo({
+          center: [longitude.value, latitude.value],
+          zoom: 15,
+          essential: true
+        })
+        updateMarker(longitude.value, latitude.value)
+      }
+
+      // Overview fields
+      const dc = data.dress_code || ''
+      if (!dc || dc === 'no_dress_code') {
+        dressCode.value = 'none'
+        dressCodeDescription.value = ''
+      } else {
+        dressCode.value = 'required'
+        dressCodeDescription.value = dc
+      }
+
+      const al = data.age_limit || ''
+      if (!al || al === 'no_age_limit') {
+        ageLimit.value = 'none'
+        ageLimitDescription.value = ''
+      } else {
+        ageLimit.value = 'restricted'
+        ageLimitDescription.value = al
+      }
+
+      const es = data.entrance_status || ''
+      if (!es || es === 'open_to_all') {
+        entranceStatus.value = 'open'
+        entranceDescription.value = ''
+      } else {
+        entranceStatus.value = 'restricted'
+        entranceDescription.value = es
+      }
+
+      // Image
+      existingImageUrl.value = data.image_url || data.image_path || null
+      if (existingImageUrl.value) {
+        imagePreview.value = existingImageUrl.value
+      }
+    } else {
+      toast.error('Failed to load event details.')
     }
   } catch (error) {
-    console.error('Failed to load event for editing:', error)
+    console.error('Error fetching event details:', error)
+    toast.error('Error loading event details. Please try again.')
+  } finally {
+    isLoadingEvent.value = false
   }
 }
+
+// Update Event function using eventService
+async function updateEvent() {
+  if (isSubmitting.value) return
+
+  if (!validateForm()) {
+    return
+  }
+
+  try {
+    isSubmitting.value = true
+    fieldErrors.value = {}
+
+    // Find category and subcategory IDs
+    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+    const categoryId = selectedCategoryData ? selectedCategoryData.id : null
+
+    const selectedSubcategoryData = selectedCategoryData ?
+      selectedCategoryData.subcategories.filter(sub => selectedSubcategories.value.includes(sub.name)) : []
+    const subcategoryIds = selectedSubcategoryData.map(sub => sub.id)
+
+    // Create FormData for image upload
+    const formData = new FormData()
+
+    // Laravel PUT spoofing via _method
+    formData.append('_method', 'PUT')
+
+    // Add form fields
+    formData.append('title', eventTitle.value)
+    formData.append('event_type', 'free')
+    formData.append('category_id', categoryId)
+    subcategoryIds.forEach(id => formData.append('subcategory_ids[]', id))
+    formData.append('event_date', eventDate.value)
+    formData.append('start_time', startTime.value)
+    formData.append('end_time', endTime.value)
+    formData.append('end_date', endDate.value)
+    formData.append('start_datetime', buildLocalIso(eventDate.value, startTime.value))
+    formData.append('end_datetime', buildLocalIso(endDate.value, endTime.value))
+    formData.append('address', selectedAddress.value)
+    formData.append('latitude', latitude.value)
+    formData.append('longitude', longitude.value)
+    formData.append('dress_code', dressCode.value === 'none' ? 'no_dress_code' : (dressCodeDescription.value || ''))
+    formData.append('age_limit', ageLimit.value === 'none' ? 'no_age_limit' : (ageLimitDescription.value || ''))
+    formData.append('entrance_fee', entranceFee.value)
+    formData.append('entrance_status', entranceStatus.value === 'open' ? 'open_to_all' : (entranceDescription.value || ''))
+
+    // Only send image if user uploaded a new one
+    if (selectedImageFile.value) {
+      formData.append('image_path', selectedImageFile.value)
+    }
+
+    // Submit update using eventService
+    const response = await eventService.updateEvent(String(editEventId.value), formData)
+
+    if (response.success) {
+      toast.success('Event updated successfully!')
+      await myEvtStore.fetchMyEvents()
+    } else {
+      if (response.errors) {
+        fieldErrors.value = response.errors
+        toast.error(response.message || 'Please correct the errors in the form.')
+      } else {
+        toast.error(response.message || 'Failed to update event. Please try again.')
+      }
+    }
+
+  } catch (error) {
+    console.error('Error updating event:', error)
+
+    if (error.response?.data?.errors) {
+      fieldErrors.value = error.response.data.errors
+      toast.error(error.response.data.message || 'Please correct the errors in the form.')
+    } else if (error.response?.data?.message) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error('An error occurred while updating the event. Please try again.')
+    }
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// No route watcher needed - edit mode is triggered directly by handleEventSelected
 </script>
