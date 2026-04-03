@@ -2400,7 +2400,8 @@ async function loadEvent(id) {
 
         // Load image_ids from event
         form.image_path = d.image_path || ''
-        form.additional_images = Array.isArray(d.additional_images) ? d.additional_images : []
+        // form.additional_images = Array.isArray(d.additional_images) ? d.additional_images : []
+        form.additional_images = Array.isArray(d.additional_images) ? d.additional_images.filter(id => id !== null && id !== '') : []
 
         // Clear file refs when loading existing event
         mainImageFile.value = null
