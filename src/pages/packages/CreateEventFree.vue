@@ -1608,7 +1608,6 @@ async function createEvent() {
     formData.append('longitude', longitude.value)
     formData.append('dress_code', dressCode.value === 'none' ? 'no_dress_code' : (dressCodeDescription.value || ''))
     formData.append('age_limit', ageLimit.value === 'none' ? 'no_age_limit' : (ageLimitDescription.value || ''))
-    formData.append('entrance_fee', entranceFee.value)
     formData.append('entrance_status', entranceStatus.value === 'open' ? 'open_to_all' : (entranceDescription.value || ''))
 
     // Add image file if exists
@@ -1824,7 +1823,6 @@ async function updateEvent() {
     formData.append('longitude', longitude.value)
     formData.append('dress_code', dressCode.value === 'none' ? 'no_dress_code' : (dressCodeDescription.value || ''))
     formData.append('age_limit', ageLimit.value === 'none' ? 'no_age_limit' : (ageLimitDescription.value || ''))
-    formData.append('entrance_fee', entranceFee.value)
     formData.append('entrance_status', entranceStatus.value === 'open' ? 'open_to_all' : (entranceDescription.value || ''))
 
     // Only send image if user uploaded a new one

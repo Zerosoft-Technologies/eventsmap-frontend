@@ -1821,25 +1821,42 @@ function validateForm() {
     subcategoryError.value = false
     fieldErrors.value = {}
 
-    // Validate each field (image not required when updating)
+    // Validate each field
     errors.value.eventTitle = !eventTitle.value.trim()
-    errors.value.eventImage = !isEditMode.value && !form.image_path
+    
+    // Image validation: not required in edit mode if already exists
+    errors.value.eventImage = isEditMode.value 
+        ? (!form.image_path && !selectedImageFile.value)
+        : !form.image_path
+    
     errors.value.description = !eventDescription.value.trim()
     errors.value.category = !selectedCategory.value
     errors.value.subcategories = selectedSubcategories.value.length === 0
     errors.value.eventDate = !eventDate.value
     hasEndDateError.value = !endDate.value
     errors.value.address = !selectedAddress.value
-    errors.value.dressCode = !dressCode.value || (dressCode.value === 'required' && !customDressCode.value?.trim())
-    errors.value.ageLimit = !ageLimit.value || (ageLimit.value === 'restricted' && !customAgeLimit.value?.trim())
-    errors.value.entranceStatus = !entranceStatus.value || (entranceStatus.value === 'restricted' && !customEntranceFee.value?.trim())
+    
+    // Dress code validation
+    errors.value.dressCode = !dressCode.value || 
+        (dressCode.value === 'required' && !customDressCode.value?.trim())
+    
+    // Age limit validation
+    errors.value.ageLimit = !ageLimit.value || 
+        (ageLimit.value === 'restricted' && !customAgeLimit.value?.trim())
+    
+    // Entrance status validation
+    errors.value.entranceStatus = !entranceStatus.value || 
+        (entranceStatus.value === 'restricted' && !customEntranceFee.value?.trim())
+    
     // Contact details are optional for premium users
+    errors.value.contactPhone = false // Always optional
+    errors.value.contactEmail = false // Always optional
 
     // Set category/subcategory specific errors
     categoryError.value = !selectedCategory.value
     subcategoryError.value = selectedSubcategories.value.length === 0
 
-    // ✅ Replace with:
+    // Time validation
     if (!startTime.value) hasStartError.value = true
     if (!endTime.value) hasEndError.value = true
     validateEndAfterStartDateTime()
@@ -1848,6 +1865,8 @@ function validateForm() {
         endTime.value !== "" &&
         endDate.value !== "" &&
         !datetimeRangeError.value
+
+    // Check for any validation errors
     const hasOtherErrors = Object.values(errors.value).some(error => error) ||
         categoryError.value ||
         subcategoryError.value ||
@@ -1856,7 +1875,6 @@ function validateForm() {
     return !hasOtherErrors && !hasEndDateError.value && timeValid
 }
 
-// Submit handler function
 async function handleSubmit() {
     if (isSubmitting.value) return
     const isValid = validateForm()
