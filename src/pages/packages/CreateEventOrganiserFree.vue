@@ -92,7 +92,7 @@
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-              Name Event Organiser
+              Name Event Organiser <span class="tw:text-red-500">*</span>
             </h3>
             <!-- <button
               class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -135,13 +135,13 @@
               Choose File
             </span>
 
-            <!-- No file chosen -->
-            <span id="file-name" class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-              No File Chosen
+            <!-- File name display -->
+            <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
+              {{ fileName || 'No File Chosen' }}
             </span>
 
             <input type="file" accept="image/*" class="tw:hidden"
-              onchange="document.getElementById('file-name').innerText = this.files[0]?.name || 'No file chosen'" />
+              @change="handleFileChange" />
           </label>
         </div>
 
@@ -345,12 +345,20 @@
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
               Buy Tickets
             </button>
-            <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-               tw:border tw:border-orange-500 tw:text-blue-600
-               tw:bg-white hover:tw:bg-blue-50 tw:transition-all
-               disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
-              {{ isSubmitting ? 'Saving...' : 'Save Organiser' }}
-            </button>
+            <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-2">
+              <button v-if="isEditMode" @click="cancelEdit" type="button"
+                class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                   tw:border tw:border-orange-500 tw:text-blue-600
+                   tw:bg-white hover:tw:bg-blue-50 tw:transition-all">
+                Cancel
+              </button>
+              <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                 tw:border tw:border-orange-500 tw:text-blue-600
+                 tw:bg-white hover:tw:bg-blue-50 tw:transition-all
+                 disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
+                {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Organiser' : 'Save Organiser') }}
+              </button>
+            </div>
           </div>
           <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span>
         </div>
@@ -369,6 +377,7 @@ import {
   Settings,
   Calendar,
   ChevronLeft,
+  ChevronDown,
   Upload,
   Plus,
   User,
@@ -398,6 +407,10 @@ function closeMobileSidebar() {
   mobileSidebarOpen.value = false
 }
 
+// ── Edit mode state ────────────────────────────────────────────────────
+const isEditMode = ref(false)
+const editingOrganiserId = ref(null)
+
 const activeTab = ref("home")
 const isSubmitting = ref(false)
 
@@ -406,6 +419,10 @@ const formData = reactive({
   category: '',
   subcategories: [],
 })
+
+// Image state: holds File object (new upload) or UUID string (existing)
+const mainImage = ref(null)
+const fieldErrors = ref({})
 
 const organiserSchema = {
   organiserTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Organiser Title' },
@@ -481,7 +498,6 @@ function toggleSubcategory(subcategory) {
 function handleSubcategoryChange() {
   subcategoryError.value = false
   if (selectedSubcategories.value.length > 5) {
-    const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
     selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
     subcategoryValidationError.value = true
     setTimeout(() => { subcategoryValidationError.value = false }, 3000)
@@ -504,7 +520,7 @@ function validateGenre() {
   return selectedCategory.value && selectedSubcategories.value.length > 0
 }
 
-// Event Location refs (same behavior as CreateEventFree)
+// ── Location refs ──────────────────────────────────────────────────────
 const searchAddress = ref("")
 const selectedAddress = ref("")
 const map = ref(null)
@@ -618,7 +634,13 @@ const menuItems = [
 
 function handleFileChange(event) {
   const file = event.target.files[0]
-  fileName.value = file ? file.name : 'No File Chosen'
+  if (file) {
+    mainImage.value = file
+    fileName.value = file.name
+  } else {
+    mainImage.value = null
+    fileName.value = 'No File Chosen'
+  }
 }
 
 function handleBack() {
@@ -626,14 +648,13 @@ function handleBack() {
   router.push('/')
 }
 
-function handleEventSelected(eventId) {
+async function handleEventSelected(eventId) {
   closeMobileSidebar()
-  console.log('Event selected for editing:', eventId)
+  await loadOrganiser(eventId)
 }
 
 function handleMenuClick(item) {
   if (item.route) {
-    console.log("Navigating to:", item.route);
     router.push(item.route)
   } else {
     activeTab.value = item.id
@@ -652,29 +673,216 @@ function syncFormData() {
   formData.subcategories = selectedSubcategories.value
 }
 
+// ── Build FormData (shared by create & update) ────────────────────────
+function buildFormData() {
+  const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+  const categoryId = selectedCategoryData ? selectedCategoryData.id : null
+  const subcategoryIds = selectedCategoryData
+    ? selectedCategoryData.subcategories
+        .filter(sub => selectedSubcategories.value.includes(sub.name))
+        .map(sub => sub.id)
+    : []
+
+  const fd = new FormData()
+
+  fd.append('title', formData.organiserTitle)
+  fd.append('event_type', 'free')
+
+  if (categoryId) fd.append('category_id', categoryId)
+  subcategoryIds.forEach(id => fd.append('subcategory_ids[]', id))
+
+  fd.append('address', selectedAddress.value)
+  if (latitude.value != null) fd.append('latitude', latitude.value)
+  if (longitude.value != null) fd.append('longitude', longitude.value)
+
+  // Main image: File or UUID
+  if (mainImage.value instanceof File) {
+    fd.append('image_path', mainImage.value)
+  } else if (typeof mainImage.value === 'string' && mainImage.value) {
+    fd.append('image_path', mainImage.value)
+  }
+
+  return fd
+}
+
+// ── Create ─────────────────────────────────────────────────────────────
+async function createOrganiser() {
+  try {
+    isSubmitting.value = true
+    fieldErrors.value = {}
+
+    const fd = buildFormData()
+
+    // Debug
+    console.log('Create FormData:')
+    for (let pair of fd.entries()) console.log(pair[0], pair[1])
+
+    const response = await eventService.createOrganiser(fd)
+
+    if (response.success) {
+      toast.success('Organiser created successfully.')
+      resetForm()
+    } else {
+      if (response.errors) {
+        fieldErrors.value = response.errors
+        toast.error(response.message || 'Please correct the errors.')
+      } else {
+        toast.error(response.message || 'Failed to create organiser.')
+      }
+    }
+  } catch (error) {
+    console.error('Error creating organiser:', error)
+    if (error.response?.data?.errors) {
+      fieldErrors.value = error.response.data.errors
+      toast.error(error.response.data.message || 'Please correct the errors.')
+    } else {
+      toast.error(error.response?.data?.message || 'Failed to create organiser.')
+    }
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// ── Update ─────────────────────────────────────────────────────────────
+async function updateOrganiser() {
+  if (!editingOrganiserId.value) return
+  try {
+    isSubmitting.value = true
+    fieldErrors.value = {}
+
+    const fd = buildFormData()
+    fd.append('_method', 'PUT')
+
+    // Debug
+    console.log('Update FormData:')
+    for (let pair of fd.entries()) console.log(pair[0], pair[1])
+
+    const response = await eventService.updateOrganiser(editingOrganiserId.value, fd)
+
+    if (response.success) {
+      toast.success('Organiser updated successfully.')
+      isEditMode.value = false
+      editingOrganiserId.value = null
+    } else {
+      if (response.errors) {
+        fieldErrors.value = response.errors
+        toast.error(response.message || 'Please correct the errors.')
+      } else {
+        toast.error(response.message || 'Failed to update organiser.')
+      }
+    }
+  } catch (error) {
+    console.error('Error updating organiser:', error)
+    if (error.response?.data?.errors) {
+      fieldErrors.value = error.response.data.errors
+      toast.error(error.response.data.message || 'Please correct the errors.')
+    } else {
+      toast.error(error.response?.data?.message || 'Failed to update organiser.')
+    }
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// ── Load for edit ──────────────────────────────────────────────────────
+async function loadOrganiser(id) {
+  try {
+    if (!categories.value.length) await fetchCategories()
+
+    const response = await eventService.getOrganiserById(id)
+    if (!response.success || !response.data) {
+      toast.error(response.message || 'Failed to load organiser.')
+      return
+    }
+    const d = response.data
+
+    formData.organiserTitle = d.title ?? ''
+    selectedAddress.value = d.address ?? ''
+    searchAddress.value = d.address ?? ''
+    latitude.value = d.latitude ?? null
+    longitude.value = d.longitude ?? null
+
+    // Main image (UUID from API)
+    mainImage.value = d.image_path || null
+    fileName.value = d.image_path ? 'Existing image' : ''
+
+    // Category / subcategory hydration
+    if (categories.value.length && d.category_id) {
+      const cat = categories.value.find(c => String(c.id) === String(d.category_id))
+      selectedCategory.value = cat ? cat.name : ''
+      if (cat && Array.isArray(d.subcategory_ids)) {
+        selectedSubcategories.value = d.subcategory_ids
+          .map(sid => cat.subcategories.find(s => String(s.id) === String(sid))?.name)
+          .filter(Boolean)
+      } else {
+        selectedSubcategories.value = []
+      }
+    }
+
+    fieldErrors.value = {}
+    isEditMode.value = true
+    editingOrganiserId.value = d.id
+  } catch (error) {
+    console.error('Error loading organiser:', error)
+    toast.error(error.response?.data?.message || 'Failed to load organiser.')
+  }
+}
+
+function cancelEdit() {
+  isEditMode.value = false
+  editingOrganiserId.value = null
+  resetForm()
+}
+
+function resetForm() {
+  formData.organiserTitle = ''
+  formData.category = ''
+  formData.subcategories = []
+  selectedCategory.value = ''
+  selectedSubcategories.value = []
+  selectedAddress.value = ''
+  searchAddress.value = ''
+  latitude.value = null
+  longitude.value = null
+  mainImage.value = null
+  fileName.value = ''
+  fieldErrors.value = {}
+  categoryError.value = false
+  subcategoryError.value = false
+  subcategoryValidationError.value = false
+  resetErrors()
+}
+
+// ── Submit handler ─────────────────────────────────────────────────────
 async function handleSubmit() {
   if (isSubmitting.value) return
-  isSubmitting.value = true
 
   syncFormData()
 
   const isValid = validate()
-
-  // Also validate genre fields (existing logic)
   const genreValid = validateGenre()
 
   if (!isValid || !genreValid) {
     await scrollToFirstError()
-    isSubmitting.value = false
     return
   }
 
-  toast.success('This feature will be available in future')
-  isSubmitting.value = false
+  if (isEditMode.value) {
+    await updateOrganiser()
+  } else {
+    await createOrganiser()
+  }
+}
+
+function handleClickOutside(event) {
+  if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
+    showSubcategoryDropdown.value = false
+  }
 }
 
 onMounted(() => {
   fetchCategories()
+  document.addEventListener('click', handleClickOutside)
 
   // Initialize map
   map.value = new maplibregl.Map({
@@ -694,6 +902,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
   if (map.value) map.value.remove()
 })
 </script>

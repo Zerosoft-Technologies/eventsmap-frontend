@@ -205,6 +205,40 @@ const eventService = {
   async toggleWishlist(eventId: number): Promise<WishlistToggleResponse> {
     const response: AxiosResponse<WishlistToggleResponse> = await api.post(`/v2/events/${eventId}/wishlist`)
     return response.data
+  },
+
+  // ── Organiser CRUD ────────────────────────────────────────────────────
+
+  /**
+   * Create a new organiser
+   */
+  async createOrganiser(formData: FormData): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post(
+      '/v2/organisers',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return response.data
+  },
+
+  /**
+   * Get organiser by id
+   */
+  async getOrganiserById(id: number): Promise<EventDetailResponse> {
+    const response: AxiosResponse<EventDetailResponse> = await api.get(`/v2/organisers/${id}`)
+    return response.data
+  },
+
+  /**
+   * Update an existing organiser (POST with _method=PUT)
+   */
+  async updateOrganiser(id: number, formData: FormData): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post(
+      `/v2/organisers/${id}`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return response.data
   }
 }
 
