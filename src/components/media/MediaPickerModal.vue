@@ -392,7 +392,8 @@ const handleFileSelect = async (event) => {
     images.value = [...newImages, ...images.value]
     
     // Emit uploaded images to parent to update their gallery state
-    emit('image-updated', newImages)
+    // Include both the uploaded image data and the original files
+    emit('image-updated', newImages, Array.from(files))
     
     // Auto-select uploaded images
     if (props.multiple) {

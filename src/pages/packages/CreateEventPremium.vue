@@ -194,8 +194,8 @@
                     <div v-if="mainImage" class="tw:relative tw:mt-4 tw:w-full">
                         <img :src="mainImage.image_url" alt="Event image preview"
                             class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200" />
-                        <button @click="form.image_path = ''" type="button"
-                            class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-(--secondary-color) tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-(--secondary-color) tw:transition-colors">
+                        <button @click="removeMainImage" type="button"
+                            class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-700 tw:transition-colors">
                             <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
                                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -242,7 +242,7 @@
                                 {{ resolvedAdditionalImages.length }} / 5 images selected
                             </span>
                             <button
-                                @click="form.additional_images = []"
+                                @click="clearAllAdditionalImages"
                                 type="button"
                                 class="tw:text-sm tw:text-red-500 hover:tw:text-red-700 tw:transition-colors"
                             >
@@ -1143,14 +1143,21 @@ const showDescriptionExpandModal = ref(false)
 
 const form = reactive({
     image_path: '', 
-    additional_images: [] 
+    additional_images: [],
+    remove_main_image: false
 })
 
+const mainImageFile = ref(null)
+const additionalImageFiles = ref([])
+const pendingFileMap = ref({})
 const selectedImageFile = ref(null)
 const imagePreview = ref(null)
-// Gallery images for resolving image_ids
+const fileName = ref('')
+
+// Gallery images for resolving image_ids to URLs
 const galleryImages = ref([])
 const pastDateError = ref(false)
+
 const latitude = ref(null)
 const longitude = ref(null)
 
@@ -1196,7 +1203,6 @@ function clearFieldError(fieldName) {
 
 const additionalImages = ref([])
 const selectedVenue = ref("")
-const fileName = ref("")
 const selectedGenre = ref("")
 // Overview (clean UX modes)
 // dressCode: 'none' | 'required'
@@ -1692,14 +1698,38 @@ const openMediaModal = (type) => {
 const handleMediaSelect = (ids) => {
     if (selectedMediaType.value === 'main') {
         form.image_path = ids[0] || ''
+        form.remove_main_image = false
     } else {
         form.additional_images = ids.slice(0, 5)
+        additionalImages.value = []
     }
 }
 
-const handleImageUpdated = (newImages) => {
-    // Add newly uploaded images to the galleryImages ref
-    galleryImages.value = [...newImages, ...galleryImages.value]
+const handleImageUpdated = (newImages, files) => {
+  // Add newly uploaded images to the gallery resolution list
+  galleryImages.value = [...newImages, ...galleryImages.value]
+
+  if (!files || files.length === 0) return
+
+  // Map every uploaded image_id → its File so it survives the modal confirm
+  newImages.forEach((img, i) => {
+    if (files[i] instanceof File) {
+      pendingFileMap.value[img.image_id] = files[i]
+    }
+  })
+
+  // Update form image references so the preview shows correctly
+  if (selectedMediaType.value === 'main' && newImages.length > 0) {
+    form.image_path = newImages[0].image_id
+    form.remove_main_image = false
+    // Clear legacy file refs — state now lives in pendingFileMap
+    mainImageFile.value = null
+    selectedImageFile.value = null
+  } else if (selectedMediaType.value === 'additional') {
+    form.additional_images = newImages.map(img => img.image_id)
+    additionalImageFiles.value = []
+    additionalImages.value = []
+  }
 }
 
 const handleMainImageClick = () => {
@@ -1712,7 +1742,34 @@ const handleAdditionalImagesClick = () => {
 }
 
 const removeAdditionalImage = (index) => {
-    form.additional_images.splice(index, 1)
+    // Remove from form.additional_images (existing images)
+    if (form.additional_images && form.additional_images.length > index) {
+        form.additional_images.splice(index, 1)
+    }
+    // Also clear additionalImages ref if it's being used for new uploads
+    if (additionalImages.value && additionalImages.value.length > index) {
+        additionalImages.value.splice(index, 1)
+    }
+    // Also clear additionalImageFiles if it contains files
+    if (additionalImageFiles.value && additionalImageFiles.value.length > index) {
+        additionalImageFiles.value.splice(index, 1)
+    }
+}
+
+const clearAllAdditionalImages = () => {
+    form.additional_images = []
+    additionalImages.value = []
+    additionalImageFiles.value = []
+}
+
+const removeMainImage = () => {
+    // Mark for removal
+    form.remove_main_image = false
+    form.image_path = ''
+    selectedImageFile.value = null
+    mainImageFile.value = null
+    imagePreview.value = null
+    fileName.value = 'No File Chosen'
 }
 
 // Fetch gallery images for resolution
@@ -2345,6 +2402,12 @@ async function loadEvent(id) {
         form.image_path = d.image_path || ''
         form.additional_images = Array.isArray(d.additional_images) ? d.additional_images : []
 
+        // Clear file refs when loading existing event
+        mainImageFile.value = null
+        additionalImageFiles.value = []
+        selectedImageFile.value = null
+        additionalImages.value = []
+
         // Legacy image preview fallback
         if (d.image_url && !form.image_path) {
             // Try to find image in gallery by URL
@@ -2386,6 +2449,11 @@ function resetForm() {
     // Reset image form state
     form.image_path = ''
     form.additional_images = []
+    form.remove_main_image = false
+    // Reset file refs
+    mainImageFile.value = null
+    additionalImageFiles.value = []
+    pendingFileMap.value = {}
     // Legacy resets
     imagePreview.value = null
     selectedImageFile.value = null
@@ -2458,41 +2526,119 @@ async function updateEvent() {
             : []
         const subcategoryIds = selectedSubcategoryData.map(sub => sub.id)
 
-        const payload = {
-            title: eventTitle.value,
-            event_type: eventType.value,
-            category_id: categoryId,
-            subcategory_ids: subcategoryIds,
-            start_date: eventDate.value,
-            start_time: startTime.value,
-            end_time: endTime.value,
-            end_date: endDate.value,
-            start_datetime: buildLocalIso(eventDate.value, startTime.value),
-            end_datetime: buildLocalIso(endDate.value, endTime.value),
-            address: selectedAddress.value,
-            dress_code: dressCode.value === 'none' ? 'no_dress_code' : (customDressCode.value || ''),
-            age_limit: ageLimit.value === 'none' ? 'no_age_limit' : (customAgeLimit.value || ''),
-            entrance_status: entranceStatus.value === 'open' ? 'open_to_all' : (customEntranceFee.value || ''),
-            description: eventDescription.value,
-            is_recurring: isRecurring.value,
-            is_copy_event: isCopyEvent.value,
-            show_upcoming_events: showUpcomingEvents.value,
-            show_past_events: showPastEvents.value
+        // Create FormData for file upload
+        const formData = new FormData()
+        
+        // Add _method for PUT request
+        formData.append('_method', 'PUT')
+        
+        // Add basic fields
+        formData.append('title', eventTitle.value)
+        formData.append('event_type', eventType.value)
+        formData.append('category_id', categoryId)
+        subcategoryIds.forEach(id => formData.append('subcategory_ids[]', id))
+        formData.append('start_date', eventDate.value)
+        formData.append('start_time', startTime.value)
+        formData.append('end_time', endTime.value)
+        formData.append('end_date', endDate.value)
+        formData.append('start_datetime', buildLocalIso(eventDate.value, startTime.value))
+        formData.append('end_datetime', buildLocalIso(endDate.value, endTime.value))
+        formData.append('address', selectedAddress.value)
+        formData.append('description', eventDescription.value)
+        
+        // Overview fields
+        formData.append('dress_code', dressCode.value === 'none' ? 'no_dress_code' : (customDressCode.value || ''))
+        formData.append('age_limit', ageLimit.value === 'none' ? 'no_age_limit' : (customAgeLimit.value || ''))
+        formData.append('entrance_status', entranceStatus.value === 'open' ? 'open_to_all' : (customEntranceFee.value || ''))
+        
+        // Optional fields
+        if (contactPhone.value) formData.append('contact_phone', contactPhone.value)
+        if (contactEmail.value) formData.append('contact_email', contactEmail.value)
+        if (contactWebsite.value) formData.append('contact_website', contactWebsite.value)
+        if (contactBoxMessage.value) formData.append('contact_box_message', contactBoxMessage.value)
+        if (venueDetailsText.value) formData.append('venue_details', venueDetailsText.value)
+        if (facebookUrl.value) formData.append('facebook_url', facebookUrl.value)
+        if (instagramUrl.value) formData.append('instagram_url', instagramUrl.value)
+        if (tiktokUrl.value) formData.append('tiktok_url', tiktokUrl.value)
+        if (ticketUrl.value) formData.append('ticket_url', ticketUrl.value)
+        if (bookingInstructions.value) formData.append('booking_instructions', bookingInstructions.value)
+        
+        // Boolean fields
+        formData.append('is_recurring', isRecurring.value ? '1' : '0')
+        formData.append('is_copy_event', isCopyEvent.value ? '1' : '0')
+        formData.append('show_upcoming_events', showUpcomingEvents.value === null ? '' : (showUpcomingEvents.value ? '1' : '0'))
+        formData.append('show_past_events', showPastEvents.value === null ? '' : (showPastEvents.value ? '1' : '0'))
+        
+        // Condition fields
+        if (conditionEntranceFee.value) formData.append('condition_entrance_fee', conditionEntranceFee.value)
+        if (conditionDressCode.value) formData.append('condition_dress_code', conditionDressCode.value)
+        if (conditionAgeLimit.value) formData.append('condition_age_limit', conditionAgeLimit.value)
+        
+        // Invite section IDs
+        invitedTalentIds.value.forEach(id => formData.append('invited_talents[]', id))
+        invitedOrganiserIds.value.forEach(id => formData.append('invited_organisers[]', id))
+        invitedVenueIds.value.forEach(id => formData.append('invited_venues[]', id))
+        
+        // ── Main image ──────────────────────────────────────────────────────
+        if (form.remove_main_image) {
+        formData.append('remove_main_image', 'true')
+        } else if (form.image_path) {
+        // Check pendingFileMap first: user may have uploaded a new file this session
+        const pendingFile = pendingFileMap.value[form.image_path]
+        if (pendingFile instanceof File) {
+            formData.append('main_image', pendingFile)
+        } else if (mainImageFile.value instanceof File) {
+            // Legacy path — kept for safety
+            formData.append('main_image', mainImageFile.value)
+        } else if (selectedImageFile.value instanceof File) {
+            formData.append('main_image', selectedImageFile.value)
+        } else {
+            // Existing gallery image — send its id so backend keeps it
+            formData.append('image_path', form.image_path)
+        }
         }
 
-        const response = await eventService.updateEventById(editingEventId.value, payload)
+        // ── Additional images ────────────────────────────────────────────────
+        if (form.additional_images && form.additional_images.length > 0) {
+        form.additional_images.forEach((id) => {
+            const pendingFile = pendingFileMap.value[id]
+            if (pendingFile instanceof File) {
+            formData.append('additional_images[]', pendingFile)
+            } else {
+            formData.append('additional_images[]', id)
+            }
+        })
+        } else {
+        // User cleared all — send empty marker so backend knows to clear
+        formData.append('additional_images[]', '')
+        }
+        
+        // Debug: Log FormData contents
+        console.log('FormData contents:')
+        for (let pair of formData.entries()) {
+            console.log(pair[0], pair[1])
+        }
+        
+        // Send update request
+        const response = await api.post(`/v2/events/${editingEventId.value}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
 
-        if (response.success) {
+        if (response.data.success) {
             toast.success('Event updated successfully.')
+            pendingFileMap.value = {}
             isEditMode.value = false
             editingEventId.value = null
+            await myEvtStore.fetchMyEvents()
         } else {
-            if (response.errors) {
-                fieldErrors.value = response.errors
-                toast.error(response.message || 'Please correct the errors in the form.')
+            if (response.data.errors) {
+                fieldErrors.value = response.data.errors
+                toast.error(response.data.message || 'Please correct the errors in the form.')
                 await scrollToFirstError()
             } else {
-                toast.error(response.message || 'Failed to update event.')
+                toast.error(response.data.message || 'Failed to update event.')
             }
         }
     } catch (error) {
