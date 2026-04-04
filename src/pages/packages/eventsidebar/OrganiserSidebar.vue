@@ -63,17 +63,12 @@
             ]"
           >
             <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF]">
-              {{ organiser.title || 'Organiser Title' }}
+              {{ organiser.name || 'Organiser Title' }}
             </h2>
 
             <div class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2">
               <User class="tw:w-4 tw:h-4" />
-              <span>{{ organiser.event_type || 'Free' }} Account</span>
-            </div>
-
-            <div v-if="organiser.address" class="tw:flex tw:items-center tw:text-sm tw:text-gray-600 tw:gap-2">
-              <Home class="tw:w-4 tw:h-4" />
-              <span>{{ organiser.address }}</span>
+              <span>{{ organiser.account_type || 'Free' }} Account</span>
             </div>
           </div>
         </template>
@@ -91,7 +86,6 @@
 
 <script setup>
 import {
-  Home,
   FileText,
   BarChart3,
   Settings,
@@ -186,6 +180,18 @@ function isActive(item) {
 function handleBackClick() {
   // Navigate to home page without full page reload
   router.push({ name: 'Home' })
+}
+
+function formatDate(dateString) {
+  if (!dateString) return 'No date'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { 
+    day: 'numeric', 
+    month: 'short', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 </script>
 

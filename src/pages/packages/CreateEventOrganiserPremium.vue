@@ -62,7 +62,7 @@
                         <div class="tw:bg-[#F6F1E7] tw:rounded-2xl tw:p-5 tw:space-y-4 tw:border tw:border-gray-200">
 
                             <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF]">
-                                Event Title
+                                {{ formData.organiserTitle || 'Event Title' }}
                             </h2>
 
                             <div class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2">
@@ -932,8 +932,8 @@ const availableSubcategories = computed(() => {
     return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
 })
 
-// Fetch categories from API using eventService
-async function fetchCategories() {
+// Fetch categories from API using eventService with retry
+async function fetchCategories(retryCount = 0) {
     try {
         isLoadingCategories.value = true
         categoriesError.value = null
@@ -947,7 +947,13 @@ async function fetchCategories() {
         }
     } catch (error) {
         console.error('Error fetching categories:', error)
-        categoriesError.value = 'Error loading categories. Please try again.'
+        if (retryCount < 2) {
+            console.log(`Retrying categories fetch... Attempt ${retryCount + 1}`)
+            setTimeout(() => fetchCategories(retryCount + 1), 1000)
+        } else {
+            categoriesError.value = 'Error loading categories. Please check your connection and refresh the page.'
+            toast.error('Failed to load categories. Please check your connection and refresh the page.')
+        }
     } finally {
         isLoadingCategories.value = false
     }
@@ -1043,7 +1049,7 @@ const editingOrganiserId = ref(null)
 // ── Image state ────────────────────────────────────────────────────────
 const imagePreviewUrl = ref(null)
 const pendingFileMap = ref({})
-const clearAllImages = ref(false)
+// const clearAllImages = ref(false)
 const fieldErrors = ref({})
 
 // Media picker state
@@ -1123,13 +1129,19 @@ const clearAllAdditionalImages = () => {
     additionalImages.value = []
 }
 
-// Fetch gallery images for resolution
-const fetchGalleryImages = async () => {
+// Fetch gallery images for resolution with retry
+const fetchGalleryImages = async (retryCount = 0) => {
     try {
         const response = await galleryApi.fetchImages(1, 100)
         galleryImages.value = response.data.images
     } catch (error) {
         console.error('Error fetching gallery images:', error)
+        if (retryCount < 2) {
+            console.log(`Retrying gallery images fetch... Attempt ${retryCount + 1}`)
+            setTimeout(() => fetchGalleryImages(retryCount + 1), 1000)
+        } else {
+            console.warn('Failed to load gallery images after 3 attempts. Media picker may not show existing images.')
+        }
     }
 }
 
@@ -1243,12 +1255,17 @@ function buildFormData() {
     }
 
     // ── Additional images (Always send UUIDs, not files) ───────────────────
+    // Always send additional_images field, even if empty
     if (formData.additional_images && formData.additional_images.length > 0) {
         console.log('Additional images being sent:', formData.additional_images)
         formData.additional_images.forEach((imageId, index) => {
             console.log('Sending image ID:', imageId)
             fd.append(`additional_images[${index}]`, imageId)
         })
+    } else {
+        // Send empty array to clear additional images
+        console.log('Sending empty additional_images array')
+        fd.append('additional_images', '')
     }
 
     return fd
@@ -1271,6 +1288,10 @@ async function createOrganiser() {
             toast.success('Organiser created successfully.')
             pendingFileMap.value = {}
             resetForm()
+            // Refresh organiser list in sidebar
+            const { useMyOrganiserStore } = await import("@/stores/myOrganiserStore")
+            const myOrganiserStore = useMyOrganiserStore()
+            myOrganiserStore.fetchMyOrganisers()
         } else {
             if (response.errors) {
                 fieldErrors.value = response.errors
@@ -1301,7 +1322,7 @@ async function updateOrganiser() {
 
         const fd = buildFormData()
         fd.append('_method', 'PUT')
-        fd.append('remove_additional_images', clearAllImages.value ? '1' : '0')
+        // fd.append('remove_additional_images', clearAllImages.value ? '1' : '0')
 
         console.log('Update FormData:')
         for (let pair of fd.entries()) console.log(pair[0], pair[1])
@@ -1311,9 +1332,14 @@ async function updateOrganiser() {
         if (response.success) {
             toast.success('Organiser updated successfully.')
             pendingFileMap.value = {}
-            clearAllImages.value = false
+            // clearAllImages.value = false
             isEditMode.value = false
             editingOrganiserId.value = null
+            resetForm()
+            // Refresh organiser list in sidebar
+            const { useMyOrganiserStore } = await import("@/stores/myOrganiserStore")
+            const myOrganiserStore = useMyOrganiserStore()
+            myOrganiserStore.fetchMyOrganisers()
         } else {
             if (response.errors) {
                 fieldErrors.value = response.errors
@@ -1375,7 +1401,7 @@ async function loadOrganiser(id) {
         fileName.value = d.image_path ? 'Existing image' : ''
 
         pendingFileMap.value = {}
-        clearAllImages.value = false
+        // clearAllImages.value = false
 
         if (categories.value.length && d.category_id) {
             const cat = categories.value.find(c => String(c.id) === String(d.category_id))
@@ -1429,7 +1455,7 @@ function resetForm() {
     imagePreviewUrl.value = null
     additionalImages.value = []
     pendingFileMap.value = {}
-    clearAllImages.value = false
+    // clearAllImages.value = false
     fileName.value = ''
     fieldErrors.value = {}
     categoryError.value = false
