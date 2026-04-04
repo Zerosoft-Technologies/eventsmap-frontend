@@ -107,7 +107,7 @@
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Create Premium Organiser
+                            Create Premium Organiser <span class="tw:text-red-500">*</span>
                         </h3>
                         <!-- <button
                             class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -125,7 +125,7 @@
                         formErrors.organiserTitle }}</p>
                     <!-- Description -->
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:text-gray-700">Description</label>
+                        <label class="tw:text-sm tw:text-gray-700">Description <span class="tw:text-red-500">*</span></label>
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Organiser..."
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>

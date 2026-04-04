@@ -268,14 +268,23 @@
                             Choose File
                         </span>
 
-                        <!-- No file chosen -->
-                        <span id="file-name" class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-                            No File Chosen
+                        <!-- File name display -->
+                        <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
+                            {{ fileName || 'No File Chosen' }}
                         </span>
 
                         <input type="file" accept="image/*" class="tw:hidden"
-                            onchange="document.getElementById('file-name').innerText = this.files[0]?.name || 'No file chosen'" />
+                            @change="handleFileChange" />
                     </label>
+
+                    <!-- Image Preview -->
+                    <div v-if="imagePreviewUrl" class="tw:relative tw:mt-3 tw:inline-block">
+                        <img :src="imagePreviewUrl" alt="Preview" class="tw:w-40 tw:h-28 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
+                        <button type="button" @click="removeMainImage"
+                            class="tw:absolute tw:-top-2 tw:-right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center tw:text-xs tw:shadow hover:tw:bg-red-600 tw:transition">
+                            &times;
+                        </button>
+                    </div>
                 </div>
 
                 <!-- ADDITIONAL IMAGES SECTION -->
@@ -817,20 +826,20 @@
 
                 <!-- SAVE Venue BUTTON -->
                 <div class="tw:w-full tw:pt-4">
-                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:w-full tw:items-stretch tw:md:items-center tw:justify-end">
-                        <!-- <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-                           tw:border tw:border-orange-500 tw:text-[#0061FF]
-                           tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
-                            Buy Tickets
-                        </button> -->
+                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:w-full tw:items-stretch tw:md:items-center tw:justify-end tw:gap-2">
+                        <button v-if="isEditMode" @click="cancelEdit" type="button"
+                            class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                               tw:border tw:border-orange-500 tw:text-blue-600
+                               tw:bg-white hover:tw:bg-blue-50 tw:transition-all">
+                            Cancel
+                        </button>
                         <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                            tw:border tw:border-orange-500 tw:text-blue-600
                            tw:bg-white hover:tw:bg-blue-50 tw:transition-all
                            disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
-                            {{ isSubmitting ? 'Saving...' : 'Save Venue' }}
+                            {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Venue' : 'Save Venue') }}
                         </button>
                     </div>
-                    <!-- <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span> -->
                 </div>
 
             </div>
@@ -858,7 +867,7 @@ import {
     Images
 } from "lucide-vue-next"
 
-import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue"
+import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
@@ -868,12 +877,8 @@ import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
-import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
-
-import flatpickr from "flatpickr"
-import "flatpickr/dist/flatpickr.css"
 
 const router = useRouter()
 const route = useRoute()
@@ -893,24 +898,22 @@ function handleChatboxClick() {
     chatStore.open()
 }
 
-
-
 const activeTab = ref("home")
 const isSubmitting = ref(false)
+const isEditMode = ref(false)
+const editingVenueId = ref(null)
 const eventDescription = ref("")
+
+// ── Image handling ──────────────────────────────────────────────
+const fileName = ref("")
+const mainImage = ref(null)
+const imagePreviewUrl = ref(null)
+const pendingFileMap = ref(new Map())
+
 const additionalImages = ref([])
-const selectedGenre = ref("")
-const dressCode = ref("")
-const ageLimit = ref("")
-const entranceFee = ref("")
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
-const bookingInstructions = ref("")
-const ticketUrl = ref("")
-const eventOption = ref("")
-const showChatbox = ref(false)
-const contactBoxDesignMessage = ref("")
 const childrensPlayArea = ref("")
 const facebookUrl = ref("")
 const instagramUrl = ref("")
@@ -918,11 +921,6 @@ const tiktokUrl = ref("")
 
 const showUpcomingEvents = ref("")
 const showPastEvents = ref("")
-
-const notifications = ref({
-    receiveEmail: false,
-    receiveUpdates: false
-})
 
 // ── Form Validation ─────────────────────
 const formData = reactive({
@@ -939,13 +937,6 @@ const venueSchema = {
 
 const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(venueSchema, formData)
 
-// Event Date and Time
-// const eventDate = ref("")
-// const startTime = ref("")
-// const endTime = ref("")
-const startTimeInput = ref(null)
-const endTimeInput = ref(null)
-
 // ── Time split refs ──────────────────────────────────────────────────
 const startHH = ref("")
 const startMM = ref("")
@@ -955,7 +946,6 @@ const timeRangeError = ref("")
 const hasStartError = ref(false)
 const hasEndError = ref(false)
 
-// Computed HH:MM strings for API
 const startTime = computed(() => {
     if (startHH.value === "" || startMM.value === "") return ""
     return `${String(startHH.value).padStart(2, "0")}:${String(startMM.value).padStart(2, "0")}`
@@ -966,14 +956,10 @@ const endTime = computed(() => {
     return `${String(endHH.value).padStart(2, "0")}:${String(endMM.value).padStart(2, "0")}`
 })
 
-// Enforce max 2 digits + valid range, then validate end > start
 function onTimeInput(field, event) {
-    // Strip non-digits and limit to 2 characters
     let raw = event.target.value.replace(/\D/g, "").slice(0, 2)
     event.target.value = raw
-
     let val = raw === "" ? "" : parseInt(raw)
-
     if (val !== "") {
         if (field === "startHH" || field === "endHH") {
             if (val > 23) val = 23
@@ -983,46 +969,29 @@ function onTimeInput(field, event) {
             if (val < 0) val = 0
         }
     }
-
     if (field === "startHH") { startHH.value = val; hasStartError.value = false }
     if (field === "startMM") { startMM.value = val; hasStartError.value = false }
     if (field === "endHH") { endHH.value = val; hasEndError.value = false }
     if (field === "endMM") { endMM.value = val; hasEndError.value = false }
-
     validateEndAfterStart()
 }
 
 function validateEndAfterStart() {
     timeRangeError.value = ""
-
     const sHH = parseInt(startHH.value)
     const sMM = parseInt(startMM.value)
     const eHH = parseInt(endHH.value)
     const eMM = parseInt(endMM.value)
-
-    // Only validate when all four fields are filled
     if (
         startHH.value === "" || startMM.value === "" ||
         endHH.value === "" || endMM.value === ""
     ) return
-
     const startTotal = sHH * 60 + sMM
     const endTotal = eHH * 60 + eMM
-
     if (endTotal <= startTotal) {
         timeRangeError.value = "End time must be later than start time"
     }
 }
-
-// const {
-//     startError,
-//     endError,
-//     hasStartError,
-//     hasEndError,
-//     validateTimeRange,
-//     clearStartError,
-//     clearEndError,
-// } = useTimeRangeValidation(startTime, endTime)
 
 const selectedCategory = ref("")
 
@@ -1124,14 +1093,7 @@ function validateGenre() {
     return selectedCategory.value && selectedSubcategories.value.length > 0
 }
 
-const contactBoxMessage = ref('')
 const openingHoursText = ref('')
-
-// Event Date and Time
-// const eventDate = ref("")
-const eventTime = ref("")
-// const dateInput = ref(null)
-const timeInput = ref(null)
 
 // Event Location refs
 const searchAddress = ref("")
@@ -1141,26 +1103,14 @@ const marker = ref(null)
 const suggestions = ref([])
 const isLoading = ref(false)
 const debounceTimer = ref(null)
-// const selectedCategory = ref("")
+const mapLat = ref(null)
+const mapLng = ref(null)
 
 // Accessibility fields
 const allowanceOfDogs = ref("")
 const wheelchairAccessible = ref("")
 const accessibleParking = ref("")
 const valetParking = ref("")
-
-const showGenreDropdown = ref(false)
-const genreDropdownRef = ref(null)
-
-const genres = [
-    "Electronic",
-    "House",
-    "Techno",
-    "Hip Hop",
-    "Live Music"
-]
-
-const selectedGenres = ref([])
 
 // Description of Venue dropdown
 const showDescriptionDropdown = ref(false)
@@ -1192,52 +1142,15 @@ const descriptionItems = [
 ]
 
 const selectedDescriptionItems = ref([])
-
 const accessibilityDescription = ref("")
 
-// Toggle functions
 function toggleDescriptionDropdown() {
     showDescriptionDropdown.value = !showDescriptionDropdown.value
 }
 
-function toggleDropdown() {
-    showGenreDropdown.value = !showGenreDropdown.value
-}
-
-// Close when clicking outside
-// function handleClickOutside(event) {
-//     // Genre dropdown
-//     if (
-//         genreDropdownRef.value &&
-//         !genreDropdownRef.value.contains(event.target)
-//     ) {
-//         showGenreDropdown.value = false
-//     }
-    
-//     // Description dropdown
-//     if (
-//         descriptionDropdownRef.value &&
-//         !descriptionDropdownRef.value.contains(event.target)
-//     ) {
-//         showDescriptionDropdown.value = false
-//     }
-    
-//     // Accessibility dropdown
-//     if (
-//         accessibilityDropdownRef.value &&
-//         !accessibilityDropdownRef.value.contains(event.target)
-//     ) {
-//         showAccessibilityDropdown.value = false
-//     }
-// }
-
 onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside)
 })
-
-const eventDate = ref("05.03.2026, 18:30 CET")
-const eventStatus = ref("Premium")
-const fileName = ref("")
 
 const menuItems = [
     { id: "home", icon: Home, label: "Home", route: "/create-venue-premium" },
@@ -1250,9 +1163,20 @@ const menuItems = [
     { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
 ]
 
+// ── Image handling ──────────────────────────────────────────────
 function handleFileChange(event) {
     const file = event.target.files[0]
-    fileName.value = file ? file.name : 'No File Chosen'
+    if (file) {
+        fileName.value = file.name
+        mainImage.value = file
+        imagePreviewUrl.value = URL.createObjectURL(file)
+    }
+}
+
+function removeMainImage() {
+    mainImage.value = null
+    imagePreviewUrl.value = null
+    fileName.value = ''
 }
 
 function handleBack() {
@@ -1267,7 +1191,6 @@ function handleEventSelected(eventId) {
 
 function handleMenuClick(item) {
     if (item.route) {
-        console.log("Navigating to:", item.route)
         router.push(item.route)
     } else {
         activeTab.value = item.id
@@ -1286,6 +1209,293 @@ function syncFormData() {
     formData.subcategories = selectedSubcategories.value
 }
 
+// ── Build FormData for API ──────────────────────────────────────
+function buildFormData() {
+    const fd = new FormData()
+
+    if (isEditMode.value) {
+        fd.append('_method', 'PUT')
+    }
+
+    fd.append('title', formData.venueTitle)
+    fd.append('event_type', 'venue')
+    fd.append('description', eventDescription.value || '')
+
+    // Category ID
+    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+    if (selectedCategoryData) {
+        fd.append('category_id', selectedCategoryData.id)
+    }
+
+    // Subcategory IDs
+    if (selectedCategoryData) {
+        selectedSubcategories.value.forEach(subName => {
+            const subData = selectedCategoryData.subcategories.find(s => s.name === subName)
+            if (subData) {
+                fd.append('subcategory_ids[]', subData.id)
+            }
+        })
+    }
+
+    // Location
+    fd.append('address', selectedAddress.value || '')
+    if (mapLat.value !== null) fd.append('latitude', mapLat.value)
+    if (mapLng.value !== null) fd.append('longitude', mapLng.value)
+
+    // Time
+    if (startTime.value) fd.append('start_time', startTime.value)
+    if (endTime.value) fd.append('end_time', endTime.value)
+
+    // Main Image
+    if (mainImage.value instanceof File) {
+        fd.append('image_path', mainImage.value)
+    } else if (typeof mainImage.value === 'string' && mainImage.value) {
+        fd.append('image_path', mainImage.value)
+    }
+
+    // Additional images
+    if (additionalImages.value && additionalImages.value.length) {
+        additionalImages.value.forEach((img) => {
+            if (img instanceof File) {
+                fd.append('additional_images[]', img)
+            } else if (pendingFileMap.value.has(img)) {
+                fd.append('additional_images[]', pendingFileMap.value.get(img))
+            } else if (typeof img === 'string') {
+                fd.append('existing_additional_images[]', img)
+            }
+        })
+    }
+
+    // Accessibility
+    fd.append('allowance_of_dogs', allowanceOfDogs.value || '')
+    fd.append('wheelchair_accessible', wheelchairAccessible.value || '')
+    fd.append('accessible_parking', accessibleParking.value || '')
+    fd.append('valet_parking', valetParking.value || '')
+    fd.append('childrens_play_area', childrensPlayArea.value || '')
+    fd.append('accessibility_description', accessibilityDescription.value || '')
+
+    // Description items
+    if (selectedDescriptionItems.value.length) {
+        selectedDescriptionItems.value.forEach(item => {
+            fd.append('description_items[]', item)
+        })
+    }
+
+    // Contact details
+    fd.append('contact_phone', contactPhone.value || '')
+    fd.append('contact_email', contactEmail.value || '')
+    fd.append('contact_website', contactWebsite.value || '')
+
+    // Opening hours
+    fd.append('opening_hours', openingHoursText.value || '')
+
+    // Social media
+    fd.append('facebook_url', facebookUrl.value || '')
+    fd.append('instagram_url', instagramUrl.value || '')
+    fd.append('tiktok_url', tiktokUrl.value || '')
+
+    // Visibility
+    fd.append('show_upcoming_events', showUpcomingEvents.value ? '1' : '0')
+    fd.append('show_past_events', showPastEvents.value ? '1' : '0')
+
+    return fd
+}
+
+// ── Create Venue ────────────────────────────────────────────────
+async function createVenue() {
+    try {
+        const fd = buildFormData()
+        const response = await eventService.createVenue(fd)
+        if (response.success) {
+            toast.success('Venue created successfully!')
+            resetForm()
+        } else {
+            toast.error(response.message || 'Failed to create venue')
+        }
+    } catch (error) {
+        console.error('Error creating venue:', error)
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors
+            Object.keys(errors).forEach(key => { toast.error(errors[key][0]) })
+        } else {
+            toast.error('An error occurred while creating the venue')
+        }
+    }
+}
+
+// ── Update Venue ────────────────────────────────────────────────
+async function updateVenue() {
+    try {
+        const fd = buildFormData()
+        const response = await eventService.updateVenue(editingVenueId.value, fd)
+        if (response.success) {
+            toast.success('Venue updated successfully!')
+            resetForm()
+        } else {
+            toast.error(response.message || 'Failed to update venue')
+        }
+    } catch (error) {
+        console.error('Error updating venue:', error)
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors
+            Object.keys(errors).forEach(key => { toast.error(errors[key][0]) })
+        } else {
+            toast.error('An error occurred while updating the venue')
+        }
+    }
+}
+
+// ── Load Venue for editing ──────────────────────────────────────
+async function loadVenue(id) {
+    try {
+        const response = await eventService.getVenueById(id)
+        const venue = response.data || response
+
+        isEditMode.value = true
+        editingVenueId.value = id
+
+        formData.venueTitle = venue.title || ''
+        eventDescription.value = venue.description || ''
+        selectedAddress.value = venue.address || ''
+
+        if (venue.latitude) mapLat.value = venue.latitude
+        if (venue.longitude) mapLng.value = venue.longitude
+
+        // Category & subcategories
+        if (venue.category) {
+            selectedCategory.value = venue.category.name || ''
+            await nextTick()
+            if (venue.subcategories && venue.subcategories.length) {
+                selectedSubcategories.value = venue.subcategories.map(s => s.name)
+            }
+        }
+
+        // Main image
+        mainImage.value = null
+        imagePreviewUrl.value = null
+        fileName.value = ''
+        if (venue.image_path) {
+            mainImage.value = venue.image_path
+            imagePreviewUrl.value = venue.image_url || venue.image_path
+            fileName.value = 'Current image'
+        }
+
+        // Additional images
+        if (venue.additional_images && venue.additional_images.length) {
+            additionalImages.value = venue.additional_images.map(img => img.image_url || img.image_path || img)
+        }
+
+        // Time
+        if (venue.start_time) {
+            const [h, m] = venue.start_time.split(':')
+            startHH.value = parseInt(h)
+            startMM.value = parseInt(m)
+        }
+        if (venue.end_time) {
+            const [h, m] = venue.end_time.split(':')
+            endHH.value = parseInt(h)
+            endMM.value = parseInt(m)
+        }
+
+        // Accessibility
+        allowanceOfDogs.value = venue.allowance_of_dogs || ''
+        wheelchairAccessible.value = venue.wheelchair_accessible || ''
+        accessibleParking.value = venue.accessible_parking || ''
+        valetParking.value = venue.valet_parking || ''
+        childrensPlayArea.value = venue.childrens_play_area || ''
+        accessibilityDescription.value = venue.accessibility_description || ''
+
+        // Description items
+        if (venue.description_items && venue.description_items.length) {
+            selectedDescriptionItems.value = [...venue.description_items]
+        }
+
+        // Contact & social
+        contactPhone.value = venue.contact_phone || ''
+        contactEmail.value = venue.contact_email || ''
+        contactWebsite.value = venue.contact_website || ''
+        facebookUrl.value = venue.facebook_url || ''
+        instagramUrl.value = venue.instagram_url || ''
+        tiktokUrl.value = venue.tiktok_url || ''
+
+        // Opening hours
+        openingHoursText.value = venue.opening_hours || ''
+
+        // Visibility
+        showUpcomingEvents.value = venue.show_upcoming_events === '1' || venue.show_upcoming_events === true
+        showPastEvents.value = venue.show_past_events === '1' || venue.show_past_events === true
+
+        // Center map
+        if (venue.latitude && venue.longitude && map.value) {
+            map.value.flyTo({
+                center: [venue.longitude, venue.latitude],
+                zoom: 15,
+                essential: true
+            })
+            updateMarker(venue.longitude, venue.latitude)
+        }
+    } catch (error) {
+        console.error('Error loading venue:', error)
+        toast.error('Failed to load venue data')
+    }
+}
+
+// ── Cancel Edit ─────────────────────────────────────────────────
+function cancelEdit() {
+    resetForm()
+    isEditMode.value = false
+    editingVenueId.value = null
+}
+
+// ── Reset Form ──────────────────────────────────────────────────
+function resetForm() {
+    formData.venueTitle = ''
+    formData.category = ''
+    formData.subcategories = []
+    eventDescription.value = ''
+    selectedCategory.value = ''
+    selectedSubcategories.value = []
+    selectedAddress.value = ''
+    searchAddress.value = ''
+    mainImage.value = null
+    imagePreviewUrl.value = null
+    fileName.value = ''
+    additionalImages.value = []
+    pendingFileMap.value = new Map()
+    mapLat.value = null
+    mapLng.value = null
+    startHH.value = ''
+    startMM.value = ''
+    endHH.value = ''
+    endMM.value = ''
+    timeRangeError.value = ''
+    hasStartError.value = false
+    hasEndError.value = false
+    contactPhone.value = ''
+    contactEmail.value = ''
+    contactWebsite.value = ''
+    facebookUrl.value = ''
+    instagramUrl.value = ''
+    tiktokUrl.value = ''
+    allowanceOfDogs.value = ''
+    wheelchairAccessible.value = ''
+    accessibleParking.value = ''
+    valetParking.value = ''
+    childrensPlayArea.value = ''
+    accessibilityDescription.value = ''
+    selectedDescriptionItems.value = []
+    openingHoursText.value = ''
+    showUpcomingEvents.value = ''
+    showPastEvents.value = ''
+    categoryError.value = false
+    subcategoryError.value = false
+    subcategoryValidationError.value = false
+    isEditMode.value = false
+    editingVenueId.value = null
+    resetErrors()
+}
+
+// ── Handle Submit ───────────────────────────────────────────────
 async function handleSubmit() {
     if (isSubmitting.value) return
     isSubmitting.value = true
@@ -1294,9 +1504,7 @@ async function handleSubmit() {
 
     const isValid = validate()
     const genreValid = validateGenre()
-    // const timeValid = validateTimeRange()
 
-    // ✅ Replace with:
     if (!startTime.value) hasStartError.value = true
     if (!endTime.value) hasEndError.value = true
     validateEndAfterStart()
@@ -1308,8 +1516,15 @@ async function handleSubmit() {
         return
     }
 
-    toast.success('This feature will be available in future')
-    isSubmitting.value = false
+    try {
+        if (isEditMode.value) {
+            await updateVenue()
+        } else {
+            await createVenue()
+        }
+    } finally {
+        isSubmitting.value = false
+    }
 }
 
 function debounce(func, delay) {
@@ -1347,6 +1562,8 @@ function selectSuggestion(suggestion) {
     searchAddress.value = display_name
     suggestions.value = []
     selectedAddress.value = display_name
+    mapLat.value = parseFloat(lat)
+    mapLng.value = parseFloat(lon)
     if (map.value) {
         map.value.flyTo({ center: [lon, lat], zoom: 15, essential: true })
         updateMarker(lon, lat)
@@ -1354,12 +1571,7 @@ function selectSuggestion(suggestion) {
 }
 
 function updateMarker(lng, lat) {
-    // Remove existing marker
-    if (marker.value) {
-        marker.value.remove()
-    }
-
-    // Create custom marker element using marker.png
+    if (marker.value) { marker.value.remove() }
     const el = document.createElement('div')
     el.style.width = '60px'
     el.style.height = '60px'
@@ -1368,8 +1580,6 @@ function updateMarker(lng, lat) {
     el.style.backgroundSize = 'contain'
     el.style.backgroundRepeat = 'no-repeat'
     el.style.backgroundPosition = 'center'
-
-    // Add new marker with custom element
     marker.value = new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
         .addTo(map.value)
@@ -1394,7 +1604,7 @@ async function reverseGeocode(lng, lat) {
     }
 }
 
-onMounted(() => {
+onMounted(async () => {
     fetchCategories()
     document.addEventListener('click', handleClickOutside)
 
@@ -1407,39 +1617,16 @@ onMounted(() => {
 
     map.value.on("click", async (e) => {
         const { lng, lat } = e.lngLat
+        mapLat.value = lat
+        mapLng.value = lng
         updateMarker(lng, lat)
         await reverseGeocode(lng, lat)
     })
 
-    /* ------------------ DATE PICKER ------------------ */
-    // flatpickr(dateInput.value, {
-    //     dateFormat: "Y-m-d",
-    //     minDate: "today",
-    //     onChange: (selectedDates, dateStr) => {
-    //         eventDate.value = dateStr
-    //     }
-    // })
-
-    // /* ------------------ START TIME PICKER ------------------ */
-    // flatpickr(startTimeInput.value, {
-    //     enableTime: true,
-    //     noCalendar: true,
-    //     dateFormat: "H:i",
-    //     time_24hr: true,
-    //     onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
-    // })
-
-    // /* ------------------ END TIME PICKER ------------------ */
-    // flatpickr(endTimeInput.value, {
-    //     enableTime: true,
-    //     noCalendar: true,
-    //     dateFormat: "H:i",
-    //     time_24hr: true,
-    //     onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
-    // })
-})
-
-onBeforeUnmount(() => {
-    document.removeEventListener('click', handleClickOutside)
+    // Check if editing an existing venue via route query
+    const venueId = route.query.edit || route.params.id
+    if (venueId) {
+        await loadVenue(Number(venueId))
+    }
 })
 </script>

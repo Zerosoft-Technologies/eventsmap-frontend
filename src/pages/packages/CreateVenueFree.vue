@@ -172,14 +172,23 @@
               Choose File
             </span>
 
-            <!-- No file chosen -->
-            <span id="file-name" class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-              No File Chosen
+            <!-- File name display -->
+            <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
+              {{ fileName || 'No File Chosen' }}
             </span>
 
             <input type="file" accept="image/*" class="tw:hidden"
-              onchange="document.getElementById('file-name').innerText = this.files[0]?.name || 'No file chosen'" />
+              @change="handleFileChange" />
           </label>
+
+          <!-- Image Preview -->
+          <div v-if="imagePreviewUrl" class="tw:relative tw:mt-3 tw:inline-block">
+            <img :src="imagePreviewUrl" alt="Preview" class="tw:w-40 tw:h-28 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
+            <button type="button" @click="removeMainImage"
+              class="tw:absolute tw:-top-2 tw:-right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center tw:text-xs tw:shadow hover:tw:bg-red-600 tw:transition">
+              &times;
+            </button>
+          </div>
         </div>
 
         <!-- GENRE SECTION -->
@@ -561,12 +570,20 @@
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
               Buy Tickets
             </button>
-            <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-               tw:border tw:border-orange-500 tw:text-blue-600
-               tw:bg-white hover:tw:bg-blue-50 tw:transition-all
-               disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
-              {{ isSubmitting ? 'Saving...' : 'Save Venue' }}
-            </button>
+            <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-2">
+              <button v-if="isEditMode" @click="cancelEdit" type="button"
+                class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                   tw:border tw:border-orange-500 tw:text-blue-600
+                   tw:bg-white hover:tw:bg-blue-50 tw:transition-all">
+                Cancel
+              </button>
+              <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                 tw:border tw:border-orange-500 tw:text-blue-600
+                 tw:bg-white hover:tw:bg-blue-50 tw:transition-all
+                 disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
+                {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Venue' : 'Save Venue') }}
+              </button>
+            </div>
           </div>
           <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span>
         </div>
@@ -594,19 +611,15 @@ import {
   Clock,
 } from "lucide-vue-next"
 
-import { ref, reactive, computed, onMounted, onUnmounted } from "vue"
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import eventService from "@/services/eventService"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
-// import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
-
-import flatpickr from "flatpickr"
-import "flatpickr/dist/flatpickr.css"
 
 const router = useRouter()
 const route = useRoute()
@@ -617,8 +630,13 @@ function closeMobileSidebar() { mobileSidebarOpen.value = false }
 
 const activeTab = ref("home")
 const isSubmitting = ref(false)
-const selectedVenue = ref("")
-const selectedGenre = ref("")
+const isEditMode = ref(false)
+const editingVenueId = ref(null)
+
+// ── Image handling ──────────────────────────────────────────────
+const fileName = ref("")
+const mainImage = ref(null)
+const imagePreviewUrl = ref(null)
 
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
@@ -637,14 +655,14 @@ const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstErro
 
 // Genre state
 const selectedCategory = ref("")
-const selectedSubcategories = ref([]) // Multi-select array for subcategories
+const selectedSubcategories = ref([])
 const categoryError = ref(false)
 const subcategoryError = ref(false)
-const subcategoryValidationError = ref(false)  // For max 5 validation
+const subcategoryValidationError = ref(false)
 const categories = ref([])
 const isLoadingCategories = ref(false)
 const categoriesError = ref(null)
-const showSubcategoryDropdown = ref(false)  // For dropdown toggle
+const showSubcategoryDropdown = ref(false)
 
 // Dropdown refs for click outside functionality
 const dropdownContainer = ref(null)
@@ -662,9 +680,7 @@ async function fetchCategories() {
   try {
     isLoadingCategories.value = true
     categoriesError.value = null
-
     const response = await eventService.getCategories()
-
     if (response.success) {
       categories.value = response.data
     } else {
@@ -678,111 +694,66 @@ async function fetchCategories() {
   }
 }
 
-// Handle category change with validation clearing
 function handleCategoryChangeWithValidation() {
-  selectedSubcategories.value = []  // Reset array when category changes
+  selectedSubcategories.value = []
   subcategoryError.value = false
-  subcategoryValidationError.value = false  // Clear validation error
+  subcategoryValidationError.value = false
   categoryError.value = false
-  showSubcategoryDropdown.value = false  // Close dropdown
+  showSubcategoryDropdown.value = false
 }
 
-// Handle category change
 function handleCategoryChange() {
   handleCategoryChangeWithValidation()
 }
 
-// Toggle subcategory dropdown
 function toggleSubcategoryDropdown() {
   if (!selectedCategory.value || categoriesError.value) return
   showSubcategoryDropdown.value = !showSubcategoryDropdown.value
 }
 
-// Toggle individual subcategory selection
 function toggleSubcategory(subcategory) {
   if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 1) {
-    return // Prevent selection if already at max 5
+    return
   }
-
   const index = selectedSubcategories.value.indexOf(subcategory)
   if (index > -1) {
     selectedSubcategories.value.splice(index, 1)
   } else {
     selectedSubcategories.value.push(subcategory)
   }
-
   handleSubcategoryChange()
 }
 
-// Click outside handler to close dropdown
 function handleClickOutside(event) {
   if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
     showSubcategoryDropdown.value = false
   }
 }
 
-// Handle subcategory change with max 5 validation
 function handleSubcategoryChange() {
   subcategoryError.value = false
-
-  // Maximum 5 subcategories selection logic
-  // Prevent selection if trying to add more than 5 items
   if (selectedSubcategories.value.length > 5) {
-    // Remove the last added item to maintain the limit
-    const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
     selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
-
-    // Show validation error
     subcategoryValidationError.value = true
-
-    // Auto-hide validation message after 3 seconds
-    setTimeout(() => {
-      subcategoryValidationError.value = false
-    }, 3000)
+    setTimeout(() => { subcategoryValidationError.value = false }, 3000)
   } else {
-    // Clear validation error when within limit
     subcategoryValidationError.value = false
   }
 }
 
-// Remove subcategory from selection
 function removeSubcategory(subcategoryToRemove) {
   const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
   if (index > -1) {
     selectedSubcategories.value.splice(index, 1)
-    // Clear validation error when removing items (going below limit)
     subcategoryValidationError.value = false
   }
 }
 
-// Validate genre fields
 function validateGenre() {
   categoryError.value = !selectedCategory.value
   subcategoryError.value = selectedSubcategories.value.length === 0
-
   return selectedCategory.value && selectedSubcategories.value.length > 0
 }
-const dressCode = ref("")
-const ageLimit = ref("")
-const entranceFee = ref("")
-
-// Event Date and Time
-// const eventDate = ref("")
-// const startTime = ref("")
-// const endTime = ref("")
-// const dateInput = ref(null)
-// const startTimeInput = ref(null)
-// const endTimeInput = ref(null)
-
-// const {
-//   startError,
-//   endError,
-//   hasStartError,
-//   hasEndError,
-//   validateTimeRange,
-//   clearStartError,
-//   clearEndError,
-// } = useTimeRangeValidation(startTime, endTime)
 
 // Event Location refs
 const searchAddress = ref("")
@@ -792,9 +763,8 @@ const marker = ref(null)
 const suggestions = ref([])
 const isLoading = ref(false)
 const debounceTimer = ref(null)
-
-const selectedOrganiser = ref("")
-const selectedTalent = ref("")
+const mapLat = ref(null)
+const mapLng = ref(null)
 
 // Accessibility fields
 const allowanceOfDogs = ref("")
@@ -802,12 +772,6 @@ const wheelchairAccessible = ref("")
 const accessibleParking = ref("")
 const valetParking = ref("")
 const childrensPlayArea = ref("")
-
-// Event data
-const eventDate = ref("05.03.2026, 18:30 CET")
-const eventStatus = ref("Draft")
-
-const fileName = ref("")
 
 // Menu items specific to CreateEventFree
 const menuItems = [
@@ -818,14 +782,25 @@ const menuItems = [
   { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
 
+// ── Image handling ──────────────────────────────────────────────
 function handleFileChange(event) {
   const file = event.target.files[0]
-  fileName.value = file ? file.name : 'No File Chosen'
+  if (file) {
+    fileName.value = file.name
+    mainImage.value = file
+    imagePreviewUrl.value = URL.createObjectURL(file)
+  }
+}
+
+function removeMainImage() {
+  mainImage.value = null
+  imagePreviewUrl.value = null
+  fileName.value = ''
 }
 
 function handleBack() {
   closeMobileSidebar()
-  router.push('/') // Navigate to events list
+  router.push('/')
 }
 
 function handleEventSelected(eventId) {
@@ -835,7 +810,6 @@ function handleEventSelected(eventId) {
 
 function handleMenuClick(item) {
   if (item.route) {
-    console.log("Navigating to:", item.route);
     router.push(item.route)
   } else {
     activeTab.value = item.id
@@ -855,6 +829,190 @@ function syncFormData() {
   formData.subcategories = selectedSubcategories.value
 }
 
+// ── Build FormData for API ──────────────────────────────────────
+function buildFormData() {
+  const fd = new FormData()
+
+  if (isEditMode.value) {
+    fd.append('_method', 'PUT')
+  }
+
+  fd.append('title', formData.venueTitle)
+  fd.append('event_type', 'venue')
+
+  // Category ID
+  const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+  if (selectedCategoryData) {
+    fd.append('category_id', selectedCategoryData.id)
+  }
+
+  // Subcategory IDs
+  if (selectedCategoryData) {
+    selectedSubcategories.value.forEach(subName => {
+      const subData = selectedCategoryData.subcategories.find(s => s.name === subName)
+      if (subData) {
+        fd.append('subcategory_ids[]', subData.id)
+      }
+    })
+  }
+
+  // Location
+  fd.append('address', selectedAddress.value || '')
+  if (mapLat.value !== null) fd.append('latitude', mapLat.value)
+  if (mapLng.value !== null) fd.append('longitude', mapLng.value)
+
+  // Accessibility
+  fd.append('allowance_of_dogs', allowanceOfDogs.value || '')
+  fd.append('wheelchair_accessible', wheelchairAccessible.value || '')
+  fd.append('accessible_parking', accessibleParking.value || '')
+  fd.append('valet_parking', valetParking.value || '')
+  fd.append('childrens_play_area', childrensPlayArea.value || '')
+
+  // Image
+  if (mainImage.value instanceof File) {
+    fd.append('image_path', mainImage.value)
+  } else if (typeof mainImage.value === 'string' && mainImage.value) {
+    fd.append('image_path', mainImage.value)
+  }
+
+  return fd
+}
+
+// ── Create Venue ────────────────────────────────────────────────
+async function createVenue() {
+  try {
+    const fd = buildFormData()
+    const response = await eventService.createVenue(fd)
+    if (response.success) {
+      toast.success('Venue created successfully!')
+      resetForm()
+    } else {
+      toast.error(response.message || 'Failed to create venue')
+    }
+  } catch (error) {
+    console.error('Error creating venue:', error)
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors
+      Object.keys(errors).forEach(key => { toast.error(errors[key][0]) })
+    } else {
+      toast.error('An error occurred while creating the venue')
+    }
+  }
+}
+
+// ── Update Venue ────────────────────────────────────────────────
+async function updateVenue() {
+  try {
+    const fd = buildFormData()
+    const response = await eventService.updateVenue(editingVenueId.value, fd)
+    if (response.success) {
+      toast.success('Venue updated successfully!')
+      resetForm()
+    } else {
+      toast.error(response.message || 'Failed to update venue')
+    }
+  } catch (error) {
+    console.error('Error updating venue:', error)
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors
+      Object.keys(errors).forEach(key => { toast.error(errors[key][0]) })
+    } else {
+      toast.error('An error occurred while updating the venue')
+    }
+  }
+}
+
+// ── Load Venue for editing ──────────────────────────────────────
+async function loadVenue(id) {
+  try {
+    const response = await eventService.getVenueById(id)
+    const venue = response.data || response
+
+    isEditMode.value = true
+    editingVenueId.value = id
+
+    formData.venueTitle = venue.title || ''
+    selectedAddress.value = venue.address || ''
+
+    if (venue.latitude) mapLat.value = venue.latitude
+    if (venue.longitude) mapLng.value = venue.longitude
+
+    // Category & subcategories
+    if (venue.category) {
+      selectedCategory.value = venue.category.name || ''
+      await nextTick()
+      if (venue.subcategories && venue.subcategories.length) {
+        selectedSubcategories.value = venue.subcategories.map(s => s.name)
+      }
+    }
+
+    // Image
+    mainImage.value = null
+    imagePreviewUrl.value = null
+    fileName.value = ''
+    if (venue.image_path) {
+      mainImage.value = venue.image_path
+      imagePreviewUrl.value = venue.image_url || venue.image_path
+      fileName.value = 'Current image'
+    }
+
+    // Accessibility
+    allowanceOfDogs.value = venue.allowance_of_dogs || ''
+    wheelchairAccessible.value = venue.wheelchair_accessible || ''
+    accessibleParking.value = venue.accessible_parking || ''
+    valetParking.value = venue.valet_parking || ''
+    childrensPlayArea.value = venue.childrens_play_area || ''
+
+    // Center map
+    if (venue.latitude && venue.longitude && map.value) {
+      map.value.flyTo({
+        center: [venue.longitude, venue.latitude],
+        zoom: 15,
+        essential: true
+      })
+      updateMarker(venue.longitude, venue.latitude)
+    }
+  } catch (error) {
+    console.error('Error loading venue:', error)
+    toast.error('Failed to load venue data')
+  }
+}
+
+// ── Cancel Edit ─────────────────────────────────────────────────
+function cancelEdit() {
+  resetForm()
+  isEditMode.value = false
+  editingVenueId.value = null
+}
+
+// ── Reset Form ──────────────────────────────────────────────────
+function resetForm() {
+  formData.venueTitle = ''
+  formData.category = ''
+  formData.subcategories = []
+  selectedCategory.value = ''
+  selectedSubcategories.value = []
+  selectedAddress.value = ''
+  searchAddress.value = ''
+  mainImage.value = null
+  imagePreviewUrl.value = null
+  fileName.value = ''
+  mapLat.value = null
+  mapLng.value = null
+  allowanceOfDogs.value = ''
+  wheelchairAccessible.value = ''
+  accessibleParking.value = ''
+  valetParking.value = ''
+  childrensPlayArea.value = ''
+  categoryError.value = false
+  subcategoryError.value = false
+  subcategoryValidationError.value = false
+  isEditMode.value = false
+  editingVenueId.value = null
+  resetErrors()
+}
+
+// ── Handle Submit ───────────────────────────────────────────────
 async function handleSubmit() {
   if (isSubmitting.value) return
   isSubmitting.value = true
@@ -863,17 +1021,22 @@ async function handleSubmit() {
 
   const isValid = validate()
   const genreValid = validateGenre()
-  const timeValid = validateTimeRange()
 
-  if (!isValid || !genreValid || !timeValid) {
+  if (!isValid || !genreValid) {
     await scrollToFirstError()
     isSubmitting.value = false
     return
   }
 
-  // No API call — show success toast
-  toast.success('This feature will be available in future')
-  isSubmitting.value = false
+  try {
+    if (isEditMode.value) {
+      await updateVenue()
+    } else {
+      await createVenue()
+    }
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 // Debounce function
@@ -890,19 +1053,12 @@ const onSearchInput = debounce(async () => {
     suggestions.value = []
     return
   }
-
   isLoading.value = true
-
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress.value)}&limit=5&addressdetails=1`,
-      {
-        headers: {
-          "User-Agent": "EventMap App"
-        }
-      }
+      { headers: { "User-Agent": "EventMap App" } }
     )
-
     if (response.ok) {
       const data = await response.json()
       suggestions.value = data
@@ -915,66 +1071,45 @@ const onSearchInput = debounce(async () => {
   }
 }, 400)
 
-// Select a suggestion from dropdown
 function selectSuggestion(suggestion) {
   const { lat, lon, display_name } = suggestion
-
-  // Update search input and clear suggestions
   searchAddress.value = display_name
   suggestions.value = []
-
-  // Update selected address
   selectedAddress.value = display_name
-
-  // Center map and add marker
+  mapLat.value = parseFloat(lat)
+  mapLng.value = parseFloat(lon)
   if (map.value) {
     map.value.flyTo({
       center: [lon, lat],
       zoom: 15,
       essential: true
     })
-
     updateMarker(lon, lat)
   }
 }
 
-// Update or add marker
 function updateMarker(lng, lat) {
-    // Remove existing marker
-    if (marker.value) {
-        marker.value.remove()
-    }
-
-    // Create custom marker element using marker.png
-    const el = document.createElement('div')
-    el.style.width = '60px'
-    el.style.height = '60px'
-    el.style.cursor = 'pointer'
-    el.style.backgroundImage = 'url(/marker.png)'
-    el.style.backgroundSize = 'contain'
-    el.style.backgroundRepeat = 'no-repeat'
-    el.style.backgroundPosition = 'center'
-
-    // Add new marker with custom element
-    marker.value = new maplibregl.Marker({ element: el })
-        .setLngLat([lng, lat])
-        .addTo(map.value)
+  if (marker.value) { marker.value.remove() }
+  const el = document.createElement('div')
+  el.style.width = '60px'
+  el.style.height = '60px'
+  el.style.cursor = 'pointer'
+  el.style.backgroundImage = 'url(/marker.png)'
+  el.style.backgroundSize = 'contain'
+  el.style.backgroundRepeat = 'no-repeat'
+  el.style.backgroundPosition = 'center'
+  marker.value = new maplibregl.Marker({ element: el })
+    .setLngLat([lng, lat])
+    .addTo(map.value)
 }
 
-// Reverse geocode function
 async function reverseGeocode(lng, lat) {
   isLoading.value = true
-
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-      {
-        headers: {
-          "User-Agent": "EventMap App"
-        }
-      }
+      { headers: { "User-Agent": "EventMap App" } }
     )
-
     if (response.ok) {
       const data = await response.json()
       selectedAddress.value = data.display_name || "Address not found"
@@ -988,7 +1123,7 @@ async function reverseGeocode(lng, lat) {
 }
 
 // Initialize map on component mount
-onMounted(() => {
+onMounted(async () => {
   // Fetch categories from API
   fetchCategories()
 
@@ -1006,50 +1141,21 @@ onMounted(() => {
   // Add click handler to map
   map.value.on("click", async (e) => {
     const { lng, lat } = e.lngLat
-
-    // Update marker location
+    mapLat.value = lat
+    mapLng.value = lng
     updateMarker(lng, lat)
-
-    // Reverse geocode to get address
     await reverseGeocode(lng, lat)
   })
 
-  /* ------------------ DATE PICKER ------------------ */
-  // flatpickr(dateInput.value, {
-  //   dateFormat: "m/d/Y",
-  // })
-
-  // /* ------------------ START TIME PICKER ------------------ */
-  // flatpickr(startTimeInput.value, {
-  //   enableTime: true,
-  //   noCalendar: true,
-  //   dateFormat: "H:i",
-  //   time_24hr: true,
-  //   onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
-  // })
-
-  // /* ------------------ END TIME PICKER ------------------ */
-  // flatpickr(endTimeInput.value, {
-  //   enableTime: true,
-  //   noCalendar: true,
-  //   dateFormat: "H:i",
-  //   time_24hr: true,
-  //   onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
-  // })
+  // Check if editing an existing venue via route query
+  const venueId = route.query.edit || route.params.id
+  if (venueId) {
+    await loadVenue(Number(venueId))
+  }
 })
-
-// function handleFileChange(event) {
-//   const file = event.target.files[0]
-//   fileName.value = file ? file.name : 'No File Chosen'
-// }
-
-// function handleBack() {
-//   router.push('/events') // Navigate to events list
-// }
 
 // Cleanup on unmount
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
-
 </script>

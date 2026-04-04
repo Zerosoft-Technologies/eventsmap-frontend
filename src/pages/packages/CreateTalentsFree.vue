@@ -126,14 +126,23 @@
               Choose File
             </span>
 
-            <!-- No file chosen -->
-            <span id="file-name" class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-              No File Chosen
+            <!-- File name display -->
+            <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
+              {{ fileName || 'No File Chosen' }}
             </span>
 
             <input type="file" accept="image/*" class="tw:hidden"
-              onchange="document.getElementById('file-name').innerText = this.files[0]?.name || 'No file chosen'" />
+              @change="handleFileChange" />
           </label>
+
+          <!-- Image Preview -->
+          <div v-if="imagePreviewUrl" class="tw:relative tw:mt-3 tw:inline-block">
+            <img :src="imagePreviewUrl" alt="Preview" class="tw:w-40 tw:h-28 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
+            <button type="button" @click="removeMainImage"
+              class="tw:absolute tw:-top-2 tw:-right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center tw:text-xs tw:shadow hover:tw:bg-red-600 tw:transition">
+              &times;
+            </button>
+          </div>
         </div>
 
         <!-- GENRE SECTION -->
@@ -485,13 +494,20 @@
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
               Buy Tickets
             </button>
-
-            <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-               tw:border tw:border-orange-500 tw:text-blue-600
-               tw:bg-white hover:tw:bg-blue-50 tw:transition-all
-               disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
-              {{ isSubmitting ? 'Saving...' : 'Save Talent' }}
-            </button>
+            <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-2">
+              <button v-if="isEditMode" @click="cancelEdit" type="button"
+                class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                   tw:border tw:border-orange-500 tw:text-blue-600
+                   tw:bg-white hover:tw:bg-blue-50 tw:transition-all">
+                Cancel
+              </button>
+              <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                 tw:border tw:border-orange-500 tw:text-blue-600
+                 tw:bg-white hover:tw:bg-blue-50 tw:transition-all
+                 disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
+                {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Talent' : 'Save Talent') }}
+              </button>
+            </div>
           </div>
           <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span>
         </div>
@@ -536,7 +552,13 @@ function closeMobileSidebar() { mobileSidebarOpen.value = false }
 
 const activeTab = ref("home")
 const isSubmitting = ref(false)
-const selectedVenue = ref("")
+const isEditMode = ref(false)
+const editingTalentId = ref(null)
+
+// ── Image handling ──────────────────────────────────────────────
+const fileName = ref("")
+const mainImage = ref(null)          // File object or UUID string
+const imagePreviewUrl = ref(null)    // blob URL or server URL for preview
 
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
@@ -552,16 +574,17 @@ const talentSchema = {
 }
 
 const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(talentSchema, formData)
+
 // Genre state
 const selectedCategory = ref("")
-const selectedSubcategories = ref([]) // Multi-select array for subcategories
+const selectedSubcategories = ref([])
 const categoryError = ref(false)
 const subcategoryError = ref(false)
-const subcategoryValidationError = ref(false) // For max 5 validation
+const subcategoryValidationError = ref(false)
 const categories = ref([])
 const isLoadingCategories = ref(false)
 const categoriesError = ref(null)
-const showSubcategoryDropdown = ref(false) // For dropdown toggle
+const showSubcategoryDropdown = ref(false)
 
 // Dropdown refs for click outside functionality
 const dropdownContainer = ref(null)
@@ -597,11 +620,11 @@ async function fetchCategories() {
 
 // Handle category change with validation clearing
 function handleCategoryChangeWithValidation() {
-  selectedSubcategories.value = [] // Reset array when category changes
+  selectedSubcategories.value = []
   subcategoryError.value = false
-  subcategoryValidationError.value = false // Clear validation error
+  subcategoryValidationError.value = false
   categoryError.value = false
-  showSubcategoryDropdown.value = false // Close dropdown
+  showSubcategoryDropdown.value = false
 }
 
 // Handle category change
@@ -618,7 +641,7 @@ function toggleSubcategoryDropdown() {
 // Toggle individual subcategory selection
 function toggleSubcategory(subcategory) {
   if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 1) {
-    return // Prevent selection if already at max 5
+    return
   }
 
   const index = selectedSubcategories.value.indexOf(subcategory)
@@ -642,22 +665,13 @@ function handleClickOutside(event) {
 function handleSubcategoryChange() {
   subcategoryError.value = false
 
-  // Maximum 5 subcategories selection logic
-  // Prevent selection if trying to add more than 5 items
   if (selectedSubcategories.value.length > 5) {
-    // Remove the last added item to maintain the limit
-    const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
     selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
-
-    // Show validation error
     subcategoryValidationError.value = true
-
-    // Auto-hide validation message after 3 seconds
     setTimeout(() => {
       subcategoryValidationError.value = false
     }, 3000)
   } else {
-    // Clear validation error when within limit
     subcategoryValidationError.value = false
   }
 }
@@ -667,7 +681,6 @@ function removeSubcategory(subcategoryToRemove) {
   const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
   if (index > -1) {
     selectedSubcategories.value.splice(index, 1)
-    // Clear validation error when removing items (going below limit)
     subcategoryValidationError.value = false
   }
 }
@@ -680,10 +693,6 @@ function validateGenre() {
   return selectedCategory.value && selectedSubcategories.value.length > 0
 }
 
-const selectedGenre = ref("")
-const dressCode = ref("")
-const ageLimit = ref("")
-const entranceFee = ref("")
 const talentCity = ref("")
 
 // Event Location refs
@@ -694,16 +703,8 @@ const marker = ref(null)
 const suggestions = ref([])
 const isLoading = ref(false)
 const debounceTimer = ref(null)
-
-const selectedOrganiser = ref("")
-const selectedTalent = ref("")
-
-// Event data
-const eventDate = ref("05.03.2026, 18:30 CET")
-const eventStatus = ref("Draft")
-
-
-const fileName = ref("")
+const mapLat = ref(null)
+const mapLng = ref(null)
 
 // Menu items specific to CreateTalentFree
 const menuItems = [
@@ -715,7 +716,6 @@ const menuItems = [
 
 function handleMenuClick(item) {
   if (item.route) {
-    console.log("Navigating to:", item.route);
     router.push(item.route)
   } else {
     activeTab.value = item.id
@@ -729,12 +729,209 @@ function isActive(item) {
   return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
 }
 
-// Sync category/subcategory selections into formData for validation
+function handleEventSelected(eventId) {
+  closeMobileSidebar()
+  console.log('Event selected for editing:', eventId)
+}
+
+// ── Image handling ──────────────────────────────────────────────
+function handleFileChange(event) {
+  const file = event.target.files[0]
+  if (file) {
+    fileName.value = file.name
+    mainImage.value = file
+    imagePreviewUrl.value = URL.createObjectURL(file)
+  }
+}
+
+function removeMainImage() {
+  mainImage.value = null
+  imagePreviewUrl.value = null
+  fileName.value = ''
+}
+
+// ── Sync category/subcategory selections into formData for validation ──
 function syncFormData() {
   formData.category = selectedCategory.value
   formData.subcategories = selectedSubcategories.value
 }
 
+// ── Build FormData for API ──────────────────────────────────────
+function buildFormData() {
+  const fd = new FormData()
+
+  if (isEditMode.value) {
+    fd.append('_method', 'PUT')
+  }
+
+  fd.append('title', formData.talentTitle)
+  fd.append('event_type', 'talent')
+
+  // Category ID
+  const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+  if (selectedCategoryData) {
+    fd.append('category_id', selectedCategoryData.id)
+  }
+
+  // Subcategory IDs
+  if (selectedCategoryData) {
+    selectedSubcategories.value.forEach(subName => {
+      const subData = selectedCategoryData.subcategories.find(s => s.name === subName)
+      if (subData) {
+        fd.append('subcategory_ids[]', subData.id)
+      }
+    })
+  }
+
+  // Location
+  fd.append('address', selectedAddress.value || '')
+  if (mapLat.value !== null) fd.append('latitude', mapLat.value)
+  if (mapLng.value !== null) fd.append('longitude', mapLng.value)
+
+  // City
+  fd.append('city', talentCity.value || '')
+
+  // Image — File object for new upload, UUID string for existing
+  if (mainImage.value instanceof File) {
+    fd.append('image_path', mainImage.value)
+  } else if (typeof mainImage.value === 'string' && mainImage.value) {
+    fd.append('image_path', mainImage.value)
+  }
+
+  return fd
+}
+
+// ── Create Talent ───────────────────────────────────────────────
+async function createTalent() {
+  try {
+    const fd = buildFormData()
+    const response = await eventService.createTalent(fd)
+
+    if (response.success) {
+      toast.success('Talent created successfully!')
+      resetForm()
+    } else {
+      toast.error(response.message || 'Failed to create talent')
+    }
+  } catch (error) {
+    console.error('Error creating talent:', error)
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors
+      Object.keys(errors).forEach(key => {
+        toast.error(errors[key][0])
+      })
+    } else {
+      toast.error('An error occurred while creating the talent')
+    }
+  }
+}
+
+// ── Update Talent ───────────────────────────────────────────────
+async function updateTalent() {
+  try {
+    const fd = buildFormData()
+    const response = await eventService.updateTalent(editingTalentId.value, fd)
+
+    if (response.success) {
+      toast.success('Talent updated successfully!')
+      resetForm()
+    } else {
+      toast.error(response.message || 'Failed to update talent')
+    }
+  } catch (error) {
+    console.error('Error updating talent:', error)
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors
+      Object.keys(errors).forEach(key => {
+        toast.error(errors[key][0])
+      })
+    } else {
+      toast.error('An error occurred while updating the talent')
+    }
+  }
+}
+
+// ── Load Talent for editing ─────────────────────────────────────
+async function loadTalent(id) {
+  try {
+    const response = await eventService.getTalentById(id)
+    const talent = response.data || response
+
+    isEditMode.value = true
+    editingTalentId.value = id
+
+    formData.talentTitle = talent.title || ''
+    selectedAddress.value = talent.address || ''
+    talentCity.value = talent.city || ''
+
+    if (talent.latitude) mapLat.value = talent.latitude
+    if (talent.longitude) mapLng.value = talent.longitude
+
+    // Category & subcategories
+    if (talent.category) {
+      selectedCategory.value = talent.category.name || ''
+      await nextTick()
+      if (talent.subcategories && talent.subcategories.length) {
+        selectedSubcategories.value = talent.subcategories.map(s => s.name)
+      }
+    }
+
+    // Image
+    mainImage.value = null
+    imagePreviewUrl.value = null
+    fileName.value = ''
+    if (talent.image_path) {
+      mainImage.value = talent.image_path
+      imagePreviewUrl.value = talent.image_url || talent.image_path
+      fileName.value = 'Current image'
+    }
+
+    // Center map if coordinates exist
+    if (talent.latitude && talent.longitude && map.value) {
+      map.value.flyTo({
+        center: [talent.longitude, talent.latitude],
+        zoom: 15,
+        essential: true
+      })
+      updateMarker(talent.longitude, talent.latitude)
+    }
+  } catch (error) {
+    console.error('Error loading talent:', error)
+    toast.error('Failed to load talent data')
+  }
+}
+
+// ── Cancel Edit ─────────────────────────────────────────────────
+function cancelEdit() {
+  resetForm()
+  isEditMode.value = false
+  editingTalentId.value = null
+}
+
+// ── Reset Form ──────────────────────────────────────────────────
+function resetForm() {
+  formData.talentTitle = ''
+  formData.category = ''
+  formData.subcategories = []
+  selectedCategory.value = ''
+  selectedSubcategories.value = []
+  selectedAddress.value = ''
+  searchAddress.value = ''
+  talentCity.value = ''
+  mainImage.value = null
+  imagePreviewUrl.value = null
+  fileName.value = ''
+  mapLat.value = null
+  mapLng.value = null
+  categoryError.value = false
+  subcategoryError.value = false
+  subcategoryValidationError.value = false
+  isEditMode.value = false
+  editingTalentId.value = null
+  resetErrors()
+}
+
+// ── Handle Submit ───────────────────────────────────────────────
 async function handleSubmit() {
   if (isSubmitting.value) return
   isSubmitting.value = true
@@ -750,9 +947,15 @@ async function handleSubmit() {
     return
   }
 
-  // No API call — show success toast
-  toast.success('This feature will be available in future')
-  isSubmitting.value = false
+  try {
+    if (isEditMode.value) {
+      await updateTalent()
+    } else {
+      await createTalent()
+    }
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 // Debounce function
@@ -798,14 +1001,12 @@ const onSearchInput = debounce(async () => {
 function selectSuggestion(suggestion) {
   const { lat, lon, display_name } = suggestion
 
-  // Update search input and clear suggestions
   searchAddress.value = display_name
   suggestions.value = []
-
-  // Update selected address
   selectedAddress.value = display_name
+  mapLat.value = parseFloat(lat)
+  mapLng.value = parseFloat(lon)
 
-  // Center map and add marker
   if (map.value) {
     map.value.flyTo({
       center: [lon, lat],
@@ -819,12 +1020,10 @@ function selectSuggestion(suggestion) {
 
 // Update or add marker
 function updateMarker(lng, lat) {
-    // Remove existing marker
     if (marker.value) {
         marker.value.remove()
     }
 
-    // Create custom marker element using marker.png
     const el = document.createElement('div')
     el.style.width = '60px'
     el.style.height = '60px'
@@ -834,7 +1033,6 @@ function updateMarker(lng, lat) {
     el.style.backgroundRepeat = 'no-repeat'
     el.style.backgroundPosition = 'center'
 
-    // Add new marker with custom element
     marker.value = new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
         .addTo(map.value)
@@ -866,43 +1064,38 @@ async function reverseGeocode(lng, lat) {
   }
 }
 
+function handleBack() {
+  closeMobileSidebar()
+  router.push('/')
+}
+
 // Initialize map on component mount
-onMounted(() => {
-  // Fetch categories from API
+onMounted(async () => {
   fetchCategories()
 
-  // Add click outside listener for dropdown
   document.addEventListener('click', handleClickOutside)
 
-  // Initialize map centered on Amsterdam
   map.value = new maplibregl.Map({
     container: "event-map",
     style: "https://api.maptiler.com/maps/streets-v2/style.json?key=4Rm2OIdojZoTFcWWjJPY",
-    center: [4.895168, 52.370216], // Amsterdam coordinates
+    center: [4.895168, 52.370216],
     zoom: 12
   })
 
-  // Add click handler to map
   map.value.on("click", async (e) => {
     const { lng, lat } = e.lngLat
-
-    // Update marker location
+    mapLat.value = lat
+    mapLng.value = lng
     updateMarker(lng, lat)
-
-    // Reverse geocode to get address
     await reverseGeocode(lng, lat)
   })
+
+  // Check if editing an existing talent via route query
+  const talentId = route.query.edit || route.params.id
+  if (talentId) {
+    await loadTalent(Number(talentId))
+  }
 })
-
-function handleFileChange(event) {
-  const file = event.target.files[0]
-  fileName.value = file ? file.name : 'No File Chosen'
-}
-
-function handleBack() {
-  closeMobileSidebar()
-  router.push('/') // Navigate to talents list
-}
 
 // Cleanup on unmount
 onUnmounted(() => {

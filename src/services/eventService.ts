@@ -239,6 +239,56 @@ const eventService = {
       { headers: { 'Content-Type': 'multipart/form-data' } }
     )
     return response.data
+  },
+
+  // ── Talent CRUD ─────────────────────────────────────────────────────
+
+  async createTalent(formData: FormData): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post(
+      '/v2/talents',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return response.data
+  },
+
+  async getTalentById(id: number): Promise<EventDetailResponse> {
+    const response: AxiosResponse<EventDetailResponse> = await api.get(`/v2/talents/${id}`)
+    return response.data
+  },
+
+  async updateTalent(id: number, formData: FormData): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post(
+      `/v2/talents/${id}`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return response.data
+  },
+
+  // ── Venue CRUD ──────────────────────────────────────────────────────
+
+  async createVenue(formData: FormData): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post(
+      '/v2/venues',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return response.data
+  },
+
+  async getVenueById(id: number): Promise<EventDetailResponse> {
+    const response: AxiosResponse<EventDetailResponse> = await api.get(`/v2/venues/${id}`)
+    return response.data
+  },
+
+  async updateVenue(id: number, formData: FormData): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post(
+      `/v2/venues/${id}`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return response.data
   }
 }
 

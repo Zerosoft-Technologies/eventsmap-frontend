@@ -158,14 +158,23 @@
                             Choose File
                         </span>
 
-                        <!-- No file chosen -->
-                        <span id="file-name" class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-                            No File Chosen
+                        <!-- File name display -->
+                        <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
+                            {{ fileName || 'No File Chosen' }}
                         </span>
 
                         <input type="file" accept="image/*" class="tw:hidden"
-                            onchange="document.getElementById('file-name').innerText = this.files[0]?.name || 'No file chosen'" />
+                            @change="handleFileChange" />
                     </label>
+
+                    <!-- Image Preview -->
+                    <div v-if="imagePreviewUrl" class="tw:relative tw:mt-3 tw:inline-block">
+                        <img :src="imagePreviewUrl" alt="Preview" class="tw:w-40 tw:h-28 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
+                        <button type="button" @click="removeMainImage"
+                            class="tw:absolute tw:-top-2 tw:-right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center tw:text-xs tw:shadow hover:tw:bg-red-600 tw:transition">
+                            &times;
+                        </button>
+                    </div>
                 </div>
 
                 <!-- ADDITIONAL IMAGES SECTION -->
@@ -755,17 +764,18 @@
 
                 <!-- SAVE Talent BUTTON -->
                 <div class="tw:w-full tw:pt-4">
-                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:w-full tw:items-stretch tw:md:items-center tw:justify-end">
-                        <!-- <button class="tw:px-6 tw:py-2 tw:text-sm tw:font-medium tw:rounded-md 
-                           tw:border tw:border-orange-500 tw:text-[#0061FF]
-                           tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
-                            Buy Tickets
-                        </button> -->
+                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:w-full tw:items-stretch tw:md:items-center tw:justify-end tw:gap-2">
+                        <button v-if="isEditMode" @click="cancelEdit" type="button"
+                            class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                               tw:border tw:border-orange-500 tw:text-blue-600
+                               tw:bg-white hover:tw:bg-blue-50 tw:transition-all">
+                            Cancel
+                        </button>
                         <button @click="handleSubmit" :disabled="isSubmitting" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                            tw:border tw:border-orange-500 tw:text-blue-600
                            tw:bg-white hover:tw:bg-blue-50 tw:transition-all
                            disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
-                            {{ isSubmitting ? 'Saving...' : 'Save Talent' }}
+                            {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update Talent' : 'Save Talent') }}
                         </button>
                     </div>
                     <!-- <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span> -->
@@ -823,7 +833,15 @@ function closeMobileSidebar() { mobileSidebarOpen.value = false }
 
 const activeTab = ref("home")
 const isSubmitting = ref(false)
+const isEditMode = ref(false)
+const editingTalentId = ref(null)
 const eventDescription = ref("")
+
+// ── Image handling ──────────────────────────────────────────────
+const fileName = ref("")
+const mainImage = ref(null)
+const imagePreviewUrl = ref(null)
+const pendingFileMap = ref(new Map())
 
 function handleChatboxClick() {
     closeMobileSidebar()
@@ -833,7 +851,6 @@ function handleChatboxClick() {
     }
     chatStore.open()
 }
-
 
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
@@ -851,46 +868,22 @@ const talentSchema = {
 const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(talentSchema, formData)
 
 const additionalImages = ref([])
-const selectedVenue = ref("")
-const selectedGenre = ref("")
-const dressCode = ref("")
-const ageLimit = ref("")
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
-const bookingInstructions = ref('');
-const ticketUrl = ref('');
-const eventOption = ref('');
-const talentNationality = ref('');
-const exactNationality = ref('');
-const exactAge = ref('');
-const showAge = ref('show');
-const showChatbox = ref(false)
-const contactBoxDesignMessage = ref('')
+const talentNationality = ref('')
+const exactNationality = ref('')
+const exactAge = ref('')
+const showAge = ref('show')
 const languagesText = ref('')
 const talentHighlightsText = ref('')
 const showUpcomingEvents = ref("")
 const showPastEvents = ref("")
 
-const notifications = ref({
-    receiveEmail: false,
-    receiveUpdates: false
-})
-
 const facebookUrl = ref("")
 const instagramUrl = ref("")
 const tiktokUrl = ref("")
 const fanClubUrl = ref("")
-
-const entranceFee = ref("")
-
-// Event Date and Time
-// const eventDate = ref("")
-// const startTime = ref("")
-// const endTime = ref("")
-// const dateInput = ref(null)
-const startTimeInput = ref(null)
-const endTimeInput = ref(null)
 
 // ── Time split refs ──────────────────────────────────────────────────
 const startHH = ref("")
@@ -914,7 +907,6 @@ const endTime = computed(() => {
 
 // Enforce max 2 digits + valid range, then validate end > start
 function onTimeInput(field, event) {
-    // Strip non-digits and limit to 2 characters
     let raw = event.target.value.replace(/\D/g, "").slice(0, 2)
     event.target.value = raw
 
@@ -946,7 +938,6 @@ function validateEndAfterStart() {
     const eHH = parseInt(endHH.value)
     const eMM = parseInt(endMM.value)
 
-    // Only validate when all four fields are filled
     if (
         startHH.value === "" || startMM.value === "" ||
         endHH.value === "" || endMM.value === ""
@@ -960,16 +951,6 @@ function validateEndAfterStart() {
     }
 }
 
-// const {
-//     startError,
-//     endError,
-//     hasStartError,
-//     hasEndError,
-//     validateTimeRange,
-//     clearStartError,
-//     clearEndError,
-// } = useTimeRangeValidation(startTime, endTime)
-
 // Event Location refs
 const searchAddress = ref("")
 const selectedAddress = ref("")
@@ -978,17 +959,20 @@ const marker = ref(null)
 const suggestions = ref([])
 const isLoading = ref(false)
 const debounceTimer = ref(null)
+const mapLat = ref(null)
+const mapLng = ref(null)
 const selectedCategory = ref("")
+const talentCity = ref("")
 
 // Genre state
-const selectedSubcategories = ref([])  // Multi-select array for subcategories
+const selectedSubcategories = ref([])
 const categoryError = ref(false)
 const subcategoryError = ref(false)
-const subcategoryValidationError = ref(false)  // For max 5 validation
+const subcategoryValidationError = ref(false)
 const categories = ref([])
 const isLoadingCategories = ref(false)
 const categoriesError = ref(null)
-const showSubcategoryDropdown = ref(false)  // For dropdown toggle
+const showSubcategoryDropdown = ref(false)
 
 // Dropdown refs for click outside functionality
 const dropdownContainer = ref(null)
@@ -1006,9 +990,7 @@ async function fetchCategories() {
     try {
         isLoadingCategories.value = true
         categoriesError.value = null
-
         const response = await eventService.getCategories()
-
         if (response.success) {
             categories.value = response.data
         } else {
@@ -1022,108 +1004,66 @@ async function fetchCategories() {
     }
 }
 
-// Handle category change with validation clearing
 function handleCategoryChangeWithValidation() {
-    selectedSubcategories.value = []  // Reset array when category changes
+    selectedSubcategories.value = []
     subcategoryError.value = false
-    subcategoryValidationError.value = false  // Clear validation error
+    subcategoryValidationError.value = false
     categoryError.value = false
-    showSubcategoryDropdown.value = false  // Close dropdown
+    showSubcategoryDropdown.value = false
 }
 
-// Handle category change
 function handleCategoryChange() {
     handleCategoryChangeWithValidation()
 }
 
-// Toggle subcategory dropdown
 function toggleSubcategoryDropdown() {
     if (!selectedCategory.value || categoriesError.value) return
     showSubcategoryDropdown.value = !showSubcategoryDropdown.value
 }
 
-// Toggle individual subcategory selection
 function toggleSubcategory(subcategory) {
     if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
-        return // Prevent selection if already at max 5
+        return
     }
-
     const index = selectedSubcategories.value.indexOf(subcategory)
     if (index > -1) {
         selectedSubcategories.value.splice(index, 1)
     } else {
         selectedSubcategories.value.push(subcategory)
     }
-
     handleSubcategoryChange()
 }
 
-// Click outside handler to close dropdown
 function handleClickOutside(event) {
     if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
         showSubcategoryDropdown.value = false
     }
 }
 
-// Handle subcategory change with max 5 validation
 function handleSubcategoryChange() {
     subcategoryError.value = false
-
-    // Maximum 5 subcategories selection logic
-    // Prevent selection if trying to add more than 5 items
     if (selectedSubcategories.value.length > 5) {
-        // Remove the last added item to maintain the limit
-        const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
         selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
-
-        // Show validation error
         subcategoryValidationError.value = true
-
-        // Auto-hide validation message after 3 seconds
-        setTimeout(() => {
-            subcategoryValidationError.value = false
-        }, 3000)
+        setTimeout(() => { subcategoryValidationError.value = false }, 3000)
     } else {
-        // Clear validation error when within limit
         subcategoryValidationError.value = false
     }
 }
 
-// Remove subcategory from selection
 function removeSubcategory(subcategoryToRemove) {
     const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
     if (index > -1) {
         selectedSubcategories.value.splice(index, 1)
-        // Clear validation error when removing items (going below limit)
         subcategoryValidationError.value = false
     }
 }
 
-// Validate genre fields
 function validateGenre() {
     categoryError.value = !selectedCategory.value
     subcategoryError.value = selectedSubcategories.value.length === 0
-
     return selectedCategory.value && selectedSubcategories.value.length > 0
 }
-
-const showGenreDropdown = ref(false)
-const genreDropdownRef = ref(null)
-
-const genres = [
-    "Electronic",
-    "House",
-    "Techno",
-    "Hip Hop",
-    "Live Music"
-]
-
-const selectedGenres = ref([])
-
-const eventDate = ref("05.03.2026, 18:30 CET")
-const eventStatus = ref("Premium")
-
-const fileName = ref("")
 
 // Menu items specific to CreateEventPremium
 const menuItems = [
@@ -1137,23 +1077,25 @@ const menuItems = [
     { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
 ]
 
-function toggleDropdown() {
-    showGenreDropdown.value = !showGenreDropdown.value
-}
-
-// Close when clicking outside
-// function handleClickOutside(event) {
-//     if (
-//         genreDropdownRef.value &&
-//         !genreDropdownRef.value.contains(event.target)
-//     ) {
-//         showGenreDropdown.value = false
-//     }
-// }
-
 onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside)
 })
+
+// ── Image handling ──────────────────────────────────────────────
+function handleFileChange(event) {
+    const file = event.target.files[0]
+    if (file) {
+        fileName.value = file.name
+        mainImage.value = file
+        imagePreviewUrl.value = URL.createObjectURL(file)
+    }
+}
+
+function removeMainImage() {
+    mainImage.value = null
+    imagePreviewUrl.value = null
+    fileName.value = ''
+}
 
 // Sync category/subcategory selections into formData for validation
 function syncFormData() {
@@ -1161,6 +1103,283 @@ function syncFormData() {
     formData.subcategories = selectedSubcategories.value
 }
 
+// ── Build FormData for API ──────────────────────────────────────
+function buildFormData() {
+    const fd = new FormData()
+
+    if (isEditMode.value) {
+        fd.append('_method', 'PUT')
+    }
+
+    fd.append('title', formData.talentTitle)
+    fd.append('event_type', 'talent')
+    fd.append('description', eventDescription.value || '')
+
+    // Category ID
+    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+    if (selectedCategoryData) {
+        fd.append('category_id', selectedCategoryData.id)
+    }
+
+    // Subcategory IDs
+    if (selectedCategoryData) {
+        selectedSubcategories.value.forEach(subName => {
+            const subData = selectedCategoryData.subcategories.find(s => s.name === subName)
+            if (subData) {
+                fd.append('subcategory_ids[]', subData.id)
+            }
+        })
+    }
+
+    // Location
+    fd.append('address', selectedAddress.value || '')
+    if (mapLat.value !== null) fd.append('latitude', mapLat.value)
+    if (mapLng.value !== null) fd.append('longitude', mapLng.value)
+    fd.append('city', talentCity.value || '')
+
+    // Time
+    if (startTime.value) fd.append('start_time', startTime.value)
+    if (endTime.value) fd.append('end_time', endTime.value)
+
+    // Main Image
+    if (mainImage.value instanceof File) {
+        fd.append('image_path', mainImage.value)
+    } else if (typeof mainImage.value === 'string' && mainImage.value) {
+        fd.append('image_path', mainImage.value)
+    }
+
+    // Additional images — new File uploads via pendingFileMap
+    if (additionalImages.value && additionalImages.value.length) {
+        additionalImages.value.forEach((img, idx) => {
+            if (img instanceof File) {
+                fd.append('additional_images[]', img)
+            } else if (pendingFileMap.value.has(img)) {
+                fd.append('additional_images[]', pendingFileMap.value.get(img))
+            } else if (typeof img === 'string') {
+                fd.append('existing_additional_images[]', img)
+            }
+        })
+    }
+
+    // Contact details
+    fd.append('contact_phone', contactPhone.value || '')
+    fd.append('contact_email', contactEmail.value || '')
+    fd.append('contact_website', contactWebsite.value || '')
+
+    // Social media
+    fd.append('facebook_url', facebookUrl.value || '')
+    fd.append('instagram_url', instagramUrl.value || '')
+    fd.append('tiktok_url', tiktokUrl.value || '')
+    fd.append('fan_club_url', fanClubUrl.value || '')
+
+    // Nationality & age
+    fd.append('nationality', exactNationality.value || '')
+    fd.append('show_nationality', talentNationality.value || '')
+    fd.append('age', exactAge.value || '')
+    fd.append('show_age', showAge.value || '')
+
+    // Languages & highlights
+    fd.append('languages', languagesText.value || '')
+    fd.append('highlights', talentHighlightsText.value || '')
+
+    // Visibility
+    fd.append('show_upcoming_events', showUpcomingEvents.value ? '1' : '0')
+    fd.append('show_past_events', showPastEvents.value ? '1' : '0')
+
+    return fd
+}
+
+// ── Create Talent ───────────────────────────────────────────────
+async function createTalent() {
+    try {
+        const fd = buildFormData()
+        const response = await eventService.createTalent(fd)
+        if (response.success) {
+            toast.success('Talent created successfully!')
+            resetForm()
+        } else {
+            toast.error(response.message || 'Failed to create talent')
+        }
+    } catch (error) {
+        console.error('Error creating talent:', error)
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors
+            Object.keys(errors).forEach(key => { toast.error(errors[key][0]) })
+        } else {
+            toast.error('An error occurred while creating the talent')
+        }
+    }
+}
+
+// ── Update Talent ───────────────────────────────────────────────
+async function updateTalent() {
+    try {
+        const fd = buildFormData()
+        const response = await eventService.updateTalent(editingTalentId.value, fd)
+        if (response.success) {
+            toast.success('Talent updated successfully!')
+            resetForm()
+        } else {
+            toast.error(response.message || 'Failed to update talent')
+        }
+    } catch (error) {
+        console.error('Error updating talent:', error)
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors
+            Object.keys(errors).forEach(key => { toast.error(errors[key][0]) })
+        } else {
+            toast.error('An error occurred while updating the talent')
+        }
+    }
+}
+
+// ── Load Talent for editing ─────────────────────────────────────
+async function loadTalent(id) {
+    try {
+        const response = await eventService.getTalentById(id)
+        const talent = response.data || response
+
+        isEditMode.value = true
+        editingTalentId.value = id
+
+        formData.talentTitle = talent.title || ''
+        eventDescription.value = talent.description || ''
+        selectedAddress.value = talent.address || ''
+        talentCity.value = talent.city || ''
+
+        if (talent.latitude) mapLat.value = talent.latitude
+        if (talent.longitude) mapLng.value = talent.longitude
+
+        // Category & subcategories
+        if (talent.category) {
+            selectedCategory.value = talent.category.name || ''
+            await nextTick()
+            if (talent.subcategories && talent.subcategories.length) {
+                selectedSubcategories.value = talent.subcategories.map(s => s.name)
+            }
+        }
+
+        // Main image
+        mainImage.value = null
+        imagePreviewUrl.value = null
+        fileName.value = ''
+        if (talent.image_path) {
+            mainImage.value = talent.image_path
+            imagePreviewUrl.value = talent.image_url || talent.image_path
+            fileName.value = 'Current image'
+        }
+
+        // Additional images
+        if (talent.additional_images && talent.additional_images.length) {
+            additionalImages.value = talent.additional_images.map(img => img.image_url || img.image_path || img)
+        }
+
+        // Time
+        if (talent.start_time) {
+            const [h, m] = talent.start_time.split(':')
+            startHH.value = parseInt(h)
+            startMM.value = parseInt(m)
+        }
+        if (talent.end_time) {
+            const [h, m] = talent.end_time.split(':')
+            endHH.value = parseInt(h)
+            endMM.value = parseInt(m)
+        }
+
+        // Contact & social
+        contactPhone.value = talent.contact_phone || ''
+        contactEmail.value = talent.contact_email || ''
+        contactWebsite.value = talent.contact_website || ''
+        facebookUrl.value = talent.facebook_url || ''
+        instagramUrl.value = talent.instagram_url || ''
+        tiktokUrl.value = talent.tiktok_url || ''
+        fanClubUrl.value = talent.fan_club_url || ''
+
+        // Nationality & age
+        exactNationality.value = talent.nationality || ''
+        talentNationality.value = talent.show_nationality || ''
+        exactAge.value = talent.age || ''
+        showAge.value = talent.show_age || 'show'
+
+        // Languages & highlights
+        languagesText.value = talent.languages || ''
+        talentHighlightsText.value = talent.highlights || ''
+
+        // Visibility
+        showUpcomingEvents.value = talent.show_upcoming_events === '1' || talent.show_upcoming_events === true
+        showPastEvents.value = talent.show_past_events === '1' || talent.show_past_events === true
+
+        // Center map
+        if (talent.latitude && talent.longitude && map.value) {
+            map.value.flyTo({
+                center: [talent.longitude, talent.latitude],
+                zoom: 15,
+                essential: true
+            })
+            updateMarker(talent.longitude, talent.latitude)
+        }
+    } catch (error) {
+        console.error('Error loading talent:', error)
+        toast.error('Failed to load talent data')
+    }
+}
+
+// ── Cancel Edit ─────────────────────────────────────────────────
+function cancelEdit() {
+    resetForm()
+    isEditMode.value = false
+    editingTalentId.value = null
+}
+
+// ── Reset Form ──────────────────────────────────────────────────
+function resetForm() {
+    formData.talentTitle = ''
+    formData.category = ''
+    formData.subcategories = []
+    eventDescription.value = ''
+    selectedCategory.value = ''
+    selectedSubcategories.value = []
+    selectedAddress.value = ''
+    searchAddress.value = ''
+    talentCity.value = ''
+    mainImage.value = null
+    imagePreviewUrl.value = null
+    fileName.value = ''
+    additionalImages.value = []
+    pendingFileMap.value = new Map()
+    mapLat.value = null
+    mapLng.value = null
+    startHH.value = ''
+    startMM.value = ''
+    endHH.value = ''
+    endMM.value = ''
+    timeRangeError.value = ''
+    hasStartError.value = false
+    hasEndError.value = false
+    contactPhone.value = ''
+    contactEmail.value = ''
+    contactWebsite.value = ''
+    facebookUrl.value = ''
+    instagramUrl.value = ''
+    tiktokUrl.value = ''
+    fanClubUrl.value = ''
+    exactNationality.value = ''
+    talentNationality.value = ''
+    exactAge.value = ''
+    showAge.value = 'show'
+    languagesText.value = ''
+    talentHighlightsText.value = ''
+    showUpcomingEvents.value = ''
+    showPastEvents.value = ''
+    categoryError.value = false
+    subcategoryError.value = false
+    subcategoryValidationError.value = false
+    isEditMode.value = false
+    editingTalentId.value = null
+    resetErrors()
+}
+
+// ── Handle Submit ───────────────────────────────────────────────
 async function handleSubmit() {
     if (isSubmitting.value) return
     isSubmitting.value = true
@@ -1169,9 +1388,7 @@ async function handleSubmit() {
 
     const isValid = validate()
     const genreValid = validateGenre()
-    // const timeValid = validateTimeRange()
 
-    // ✅ Replace with:
     if (!startTime.value) hasStartError.value = true
     if (!endTime.value) hasEndError.value = true
     validateEndAfterStart()
@@ -1183,14 +1400,19 @@ async function handleSubmit() {
         return
     }
 
-    // No API call — show success toast
-    toast.success('This feature will be available in future')
-    isSubmitting.value = false
+    try {
+        if (isEditMode.value) {
+            await updateTalent()
+        } else {
+            await createTalent()
+        }
+    } finally {
+        isSubmitting.value = false
+    }
 }
 
 function handleMenuClick(item) {
     if (item.route) {
-        console.log("Navigating to:", item.route);
         router.push(item.route)
     } else {
         activeTab.value = item.id
@@ -1218,19 +1440,12 @@ const onSearchInput = debounce(async () => {
         suggestions.value = []
         return
     }
-
     isLoading.value = true
-
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress.value)}&limit=5&addressdetails=1`,
-            {
-                headers: {
-                    "User-Agent": "EventMap App"
-                }
-            }
+            { headers: { "User-Agent": "EventMap App" } }
         )
-
         if (response.ok) {
             const data = await response.json()
             suggestions.value = data
@@ -1243,37 +1458,21 @@ const onSearchInput = debounce(async () => {
     }
 }, 400)
 
-// Select a suggestion from dropdown
 function selectSuggestion(suggestion) {
     const { lat, lon, display_name } = suggestion
-
-    // Update search input and clear suggestions
     searchAddress.value = display_name
     suggestions.value = []
-
-    // Update selected address
     selectedAddress.value = display_name
-
-    // Center map and add marker
+    mapLat.value = parseFloat(lat)
+    mapLng.value = parseFloat(lon)
     if (map.value) {
-        map.value.flyTo({
-            center: [lon, lat],
-            zoom: 15,
-            essential: true
-        })
-
+        map.value.flyTo({ center: [lon, lat], zoom: 15, essential: true })
         updateMarker(lon, lat)
     }
 }
 
-// Update or add marker
 function updateMarker(lng, lat) {
-    // Remove existing marker
-    if (marker.value) {
-        marker.value.remove()
-    }
-
-    // Create custom marker element using marker.png
+    if (marker.value) { marker.value.remove() }
     const el = document.createElement('div')
     el.style.width = '60px'
     el.style.height = '60px'
@@ -1282,27 +1481,18 @@ function updateMarker(lng, lat) {
     el.style.backgroundSize = 'contain'
     el.style.backgroundRepeat = 'no-repeat'
     el.style.backgroundPosition = 'center'
-
-    // Add new marker with custom element
     marker.value = new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
         .addTo(map.value)
 }
 
-// Reverse geocode function
 async function reverseGeocode(lng, lat) {
     isLoading.value = true
-
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-            {
-                headers: {
-                    "User-Agent": "EventMap App"
-                }
-            }
+            { headers: { "User-Agent": "EventMap App" } }
         )
-
         if (response.ok) {
             const data = await response.json()
             selectedAddress.value = data.display_name || "Address not found"
@@ -1315,79 +1505,40 @@ async function reverseGeocode(lng, lat) {
     }
 }
 
-// Initialize map on component mount
-onMounted(() => {
-    // Fetch categories from API
-    fetchCategories()
-
-    // Add click outside listener for dropdown
-    document.addEventListener('click', handleClickOutside)
-
-    // Initialize map centered on Amsterdam
-    map.value = new maplibregl.Map({
-        container: "event-map",
-        style: "https://api.maptiler.com/maps/streets-v2/style.json?key=4Rm2OIdojZoTFcWWjJPY",
-        center: [4.895168, 52.370216], // Amsterdam coordinates
-        zoom: 12
-    })
-
-    // Add click handler to map
-    map.value.on("click", async (e) => {
-        const { lng, lat } = e.lngLat
-
-        // Update marker location
-        updateMarker(lng, lat)
-
-        // Reverse geocode to get address
-        await reverseGeocode(lng, lat)
-    })
-
-    /* ------------------ DATE PICKER ------------------ */
-    // flatpickr(dateInput.value, {
-    //     dateFormat: "m/d/Y",
-    // })
-    // if (dateInput.value) {
-    //     flatpickr(dateInput.value, {
-    //         dateFormat: "Y-m-d",
-    //         minDate: "today",
-    //         onChange: (selectedDates, dateStr) => {
-    //             eventDate.value = dateStr
-    //         }
-    //     })
-    // }
-
-
-    /* ------------------ START TIME PICKER ------------------ */
-    // flatpickr(startTimeInput.value, {
-    //     enableTime: true,
-    //     noCalendar: true,
-    //     dateFormat: "H:i",
-    //     time_24hr: true,
-    //     onChange: (selectedDates, timeStr) => { startTime.value = timeStr }
-    // })
-
-    // /* ------------------ END TIME PICKER ------------------ */
-    // flatpickr(endTimeInput.value, {
-    //     enableTime: true,
-    //     noCalendar: true,
-    //     dateFormat: "H:i",
-    //     time_24hr: true,
-    //     onChange: (selectedDates, timeStr) => { endTime.value = timeStr }
-    // })
-})
-
-function handleFileChange(event) {
-    const file = event.target.files[0]
-    fileName.value = file ? file.name : 'No File Chosen'
-}
-
 function handleBack() {
     closeMobileSidebar()
-    router.push('/') // Navigate to talents list
+    router.push('/')
 }
 
 function handleEventSelected(eventId) {
     closeMobileSidebar()
     console.log('Event selected for editing:', eventId)
 }
+
+// Initialize map on component mount
+onMounted(async () => {
+    fetchCategories()
+    document.addEventListener('click', handleClickOutside)
+
+    map.value = new maplibregl.Map({
+        container: "event-map",
+        style: "https://api.maptiler.com/maps/streets-v2/style.json?key=4Rm2OIdojZoTFcWWjJPY",
+        center: [4.895168, 52.370216],
+        zoom: 12
+    })
+
+    map.value.on("click", async (e) => {
+        const { lng, lat } = e.lngLat
+        mapLat.value = lat
+        mapLng.value = lng
+        updateMarker(lng, lat)
+        await reverseGeocode(lng, lat)
+    })
+
+    // Check if editing an existing talent via route query
+    const talentId = route.query.edit || route.params.id
+    if (talentId) {
+        await loadTalent(Number(talentId))
+    }
+})
 </script>
