@@ -11,7 +11,7 @@
       <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
         <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar"></div>
         <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
-          <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" @menu-click="closeMobileSidebar" />
+          <OrganiserSidebar :menuItems="menuItems" @back="handleBack" @organiser-selected="handleEventSelected" @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar" />
         </div>
       </div>
       <!-- ================= LEFT CARD ================= -->
@@ -82,8 +82,8 @@
       </div> -->
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
       <div class="tw:hidden tw:md:block">
-        <EventSidebar :menuItems="menuItems"
-          @back="handleBack" @event-selected="handleEventSelected" />
+        <OrganiserSidebar :menuItems="menuItems"
+          @back="handleBack" @organiser-selected="handleEventSelected" />
       </div>
 
       <!-- ================= RIGHT CARD ================= -->
@@ -143,6 +143,21 @@
             <input type="file" accept="image/*" class="tw:hidden"
               @change="handleFileChange" />
           </label>
+
+          <!-- Image Preview -->
+          <div v-if="imagePreviewUrl" class="tw:relative tw:mt-4 tw:w-full">
+            <img :src="imagePreviewUrl" alt="Preview" class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200" />
+            <button type="button" @click="removeMainImage"
+              class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-(--secondary-color) tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-(--secondary-color) tw:transition-colors">
+              <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd"></path>
+              </svg>
+            </button>
+          </div>
+          <p v-if="fieldErrors.image_path" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image_path[0] }}</p>
+
         </div>
 
         <!-- GENRE SECTION -->
@@ -318,6 +333,7 @@
             </label>
             <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
               class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+            <p v-if="fieldErrors.address" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.address[0] }}</p>
           </div>
         </div>
 
@@ -386,7 +402,7 @@ import {
 
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import OrganiserSidebar from "./eventsidebar/OrganiserSidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
@@ -422,6 +438,7 @@ const formData = reactive({
 
 // Image state: holds File object (new upload) or UUID string (existing)
 const mainImage = ref(null)
+const imagePreviewUrl = ref(null)
 const fieldErrors = ref({})
 
 const organiserSchema = {
@@ -637,10 +654,16 @@ function handleFileChange(event) {
   if (file) {
     mainImage.value = file
     fileName.value = file.name
-  } else {
-    mainImage.value = null
-    fileName.value = 'No File Chosen'
+    imagePreviewUrl.value = URL.createObjectURL(file)
+    fieldErrors.value = { ...fieldErrors.value }
+    delete fieldErrors.value.image_path
   }
+}
+
+function removeMainImage() {
+  mainImage.value = null
+  imagePreviewUrl.value = null
+  fileName.value = ''
 }
 
 function handleBack() {
@@ -804,6 +827,7 @@ async function loadOrganiser(id) {
 
     // Main image (UUID from API)
     mainImage.value = d.image_path || null
+    imagePreviewUrl.value = d.image_url || d.image_path || null
     fileName.value = d.image_path ? 'Existing image' : ''
 
     // Category / subcategory hydration
@@ -845,6 +869,7 @@ function resetForm() {
   latitude.value = null
   longitude.value = null
   mainImage.value = null
+  imagePreviewUrl.value = null
   fileName.value = ''
   fieldErrors.value = {}
   categoryError.value = false
@@ -862,7 +887,24 @@ async function handleSubmit() {
   const isValid = validate()
   const genreValid = validateGenre()
 
-  if (!isValid || !genreValid) {
+  // Frontend validation for address and image
+  let hasExtraErrors = false
+  const extraErrors = { ...fieldErrors.value }
+  if (!selectedAddress.value || !selectedAddress.value.trim()) {
+    extraErrors.address = ['Address is required']
+    hasExtraErrors = true
+  } else {
+    delete extraErrors.address
+  }
+  if (!mainImage.value) {
+    extraErrors.image_path = ['Main image is required']
+    hasExtraErrors = true
+  } else {
+    delete extraErrors.image_path
+  }
+  fieldErrors.value = extraErrors
+
+  if (!isValid || !genreValid || hasExtraErrors) {
     await scrollToFirstError()
     return
   }

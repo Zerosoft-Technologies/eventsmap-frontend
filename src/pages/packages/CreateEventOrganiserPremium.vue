@@ -11,7 +11,7 @@
             <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
                 <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar"></div>
                 <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
-                    <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar"/>
+                    <OrganiserSidebar :menuItems="menuItems" @back="handleBack" @organiser-selected="handleEventSelected" @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar"/>
                 </div>
             </div>
 
@@ -79,7 +79,7 @@
                         </div>
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
             <div class="tw:hidden tw:md:block">
-                <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" 
+                <OrganiserSidebar :menuItems="menuItems" @back="handleBack" @organiser-selected="handleEventSelected" 
                 @chatbox-click="handleChatboxClick"/>
             </div>
 
@@ -128,6 +128,7 @@
                         <label class="tw:text-sm tw:text-gray-700">Description <span class="tw:text-red-500">*</span></label>
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Organiser..."
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                        <p v-if="fieldErrors.description" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.description[0] }}</p>
                     </div>
                 </div>
 
@@ -247,23 +248,40 @@
                     </div><!-- End of Header -->
 
                     <!-- Custom File Input -->
-                    <label
-                        class="tw:flex tw:items-center tw:w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer">
+                    <div
+                        @click="handleMainImageClick"
+                        class="tw:flex tw:items-center tw:w-full tw:max-w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer hover:tw:bg-gray-50">
 
                         <!-- Choose File -->
                         <span
                             class="tw:px-4 tw:py-2 tw:bg-[#F6F1E7] tw:text-sm tw:text-gray-700 tw:border-r tw:border-[#E8E1D5]">
-                            Choose File
+                            Choose from Media
                         </span>
 
-                        <!-- File name display -->
+                        <!-- Selected file info -->
                         <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-                            {{ fileName || 'No File Chosen' }}
+                            {{ mainImage ? mainImage.file_name : 'No Image Selected' }}
                         </span>
 
-                        <input type="file" accept="image/*" class="tw:hidden"
-                            @change="handleFileChange" />
-                    </label>
+                        <svg class="tw:w-5 tw:h-5 tw:mr-2 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+
+                    <!-- Image Preview -->
+                    <div v-if="mainImage" class="tw:relative tw:mt-4 tw:w-full">
+                        <img :src="mainImage.image_url" alt="Organiser image preview"
+                            class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200" />
+                        <button @click="removeMainImage" type="button"
+                            class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-700 tw:transition-colors">
+                            <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p v-if="fieldErrors.image_path" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image_path[0] }}</p>
                 </div>
 
                 <!-- ADDITIONAL IMAGES SECTION -->
@@ -275,7 +293,55 @@
                         </h3>
                     </div>
 
-                    <AdditionalImageUpload v-model:files="additionalImages" :max-files="5" :max-size-m-b="5" />
+                    <!-- Upload Area -->
+                    <div
+                        @click="handleAdditionalImagesClick"
+                        class="tw:border-2 tw:border-dashed tw:border-gray-300 tw:rounded-xl tw:p-6 tw:text-center tw:cursor-pointer hover:tw:border-blue-400 tw:bg-gray-50 tw:transition-all tw:duration-200">
+                        
+                        <div class="tw:flex tw:flex-col tw:items-center tw:gap-2">
+                            <div class="tw:w-12 tw:h-12 tw:rounded-full tw:bg-blue-100 tw:flex tw:items-center tw:justify-center">
+                                <svg class="tw:w-6 tw:h-6 tw:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <p class="tw:text-sm tw:font-medium tw:text-gray-700">Choose from Media Library</p>
+                            <p class="tw:text-xs tw:text-gray-500">Select up to 5 additional images</p>
+                        </div>
+                    </div>
+
+                    <!-- Selected Images Preview -->
+                    <div v-if="resolvedAdditionalImages.length > 0" class="tw:space-y-4">
+                        <!-- Image Count -->
+                        <div class="tw:flex tw:items-center tw:justify-between">
+                            <span class="tw:text-sm tw:text-gray-600">
+                                {{ resolvedAdditionalImages.length }} / 5 images selected
+                            </span>
+                            <button
+                                @click="clearAllAdditionalImages"
+                                type="button"
+                                class="tw:text-sm tw:text-red-500 hover:tw:text-red-700 tw:transition-colors"
+                            >
+                                Clear All
+                            </button>
+                        </div>
+
+                        <!-- Images Grid -->
+                        <div class="tw:grid tw:grid-cols-2 md:tw:grid-cols-3 lg:tw:grid-cols-5 tw:gap-4">
+                            <div v-for="(image, index) in resolvedAdditionalImages" :key="image.image_id || index" 
+                                class="tw:relative tw:group">
+                                <img :src="image.image_url" :alt="`Additional image ${index + 1}`"
+                                    class="tw:w-full tw:h-32 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
+                                <button @click="removeAdditionalImage(index)" type="button"
+                                    class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center tw:opacity-0 group-hover:tw:opacity-100 tw:transition-opacity hover:tw:bg-red-700">
+                                    <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                            clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- GENRE SECTION -->
@@ -470,6 +536,7 @@
                             placeholder="Address Will Auto Fill Here"
                             class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed"
                         />
+                        <p v-if="fieldErrors.address" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.address[0] }}</p>
                     </div>
                 </div>
 
@@ -734,6 +801,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Media Picker Modal -->
+    <Teleport to="body">
+        <MediaPickerModal
+            :visible="showMediaModal"
+            :multiple="selectedMediaType === 'additional'"
+            :max-selection="selectedMediaType === 'additional' ? 5 : 1"
+            :preselected-ids="selectedMediaType === 'main' ? (formData.image_path ? [formData.image_path] : []) : formData.additional_images"
+            @select="handleMediaSelect"
+            @close="showMediaModal = false"
+            @image-updated="handleImageUpdated"
+        />
+    </Teleport>
 </template>
 
 <script setup>
@@ -756,9 +836,11 @@ import {
 
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import OrganiserSidebar from "./eventsidebar/OrganiserSidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
+import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
+import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
@@ -959,16 +1041,106 @@ const isEditMode = ref(false)
 const editingOrganiserId = ref(null)
 
 // ── Image state ────────────────────────────────────────────────────────
-const mainImage = ref(null)
+const imagePreviewUrl = ref(null)
 const pendingFileMap = ref({})
 const clearAllImages = ref(false)
 const fieldErrors = ref({})
+
+// Media picker state
+const showMediaModal = ref(false)
+const selectedMediaType = ref('main')
+const galleryImages = ref([])
+
+// Computed properties for resolving image_ids to URLs
+const mainImage = computed(() => {
+    if (!formData.image_path) return null
+    return galleryImages.value.find(img => img.image_id === formData.image_path)
+})
+
+const resolvedAdditionalImages = computed(() => {
+    return formData.additional_images
+        .map(id => galleryImages.value.find(img => img.image_id === id))
+        .filter(Boolean)
+})
+
+// Media Picker Handlers
+const handleMainImageClick = () => {
+    console.log('Main image clicked')
+    openMediaModal('main')
+}
+
+const handleAdditionalImagesClick = () => {
+    openMediaModal('additional')
+}
+
+const openMediaModal = (type) => {
+    console.log('Opening media modal with type:', type)
+    selectedMediaType.value = type
+    showMediaModal.value = true
+    console.log('showMediaModal set to:', showMediaModal.value)
+}
+
+const handleMediaSelect = (ids) => {
+    if (selectedMediaType.value === 'main') {
+        formData.image_path = ids[0] || ''
+        formData.remove_main_image = false
+    } else {
+        formData.additional_images = ids.slice(0, 5)
+        additionalImages.value = []
+    }
+}
+
+const handleImageUpdated = (newImages, files) => {
+    // Add newly uploaded images to the gallery resolution list
+    galleryImages.value = [...newImages, ...galleryImages.value]
+
+    if (!files || files.length === 0) return
+
+    // Map every uploaded image_id → its File so it survives the modal confirm
+    newImages.forEach((img, i) => {
+        pendingFileMap.value[img.image_id] = files[i]
+    })
+}
+
+const removeMainImage = () => {
+    formData.image_path = ''
+    formData.remove_main_image = true
+}
+
+const removeAdditionalImage = (index) => {
+    // Remove from form.additional_images (existing images)
+    if (formData.additional_images && formData.additional_images.length > index) {
+        formData.additional_images.splice(index, 1)
+    }
+    // Also clear additionalImages ref if it's being used for new uploads
+    if (additionalImages.value && additionalImages.value.length > index) {
+        additionalImages.value.splice(index, 1)
+    }
+}
+
+const clearAllAdditionalImages = () => {
+    formData.additional_images = []
+    additionalImages.value = []
+}
+
+// Fetch gallery images for resolution
+const fetchGalleryImages = async () => {
+    try {
+        const response = await galleryApi.fetchImages(1, 100)
+        galleryImages.value = response.data.images
+    } catch (error) {
+        console.error('Error fetching gallery images:', error)
+    }
+}
 
 // ── Form Validation ───────────────────────────────────────────────────
 const formData = reactive({
     organiserTitle: '',
     category: '',
     subcategories: [],
+    image_path: '',
+    additional_images: [],
+    remove_main_image: false,
 })
 
 const organiserSchema = {
@@ -1061,31 +1233,21 @@ function buildFormData() {
     fd.append('show_upcoming_events', showUpcomingEvents.value ? '1' : '0')
     fd.append('show_past_events', showPastEvents.value ? '1' : '0')
 
-    // ── Main image (File or UUID) ───────────────────────────────────
-    if (mainImage.value instanceof File) {
-        fd.append('image_path', mainImage.value)
-    } else if (typeof mainImage.value === 'string' && mainImage.value) {
-        const pendingFile = pendingFileMap.value[mainImage.value]
-        if (pendingFile instanceof File) {
-            fd.append('image_path', pendingFile)
-        } else {
-            fd.append('image_path', mainImage.value)
-        }
+    // ── Main image (Always send UUID, not file) ───────────────────────────
+    if (formData.image_path) {
+        fd.append('image_path', formData.image_path)
+    }
+    
+    if (formData.remove_main_image) {
+        fd.append('remove_main_image', '1')
     }
 
-    // ── Additional images (Files + UUIDs) ───────────────────────────
-    if (additionalImages.value && additionalImages.value.length > 0) {
-        additionalImages.value.forEach(item => {
-            if (item instanceof File) {
-                fd.append('additional_images[]', item)
-            } else if (typeof item === 'string' && item) {
-                const pendingFile = pendingFileMap.value[item]
-                if (pendingFile instanceof File) {
-                    fd.append('additional_images[]', pendingFile)
-                } else {
-                    fd.append('additional_images[]', item)
-                }
-            }
+    // ── Additional images (Always send UUIDs, not files) ───────────────────
+    if (formData.additional_images && formData.additional_images.length > 0) {
+        console.log('Additional images being sent:', formData.additional_images)
+        formData.additional_images.forEach((imageId, index) => {
+            console.log('Sending image ID:', imageId)
+            fd.append(`additional_images[${index}]`, imageId)
         })
     }
 
@@ -1203,12 +1365,14 @@ async function loadOrganiser(id) {
         showUpcomingEvents.value = !!d.show_upcoming_events
         showPastEvents.value = !!d.show_past_events
 
-        mainImage.value = d.image_path || null
-        fileName.value = d.image_path ? 'Existing image' : ''
-
-        additionalImages.value = Array.isArray(d.additional_images)
+        // Load image data
+        formData.image_path = d.image_path || ''
+        formData.additional_images = Array.isArray(d.additional_images)
             ? d.additional_images.filter(id => id !== null && id !== '')
             : []
+        
+        imagePreviewUrl.value = d.image_url || d.image_path || null
+        fileName.value = d.image_path ? 'Existing image' : ''
 
         pendingFileMap.value = {}
         clearAllImages.value = false
@@ -1244,6 +1408,9 @@ function resetForm() {
     formData.organiserTitle = ''
     formData.category = ''
     formData.subcategories = []
+    formData.image_path = ''
+    formData.additional_images = []
+    formData.remove_main_image = false
     selectedCategory.value = ''
     selectedSubcategories.value = []
     selectedAddress.value = ''
@@ -1259,7 +1426,7 @@ function resetForm() {
     tiktokUrl.value = ''
     showUpcomingEvents.value = false
     showPastEvents.value = false
-    mainImage.value = null
+    imagePreviewUrl.value = null
     additionalImages.value = []
     pendingFileMap.value = {}
     clearAllImages.value = false
@@ -1280,7 +1447,29 @@ async function handleSubmit() {
     const isValid = validate()
     const genreValid = validateGenre()
 
-    if (!isValid || !genreValid) {
+    let hasExtraErrors = false
+    const extraErrors = { ...fieldErrors.value }
+    if (!eventDescription.value || !eventDescription.value.trim()) {
+        extraErrors.description = ['Description is required']
+        hasExtraErrors = true
+    } else {
+        delete extraErrors.description
+    }
+    if (!selectedAddress.value || !selectedAddress.value.trim()) {
+        extraErrors.address = ['Address is required']
+        hasExtraErrors = true
+    } else {
+        delete extraErrors.address
+    }
+    if (!formData.image_path) {
+        extraErrors.image_path = ['Main image is required']
+        hasExtraErrors = true
+    } else {
+        delete extraErrors.image_path
+    }
+    fieldErrors.value = extraErrors
+
+    if (!isValid || !genreValid || hasExtraErrors) {
         await scrollToFirstError()
         return
     }
@@ -1289,18 +1478,6 @@ async function handleSubmit() {
         await updateOrganiser()
     } else {
         await createOrganiser()
-    }
-}
-
-// ── File handling ──────────────────────────────────────────────────────
-function handleFileChange(event) {
-    const file = event.target.files[0]
-    if (file) {
-        mainImage.value = file
-        fileName.value = file.name
-    } else {
-        mainImage.value = null
-        fileName.value = 'No File Chosen'
     }
 }
 
@@ -1399,6 +1576,7 @@ async function handleEventSelected(eventId) {
 // ── Lifecycle ──────────────────────────────────────────────────────────
 onMounted(() => {
     fetchCategories()
+    fetchGalleryImages()
     document.addEventListener('click', handleClickOutside)
 
     map.value = new maplibregl.Map({

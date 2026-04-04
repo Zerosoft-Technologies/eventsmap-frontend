@@ -191,6 +191,11 @@ const eventService = {
     return response.data
   },
 
+  async getMyOrganisers(): Promise<MyEventsResponse> {
+    const response: AxiosResponse<MyEventsResponse> = await api.get('/v2/my-organisers')
+    return response.data
+  },
+
   /**
    * Fetch authenticated user's wishlist events
    */
