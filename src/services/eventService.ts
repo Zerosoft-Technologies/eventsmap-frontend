@@ -144,6 +144,14 @@ const eventService = {
   },
 
   /**
+   * Fetch categories for talents
+   */
+  async getCategoriesTalents(): Promise<CategoriesResponse> {
+    const response: AxiosResponse<CategoriesResponse> = await api.get('/v1/categories-talents')
+    return response.data
+  },
+
+  /**
    * Update an existing event
    */
   async updateEvent(slug: string, formData: FormData): Promise<EventResponse> {

@@ -226,7 +226,7 @@
                                 Category <span class="tw:text-red-500">*</span>
                             </label>
                             <div class="tw:relative">
-                                <select v-model="selectedCategory" @change="handleCategoryChangeWithValidation"
+                                <select v-model="form.talent_category_id" @change="handleCategoryChangeWithValidation"
                                     :disabled="isLoadingCategories || categoriesError" :class="[
                                         'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                                         categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
@@ -235,7 +235,7 @@
                                     <option value="">
                                         {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'Select Category') }}
                                     </option>
-                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() == 'talent')" :key="category.id" :value="category.name">
+                                    <option v-for="category in categoriesTalents" :key="category.id" :value="category.id">
                                         {{ category.name }}
                                     </option>
                                 </select>
@@ -255,14 +255,14 @@
                             <div class="subcategory-dropdown-container" ref="dropdownContainer">
                                 <div @click="toggleSubcategoryDropdown" :class="[
                                     'subcategory-input',
-                                    (!selectedCategory || categoriesError) ? 'disabled' : '',
+                                    (!form.talent_category_id || categoriesError) ? 'disabled' : '',
                                     subcategoryError ? 'error' : ''
                                 ]">
                                     <div class="subcategory-input-content">
                                         <span class="subcategory-input-text">
-                                            {{ selectedSubcategories.length > 0
-                                                ? `${selectedSubcategories.length} selected`
-                                                : (selectedCategory ? 'Select Subcategories' : 'Select Category First')
+                                            {{ form.talent_subcategory_ids.length > 0
+                                                ? `${form.talent_subcategory_ids.length} selected`
+                                                : (form.talent_category_id ? 'Select Subcategories' : 'Select Category First')
                                             }}
                                         </span>
                                         <ChevronDown :class="[
@@ -273,37 +273,37 @@
                                 </div>
 
                                 <!-- Dropdown Options -->
-                                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError"
+                                <div v-if="showSubcategoryDropdown && form.talent_category_id && !categoriesError"
                                     class="subcategory-dropdown" ref="dropdownMenu">
                                     <div class="dropdown-content">
-                                        <div v-for="subcategory in availableSubcategories" :key="subcategory"
+                                        <div v-for="subcategory in availableSubcategories" :key="subcategory.id"
                                             class="dropdown-option" :class="{
-                                                'selected': selectedSubcategories.includes(subcategory),
-                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 1
-                                            }" @click="toggleSubcategory(subcategory)">
-                                            <input type="checkbox" :id="`subcategory-${subcategory}`"
-                                                :value="subcategory" v-model="selectedSubcategories"
-                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 1"
+                                                'selected': form.talent_subcategory_ids.includes(subcategory.id),
+                                                'disabled': !form.talent_subcategory_ids.includes(subcategory.id) && form.talent_subcategory_ids.length >= 5
+                                            }" @click="toggleSubcategory(subcategory.id)">
+                                            <input type="checkbox" :id="`subcategory-${subcategory.id}`"
+                                                :value="subcategory.id" v-model="form.talent_subcategory_ids"
+                                                :disabled="!form.talent_subcategory_ids.includes(subcategory.id) && form.talent_subcategory_ids.length >= 5"
                                                 @change="handleSubcategoryChange" @click.stop class="option-checkbox">
-                                            <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
-                                                {{ subcategory }}
+                                            <label :for="`subcategory-${subcategory.id}`" class="option-label" @click.stop>
+                                                {{ subcategory.name }}
                                             </label>
                                         </div>
                                     </div>
 
                                     <!-- Max selection notice -->
-                                    <div v-if="selectedSubcategories.length >= 5" class="max-selection-notice">
+                                    <div v-if="form.talent_subcategory_ids.length >= 5" class="max-selection-notice">
                                         Maximum 5 subcategories selected
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Selected Tags Display -->
-                            <div v-if="selectedSubcategories.length > 0" class="selected-tags">
-                                <span v-for="subcategory in selectedSubcategories" :key="subcategory"
+                            <div v-if="form.talent_subcategory_ids.length > 0" class="selected-tags">
+                                <span v-for="subcategoryId in form.talent_subcategory_ids" :key="subcategoryId"
                                     class="selected-tag">
-                                    {{ subcategory }}
-                                    <button @click="removeSubcategory(subcategory)" class="tag-remove">
+                                    {{ availableSubcategories.find(s => s.id === subcategoryId)?.name }}
+                                    <button @click="removeSubcategory(subcategoryId)" class="tag-remove">
                                         <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd"
                                                 d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -694,7 +694,7 @@
                                 <!-- EVENT VISIBILITY SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-6">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Event Visibility
+                        Talent Visibility
                     </h3>
 
                     <!-- Show Upcoming Events -->
@@ -965,11 +965,15 @@ const selectedCategory = ref("")
 const talentCity = ref("")
 
 // Genre state
+const form = reactive({
+  talent_category_id: null,
+  talent_subcategory_ids: []
+})
 const selectedSubcategories = ref([])
 const categoryError = ref(false)
 const subcategoryError = ref(false)
 const subcategoryValidationError = ref(false)
-const categories = ref([])
+const categoriesTalents = ref([])
 const isLoadingCategories = ref(false)
 const categoriesError = ref(null)
 const showSubcategoryDropdown = ref(false)
@@ -980,9 +984,14 @@ const dropdownMenu = ref(null)
 
 // Computed property for available subcategories
 const availableSubcategories = computed(() => {
-    if (!selectedCategory.value) return []
-    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
-    return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
+    if (!form.talent_category_id) return []
+    const selectedCategoryData = categoriesTalents.value.find(cat => cat.id === form.talent_category_id)
+    return selectedCategoryData ? selectedCategoryData.subcategories : []
+})
+
+// Computed property for selected category details
+const selectedCategoryDetails = computed(() => {
+    return categoriesTalents.value.find(cat => cat.id === form.talent_category_id)
 })
 
 // Fetch categories from API using eventService
@@ -990,9 +999,9 @@ async function fetchCategories() {
     try {
         isLoadingCategories.value = true
         categoriesError.value = null
-        const response = await eventService.getCategories()
+        const response = await eventService.getCategoriesTalents()
         if (response.success) {
-            categories.value = response.data
+            categoriesTalents.value = response.data
         } else {
             categoriesError.value = 'Failed to fetch categories'
         }
@@ -1005,7 +1014,7 @@ async function fetchCategories() {
 }
 
 function handleCategoryChangeWithValidation() {
-    selectedSubcategories.value = []
+    form.talent_subcategory_ids = []
     subcategoryError.value = false
     subcategoryValidationError.value = false
     categoryError.value = false
@@ -1017,19 +1026,19 @@ function handleCategoryChange() {
 }
 
 function toggleSubcategoryDropdown() {
-    if (!selectedCategory.value || categoriesError.value) return
+    if (!form.talent_category_id || categoriesError.value) return
     showSubcategoryDropdown.value = !showSubcategoryDropdown.value
 }
 
-function toggleSubcategory(subcategory) {
-    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
+function toggleSubcategory(subcategoryId) {
+    if (!form.talent_subcategory_ids.includes(subcategoryId) && form.talent_subcategory_ids.length >= 5) {
         return
     }
-    const index = selectedSubcategories.value.indexOf(subcategory)
+    const index = form.talent_subcategory_ids.indexOf(subcategoryId)
     if (index > -1) {
-        selectedSubcategories.value.splice(index, 1)
+        form.talent_subcategory_ids.splice(index, 1)
     } else {
-        selectedSubcategories.value.push(subcategory)
+        form.talent_subcategory_ids.push(subcategoryId)
     }
     handleSubcategoryChange()
 }
@@ -1042,8 +1051,8 @@ function handleClickOutside(event) {
 
 function handleSubcategoryChange() {
     subcategoryError.value = false
-    if (selectedSubcategories.value.length > 5) {
-        selectedSubcategories.value = selectedSubcategories.value.slice(0, 5)
+    if (form.talent_subcategory_ids.length > 5) {
+        form.talent_subcategory_ids = form.talent_subcategory_ids.slice(0, 5)
         subcategoryValidationError.value = true
         setTimeout(() => { subcategoryValidationError.value = false }, 3000)
     } else {
@@ -1051,18 +1060,18 @@ function handleSubcategoryChange() {
     }
 }
 
-function removeSubcategory(subcategoryToRemove) {
-    const index = selectedSubcategories.value.indexOf(subcategoryToRemove)
+function removeSubcategory(subcategoryIdToRemove) {
+    const index = form.talent_subcategory_ids.indexOf(subcategoryIdToRemove)
     if (index > -1) {
-        selectedSubcategories.value.splice(index, 1)
+        form.talent_subcategory_ids.splice(index, 1)
         subcategoryValidationError.value = false
     }
 }
 
 function validateGenre() {
-    categoryError.value = !selectedCategory.value
-    subcategoryError.value = selectedSubcategories.value.length === 0
-    return selectedCategory.value && selectedSubcategories.value.length > 0
+    categoryError.value = !form.talent_category_id
+    subcategoryError.value = form.talent_subcategory_ids.length === 0
+    return form.talent_category_id && form.talent_subcategory_ids.length > 0
 }
 
 // Menu items specific to CreateEventPremium
@@ -1116,20 +1125,14 @@ function buildFormData() {
     fd.append('description', eventDescription.value || '')
 
     // Category ID
-    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
-    if (selectedCategoryData) {
-        fd.append('category_id', selectedCategoryData.id)
+    if (form.talent_category_id) {
+        fd.append('talent_category_id', form.talent_category_id)
     }
 
     // Subcategory IDs
-    if (selectedCategoryData) {
-        selectedSubcategories.value.forEach(subName => {
-            const subData = selectedCategoryData.subcategories.find(s => s.name === subName)
-            if (subData) {
-                fd.append('subcategory_ids[]', subData.id)
-            }
-        })
-    }
+    form.talent_subcategory_ids.forEach(subId => {
+        fd.append('talent_subcategory_ids[]', subId)
+    })
 
     // Location
     fd.append('address', selectedAddress.value || '')
@@ -1189,50 +1192,6 @@ function buildFormData() {
     return fd
 }
 
-// ── Create Talent ───────────────────────────────────────────────
-async function createTalent() {
-    try {
-        const fd = buildFormData()
-        const response = await eventService.createTalent(fd)
-        if (response.success) {
-            toast.success('Talent created successfully!')
-            resetForm()
-        } else {
-            toast.error(response.message || 'Failed to create talent')
-        }
-    } catch (error) {
-        console.error('Error creating talent:', error)
-        if (error.response?.data?.errors) {
-            const errors = error.response.data.errors
-            Object.keys(errors).forEach(key => { toast.error(errors[key][0]) })
-        } else {
-            toast.error('An error occurred while creating the talent')
-        }
-    }
-}
-
-// ── Update Talent ───────────────────────────────────────────────
-async function updateTalent() {
-    try {
-        const fd = buildFormData()
-        const response = await eventService.updateTalent(editingTalentId.value, fd)
-        if (response.success) {
-            toast.success('Talent updated successfully!')
-            resetForm()
-        } else {
-            toast.error(response.message || 'Failed to update talent')
-        }
-    } catch (error) {
-        console.error('Error updating talent:', error)
-        if (error.response?.data?.errors) {
-            const errors = error.response.data.errors
-            Object.keys(errors).forEach(key => { toast.error(errors[key][0]) })
-        } else {
-            toast.error('An error occurred while updating the talent')
-        }
-    }
-}
-
 // ── Load Talent for editing ─────────────────────────────────────
 async function loadTalent(id) {
     try {
@@ -1251,11 +1210,11 @@ async function loadTalent(id) {
         if (talent.longitude) mapLng.value = talent.longitude
 
         // Category & subcategories
-        if (talent.category) {
-            selectedCategory.value = talent.category.name || ''
+        if (talent.talent_category_id) {
+            form.talent_category_id = talent.talent_category_id
             await nextTick()
-            if (talent.subcategories && talent.subcategories.length) {
-                selectedSubcategories.value = talent.subcategories.map(s => s.name)
+            if (talent.talent_subcategories && talent.talent_subcategories.length) {
+                form.talent_subcategory_ids = talent.talent_subcategories.map(s => s.id)
             }
         }
 
@@ -1324,19 +1283,13 @@ async function loadTalent(id) {
     }
 }
 
-// ── Cancel Edit ─────────────────────────────────────────────────
-function cancelEdit() {
-    resetForm()
-    isEditMode.value = false
-    editingTalentId.value = null
-}
-
 // ── Reset Form ──────────────────────────────────────────────────
 function resetForm() {
     formData.talentTitle = ''
     formData.category = ''
     formData.subcategories = []
-    eventDescription.value = ''
+    form.talent_category_id = null
+    form.talent_subcategory_ids = []
     selectedCategory.value = ''
     selectedSubcategories.value = []
     selectedAddress.value = ''
