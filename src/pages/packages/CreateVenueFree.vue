@@ -564,7 +564,7 @@
 
         <!-- SAVE Venue BUTTON -->
         <div class="tw:w-full tw:pt-4">
-          <div class="tw:flex tw:flex-col tw:md:flex-row tw:w-full tw:items-stretch tw:md:items-center tw:justify-between tw:gap-3 tw:md:gap-0">
+          <div class="tw:flex tw:flex-col tw:md:flex-row tw:w-full tw:items-stretch tw:md:items-center tw:justify-end">
             <!-- <button class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                tw:border tw:border-orange-500 tw:text-[#0061FF]
                tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
@@ -585,7 +585,7 @@
               </button>
             </div>
           </div>
-          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span>
+          <!-- <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span> -->
         </div>
 
       </div>
