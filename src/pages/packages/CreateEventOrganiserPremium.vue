@@ -1602,7 +1602,6 @@ async function handleEventSelected(eventId) {
 // ── Lifecycle ──────────────────────────────────────────────────────────
 onMounted(() => {
     fetchCategories()
-    fetchGalleryImages()
     document.addEventListener('click', handleClickOutside)
 
     map.value = new maplibregl.Map({

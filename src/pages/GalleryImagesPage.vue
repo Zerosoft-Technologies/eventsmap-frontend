@@ -11,7 +11,9 @@
       <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
         <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar"></div>
         <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
-          <EventSidebar :menuItems="menuItems"
+          <OrganiserSidebar v-if="isOrganiserRoute" :menuItems="menuItems"
+            @back="handleBack" @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar" />
+          <EventSidebar v-else :menuItems="menuItems"
             @back="handleBack" @event-selected="handleEventSelected"
             @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar" />
         </div>
@@ -19,7 +21,9 @@
 
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
       <div class="tw:hidden tw:md:block">
-        <EventSidebar :menuItems="menuItems"
+        <OrganiserSidebar v-if="isOrganiserRoute" :menuItems="menuItems"
+          @back="handleBack" @chatbox-click="handleChatboxClick" />
+        <EventSidebar v-else :menuItems="menuItems"
           @back="handleBack" @event-selected="handleEventSelected"
           @chatbox-click="handleChatboxClick" />
       </div>
@@ -114,6 +118,7 @@ import DeleteConfirmationModal from '@/components/gallery/DeleteConfirmationModa
 import ImageDetailsModal from '@/components/gallery/ImageDetailsModal.vue'
 import EditAltTextModal from '@/components/gallery/EditAltTextModal.vue'
 import EventSidebar from './packages/eventsidebar/Eventsidebar.vue'
+import OrganiserSidebar from './packages/eventsidebar/OrganiserSidebar.vue'
 import { 
   Home, 
   Calendar, 
@@ -166,9 +171,28 @@ const detailsTarget = ref<GalleryImage | null>(null)
 const editAltModalVisible = ref(false)
 const editAltTarget = ref<GalleryImage | null>(null)
 
+// Determine which sidebar to use
+const isOrganiserRoute = computed(() => {
+  return route.path.includes('organiser')
+})
+
 // Menu items for sidebar
 const menuItems = computed(() => {
   const baseRoute = route.path.split("/")[1]
+  const isOrganiser = route.path.includes('organiser')
+  
+  if (isOrganiser) {
+    return [
+      { id: 'home', label: 'Home', icon: Home, route: '/create-organiser-premium' },
+      { id: 'details', label: 'Details', icon: Calendar, route: '/create-organiser-premium' },
+      { id: 'analytics', label: 'Analytics', icon: BarChart3, route: '/create-organiser-premium/report' },
+      { id: 'gallery', label: 'Gallery', icon: Images, route: '/create-organiser-premium/gallery-images' },
+      { id: 'settings', label: 'Settings', icon: Settings, route: '/create-organiser-premium/settings' },
+      { id: 'calendar', label: 'Calendar', icon: Calendar },
+      { id: 'chatbox', label: 'Chatbox', icon: MessageSquareText },
+    ]
+  }
+  
   return [
     { id: 'home', label: 'Home', icon: Home, route: `/${baseRoute}` },
     { id: 'details', label: 'Details', icon: Calendar, route: `/${baseRoute}` },
