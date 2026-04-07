@@ -152,6 +152,14 @@ const eventService = {
   },
 
   /**
+   * Fetch categories for organisers
+   */
+  async getCategoriesOrganisers(): Promise<CategoriesResponse> {
+    const response: AxiosResponse<CategoriesResponse> = await api.get('/v1/categories-organisers')
+    return response.data
+  },
+
+  /**
    * Update an existing event
    */
   async updateEvent(slug: string, formData: FormData): Promise<EventResponse> {

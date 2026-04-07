@@ -374,30 +374,26 @@
                     </div>
 
                     <!-- Category and Subcategory Dropdowns -->
-                    <div class="tw:flex tw:gap-4">
+                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-4">
                         <!-- Category Dropdown -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
                                 Category <span class="tw:text-red-500">*</span>
                             </label>
                             <div class="tw:relative">
-                                <select v-model="selectedCategory" @change="handleCategoryChangeWithValidation"
+                                <select v-model="form.organiser_category_id" @change="handleCategoryChangeWithValidation"
                                     :disabled="isLoadingCategories || categoriesError" :class="[
-                                        'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                                        'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                                         categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
                                         (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
                                     ]">
                                     <option value="">
-                                        {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' : 'Select Category') }}
+                                        {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
+                                        'Select Category') }}
                                     </option>
-                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() == 'organiser')" :key="category.id" :value="category.name">
+                                    <option v-for="category in categoriesOrganisers" :key="category.id" :value="category.id">
                                         {{ category.name }}
                                     </option>
-                                    <!-- <option
-                                        v-for="category in categories.filter(c => c.name.toLowerCase() === 'organiser')"
-                                        :key="category.id" :value="category.name">
-                                        {{ category.name }}
-                                    </option> -->
                                 </select>
                                 <ChevronDown
                                     class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
@@ -408,21 +404,21 @@
                         <!-- Subcategory Multi-Select -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories (Max 6) <span class="tw:text-red-500">*</span>
+                                Subcategories <span class="tw:text-red-500">*</span>
                             </label>
 
                             <!-- Multi-Select Input Field -->
                             <div class="subcategory-dropdown-container" ref="dropdownContainer">
                                 <div @click="toggleSubcategoryDropdown" :class="[
                                     'subcategory-input',
-                                    (!selectedCategory || categoriesError) ? 'disabled' : '',
+                                    (!form.organiser_category_id || categoriesError) ? 'disabled' : '',
                                     subcategoryError ? 'error' : ''
                                 ]">
                                     <div class="subcategory-input-content">
                                         <span class="subcategory-input-text">
-                                            {{ selectedSubcategories.length > 0
-                                                ? `${selectedSubcategories.length} selected`
-                                                : (selectedCategory ? 'Select Subcategories' : 'Select Category First')
+                                            {{ form.organiser_subcategory_ids.length > 0
+                                                ? `${form.organiser_subcategory_ids.length} selected`
+                                                : (form.organiser_category_id ? 'Select Subcategories' : 'Select Category First')
                                             }}
                                         </span>
                                         <ChevronDown :class="[
@@ -433,37 +429,36 @@
                                 </div>
 
                                 <!-- Dropdown Options -->
-                                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError"
-                                    class="subcategory-dropdown" ref="dropdownMenu">
+                                <div v-if="showSubcategoryDropdown && form.organiser_category_id && !categoriesError" class="subcategory-dropdown"
+                                    ref="dropdownMenu">
                                     <div class="dropdown-content">
-                                        <div v-for="subcategory in availableSubcategories" :key="subcategory"
-                                            class="dropdown-option" :class="{
-                                                'selected': selectedSubcategories.includes(subcategory),
-                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6
-                                            }" @click="toggleSubcategory(subcategory)">
-                                            <input type="checkbox" :id="`subcategory-${subcategory}`"
-                                                :value="subcategory" v-model="selectedSubcategories"
-                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6"
+                                        <div v-for="subcategory in availableSubcategories" :key="subcategory.id" class="dropdown-option"
+                                            :class="{
+                                                'selected': form.organiser_subcategory_ids.includes(subcategory.id),
+                                                'disabled': !form.organiser_subcategory_ids.includes(subcategory.id) && form.organiser_subcategory_ids.length >= 5
+                                            }" @click="toggleSubcategory(subcategory.id)">
+                                            <input type="checkbox" :id="`subcategory-${subcategory.id}`" :value="subcategory.id"
+                                                v-model="form.organiser_subcategory_ids"
+                                                :disabled="!form.organiser_subcategory_ids.includes(subcategory.id) && form.organiser_subcategory_ids.length >= 5"
                                                 @change="handleSubcategoryChange" @click.stop class="option-checkbox">
-                                            <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
-                                                {{ subcategory }}
+                                            <label :for="`subcategory-${subcategory.id}`" class="option-label" @click.stop>
+                                                {{ subcategory.name }}
                                             </label>
                                         </div>
                                     </div>
 
                                     <!-- Max selection notice -->
-                                    <div v-if="selectedSubcategories.length >= 6" class="max-selection-notice">
-                                        Maximum 6 subcategories selected
+                                    <div v-if="form.organiser_subcategory_ids.length >= 5" class="max-selection-notice">
+                                        Maximum 5 subcategories selected
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Selected Tags Display -->
-                            <div v-if="selectedSubcategories.length > 0" class="selected-tags">
-                                <span v-for="subcategory in selectedSubcategories" :key="subcategory"
-                                    class="selected-tag">
-                                    {{ subcategory }}
-                                    <button @click="removeSubcategory(subcategory)" class="tag-remove">
+                            <div v-if="form.organiser_subcategory_ids.length > 0" class="selected-tags">
+                                <span v-for="subcategoryId in form.organiser_subcategory_ids" :key="subcategoryId" class="selected-tag">
+                                    {{ availableSubcategories.find(s => s.id === subcategoryId)?.name }}
+                                    <button @click="removeSubcategory(subcategoryId)" class="tag-remove">
                                         <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd"
                                                 d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -477,8 +472,7 @@
                             <p v-if="subcategoryValidationError" class="validation-error">
                                 You can select maximum 5 subcategories only.
                             </p>
-                            <p v-else-if="subcategoryError" class="validation-error">Please select at least one
-                                subcategory</p>
+                            <p v-else-if="subcategoryError" class="validation-error">Please select at least one subcategory</p>
                         </div>
                     </div>
                 </div>
@@ -916,10 +910,16 @@ const selectedSubcategories = ref([])  // Multi-select array for subcategories
 const categoryError = ref(false)
 const subcategoryError = ref(false)
 const subcategoryValidationError = ref(false)  // For max 5 validation
-const categories = ref([])
+const categoriesOrganisers = ref([])
 const isLoadingCategories = ref(false)
 const categoriesError = ref(null)
 const showSubcategoryDropdown = ref(false)  // For dropdown toggle
+
+// Form for organiser categories
+const form = reactive({
+  organiser_category_id: "",
+  organiser_subcategory_ids: []
+})
 
 // Dropdown refs for click outside functionality
 const dropdownContainer = ref(null)
@@ -927,9 +927,14 @@ const dropdownMenu = ref(null)
 
 // Computed property for available subcategories
 const availableSubcategories = computed(() => {
-    if (!selectedCategory.value) return []
-    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
-    return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
+    if (!form.organiser_category_id) return []
+    const selectedCategoryData = categoriesOrganisers.value.find(cat => cat.id === form.organiser_category_id)
+    return selectedCategoryData ? selectedCategoryData.subcategories : []
+})
+
+// Computed property for selected category details
+const selectedCategoryDetails = computed(() => {
+    return categoriesOrganisers.value.find(cat => cat.id === form.organiser_category_id)
 })
 
 // Fetch categories from API using eventService with retry
@@ -938,10 +943,10 @@ async function fetchCategories(retryCount = 0) {
         isLoadingCategories.value = true
         categoriesError.value = null
 
-        const response = await eventService.getCategories()
+        const response = await eventService.getCategoriesOrganisers()
 
         if (response.success) {
-            categories.value = response.data
+            categoriesOrganisers.value = response.data
         } else {
             categoriesError.value = 'Failed to fetch categories'
         }
@@ -961,7 +966,7 @@ async function fetchCategories(retryCount = 0) {
 
 // Handle category change with validation clearing
 function handleCategoryChangeWithValidation() {
-    selectedSubcategories.value = []  // Reset array when category changes
+    form.organiser_subcategory_ids = []  // Reset array when category changes
     subcategoryError.value = false
     subcategoryValidationError.value = false  // Clear validation error
     categoryError.value = false
@@ -975,21 +980,21 @@ function handleCategoryChange() {
 
 // Toggle subcategory dropdown
 function toggleSubcategoryDropdown() {
-    if (!selectedCategory.value || categoriesError.value) return
+    if (!form.organiser_category_id || categoriesError.value) return
     showSubcategoryDropdown.value = !showSubcategoryDropdown.value
 }
 
 // Toggle individual subcategory selection
-function toggleSubcategory(subcategory) {
-    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 6) {
+function toggleSubcategory(subcategoryId) {
+    if (!form.organiser_subcategory_ids.includes(subcategoryId) && form.organiser_subcategory_ids.length >= 5) {
         return // Prevent selection if already at max 5
     }
 
-    const index = selectedSubcategories.value.indexOf(subcategory)
+    const index = form.organiser_subcategory_ids.indexOf(subcategoryId)
     if (index > -1) {
-        selectedSubcategories.value.splice(index, 1)
+        form.organiser_subcategory_ids.splice(index, 1)
     } else {
-        selectedSubcategories.value.push(subcategory)
+        form.organiser_subcategory_ids.push(subcategoryId)
     }
 
     handleSubcategoryChange()
@@ -1008,10 +1013,10 @@ function handleSubcategoryChange() {
 
     // Maximum 5 subcategories selection logic
     // Prevent selection if trying to add more than 5 items
-    if (selectedSubcategories.value.length > 6) {
+    if (form.organiser_subcategory_ids.length > 5) {
         // Remove the last added item to maintain the limit
-        const lastItem = selectedSubcategories.value[selectedSubcategories.value.length - 1]
-        selectedSubcategories.value = selectedSubcategories.value.slice(0, 6)
+        const lastItem = form.organiser_subcategory_ids[form.organiser_subcategory_ids.length - 1]
+        form.organiser_subcategory_ids = form.organiser_subcategory_ids.slice(0, 5)
 
         // Show validation error
         subcategoryValidationError.value = true
@@ -1028,16 +1033,16 @@ function handleSubcategoryChange() {
 
 // Validate genre fields
 function validateGenre() {
-    categoryError.value = !selectedCategory.value
-    subcategoryError.value = selectedSubcategories.value.length === 0
-    return selectedCategory.value && selectedSubcategories.value.length > 0
+    categoryError.value = !form.organiser_category_id
+    subcategoryError.value = form.organiser_subcategory_ids.length === 0
+    return form.organiser_category_id && form.organiser_subcategory_ids.length > 0
 }
 
 // Remove subcategory
-function removeSubcategory(subcategory) {
-    const index = selectedSubcategories.value.indexOf(subcategory)
+function removeSubcategory(subcategoryIdToRemove) {
+    const index = form.organiser_subcategory_ids.indexOf(subcategoryIdToRemove)
     if (index > -1) {
-        selectedSubcategories.value.splice(index, 1)
+        form.organiser_subcategory_ids.splice(index, 1)
         subcategoryValidationError.value = false
     }
 }
@@ -1203,27 +1208,28 @@ function isActive(item) {
 }
 
 function syncFormData() {
-    formData.category = selectedCategory.value
-    formData.subcategories = selectedSubcategories.value
+    formData.category = selectedCategoryDetails.value?.name || ''
+    formData.subcategories = availableSubcategories.value
+        .filter(s => form.organiser_subcategory_ids.includes(s.id))
+        .map(s => s.name)
 }
 
 // ── Build FormData (shared by create & update) ────────────────────────
 function buildFormData() {
-    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
-    const categoryId = selectedCategoryData ? selectedCategoryData.id : null
-    const subcategoryIds = selectedCategoryData
-        ? selectedCategoryData.subcategories
-              .filter(sub => selectedSubcategories.value.includes(sub.name))
-              .map(sub => sub.id)
-        : []
-
     const fd = new FormData()
 
     fd.append('title', formData.organiserTitle)
     fd.append('event_type', 'premium')
 
-    if (categoryId) fd.append('category_id', categoryId)
-    subcategoryIds.forEach(id => fd.append('subcategory_ids[]', id))
+    // Organiser Category ID
+    if (form.organiser_category_id) {
+        fd.append('organiser_category_id', form.organiser_category_id)
+    }
+
+    // Organiser Subcategory IDs
+    form.organiser_subcategory_ids.forEach(id => {
+        fd.append('organiser_subcategory_ids[]', id)
+    })
 
     fd.append('address', selectedAddress.value)
     if (latitude.value != null) fd.append('latitude', latitude.value)
@@ -1250,10 +1256,7 @@ function buildFormData() {
         fd.append('image_path', formData.image_path)
     }
     
-    if (formData.remove_main_image) {
-        fd.append('remove_main_image', '1')
-    }
-
+    // Additional images
     // ── Additional images (Always send UUIDs, not files) ───────────────────
     // Always send additional_images field, even if empty
     if (formData.additional_images && formData.additional_images.length > 0) {
@@ -1364,7 +1367,7 @@ async function updateOrganiser() {
 // ── Load for edit ──────────────────────────────────────────────────────
 async function loadOrganiser(id) {
     try {
-        if (!categories.value.length) await fetchCategories()
+        if (!categoriesOrganisers.value.length) await fetchCategories()
 
         const response = await eventService.getOrganiserById(id)
         if (!response.success || !response.data) {
@@ -1403,15 +1406,11 @@ async function loadOrganiser(id) {
         pendingFileMap.value = {}
         // clearAllImages.value = false
 
-        if (categories.value.length && d.category_id) {
-            const cat = categories.value.find(c => String(c.id) === String(d.category_id))
-            selectedCategory.value = cat ? cat.name : ''
-            if (cat && Array.isArray(d.subcategory_ids)) {
-                selectedSubcategories.value = d.subcategory_ids
-                    .map(sid => cat.subcategories.find(s => String(s.id) === String(sid))?.name)
-                    .filter(Boolean)
-            } else {
-                selectedSubcategories.value = []
+        // Category / subcategory hydration
+        if (d.organiser_category_id) {
+            form.organiser_category_id = d.organiser_category_id
+            if (d.organiser_subcategories && Array.isArray(d.organiser_subcategories)) {
+                form.organiser_subcategory_ids = d.organiser_subcategories.map(s => s.id)
             }
         }
 
@@ -1437,6 +1436,8 @@ function resetForm() {
     formData.image_path = ''
     formData.additional_images = []
     formData.remove_main_image = false
+    form.organiser_category_id = ''
+    form.organiser_subcategory_ids = []
     selectedCategory.value = ''
     selectedSubcategories.value = []
     selectedAddress.value = ''
@@ -1461,6 +1462,8 @@ function resetForm() {
     categoryError.value = false
     subcategoryError.value = false
     subcategoryValidationError.value = false
+    isEditMode.value = false
+    editingOrganiserId.value = null
     resetErrors()
 }
 
