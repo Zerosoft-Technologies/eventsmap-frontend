@@ -185,7 +185,7 @@
                   ]">
                   <option value="">
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                    'Select') }}
+                    'Select Category') }}
                   </option>
                   <option v-for="category in categoriesTalents" :key="category.id" :value="category.id">
                     {{ category.name }}
@@ -231,11 +231,11 @@
                     <div v-for="subcategory in availableSubcategories" :key="subcategory.id" class="dropdown-option"
                       :class="{
                         'selected': form.talent_subcategory_ids.includes(subcategory.id),
-                        'disabled': !form.talent_subcategory_ids.includes(subcategory.id) && form.talent_subcategory_ids.length >= 5
+                        'disabled': !form.talent_subcategory_ids.includes(subcategory.id) && form.talent_subcategory_ids.length >= 1
                       }" @click="toggleSubcategory(subcategory.id)">
                       <input type="checkbox" :id="`subcategory-${subcategory.id}`" :value="subcategory.id"
                         v-model="form.talent_subcategory_ids"
-                        :disabled="!form.talent_subcategory_ids.includes(subcategory.id) && form.talent_subcategory_ids.length >= 5"
+                        :disabled="!form.talent_subcategory_ids.includes(subcategory.id) && form.talent_subcategory_ids.length >= 1"
                         @change="handleSubcategoryChange" @click.stop class="option-checkbox">
                       <label :for="`subcategory-${subcategory.id}`" class="option-label" @click.stop>
                         {{ subcategory.name }}
@@ -577,7 +577,7 @@ const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstErro
 
 // Genre state
 const form = reactive({
-  talent_category_id: null,
+  talent_category_id: "",
   talent_subcategory_ids: []
 })
 const categoriesTalents = ref([])
@@ -644,7 +644,7 @@ function toggleSubcategoryDropdown() {
 
 // Toggle individual subcategory selection
 function toggleSubcategory(subcategoryId) {
-  if (!form.talent_subcategory_ids.includes(subcategoryId) && form.talent_subcategory_ids.length >= 5) {
+  if (!form.talent_subcategory_ids.includes(subcategoryId) && form.talent_subcategory_ids.length >= 1) {
     return
   }
 
@@ -666,6 +666,7 @@ function handleClickOutside(event) {
 }
 
 // Handle subcategory change with max 5 validation
+// AFTER
 function handleSubcategoryChange() {
   subcategoryError.value = false
 
@@ -911,7 +912,7 @@ function resetForm() {
   formData.talentTitle = ''
   formData.category = ''
   formData.subcategories = []
-  form.talent_category_id = null
+  form.talent_category_id = ''
   form.talent_subcategory_ids = []
   selectedCategory.value = ''
   selectedSubcategories.value = []

@@ -700,7 +700,7 @@
                     <!-- Show Upcoming Events -->
                     <div class="tw:flex tw:flex-col tw:gap-2">
                         <p class="tw:text-sm tw:font-medium tw:text-gray-900">
-                            Show Upcoming Events (max 1 year)
+                            Show Upcoming Talent Events (max 1 year)
                         </p>
                         <!-- <p class="tw:text-xs tw:text-gray-500">
                             If YES, upcoming events within the next year will be visible.
@@ -732,7 +732,7 @@
                     <!-- Show Past Events -->
                     <div class="tw:flex tw:flex-col tw:gap-2">
                         <p class="tw:text-sm tw:font-medium tw:text-gray-900">
-                            Show Past Events (max 1 year)
+                            Show Past Talent Events (max 1 year)
                         </p>
                         <!-- <p class="tw:text-xs tw:text-gray-500">
                             If YES, past events within the last year will be visible.
@@ -966,7 +966,7 @@ const talentCity = ref("")
 
 // Genre state
 const form = reactive({
-  talent_category_id: null,
+  talent_category_id: "",
   talent_subcategory_ids: []
 })
 const selectedSubcategories = ref([])
@@ -1288,7 +1288,7 @@ function resetForm() {
     formData.talentTitle = ''
     formData.category = ''
     formData.subcategories = []
-    form.talent_category_id = null
+    form.talent_category_id = ''
     form.talent_subcategory_ids = []
     selectedCategory.value = ''
     selectedSubcategories.value = []
