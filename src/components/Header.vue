@@ -148,7 +148,17 @@
                 class="tw:px-3 tw:py-3 tw:border-b tw:border-gray-100 last:tw:border-b-0 tw:text-sm"
               >
                 <p class="tw:text-gray-800 tw:mb-0.5">{{ n.message }}</p>
-                <p class="tw:text-gray-500 tw:text-xs tw:mb-0">{{ n.event_title }}</p>
+                <p class="tw:text-gray-500 tw:text-xs tw:mb-1">{{ n.event_title }}</p>
+                <div class="tw:flex tw:gap-2 tw:mt-1.5">
+                  <button
+                    @click="handleInvitationResponse(n.invitation_id, 'accepted')"
+                    :disabled="respondingInvitations.has(n.invitation_id)"
+                    class="tw:px-3 tw:py-1 tw:text-xs tw:font-medium tw:rounded tw:bg-green-600 tw:text-white hover:tw:bg-green-700 tw:transition-colors disabled:tw:opacity-50 disabled:tw:cursor-not-allowed tw:flex tw:items-center tw:gap-1"
+                  >
+                    <Loader2 v-if="respondingInvitations.has(n.invitation_id)" class="tw:w-3 tw:h-3 tw:animate-spin" />
+                    Accept
+                  </button>
+                </div>
               </li>
             </ul>
           </div>
@@ -396,7 +406,17 @@
               class="tw:px-2 tw:py-3 tw:border-b tw:border-gray-100 last:tw:border-b-0 tw:text-sm"
             >
               <p class="tw:text-gray-800 tw:mb-0.5">{{ n.message }}</p>
-              <p class="tw:text-gray-500 tw:text-xs tw:mb-0">{{ n.event_title }}</p>
+              <p class="tw:text-gray-500 tw:text-xs tw:mb-1">{{ n.event_title }}</p>
+              <div class="tw:flex tw:gap-2 tw:mt-1.5">
+                <button
+                  @click="handleInvitationResponse(n.invitation_id, 'accepted')"
+                  :disabled="respondingInvitations.has(n.invitation_id)"
+                  class="tw:px-3 tw:py-1 tw:text-xs tw:font-medium tw:rounded tw:bg-green-600 tw:text-white hover:tw:bg-green-700 tw:transition-colors disabled:tw:opacity-50 disabled:tw:cursor-not-allowed tw:flex tw:items-center tw:gap-1"
+                >
+                  <Loader2 v-if="respondingInvitations.has(n.invitation_id)" class="tw:w-3 tw:h-3 tw:animate-spin" />
+                  Accept
+                </button>
+              </div>
             </li>
           </ul>
         </div>
@@ -611,7 +631,8 @@ import { useAuthStore } from '@/stores/auth';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { getCreateRoute } from '@/utils/routeResolver';
-import { Bell, Images } from 'lucide-vue-next';
+import { Bell, Images, Loader2 } from 'lucide-vue-next';
+import { chatService } from '@/services/chatService';
 import { useMapStore } from '@/stores/mapStore'
 
 // Lazy load AllEvents to avoid circular import issue
@@ -754,6 +775,21 @@ function handleMobileMenuKeydown(e) {
 // Notification dropdown state
 const showNotificationDropdown = ref(false)
 const notificationToggler = ref(null)
+const respondingInvitations = ref(new Set())
+
+async function handleInvitationResponse(invitationId, status) {
+  if (respondingInvitations.value.has(invitationId)) return
+  respondingInvitations.value.add(invitationId)
+  try {
+    await chatService.respondToInvitation(String(invitationId), { status })
+  } catch (err) {
+    console.error('Failed to respond to invitation:', err)
+    const msg = err?.response?.data?.message || 'Failed to respond. Please try again.'
+    alert(msg)
+  } finally {
+    respondingInvitations.value.delete(invitationId)
+  }
+}
 
 // Language switcher state
 const showLanguageDropdown = ref(false)
