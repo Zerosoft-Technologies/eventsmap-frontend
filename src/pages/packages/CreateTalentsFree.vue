@@ -105,7 +105,7 @@
           <p v-if="formErrors.talentTitle" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.talentTitle }}</p>
         </div>
 
-        <!-- Talent IMAGE SECTION (gallery ID only — same flow as premium) -->
+        <!-- Talent IMAGE — free accounts: upload from device (multipart `image_path`), not gallery modal -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
 
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
@@ -115,25 +115,35 @@
             </h3>
           </div>
 
-          <div
-            @click="openMediaModal"
-            class="tw:flex tw:items-center tw:w-full tw:max-w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer hover:tw:bg-gray-50"
+          <label
+            class="tw:flex tw:items-center tw:w-full tw:max-w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer"
           >
             <span class="tw:px-4 tw:py-2 tw:bg-[#F6F1E7] tw:text-sm tw:text-gray-700 tw:border-r tw:border-[#E8E1D5]">
-              Choose from Media
+              Choose File
             </span>
             <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-              {{ mainGalleryRow ? mainGalleryRow.file_name : 'No Image Selected' }}
+              {{ fileName || 'No File Chosen' }}
             </span>
-            <svg class="tw:w-5 tw:h-5 tw:mr-2 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-            </svg>
-          </div>
+            <input
+              ref="talentFileInput"
+              type="file"
+              accept="image/*"
+              class="tw:hidden"
+              @change="handleFileChange"
+            />
+          </label>
 
-          <div v-if="mainGalleryRow" class="tw:relative tw:mt-4 tw:w-full tw:max-w-md">
-            <img :src="mainGalleryRow.image_url" alt="Talent preview" class="tw:w-full tw:h-48 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
-            <button type="button" @click="removeMainImage"
-              class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-700">
+          <div v-if="imagePreview" class="tw:relative tw:mt-4 tw:w-full tw:max-w-md">
+            <img
+              :src="imagePreview"
+              alt="Talent preview"
+              class="tw:w-full tw:h-48 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200"
+            />
+            <button
+              type="button"
+              @click="removeTalentImage"
+              class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-700"
+            >
               <span class="tw:text-sm tw:leading-none">&times;</span>
             </button>
           </div>
@@ -512,17 +522,6 @@
     </div>
   </div>
 
-  <Teleport to="body">
-    <MediaPickerModal
-      :visible="showMediaModal"
-      :multiple="false"
-      :max-selection="1"
-      :preselected-ids="formData.image_path ? [formData.image_path] : []"
-      @select="handleMediaSelect"
-      @close="showMediaModal = false"
-      @image-updated="handleImageUpdated"
-    />
-  </Teleport>
 </template>
 
 <script setup>
@@ -544,8 +543,6 @@ import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
-import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
-import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
@@ -565,20 +562,17 @@ const isEditMode = ref(false)
 const editingTalentId = ref(null)
 const fieldErrors = ref({})
 
-const showMediaModal = ref(false)
-const galleryImages = ref([])
+const talentFileInput = ref(null)
+const selectedImageFile = ref(null)
+const imagePreview = ref(null)
+const fileName = ref('')
+const existingImageUrl = ref(null)
 
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
   talentTitle: '',
   category: '',
   subcategories: [],
-  image_path: '',
-})
-
-const mainGalleryRow = computed(() => {
-  if (!formData.image_path) return null
-  return galleryImages.value.find((img) => img.image_id === formData.image_path)
 })
 
 const talentSchema = {
@@ -598,6 +592,9 @@ const categoriesTalents = ref([])
 const isLoadingCategories = ref(false)
 const categoriesError = ref(null)
 const showSubcategoryDropdown = ref(false)
+const categoryError = ref(false)
+const subcategoryError = ref(false)
+const subcategoryValidationError = ref(false)
 
 // Dropdown refs for click outside functionality
 const dropdownContainer = ref(null)
@@ -753,35 +750,37 @@ async function handleEventSelected(eventId) {
   await loadTalent(Number(eventId))
 }
 
-function openMediaModal() {
-  showMediaModal.value = true
-}
-
-function handleMediaSelect(ids) {
-  formData.image_path = ids[0] || ''
-}
-
-function handleImageUpdated(newImages, files) {
-  galleryImages.value = [...newImages, ...galleryImages.value]
-  if (newImages.length > 0) {
-    formData.image_path = newImages[0].image_id
-  }
-}
-
-async function fetchGalleryImages(retryCount = 0) {
-  try {
-    const response = await galleryApi.fetchImages(1, 100)
-    galleryImages.value = response.data.images
-  } catch (error) {
-    console.error('Error fetching gallery images:', error)
-    if (retryCount < 2) {
-      setTimeout(() => fetchGalleryImages(retryCount + 1), 1000)
+function handleFileChange(event) {
+  const file = event.target.files && event.target.files[0]
+  if (file) {
+    selectedImageFile.value = file
+    fileName.value = file.name
+    existingImageUrl.value = null
+    if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreview.value)
     }
+    imagePreview.value = URL.createObjectURL(file)
+  } else {
+    selectedImageFile.value = null
+    fileName.value = ''
+    if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreview.value)
+    }
+    imagePreview.value = existingImageUrl.value
   }
 }
 
-function removeMainImage() {
-  formData.image_path = ''
+function removeTalentImage() {
+  selectedImageFile.value = null
+  fileName.value = ''
+  existingImageUrl.value = null
+  if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(imagePreview.value)
+  }
+  imagePreview.value = null
+  if (talentFileInput.value) {
+    talentFileInput.value.value = ''
+  }
 }
 
 // ── Sync category/subcategory selections into formData for validation ──
@@ -792,12 +791,7 @@ function syncFormData() {
     .filter(Boolean)
 }
 
-function buildTalentPayload() {
-  const imagePath = typeof formData.image_path === 'string' ? formData.image_path.trim() : ''
-  if (!imagePath) {
-    throw new Error('image_path is required')
-  }
-
+function buildTalentFormData() {
   const categoryId = Number(form.talent_category_id)
   const subIds = form.talent_subcategory_ids.map(Number).filter((n) => !Number.isNaN(n))
   const catName =
@@ -807,43 +801,54 @@ function buildTalentPayload() {
     .filter(Boolean)
   const genre = [catName, ...subNames].filter(Boolean).join(', ') || catName
 
-  return {
-    title: formData.talentTitle,
-    event_type: 'free',
-    image_path: imagePath,
-    additional_images: [],
-    category_id: categoryId,
-    subcategory_ids: subIds,
-    genre: genre || undefined,
-    location: selectedAddress.value || undefined,
-    address: selectedAddress.value || undefined,
-    latitude: mapLat.value,
-    longitude: mapLng.value,
-    city: talentCity.value || undefined,
+  const fd = new FormData()
+  fd.append('title', formData.talentTitle)
+  fd.append('event_type', 'free')
+  fd.append('category_id', String(categoryId))
+  subIds.forEach((id) => fd.append('subcategory_ids[]', String(id)))
+  if (genre) fd.append('genre', genre)
+  if (selectedAddress.value) {
+    fd.append('location', selectedAddress.value)
+    fd.append('address', selectedAddress.value)
   }
+  if (mapLat.value != null && mapLat.value !== '') fd.append('latitude', String(mapLat.value))
+  if (mapLng.value != null && mapLng.value !== '') fd.append('longitude', String(mapLng.value))
+  if (talentCity.value) fd.append('city', talentCity.value)
+
+  if (selectedImageFile.value) {
+    fd.append('image_path', selectedImageFile.value)
+  }
+
+  return fd
 }
 
 function validateForm() {
   syncFormData()
   const ok = validate() && validateGenre()
-  const mainUuid =
-    typeof formData.image_path === 'string' ? formData.image_path.trim() : ''
+  const hasImage =
+    selectedImageFile.value !== null ||
+    (isEditMode.value && !!existingImageUrl.value)
   const extra = { ...fieldErrors.value }
-  if (!mainUuid) {
+  if (!hasImage) {
     extra.image_path = ['Main image is required']
   } else {
     delete extra.image_path
   }
   fieldErrors.value = extra
-  return ok && !!mainUuid
+  return ok && hasImage
 }
 
 // ── Create Talent ───────────────────────────────────────────────
 async function createTalent() {
   try {
     fieldErrors.value = {}
-    const payload = buildTalentPayload()
-    const response = await eventService.createTalent(payload)
+    if (!selectedImageFile.value) {
+      fieldErrors.value = { ...fieldErrors.value, image_path: ['Main image is required'] }
+      toast.error('Please upload a talent image.')
+      return
+    }
+    const formDataBody = buildTalentFormData()
+    const response = await eventService.createTalentFormData(formDataBody)
 
     if (response.success) {
       toast.success('Talent created successfully!')
@@ -854,11 +859,6 @@ async function createTalent() {
     }
   } catch (error) {
     console.error('Error creating talent:', error)
-    if (error instanceof Error && error.message === 'image_path is required') {
-      fieldErrors.value = { ...fieldErrors.value, image_path: ['Main image is required'] }
-      toast.error('Please select a main image from your gallery.')
-      return
-    }
     if (error.response?.data?.errors) {
       fieldErrors.value = error.response.data.errors
       toast.error(error.response.data.message || 'Please correct the errors.')
@@ -872,8 +872,8 @@ async function createTalent() {
 async function updateTalent() {
   try {
     fieldErrors.value = {}
-    const payload = buildTalentPayload()
-    const response = await eventService.updateTalent(editingTalentId.value, payload)
+    const formDataBody = buildTalentFormData()
+    const response = await eventService.updateTalentFormData(editingTalentId.value, formDataBody)
 
     if (response.success) {
       toast.success('Talent updated successfully!')
@@ -884,11 +884,6 @@ async function updateTalent() {
     }
   } catch (error) {
     console.error('Error updating talent:', error)
-    if (error instanceof Error && error.message === 'image_path is required') {
-      fieldErrors.value = { ...fieldErrors.value, image_path: ['Main image is required'] }
-      toast.error('Please select a main image from your gallery.')
-      return
-    }
     if (error.response?.data?.errors) {
       fieldErrors.value = error.response.data.errors
       toast.error(error.response.data.message || 'Please correct the errors.')
@@ -901,7 +896,6 @@ async function updateTalent() {
 // ── Load Talent for editing ─────────────────────────────────────
 async function loadTalent(id) {
   try {
-    await fetchGalleryImages()
     const response = await eventService.getTalentById(id)
     const talent = response.data || response
 
@@ -926,10 +920,17 @@ async function loadTalent(id) {
       }
     }
 
-    formData.image_path =
-      typeof talent.image_path === 'string' && talent.image_path.trim()
-        ? talent.image_path.trim()
-        : ''
+    selectedImageFile.value = null
+    fileName.value = ''
+    existingImageUrl.value = talent.image_url || talent.main_image_url || null
+    if (existingImageUrl.value) {
+      imagePreview.value = existingImageUrl.value
+    } else {
+      imagePreview.value = null
+    }
+    if (talentFileInput.value) {
+      talentFileInput.value.value = ''
+    }
     fieldErrors.value = {}
 
     // Center map if coordinates exist
@@ -959,12 +960,21 @@ function resetForm() {
   formData.talentTitle = ''
   formData.category = ''
   formData.subcategories = []
-  formData.image_path = ''
   form.talent_category_id = ''
   form.talent_subcategory_ids = []
   selectedAddress.value = ''
   searchAddress.value = ''
   talentCity.value = ''
+  selectedImageFile.value = null
+  fileName.value = ''
+  if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(imagePreview.value)
+  }
+  imagePreview.value = null
+  existingImageUrl.value = null
+  if (talentFileInput.value) {
+    talentFileInput.value.value = ''
+  }
   fieldErrors.value = {}
   mapLat.value = null
   mapLng.value = null
@@ -1112,7 +1122,6 @@ function handleBack() {
 // Initialize map on component mount
 onMounted(async () => {
   fetchCategories()
-  fetchGalleryImages()
 
   document.addEventListener('click', handleClickOutside)
 

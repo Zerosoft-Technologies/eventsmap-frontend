@@ -327,10 +327,18 @@ const eventService = {
     return response.data
   },
 
-  // ── Talent CRUD (talents_v2 — JSON body, gallery IDs only) ──────────────────
+  // ── Talent CRUD (talents_v2) — premium: JSON + gallery UUIDs; free: multipart + file `image_path`) ──
 
   async createTalent(payload: TalentV2Payload): Promise<EventResponse> {
     const response: AxiosResponse<EventResponse> = await api.post('/v2/talents', payload)
+    return response.data
+  },
+
+  /** Free talent profile: same pattern as `createEvent` — binary `image_path` in FormData */
+  async createTalentFormData(formData: FormData): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post('/v2/talents', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
     return response.data
   },
 
@@ -344,10 +352,26 @@ const eventService = {
     return response.data
   },
 
-  // ── Venue CRUD (venues_v2 — JSON body, gallery IDs only) ────────────────────
+  /** Free talent update: POST + `_method=PUT` (Laravel) when uploading a new file */
+  async updateTalentFormData(id: number, formData: FormData): Promise<EventResponse> {
+    formData.append('_method', 'PUT')
+    const response: AxiosResponse<EventResponse> = await api.post(`/v2/talents/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
+
+  // ── Venue CRUD (venues_v2) — premium: JSON; free: multipart + file `image_path`) ────────────────────
 
   async createVenue(payload: VenueV2Payload): Promise<EventResponse> {
     const response: AxiosResponse<EventResponse> = await api.post('/v2/venues', payload)
+    return response.data
+  },
+
+  async createVenueFormData(formData: FormData): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post('/v2/venues', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
     return response.data
   },
 
@@ -359,7 +383,15 @@ const eventService = {
   async updateVenue(id: number, payload: VenueV2Payload): Promise<EventResponse> {
     const response: AxiosResponse<EventResponse> = await api.put(`/v2/venues/${id}`, payload)
     return response.data
-  }
+  },
+
+  async updateVenueFormData(id: number, formData: FormData): Promise<EventResponse> {
+    formData.append('_method', 'PUT')
+    const response: AxiosResponse<EventResponse> = await api.post(`/v2/venues/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
 }
 
 export default eventService
