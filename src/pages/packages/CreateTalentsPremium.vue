@@ -109,7 +109,7 @@
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Create Premium Talent
+                            Create Premium Talent <span class="tw:text-red-500">*</span>
                         </h3>
                         <!-- <button
                             class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -126,67 +126,110 @@
                         formErrors.talentTitle }}</p>
                     <!-- Description -->
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:text-gray-700">Description</label>
+                        <label class="tw:text-sm tw:text-gray-700">Description <span class="tw:text-red-500">*</span></label>
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Talent..."
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                        <p v-if="fieldErrors.description" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.description[0] }}</p>
                     </div>
                 </div>
 
-                <!-- Talent IMAGE SECTION -->
+                <!-- MAIN IMAGE SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
 
-                    <!-- Header -->
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
                         <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-                            Talent Main Image <span class="tw:text-red-500">*</span> <span
+                            Main Image <span class="tw:text-red-500">*</span> <span
                                 class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
                         </h3>
-
-                        <!-- <button type="button"
-                            class="tw:w-8 tw:h-8 tw:rounded-full tw:bg-blue-100 tw:text-blue-600 tw:flex tw:items-center tw:justify-center">
-                            <Plus class="tw:w-4 tw:h-4" />
-                        </button> -->
                     </div>
 
-                    <!-- Custom File Input -->
-                    <label
-                        class="tw:flex tw:items-center tw:w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer">
+                    <div
+                        @click="handleMainImageClick"
+                        class="tw:flex tw:items-center tw:w-full tw:max-w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer hover:tw:bg-gray-50">
 
-                        <!-- Choose File -->
                         <span
                             class="tw:px-4 tw:py-2 tw:bg-[#F6F1E7] tw:text-sm tw:text-gray-700 tw:border-r tw:border-[#E8E1D5]">
-                            Choose File
+                            Choose from Media
                         </span>
 
-                        <!-- File name display -->
                         <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-                            {{ fileName || 'No File Chosen' }}
+                            {{ mainImage ? mainImage.file_name : 'No Image Selected' }}
                         </span>
 
-                        <input type="file" accept="image/*" class="tw:hidden"
-                            @change="handleFileChange" />
-                    </label>
+                        <svg class="tw:w-5 tw:h-5 tw:mr-2 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
 
-                    <!-- Image Preview -->
-                    <div v-if="imagePreviewUrl" class="tw:relative tw:mt-3 tw:inline-block">
-                        <img :src="imagePreviewUrl" alt="Preview" class="tw:w-40 tw:h-28 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
-                        <button type="button" @click="removeMainImage"
-                            class="tw:absolute tw:-top-2 tw:-right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center tw:text-xs tw:shadow hover:tw:bg-red-600 tw:transition">
-                            &times;
+                    <div v-if="mainImage" class="tw:relative tw:mt-4 tw:w-full">
+                        <img :src="mainImage.image_url" alt="Talent main image preview"
+                            class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200" />
+                        <button @click="removeMainImage" type="button"
+                            class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-700 tw:transition-colors">
+                            <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
                         </button>
                     </div>
+                    <p v-if="fieldErrors.image_path" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image_path[0] }}</p>
                 </div>
 
                 <!-- ADDITIONAL IMAGES SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images (Max. 5 images) <span class="tw:text-xs tw:text-gray-500"> Recommended
+                            Additional Images (Max. 5 Images) <span class="tw:text-xs tw:text-gray-500"> Recommended
                                 (1200x800) </span>
                         </h3>
                     </div>
 
-                    <AdditionalImageUpload v-model:files="additionalImages" :max-files="5" :max-size-m-b="5" />
+                    <div
+                        @click="handleAdditionalImagesClick"
+                        class="tw:border-2 tw:border-dashed tw:border-gray-300 tw:rounded-xl tw:p-6 tw:text-center tw:cursor-pointer hover:tw:border-blue-400 tw:bg-gray-50 tw:transition-all tw:duration-200">
+
+                        <div class="tw:flex tw:flex-col tw:items-center tw:gap-2">
+                            <div class="tw:w-12 tw:h-12 tw:rounded-full tw:bg-blue-100 tw:flex tw:items-center tw:justify-center">
+                                <svg class="tw:w-6 tw:h-6 tw:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <p class="tw:text-sm tw:font-medium tw:text-gray-700">Choose from Media Library</p>
+                            <p class="tw:text-xs tw:text-gray-500">Select up to 5 additional images</p>
+                        </div>
+                    </div>
+
+                    <div v-if="resolvedAdditionalImages.length > 0" class="tw:space-y-4">
+                        <div class="tw:flex tw:items-center tw:justify-between">
+                            <span class="tw:text-sm tw:text-gray-600">
+                                {{ resolvedAdditionalImages.length }} / 5 images selected
+                            </span>
+                            <button
+                                @click="clearAllAdditionalImages"
+                                type="button"
+                                class="tw:text-sm tw:text-red-500 hover:tw:text-red-700 tw:transition-colors"
+                            >
+                                Clear All
+                            </button>
+                        </div>
+
+                        <div class="tw:grid tw:grid-cols-2 md:tw:grid-cols-3 lg:tw:grid-cols-5 tw:gap-4">
+                            <div v-for="(image, index) in resolvedAdditionalImages" :key="image.image_id || index"
+                                class="tw:relative tw:group">
+                                <img :src="image.image_url" :alt="`Additional image ${index + 1}`"
+                                    class="tw:w-full tw:h-32 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
+                                <button @click="removeAdditionalImage(index)" type="button"
+                                    class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center tw:opacity-0 group-hover:tw:opacity-100 tw:transition-opacity hover:tw:bg-red-700">
+                                    <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                            clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- GENRE SECTION -->
@@ -248,7 +291,7 @@
                         <!-- Subcategory Multi-Select -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories (Max 1) <span class="tw:text-red-500">*</span>
+                                Subcategories <span class="tw:text-red-500">*</span>
                             </label>
 
                             <!-- Multi-Select Input Field -->
@@ -427,7 +470,7 @@
                 <!-- Talent LOCATION SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
                     <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-                        Based inset
+                        Talent Location <span class="tw:text-red-500">*</span>
                     </h3>
 
                     <!-- Address Search Input with Loading Spinner -->
@@ -470,6 +513,7 @@
                         </label>
                         <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
                             class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+                        <p v-if="fieldErrors.address" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.address[0] }}</p>
                     </div>
                 </div>
 
@@ -784,6 +828,18 @@
             </div>
         </div>
     </div>
+
+    <Teleport to="body">
+        <MediaPickerModal
+            :visible="showMediaModal"
+            :multiple="selectedMediaType === 'additional'"
+            :max-selection="selectedMediaType === 'additional' ? 5 : 1"
+            :preselected-ids="selectedMediaType === 'main' ? (formData.image_path ? [formData.image_path] : []) : formData.additional_images"
+            @select="handleMediaSelect"
+            @close="showMediaModal = false"
+            @image-updated="handleImageUpdated"
+        />
+    </Teleport>
 </template>
 
 <script setup>
@@ -809,13 +865,13 @@ import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick } from "v
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
-import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
+import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
+import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
 import { useToast } from "@/composables/useToast"
-import { useTimeRangeValidation } from "@/composables/useTimeRangeValidation"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -836,12 +892,23 @@ const isSubmitting = ref(false)
 const isEditMode = ref(false)
 const editingTalentId = ref(null)
 const eventDescription = ref("")
+const fieldErrors = ref({})
 
-// ── Image handling ──────────────────────────────────────────────
-const fileName = ref("")
-const mainImage = ref(null)
-const imagePreviewUrl = ref(null)
-const pendingFileMap = ref(new Map())
+const showMediaModal = ref(false)
+const selectedMediaType = ref('main')
+const galleryImages = ref([])
+const pendingFileMap = ref({})
+
+const mainImage = computed(() => {
+    if (!formData.image_path) return null
+    return galleryImages.value.find(img => img.image_id === formData.image_path)
+})
+
+const resolvedAdditionalImages = computed(() => {
+    return formData.additional_images
+        .map(id => galleryImages.value.find(img => img.image_id === id))
+        .filter(Boolean)
+})
 
 function handleChatboxClick() {
     closeMobileSidebar()
@@ -857,6 +924,9 @@ const formData = reactive({
     talentTitle: '',
     category: '',
     subcategories: [],
+    image_path: '',
+    additional_images: [],
+    remove_main_image: false,
 })
 
 const talentSchema = {
@@ -867,7 +937,6 @@ const talentSchema = {
 
 const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(talentSchema, formData)
 
-const additionalImages = ref([])
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
@@ -884,72 +953,6 @@ const facebookUrl = ref("")
 const instagramUrl = ref("")
 const tiktokUrl = ref("")
 const fanClubUrl = ref("")
-
-// ── Time split refs ──────────────────────────────────────────────────
-const startHH = ref("")
-const startMM = ref("")
-const endHH = ref("")
-const endMM = ref("")
-const timeRangeError = ref("")
-const hasStartError = ref(false)
-const hasEndError = ref(false)
-
-// Computed HH:MM strings for API
-const startTime = computed(() => {
-    if (startHH.value === "" || startMM.value === "") return ""
-    return `${String(startHH.value).padStart(2, "0")}:${String(startMM.value).padStart(2, "0")}`
-})
-
-const endTime = computed(() => {
-    if (endHH.value === "" || endMM.value === "") return ""
-    return `${String(endHH.value).padStart(2, "0")}:${String(endMM.value).padStart(2, "0")}`
-})
-
-// Enforce max 2 digits + valid range, then validate end > start
-function onTimeInput(field, event) {
-    let raw = event.target.value.replace(/\D/g, "").slice(0, 2)
-    event.target.value = raw
-
-    let val = raw === "" ? "" : parseInt(raw)
-
-    if (val !== "") {
-        if (field === "startHH" || field === "endHH") {
-            if (val > 23) val = 23
-            if (val < 0) val = 0
-        } else {
-            if (val > 59) val = 59
-            if (val < 0) val = 0
-        }
-    }
-
-    if (field === "startHH") { startHH.value = val; hasStartError.value = false }
-    if (field === "startMM") { startMM.value = val; hasStartError.value = false }
-    if (field === "endHH") { endHH.value = val; hasEndError.value = false }
-    if (field === "endMM") { endMM.value = val; hasEndError.value = false }
-
-    validateEndAfterStart()
-}
-
-function validateEndAfterStart() {
-    timeRangeError.value = ""
-
-    const sHH = parseInt(startHH.value)
-    const sMM = parseInt(startMM.value)
-    const eHH = parseInt(endHH.value)
-    const eMM = parseInt(endMM.value)
-
-    if (
-        startHH.value === "" || startMM.value === "" ||
-        endHH.value === "" || endMM.value === ""
-    ) return
-
-    const startTotal = sHH * 60 + sMM
-    const endTotal = eHH * 60 + eMM
-
-    if (endTotal <= startTotal) {
-        timeRangeError.value = "End time must be later than start time"
-    }
-}
 
 // Event Location refs
 const searchAddress = ref("")
@@ -1090,20 +1093,66 @@ onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside)
 })
 
-// ── Image handling ──────────────────────────────────────────────
-function handleFileChange(event) {
-    const file = event.target.files[0]
-    if (file) {
-        fileName.value = file.name
-        mainImage.value = file
-        imagePreviewUrl.value = URL.createObjectURL(file)
+function handleMainImageClick() {
+    selectedMediaType.value = 'main'
+    showMediaModal.value = true
+}
+
+function handleAdditionalImagesClick() {
+    selectedMediaType.value = 'additional'
+    showMediaModal.value = true
+}
+
+function handleMediaSelect(ids) {
+    if (selectedMediaType.value === 'main') {
+        formData.image_path = ids[0] || ''
+        formData.remove_main_image = false
+    } else {
+        formData.additional_images = ids.slice(0, 5)
+    }
+}
+
+function handleImageUpdated(newImages, files) {
+    galleryImages.value = [...newImages, ...galleryImages.value]
+    if (!files || files.length === 0) return
+    newImages.forEach((img, i) => {
+        if (files[i] instanceof File) {
+            pendingFileMap.value[img.image_id] = files[i]
+        }
+    })
+    if (selectedMediaType.value === 'main' && newImages.length > 0) {
+        formData.image_path = newImages[0].image_id
+        formData.remove_main_image = false
+    } else if (selectedMediaType.value === 'additional') {
+        formData.additional_images = newImages.map(img => img.image_id).slice(0, 5)
     }
 }
 
 function removeMainImage() {
-    mainImage.value = null
-    imagePreviewUrl.value = null
-    fileName.value = ''
+    formData.image_path = ''
+    formData.remove_main_image = true
+}
+
+function removeAdditionalImage(index) {
+    if (formData.additional_images && formData.additional_images.length > index) {
+        formData.additional_images.splice(index, 1)
+    }
+}
+
+function clearAllAdditionalImages() {
+    formData.additional_images = []
+}
+
+async function fetchGalleryImages(retryCount = 0) {
+    try {
+        const response = await galleryApi.fetchImages(1, 100)
+        galleryImages.value = response.data.images
+    } catch (error) {
+        console.error('Error fetching gallery images:', error)
+        if (retryCount < 2) {
+            setTimeout(() => fetchGalleryImages(retryCount + 1), 1000)
+        }
+    }
 }
 
 // Sync category/subcategory selections into formData for validation
@@ -1112,11 +1161,11 @@ function syncFormData() {
     formData.subcategories = selectedSubcategories.value
 }
 
-// ── Build FormData for API ──────────────────────────────────────
-function buildFormData() {
+// ── Build FormData for API (image fields: gallery image IDs only) ──────────────────────────────────────
+function buildFormData(forUpdate = false) {
     const fd = new FormData()
 
-    if (isEditMode.value) {
+    if (forUpdate) {
         fd.append('_method', 'PUT')
     }
 
@@ -1140,28 +1189,16 @@ function buildFormData() {
     if (mapLng.value !== null) fd.append('longitude', mapLng.value)
     fd.append('city', talentCity.value || '')
 
-    // Time
-    if (startTime.value) fd.append('start_time', startTime.value)
-    if (endTime.value) fd.append('end_time', endTime.value)
-
-    // Main Image
-    if (mainImage.value instanceof File) {
-        fd.append('image_path', mainImage.value)
-    } else if (typeof mainImage.value === 'string' && mainImage.value) {
-        fd.append('image_path', mainImage.value)
+    if (formData.image_path) {
+        fd.append('image_path', formData.image_path)
     }
 
-    // Additional images — new File uploads via pendingFileMap
-    if (additionalImages.value && additionalImages.value.length) {
-        additionalImages.value.forEach((img, idx) => {
-            if (img instanceof File) {
-                fd.append('additional_images[]', img)
-            } else if (pendingFileMap.value.has(img)) {
-                fd.append('additional_images[]', pendingFileMap.value.get(img))
-            } else if (typeof img === 'string') {
-                fd.append('existing_additional_images[]', img)
-            }
+    if (formData.additional_images && formData.additional_images.length > 0) {
+        formData.additional_images.forEach((imageId, index) => {
+            fd.append(`additional_images[${index}]`, imageId)
         })
+    } else {
+        fd.append('additional_images', '')
     }
 
     // Contact details
@@ -1192,9 +1229,76 @@ function buildFormData() {
     return fd
 }
 
+async function createTalent() {
+    try {
+        fieldErrors.value = {}
+        const fd = buildFormData(false)
+        const response = await eventService.createTalent(fd)
+        if (response.success) {
+            toast.success('Talent created successfully.')
+            pendingFileMap.value = {}
+            resetForm()
+        } else {
+            if (response.errors) {
+                fieldErrors.value = response.errors
+                toast.error(response.message || 'Please correct the errors.')
+            } else {
+                toast.error(response.message || 'Failed to create talent.')
+            }
+        }
+    } catch (error) {
+        console.error('Error creating talent:', error)
+        if (error.response?.data?.errors) {
+            fieldErrors.value = error.response.data.errors
+            toast.error(error.response.data.message || 'Please correct the errors.')
+        } else {
+            toast.error(error.response?.data?.message || 'Failed to create talent.')
+        }
+    }
+}
+
+async function updateTalent() {
+    if (!editingTalentId.value) return
+    try {
+        fieldErrors.value = {}
+        const fd = buildFormData(true)
+        const response = await eventService.updateTalent(editingTalentId.value, fd)
+        if (response.success) {
+            toast.success('Talent updated successfully.')
+            pendingFileMap.value = {}
+            isEditMode.value = false
+            editingTalentId.value = null
+            resetForm()
+        } else {
+            if (response.errors) {
+                fieldErrors.value = response.errors
+                toast.error(response.message || 'Please correct the errors.')
+            } else {
+                toast.error(response.message || 'Failed to update talent.')
+            }
+        }
+    } catch (error) {
+        console.error('Error updating talent:', error)
+        if (error.response?.data?.errors) {
+            fieldErrors.value = error.response.data.errors
+            toast.error(error.response.data.message || 'Please correct the errors.')
+        } else {
+            toast.error(error.response?.data?.message || 'Failed to update talent.')
+        }
+    }
+}
+
+function cancelEdit() {
+    isEditMode.value = false
+    editingTalentId.value = null
+    resetForm()
+}
+
 // ── Load Talent for editing ─────────────────────────────────────
 async function loadTalent(id) {
     try {
+        if (!categoriesTalents.value.length) await fetchCategories()
+
         const response = await eventService.getTalentById(id)
         const talent = response.data || response
 
@@ -1204,6 +1308,7 @@ async function loadTalent(id) {
         formData.talentTitle = talent.title || ''
         eventDescription.value = talent.description || ''
         selectedAddress.value = talent.address || ''
+        searchAddress.value = talent.address || ''
         talentCity.value = talent.city || ''
 
         if (talent.latitude) mapLat.value = talent.latitude
@@ -1218,32 +1323,19 @@ async function loadTalent(id) {
             }
         }
 
-        // Main image
-        mainImage.value = null
-        imagePreviewUrl.value = null
-        fileName.value = ''
-        if (talent.image_path) {
-            mainImage.value = talent.image_path
-            imagePreviewUrl.value = talent.image_url || talent.image_path
-            fileName.value = 'Current image'
-        }
-
-        // Additional images
-        if (talent.additional_images && talent.additional_images.length) {
-            additionalImages.value = talent.additional_images.map(img => img.image_url || img.image_path || img)
-        }
-
-        // Time
-        if (talent.start_time) {
-            const [h, m] = talent.start_time.split(':')
-            startHH.value = parseInt(h)
-            startMM.value = parseInt(m)
-        }
-        if (talent.end_time) {
-            const [h, m] = talent.end_time.split(':')
-            endHH.value = parseInt(h)
-            endMM.value = parseInt(m)
-        }
+        formData.image_path = talent.image_path || ''
+        formData.additional_images = Array.isArray(talent.additional_images)
+            ? talent.additional_images
+                .map((img) => {
+                    if (img == null) return ''
+                    if (typeof img === 'object' && img !== null) {
+                        return img.image_id || img.image_path || ''
+                    }
+                    return String(img)
+                })
+                .filter((id) => id !== null && id !== '')
+            : []
+        formData.remove_main_image = false
 
         // Contact & social
         contactPhone.value = talent.contact_phone || ''
@@ -1268,6 +1360,8 @@ async function loadTalent(id) {
         showUpcomingEvents.value = talent.show_upcoming_events === '1' || talent.show_upcoming_events === true
         showPastEvents.value = talent.show_past_events === '1' || talent.show_past_events === true
 
+        fieldErrors.value = {}
+
         // Center map
         if (talent.latitude && talent.longitude && map.value) {
             map.value.flyTo({
@@ -1288,6 +1382,9 @@ function resetForm() {
     formData.talentTitle = ''
     formData.category = ''
     formData.subcategories = []
+    formData.image_path = ''
+    formData.additional_images = []
+    formData.remove_main_image = false
     form.talent_category_id = ''
     form.talent_subcategory_ids = []
     selectedCategory.value = ''
@@ -1295,20 +1392,9 @@ function resetForm() {
     selectedAddress.value = ''
     searchAddress.value = ''
     talentCity.value = ''
-    mainImage.value = null
-    imagePreviewUrl.value = null
-    fileName.value = ''
-    additionalImages.value = []
-    pendingFileMap.value = new Map()
+    pendingFileMap.value = {}
     mapLat.value = null
     mapLng.value = null
-    startHH.value = ''
-    startMM.value = ''
-    endHH.value = ''
-    endMM.value = ''
-    timeRangeError.value = ''
-    hasStartError.value = false
-    hasEndError.value = false
     contactPhone.value = ''
     contactEmail.value = ''
     contactWebsite.value = ''
@@ -1322,11 +1408,12 @@ function resetForm() {
     showAge.value = 'show'
     languagesText.value = ''
     talentHighlightsText.value = ''
-    showUpcomingEvents.value = ''
-    showPastEvents.value = ''
+    showUpcomingEvents.value = false
+    showPastEvents.value = false
     categoryError.value = false
     subcategoryError.value = false
     subcategoryValidationError.value = false
+    fieldErrors.value = {}
     isEditMode.value = false
     editingTalentId.value = null
     resetErrors()
@@ -1335,24 +1422,40 @@ function resetForm() {
 // ── Handle Submit ───────────────────────────────────────────────
 async function handleSubmit() {
     if (isSubmitting.value) return
-    isSubmitting.value = true
 
     syncFormData()
 
     const isValid = validate()
     const genreValid = validateGenre()
 
-    if (!startTime.value) hasStartError.value = true
-    if (!endTime.value) hasEndError.value = true
-    validateEndAfterStart()
-    const timeValid = startTime.value !== "" && endTime.value !== "" && !timeRangeError.value
+    let hasExtraErrors = false
+    const extraErrors = { ...fieldErrors.value }
+    if (!eventDescription.value || !eventDescription.value.trim()) {
+        extraErrors.description = ['Description is required']
+        hasExtraErrors = true
+    } else {
+        delete extraErrors.description
+    }
+    if (!selectedAddress.value || !selectedAddress.value.trim()) {
+        extraErrors.address = ['Talent location is required']
+        hasExtraErrors = true
+    } else {
+        delete extraErrors.address
+    }
+    if (!formData.image_path) {
+        extraErrors.image_path = ['Main image is required']
+        hasExtraErrors = true
+    } else {
+        delete extraErrors.image_path
+    }
+    fieldErrors.value = extraErrors
 
-    if (!isValid || !genreValid || !timeValid) {
+    if (!isValid || !genreValid || hasExtraErrors) {
         await scrollToFirstError()
-        isSubmitting.value = false
         return
     }
 
+    isSubmitting.value = true
     try {
         if (isEditMode.value) {
             await updateTalent()
@@ -1463,14 +1566,15 @@ function handleBack() {
     router.push('/')
 }
 
-function handleEventSelected(eventId) {
+async function handleEventSelected(eventId) {
     closeMobileSidebar()
-    console.log('Event selected for editing:', eventId)
+    await loadTalent(Number(eventId))
 }
 
 // Initialize map on component mount
 onMounted(async () => {
     fetchCategories()
+    fetchGalleryImages()
     document.addEventListener('click', handleClickOutside)
 
     map.value = new maplibregl.Map({
