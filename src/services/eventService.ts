@@ -108,6 +108,71 @@ export interface WishlistListResponse {
   data: unknown[]
 }
 
+/** JSON body for POST /v2/talents and PUT /v2/talents/{id} — gallery `image_id` UUIDs (same as events_v2) */
+export interface TalentV2Payload {
+  title: string
+  description?: string
+  event_type: string
+  /** Main image: gallery_images.image_id (UUID) */
+  image_path: string
+  /** Gallery extras: UUIDs from gallery_images.image_id */
+  additional_images: string[]
+  category_id: number
+  subcategory_ids: number[]
+  genre?: string
+  location?: string
+  address?: string
+  latitude?: number | null
+  longitude?: number | null
+  city?: string
+  contact_phone?: string
+  contact_email?: string
+  contact_website?: string
+  facebook_url?: string
+  instagram_url?: string
+  tiktok_url?: string
+  fan_club_url?: string
+  nationality?: string
+  show_nationality?: string
+  age?: string | number
+  show_age?: string
+  languages?: string[] | string
+  highlights?: string
+  show_upcoming_events?: string | boolean
+  show_past_events?: string | boolean
+}
+
+/** JSON body for POST /v2/venues and PUT /v2/venues/{id} — gallery `image_id` UUIDs (same as events_v2) */
+export interface VenueV2Payload {
+  title: string
+  description?: string
+  event_type: string
+  image_path: string
+  additional_images: string[]
+  category_id: number
+  subcategory_ids: number[]
+  location?: string
+  address?: string
+  latitude?: number | null
+  longitude?: number | null
+  allowance_of_dogs?: string
+  wheelchair_accessible?: string
+  accessible_parking?: string
+  valet_parking?: string
+  childrens_play_area?: string
+  accessibility_description?: string
+  description_items?: string[]
+  contact_phone?: string
+  contact_email?: string
+  contact_website?: string
+  opening_hours?: string | Record<string, string>
+  facebook_url?: string
+  instagram_url?: string
+  tiktok_url?: string
+  show_upcoming_events?: string | boolean
+  show_past_events?: string | boolean
+}
+
 // ── Event Service ──────────────────────────────────────────────────────────
 const eventService = {
   /**
@@ -262,14 +327,10 @@ const eventService = {
     return response.data
   },
 
-  // ── Talent CRUD ─────────────────────────────────────────────────────
+  // ── Talent CRUD (talents_v2 — JSON body, gallery IDs only) ──────────────────
 
-  async createTalent(formData: FormData): Promise<EventResponse> {
-    const response: AxiosResponse<EventResponse> = await api.post(
-      '/v2/talents',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    )
+  async createTalent(payload: TalentV2Payload): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post('/v2/talents', payload)
     return response.data
   },
 
@@ -278,23 +339,15 @@ const eventService = {
     return response.data
   },
 
-  async updateTalent(id: number, formData: FormData): Promise<EventResponse> {
-    const response: AxiosResponse<EventResponse> = await api.post(
-      `/v2/talents/${id}`,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    )
+  async updateTalent(id: number, payload: TalentV2Payload): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.put(`/v2/talents/${id}`, payload)
     return response.data
   },
 
-  // ── Venue CRUD ──────────────────────────────────────────────────────
+  // ── Venue CRUD (venues_v2 — JSON body, gallery IDs only) ────────────────────
 
-  async createVenue(formData: FormData): Promise<EventResponse> {
-    const response: AxiosResponse<EventResponse> = await api.post(
-      '/v2/venues',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    )
+  async createVenue(payload: VenueV2Payload): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post('/v2/venues', payload)
     return response.data
   },
 
@@ -303,12 +356,8 @@ const eventService = {
     return response.data
   },
 
-  async updateVenue(id: number, formData: FormData): Promise<EventResponse> {
-    const response: AxiosResponse<EventResponse> = await api.post(
-      `/v2/venues/${id}`,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    )
+  async updateVenue(id: number, payload: VenueV2Payload): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.put(`/v2/venues/${id}`, payload)
     return response.data
   }
 }

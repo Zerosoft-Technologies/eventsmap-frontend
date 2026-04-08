@@ -1157,83 +1157,78 @@ async function fetchGalleryImages(retryCount = 0) {
 
 // Sync category/subcategory selections into formData for validation
 function syncFormData() {
-    formData.category = selectedCategory.value
-    formData.subcategories = selectedSubcategories.value
+    formData.category = selectedCategoryDetails.value?.name || ''
+    formData.subcategories = form.talent_subcategory_ids
+        .map((id) => availableSubcategories.value.find((s) => s.id === id)?.name)
+        .filter(Boolean)
 }
 
-// ── Build FormData for API (image fields: gallery image IDs only) ──────────────────────────────────────
-function buildFormData(forUpdate = false) {
-    const fd = new FormData()
+function buildTalentPayload() {
+    const imagePath = typeof formData.image_path === 'string' ? formData.image_path.trim() : ''
+    if (!imagePath) {
+        throw new Error('image_path is required')
+    }
+    const additionalImages = (formData.additional_images || [])
+        .map((id) => (id == null ? '' : String(id).trim()))
+        .filter(Boolean)
+        .slice(0, 5)
 
-    if (forUpdate) {
-        fd.append('_method', 'PUT')
+    const categoryId = Number(form.talent_category_id)
+    const subIds = form.talent_subcategory_ids.map(Number).filter((n) => !Number.isNaN(n))
+    const catName =
+        categoriesTalents.value.find((c) => c.id === categoryId)?.name || ''
+    const subNames = form.talent_subcategory_ids
+        .map((sid) => availableSubcategories.value.find((s) => s.id === sid)?.name)
+        .filter(Boolean)
+    const genre = [catName, ...subNames].filter(Boolean).join(', ') || catName
+
+    const langStr = languagesText.value?.trim()
+    const languages = langStr
+        ? langStr.split(',').map((s) => s.trim()).filter(Boolean)
+        : []
+
+    let ageVal = exactAge.value || ''
+    if (typeof exactAge.value === 'string' && exactAge.value.trim() !== '' && !Number.isNaN(Number(exactAge.value))) {
+        ageVal = Number(exactAge.value)
     }
 
-    fd.append('title', formData.talentTitle)
-    fd.append('event_type', 'talent')
-    fd.append('description', eventDescription.value || '')
-
-    // Category ID
-    if (form.talent_category_id) {
-        fd.append('talent_category_id', form.talent_category_id)
+    return {
+        title: formData.talentTitle,
+        description: eventDescription.value || undefined,
+        event_type: 'premium',
+        image_path: imagePath,
+        additional_images: additionalImages,
+        category_id: categoryId,
+        subcategory_ids: subIds,
+        genre: genre || undefined,
+        location: selectedAddress.value || undefined,
+        address: selectedAddress.value || undefined,
+        latitude: mapLat.value,
+        longitude: mapLng.value,
+        city: talentCity.value || undefined,
+        contact_phone: contactPhone.value || undefined,
+        contact_email: contactEmail.value || undefined,
+        contact_website: contactWebsite.value || undefined,
+        facebook_url: facebookUrl.value || undefined,
+        instagram_url: instagramUrl.value || undefined,
+        tiktok_url: tiktokUrl.value || undefined,
+        fan_club_url: fanClubUrl.value || undefined,
+        nationality: exactNationality.value || undefined,
+        show_nationality: talentNationality.value || undefined,
+        age: ageVal === '' ? undefined : ageVal,
+        show_age: showAge.value || undefined,
+        languages: languages.length ? languages : undefined,
+        highlights: talentHighlightsText.value || undefined,
+        show_upcoming_events: !!showUpcomingEvents.value,
+        show_past_events: !!showPastEvents.value,
     }
-
-    // Subcategory IDs
-    form.talent_subcategory_ids.forEach(subId => {
-        fd.append('talent_subcategory_ids[]', subId)
-    })
-
-    // Location
-    fd.append('address', selectedAddress.value || '')
-    if (mapLat.value !== null) fd.append('latitude', mapLat.value)
-    if (mapLng.value !== null) fd.append('longitude', mapLng.value)
-    fd.append('city', talentCity.value || '')
-
-    if (formData.image_path) {
-        fd.append('image_path', formData.image_path)
-    }
-
-    if (formData.additional_images && formData.additional_images.length > 0) {
-        formData.additional_images.forEach((imageId, index) => {
-            fd.append(`additional_images[${index}]`, imageId)
-        })
-    } else {
-        fd.append('additional_images', '')
-    }
-
-    // Contact details
-    fd.append('contact_phone', contactPhone.value || '')
-    fd.append('contact_email', contactEmail.value || '')
-    fd.append('contact_website', contactWebsite.value || '')
-
-    // Social media
-    fd.append('facebook_url', facebookUrl.value || '')
-    fd.append('instagram_url', instagramUrl.value || '')
-    fd.append('tiktok_url', tiktokUrl.value || '')
-    fd.append('fan_club_url', fanClubUrl.value || '')
-
-    // Nationality & age
-    fd.append('nationality', exactNationality.value || '')
-    fd.append('show_nationality', talentNationality.value || '')
-    fd.append('age', exactAge.value || '')
-    fd.append('show_age', showAge.value || '')
-
-    // Languages & highlights
-    fd.append('languages', languagesText.value || '')
-    fd.append('highlights', talentHighlightsText.value || '')
-
-    // Visibility
-    fd.append('show_upcoming_events', showUpcomingEvents.value ? '1' : '0')
-    fd.append('show_past_events', showPastEvents.value ? '1' : '0')
-
-    return fd
 }
 
 async function createTalent() {
     try {
         fieldErrors.value = {}
-        const fd = buildFormData(false)
-        const response = await eventService.createTalent(fd)
+        const payload = buildTalentPayload()
+        const response = await eventService.createTalent(payload)
         if (response.success) {
             toast.success('Talent created successfully.')
             pendingFileMap.value = {}
@@ -1248,6 +1243,11 @@ async function createTalent() {
         }
     } catch (error) {
         console.error('Error creating talent:', error)
+        if (error instanceof Error && error.message === 'image_path is required') {
+            fieldErrors.value = { ...fieldErrors.value, image_path: ['Main image is required'] }
+            toast.error('Please select a main image from your gallery.')
+            return
+        }
         if (error.response?.data?.errors) {
             fieldErrors.value = error.response.data.errors
             toast.error(error.response.data.message || 'Please correct the errors.')
@@ -1261,8 +1261,8 @@ async function updateTalent() {
     if (!editingTalentId.value) return
     try {
         fieldErrors.value = {}
-        const fd = buildFormData(true)
-        const response = await eventService.updateTalent(editingTalentId.value, fd)
+        const payload = buildTalentPayload()
+        const response = await eventService.updateTalent(editingTalentId.value, payload)
         if (response.success) {
             toast.success('Talent updated successfully.')
             pendingFileMap.value = {}
@@ -1279,6 +1279,11 @@ async function updateTalent() {
         }
     } catch (error) {
         console.error('Error updating talent:', error)
+        if (error instanceof Error && error.message === 'image_path is required') {
+            fieldErrors.value = { ...fieldErrors.value, image_path: ['Main image is required'] }
+            toast.error('Please select a main image from your gallery.')
+            return
+        }
         if (error.response?.data?.errors) {
             fieldErrors.value = error.response.data.errors
             toast.error(error.response.data.message || 'Please correct the errors.')
@@ -1298,6 +1303,7 @@ function cancelEdit() {
 async function loadTalent(id) {
     try {
         if (!categoriesTalents.value.length) await fetchCategories()
+        await fetchGalleryImages()
 
         const response = await eventService.getTalentById(id)
         const talent = response.data || response
@@ -1314,18 +1320,24 @@ async function loadTalent(id) {
         if (talent.latitude) mapLat.value = talent.latitude
         if (talent.longitude) mapLng.value = talent.longitude
 
-        // Category & subcategories
-        if (talent.talent_category_id) {
-            form.talent_category_id = talent.talent_category_id
+        const catId = talent.talent_category_id ?? talent.category_id
+        if (catId) {
+            form.talent_category_id = catId
             await nextTick()
-            if (talent.talent_subcategories && talent.talent_subcategories.length) {
-                form.talent_subcategory_ids = talent.talent_subcategories.map(s => s.id)
+            const subs = talent.talent_subcategories || talent.subcategories || []
+            if (subs.length) {
+                form.talent_subcategory_ids = subs.map((s) => s.id)
             }
         }
 
-        formData.image_path = talent.image_path || ''
-        formData.additional_images = Array.isArray(talent.additional_images)
-            ? talent.additional_images
+        formData.image_path =
+            typeof talent.image_path === 'string' && talent.image_path.trim()
+                ? talent.image_path.trim()
+                : ''
+
+        let addUuids = []
+        if (Array.isArray(talent.additional_images)) {
+            addUuids = talent.additional_images
                 .map((img) => {
                     if (img == null) return ''
                     if (typeof img === 'object' && img !== null) {
@@ -1334,7 +1346,8 @@ async function loadTalent(id) {
                     return String(img)
                 })
                 .filter((id) => id !== null && id !== '')
-            : []
+        }
+        formData.additional_images = addUuids
         formData.remove_main_image = false
 
         // Contact & social
@@ -1353,7 +1366,11 @@ async function loadTalent(id) {
         showAge.value = talent.show_age || 'show'
 
         // Languages & highlights
-        languagesText.value = talent.languages || ''
+        if (Array.isArray(talent.languages)) {
+            languagesText.value = talent.languages.join(', ')
+        } else {
+            languagesText.value = talent.languages || ''
+        }
         talentHighlightsText.value = talent.highlights || ''
 
         // Visibility
@@ -1380,6 +1397,7 @@ async function loadTalent(id) {
 // ── Reset Form ──────────────────────────────────────────────────
 function resetForm() {
     formData.talentTitle = ''
+    eventDescription.value = ''
     formData.category = ''
     formData.subcategories = []
     formData.image_path = ''
@@ -1442,7 +1460,9 @@ async function handleSubmit() {
     } else {
         delete extraErrors.address
     }
-    if (!formData.image_path) {
+    const mainUuid =
+        typeof formData.image_path === 'string' ? formData.image_path.trim() : ''
+    if (!mainUuid) {
         extraErrors.image_path = ['Main image is required']
         hasExtraErrors = true
     } else {

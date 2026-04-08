@@ -147,48 +147,39 @@
           </div>
         </div>
 
-        <!-- Venue IMAGE SECTION -->
+        <!-- Venue IMAGE SECTION (gallery ID only) -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
 
-          <!-- Header -->
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
             <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
               Venue Image (Max 1) <span class="tw:text-red-500">*</span>
               <span class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
             </h3>
-
-            <!-- <button type="button"
-              class="tw:w-8 tw:h-8 tw:rounded-full tw:bg-blue-100 tw:text-blue-600 tw:flex tw:items-center tw:justify-center">
-              <Plus class="tw:w-4 tw:h-4" />
-            </button> -->
           </div>
 
-          <!-- Custom File Input -->
-          <label
-            class="tw:flex tw:items-center tw:w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer">
-
-            <!-- Choose File -->
+          <div
+            @click="openMediaModal"
+            class="tw:flex tw:items-center tw:w-full tw:max-w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer hover:tw:bg-gray-50"
+          >
             <span class="tw:px-4 tw:py-2 tw:bg-[#F6F1E7] tw:text-sm tw:text-gray-700 tw:border-r tw:border-[#E8E1D5]">
-              Choose File
+              Choose from Media
             </span>
-
-            <!-- File name display -->
             <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-              {{ fileName || 'No File Chosen' }}
+              {{ mainGalleryRow ? mainGalleryRow.file_name : 'No Image Selected' }}
             </span>
+            <svg class="tw:w-5 tw:h-5 tw:mr-2 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
 
-            <input type="file" accept="image/*" class="tw:hidden"
-              @change="handleFileChange" />
-          </label>
-
-          <!-- Image Preview -->
-          <div v-if="imagePreviewUrl" class="tw:relative tw:mt-3 tw:inline-block">
-            <img :src="imagePreviewUrl" alt="Preview" class="tw:w-40 tw:h-28 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
+          <div v-if="mainGalleryRow" class="tw:relative tw:mt-4 tw:w-full tw:max-w-md">
+            <img :src="mainGalleryRow.image_url" alt="Venue preview" class="tw:w-full tw:h-48 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
             <button type="button" @click="removeMainImage"
-              class="tw:absolute tw:-top-2 tw:-right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center tw:text-xs tw:shadow hover:tw:bg-red-600 tw:transition">
-              &times;
+              class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-700">
+              <span class="tw:text-sm tw:leading-none">&times;</span>
             </button>
           </div>
+          <p v-if="fieldErrors.image_path" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image_path[0] }}</p>
         </div>
 
         <!-- GENRE SECTION -->
@@ -592,6 +583,18 @@
 
     </div>
   </div>
+
+  <Teleport to="body">
+    <MediaPickerModal
+      :visible="showMediaModal"
+      :multiple="false"
+      :max-selection="1"
+      :preselected-ids="formData.image_path ? [formData.image_path] : []"
+      @select="handleMediaSelect"
+      @close="showMediaModal = false"
+      @image-updated="handleImageUpdated"
+    />
+  </Teleport>
 </template>
 
 <script setup>
@@ -614,6 +617,8 @@ import {
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
+import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import { useFormValidation } from "@/composables/useFormValidation"
@@ -632,17 +637,22 @@ const activeTab = ref("home")
 const isSubmitting = ref(false)
 const isEditMode = ref(false)
 const editingVenueId = ref(null)
+const fieldErrors = ref({})
 
-// ── Image handling ──────────────────────────────────────────────
-const fileName = ref("")
-const mainImage = ref(null)
-const imagePreviewUrl = ref(null)
+const showMediaModal = ref(false)
+const galleryImages = ref([])
 
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
   venueTitle: '',
   category: '',
   subcategories: [],
+  image_path: '',
+})
+
+const mainGalleryRow = computed(() => {
+  if (!formData.image_path) return null
+  return galleryImages.value.find((img) => img.image_id === formData.image_path)
 })
 
 const venueSchema = {
@@ -782,20 +792,35 @@ const menuItems = [
   { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
 
-// ── Image handling ──────────────────────────────────────────────
-function handleFileChange(event) {
-  const file = event.target.files[0]
-  if (file) {
-    fileName.value = file.name
-    mainImage.value = file
-    imagePreviewUrl.value = URL.createObjectURL(file)
+function openMediaModal() {
+  showMediaModal.value = true
+}
+
+function handleMediaSelect(ids) {
+  formData.image_path = ids[0] || ''
+}
+
+function handleImageUpdated(newImages) {
+  galleryImages.value = [...newImages, ...galleryImages.value]
+  if (newImages.length > 0) {
+    formData.image_path = newImages[0].image_id
+  }
+}
+
+async function fetchGalleryImages(retryCount = 0) {
+  try {
+    const response = await galleryApi.fetchImages(1, 100)
+    galleryImages.value = response.data.images
+  } catch (error) {
+    console.error('Error fetching gallery images:', error)
+    if (retryCount < 2) {
+      setTimeout(() => fetchGalleryImages(retryCount + 1), 1000)
+    }
   }
 }
 
 function removeMainImage() {
-  mainImage.value = null
-  imagePreviewUrl.value = null
-  fileName.value = ''
+  formData.image_path = ''
 }
 
 function handleBack() {
@@ -803,9 +828,9 @@ function handleBack() {
   router.push('/')
 }
 
-function handleEventSelected(eventId) {
+async function handleEventSelected(eventId) {
   closeMobileSidebar()
-  console.log('Event selected for editing:', eventId)
+  await loadVenue(Number(eventId))
 }
 
 function handleMenuClick(item) {
@@ -829,73 +854,81 @@ function syncFormData() {
   formData.subcategories = selectedSubcategories.value
 }
 
-// ── Build FormData for API ──────────────────────────────────────
-function buildFormData() {
-  const fd = new FormData()
-
-  if (isEditMode.value) {
-    fd.append('_method', 'PUT')
+function buildVenuePayload() {
+  const imagePath = typeof formData.image_path === 'string' ? formData.image_path.trim() : ''
+  if (!imagePath) {
+    throw new Error('image_path is required')
   }
 
-  fd.append('title', formData.venueTitle)
-  fd.append('event_type', 'venue')
-
-  // Category ID
-  const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+  const selectedCategoryData = categories.value.find((cat) => cat.name === selectedCategory.value)
+  const categoryId = selectedCategoryData ? selectedCategoryData.id : 0
+  const subcategoryIds = []
   if (selectedCategoryData) {
-    fd.append('category_id', selectedCategoryData.id)
-  }
-
-  // Subcategory IDs
-  if (selectedCategoryData) {
-    selectedSubcategories.value.forEach(subName => {
-      const subData = selectedCategoryData.subcategories.find(s => s.name === subName)
-      if (subData) {
-        fd.append('subcategory_ids[]', subData.id)
-      }
+    selectedSubcategories.value.forEach((subName) => {
+      const subData = selectedCategoryData.subcategories.find((s) => s.name === subName)
+      if (subData) subcategoryIds.push(subData.id)
     })
   }
 
-  // Location
-  fd.append('address', selectedAddress.value || '')
-  if (mapLat.value !== null) fd.append('latitude', mapLat.value)
-  if (mapLng.value !== null) fd.append('longitude', mapLng.value)
-
-  // Accessibility
-  fd.append('allowance_of_dogs', allowanceOfDogs.value || '')
-  fd.append('wheelchair_accessible', wheelchairAccessible.value || '')
-  fd.append('accessible_parking', accessibleParking.value || '')
-  fd.append('valet_parking', valetParking.value || '')
-  fd.append('childrens_play_area', childrensPlayArea.value || '')
-
-  // Image
-  if (mainImage.value instanceof File) {
-    fd.append('image_path', mainImage.value)
-  } else if (typeof mainImage.value === 'string' && mainImage.value) {
-    fd.append('image_path', mainImage.value)
+  return {
+    title: formData.venueTitle,
+    event_type: 'free',
+    image_path: imagePath,
+    additional_images: [],
+    category_id: categoryId,
+    subcategory_ids: subcategoryIds,
+    location: selectedAddress.value || undefined,
+    address: selectedAddress.value || undefined,
+    latitude: mapLat.value,
+    longitude: mapLng.value,
+    allowance_of_dogs: allowanceOfDogs.value || undefined,
+    wheelchair_accessible: wheelchairAccessible.value || undefined,
+    accessible_parking: accessibleParking.value || undefined,
+    valet_parking: valetParking.value || undefined,
+    childrens_play_area: childrensPlayArea.value || undefined,
   }
+}
 
-  return fd
+function validateForm() {
+  syncFormData()
+  const ok = validate() && validateGenre()
+  const mainUuid =
+    typeof formData.image_path === 'string' ? formData.image_path.trim() : ''
+  const extra = { ...fieldErrors.value }
+  if (!mainUuid) {
+    extra.image_path = ['Main image is required']
+  } else {
+    delete extra.image_path
+  }
+  fieldErrors.value = extra
+  return ok && !!mainUuid
 }
 
 // ── Create Venue ────────────────────────────────────────────────
 async function createVenue() {
   try {
-    const fd = buildFormData()
-    const response = await eventService.createVenue(fd)
+    fieldErrors.value = {}
+    const payload = buildVenuePayload()
+    const response = await eventService.createVenue(payload)
     if (response.success) {
       toast.success('Venue created successfully!')
       resetForm()
     } else {
+      if (response.errors) fieldErrors.value = response.errors
       toast.error(response.message || 'Failed to create venue')
     }
   } catch (error) {
     console.error('Error creating venue:', error)
+    if (error instanceof Error && error.message === 'image_path is required') {
+      fieldErrors.value = { ...fieldErrors.value, image_path: ['Main image is required'] }
+      toast.error('Please select a main image from your gallery.')
+      return
+    }
     if (error.response?.data?.errors) {
-      const errors = error.response.data.errors
-      Object.keys(errors).forEach(key => { toast.error(errors[key][0]) })
+      fieldErrors.value = error.response.data.errors
+      toast.error(error.response.data.message || 'Please correct the errors.')
     } else {
-      toast.error('An error occurred while creating the venue')
+      toast.error(error.response?.data?.message || 'An error occurred while creating the venue')
     }
   }
 }
@@ -903,21 +936,28 @@ async function createVenue() {
 // ── Update Venue ────────────────────────────────────────────────
 async function updateVenue() {
   try {
-    const fd = buildFormData()
-    const response = await eventService.updateVenue(editingVenueId.value, fd)
+    fieldErrors.value = {}
+    const payload = buildVenuePayload()
+    const response = await eventService.updateVenue(editingVenueId.value, payload)
     if (response.success) {
       toast.success('Venue updated successfully!')
       resetForm()
     } else {
+      if (response.errors) fieldErrors.value = response.errors
       toast.error(response.message || 'Failed to update venue')
     }
   } catch (error) {
     console.error('Error updating venue:', error)
+    if (error instanceof Error && error.message === 'image_path is required') {
+      fieldErrors.value = { ...fieldErrors.value, image_path: ['Main image is required'] }
+      toast.error('Please select a main image from your gallery.')
+      return
+    }
     if (error.response?.data?.errors) {
-      const errors = error.response.data.errors
-      Object.keys(errors).forEach(key => { toast.error(errors[key][0]) })
+      fieldErrors.value = error.response.data.errors
+      toast.error(error.response.data.message || 'Please correct the errors.')
     } else {
-      toast.error('An error occurred while updating the venue')
+      toast.error(error.response?.data?.message || 'An error occurred while updating the venue')
     }
   }
 }
@@ -925,6 +965,7 @@ async function updateVenue() {
 // ── Load Venue for editing ──────────────────────────────────────
 async function loadVenue(id) {
   try {
+    await fetchGalleryImages()
     const response = await eventService.getVenueById(id)
     const venue = response.data || response
 
@@ -933,6 +974,7 @@ async function loadVenue(id) {
 
     formData.venueTitle = venue.title || ''
     selectedAddress.value = venue.address || ''
+    searchAddress.value = venue.address || ''
 
     if (venue.latitude) mapLat.value = venue.latitude
     if (venue.longitude) mapLng.value = venue.longitude
@@ -946,15 +988,11 @@ async function loadVenue(id) {
       }
     }
 
-    // Image
-    mainImage.value = null
-    imagePreviewUrl.value = null
-    fileName.value = ''
-    if (venue.image_path) {
-      mainImage.value = venue.image_path
-      imagePreviewUrl.value = venue.image_url || venue.image_path
-      fileName.value = 'Current image'
-    }
+    formData.image_path =
+      typeof venue.image_path === 'string' && venue.image_path.trim()
+        ? venue.image_path.trim()
+        : ''
+    fieldErrors.value = {}
 
     // Accessibility
     allowanceOfDogs.value = venue.allowance_of_dogs || ''
@@ -990,13 +1028,12 @@ function resetForm() {
   formData.venueTitle = ''
   formData.category = ''
   formData.subcategories = []
+  formData.image_path = ''
   selectedCategory.value = ''
   selectedSubcategories.value = []
   selectedAddress.value = ''
   searchAddress.value = ''
-  mainImage.value = null
-  imagePreviewUrl.value = null
-  fileName.value = ''
+  fieldErrors.value = {}
   mapLat.value = null
   mapLng.value = null
   allowanceOfDogs.value = ''
@@ -1017,12 +1054,7 @@ async function handleSubmit() {
   if (isSubmitting.value) return
   isSubmitting.value = true
 
-  syncFormData()
-
-  const isValid = validate()
-  const genreValid = validateGenre()
-
-  if (!isValid || !genreValid) {
+  if (!validateForm()) {
     await scrollToFirstError()
     isSubmitting.value = false
     return
@@ -1124,8 +1156,8 @@ async function reverseGeocode(lng, lat) {
 
 // Initialize map on component mount
 onMounted(async () => {
-  // Fetch categories from API
   fetchCategories()
+  fetchGalleryImages()
 
   // Add click outside listener for dropdown
   document.addEventListener('click', handleClickOutside)

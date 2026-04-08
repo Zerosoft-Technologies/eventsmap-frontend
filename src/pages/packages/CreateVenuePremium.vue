@@ -1268,92 +1268,65 @@ function syncFormData() {
     formData.subcategories = selectedSubcategories.value
 }
 
-// ── Build FormData for API (image fields: gallery image IDs only) ──────────────────────────────────────
-function buildFormData(forUpdate = false) {
-    const fd = new FormData()
-
-    if (forUpdate) {
-        fd.append('_method', 'PUT')
+function buildVenuePayload() {
+    const imagePath = typeof formData.image_path === 'string' ? formData.image_path.trim() : ''
+    if (!imagePath) {
+        throw new Error('image_path is required')
     }
+    const additionalImages = (formData.additional_images || [])
+        .map((id) => (id == null ? '' : String(id).trim()))
+        .filter(Boolean)
+        .slice(0, 5)
 
-    fd.append('title', formData.venueTitle)
-    fd.append('event_type', 'venue')
-    fd.append('description', eventDescription.value || '')
-
-    // Category ID
-    const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
+    const selectedCategoryData = categories.value.find((cat) => cat.name === selectedCategory.value)
+    const categoryId = selectedCategoryData ? selectedCategoryData.id : 0
+    const subcategoryIds = []
     if (selectedCategoryData) {
-        fd.append('category_id', selectedCategoryData.id)
-    }
-
-    // Subcategory IDs
-    if (selectedCategoryData) {
-        selectedSubcategories.value.forEach(subName => {
-            const subData = selectedCategoryData.subcategories.find(s => s.name === subName)
-            if (subData) {
-                fd.append('subcategory_ids[]', subData.id)
-            }
+        selectedSubcategories.value.forEach((subName) => {
+            const subData = selectedCategoryData.subcategories.find((s) => s.name === subName)
+            if (subData) subcategoryIds.push(subData.id)
         })
     }
 
-    // Location
-    fd.append('address', selectedAddress.value || '')
-    if (mapLat.value !== null) fd.append('latitude', mapLat.value)
-    if (mapLng.value !== null) fd.append('longitude', mapLng.value)
-
-    if (formData.image_path) {
-        fd.append('image_path', formData.image_path)
+    return {
+        title: formData.venueTitle,
+        description: eventDescription.value || undefined,
+        event_type: 'premium',
+        image_path: imagePath,
+        additional_images: additionalImages,
+        category_id: categoryId,
+        subcategory_ids: subcategoryIds,
+        location: selectedAddress.value || undefined,
+        address: selectedAddress.value || undefined,
+        latitude: mapLat.value,
+        longitude: mapLng.value,
+        allowance_of_dogs: allowanceOfDogs.value || undefined,
+        wheelchair_accessible: wheelchairAccessible.value || undefined,
+        accessible_parking: accessibleParking.value || undefined,
+        valet_parking: valetParking.value || undefined,
+        childrens_play_area: childrensPlayArea.value || undefined,
+        accessibility_description: accessibilityDescription.value || undefined,
+        description_items: selectedDescriptionItems.value.length
+            ? [...selectedDescriptionItems.value]
+            : undefined,
+        contact_phone: contactPhone.value || undefined,
+        contact_email: contactEmail.value || undefined,
+        contact_website: contactWebsite.value || undefined,
+        opening_hours: openingHoursText.value || undefined,
+        facebook_url: facebookUrl.value || undefined,
+        instagram_url: instagramUrl.value || undefined,
+        tiktok_url: tiktokUrl.value || undefined,
+        show_upcoming_events: !!showUpcomingEvents.value,
+        show_past_events: !!showPastEvents.value,
     }
-
-    if (formData.additional_images && formData.additional_images.length > 0) {
-        formData.additional_images.forEach((imageId, index) => {
-            fd.append(`additional_images[${index}]`, imageId)
-        })
-    } else {
-        fd.append('additional_images', '')
-    }
-
-    // Accessibility
-    fd.append('allowance_of_dogs', allowanceOfDogs.value || '')
-    fd.append('wheelchair_accessible', wheelchairAccessible.value || '')
-    fd.append('accessible_parking', accessibleParking.value || '')
-    fd.append('valet_parking', valetParking.value || '')
-    fd.append('childrens_play_area', childrensPlayArea.value || '')
-    fd.append('accessibility_description', accessibilityDescription.value || '')
-
-    // Description items
-    if (selectedDescriptionItems.value.length) {
-        selectedDescriptionItems.value.forEach(item => {
-            fd.append('description_items[]', item)
-        })
-    }
-
-    // Contact details
-    fd.append('contact_phone', contactPhone.value || '')
-    fd.append('contact_email', contactEmail.value || '')
-    fd.append('contact_website', contactWebsite.value || '')
-
-    // Opening hours
-    fd.append('opening_hours', openingHoursText.value || '')
-
-    // Social media
-    fd.append('facebook_url', facebookUrl.value || '')
-    fd.append('instagram_url', instagramUrl.value || '')
-    fd.append('tiktok_url', tiktokUrl.value || '')
-
-    // Visibility
-    fd.append('show_upcoming_events', showUpcomingEvents.value ? '1' : '0')
-    fd.append('show_past_events', showPastEvents.value ? '1' : '0')
-
-    return fd
 }
 
 // ── Create Venue ────────────────────────────────────────────────
 async function createVenue() {
     try {
         fieldErrors.value = {}
-        const fd = buildFormData(false)
-        const response = await eventService.createVenue(fd)
+        const payload = buildVenuePayload()
+        const response = await eventService.createVenue(payload)
         if (response.success) {
             toast.success('Venue created successfully!')
             pendingFileMap.value = {}
@@ -1368,6 +1341,11 @@ async function createVenue() {
         }
     } catch (error) {
         console.error('Error creating venue:', error)
+        if (error instanceof Error && error.message === 'image_path is required') {
+            fieldErrors.value = { ...fieldErrors.value, image_path: ['Main image is required'] }
+            toast.error('Please select a main image from your gallery.')
+            return
+        }
         if (error.response?.data?.errors) {
             fieldErrors.value = error.response.data.errors
             toast.error(error.response.data.message || 'Please correct the errors.')
@@ -1382,8 +1360,8 @@ async function updateVenue() {
     if (!editingVenueId.value) return
     try {
         fieldErrors.value = {}
-        const fd = buildFormData(true)
-        const response = await eventService.updateVenue(editingVenueId.value, fd)
+        const payload = buildVenuePayload()
+        const response = await eventService.updateVenue(editingVenueId.value, payload)
         if (response.success) {
             toast.success('Venue updated successfully!')
             pendingFileMap.value = {}
@@ -1400,6 +1378,11 @@ async function updateVenue() {
         }
     } catch (error) {
         console.error('Error updating venue:', error)
+        if (error instanceof Error && error.message === 'image_path is required') {
+            fieldErrors.value = { ...fieldErrors.value, image_path: ['Main image is required'] }
+            toast.error('Please select a main image from your gallery.')
+            return
+        }
         if (error.response?.data?.errors) {
             fieldErrors.value = error.response.data.errors
             toast.error(error.response.data.message || 'Please correct the errors.')
@@ -1413,6 +1396,7 @@ async function updateVenue() {
 async function loadVenue(id) {
     try {
         if (!categories.value.length) await fetchCategories()
+        await fetchGalleryImages()
 
         const response = await eventService.getVenueById(id)
         const venue = response.data || response
@@ -1437,9 +1421,14 @@ async function loadVenue(id) {
             }
         }
 
-        formData.image_path = venue.image_path || ''
-        formData.additional_images = Array.isArray(venue.additional_images)
-            ? venue.additional_images
+        formData.image_path =
+            typeof venue.image_path === 'string' && venue.image_path.trim()
+                ? venue.image_path.trim()
+                : ''
+
+        let addUuids = []
+        if (Array.isArray(venue.additional_images)) {
+            addUuids = venue.additional_images
                 .map((img) => {
                     if (img == null) return ''
                     if (typeof img === 'object' && img !== null) {
@@ -1448,7 +1437,8 @@ async function loadVenue(id) {
                     return String(img)
                 })
                 .filter((id) => id !== null && id !== '')
-            : []
+        }
+        formData.additional_images = addUuids
         formData.remove_main_image = false
 
         fieldErrors.value = {}
@@ -1475,7 +1465,11 @@ async function loadVenue(id) {
         tiktokUrl.value = venue.tiktok_url || ''
 
         // Opening hours
-        openingHoursText.value = venue.opening_hours || ''
+        if (typeof venue.opening_hours === 'object' && venue.opening_hours !== null) {
+            openingHoursText.value = JSON.stringify(venue.opening_hours)
+        } else {
+            openingHoursText.value = venue.opening_hours || ''
+        }
 
         // Visibility
         showUpcomingEvents.value = venue.show_upcoming_events === '1' || venue.show_upcoming_events === true
@@ -1567,7 +1561,9 @@ async function handleSubmit() {
     } else {
         delete extraErrors.address
     }
-    if (!formData.image_path) {
+    const mainUuidVenue =
+        typeof formData.image_path === 'string' ? formData.image_path.trim() : ''
+    if (!mainUuidVenue) {
         extraErrors.image_path = ['Main image is required']
         hasExtraErrors = true
     } else {
