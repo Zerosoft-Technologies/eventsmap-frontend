@@ -37,7 +37,7 @@
           @click="handleBackClick"
           class="tw:inline-flex tw:items-center tw:gap-2 tw:text-sm tw:text-[#0061FF] hover:tw:text-black tw:font-medium">
           <ChevronLeft class="tw:w-4 tw:h-4" />
-          Back To Events
+          {{ backSectionTitle }}
         </button>
       </div>
 
@@ -45,43 +45,44 @@
       <div class="tw:p-6 tw:overflow-y-auto tw:flex-1 tw:space-y-4" style="height: 0;">
 
         <!-- Loading State -->
-        <div v-if="myEventStore.loading" class="tw:text-center tw:py-4 tw:text-gray-400 tw:text-sm">
-          Loading events...
+        <div v-if="listLoading" class="tw:text-center tw:py-4 tw:text-gray-400 tw:text-sm">
+          {{ loadingLabel }}
         </div>
 
-        <!-- Events List -->
-        <template v-else-if="myEventStore.events.length > 0">
+        <div v-else-if="listError" class="tw:text-center tw:py-4 tw:text-red-500 tw:text-sm">
+          {{ listError }}
+        </div>
+
+        <!-- List (events / talents / venues) -->
+        <template v-else-if="listItems.length > 0">
           <div
-            v-for="event in myEventStore.events"
-            :key="event.id"
-            @click="handleEventClick(event)"
+            v-for="item in listItems"
+            :key="item.id"
+            @click="handleListItemClick(item)"
             :class="[
               'tw:bg-[#F6F1E7] tw:rounded-2xl tw:p-5 tw:space-y-4 tw:border tw:cursor-pointer tw:transition',
-              myEventStore.selectedEventId === event.id
+              selectedListId === item.id
                 ? 'tw:border-[#0061FF]'
                 : 'tw:border-gray-200 hover:tw:border-gray-300'
             ]"
           >
             <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF]">
-              {{ event.title || 'Event Title' }}
+              {{ item.title || listTitleFallback }}
             </h2>
 
-            <div class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2">
+            <div
+              v-if="sidebarKind === 'events' && item.event_date"
+              class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2"
+            >
               <Calendar class="tw:w-4 tw:h-4" />
-              <span>{{ formatEventDateTime(event.event_date, event.start_time) }}</span>
+              <span>{{ formatEventDateTime(item.event_date, item.start_time) }}</span>
             </div>
-
-            <!-- <button
-              class="tw:inline-flex tw:items-center tw:gap-2 tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:bg-white tw:text-[#0061FF] tw:rounded-md tw:border tw:border-[#FF7700] hover:tw:bg-gray-50 tw:transition">
-              {{ event.status || 'Draft' }}
-              <ChevronDown class="tw:w-4 tw:h-4" />
-            </button> -->
           </div>
         </template>
 
         <!-- Empty State -->
         <div v-else class="tw:text-center tw:py-4 tw:text-gray-400 tw:text-sm">
-          No events found
+          {{ emptyLabel }}
         </div>
 
       </div>
@@ -102,24 +103,84 @@ import {
 } from "lucide-vue-next"
 
 import { useRouter, useRoute } from "vue-router"
-import { onMounted } from "vue"
+import { onMounted, computed } from "vue"
 import { useMyEventStore } from "@/stores/myEventStore"
+import { useMyTalentStore } from "@/stores/myTalentStore"
+import { useMyVenueStore } from "@/stores/myVenueStore"
 
 const myEventStore = useMyEventStore()
+const myTalentStore = useMyTalentStore()
+const myVenueStore = useMyVenueStore()
 
 // Props
 const props = defineProps({
   menuItems: {
     type: Array,
     required: true
+  },
+  /** 'events' (default) uses GET /v2/my-events; 'talents' → /v2/my-talents; 'venues' → /v2/my-venues */
+  sidebarKind: {
+    type: String,
+    default: 'events',
+    validator: (v) => ['events', 'talents', 'venues'].includes(v)
   }
 })
 
 // Emits
 const emit = defineEmits(['back', 'event-selected', 'chatbox-click', 'menu-click'])
 
+const listLoading = computed(() => {
+  if (props.sidebarKind === 'talents') return myTalentStore.loading
+  if (props.sidebarKind === 'venues') return myVenueStore.loading
+  return myEventStore.loading
+})
+
+const listItems = computed(() => {
+  if (props.sidebarKind === 'talents') return myTalentStore.talents
+  if (props.sidebarKind === 'venues') return myVenueStore.venues
+  return myEventStore.events
+})
+
+const selectedListId = computed(() => {
+  if (props.sidebarKind === 'talents') return myTalentStore.selectedTalentId
+  if (props.sidebarKind === 'venues') return myVenueStore.selectedVenueId
+  return myEventStore.selectedEventId
+})
+
+const listError = computed(() => {
+  if (props.sidebarKind === 'talents') return myTalentStore.error
+  if (props.sidebarKind === 'venues') return myVenueStore.error
+  return null
+})
+
+const backSectionTitle = computed(() => {
+  if (props.sidebarKind === 'talents') return 'Back To Talents'
+  if (props.sidebarKind === 'venues') return 'Back To Venues'
+  return 'Back To Events'
+})
+
+const loadingLabel = computed(() => {
+  if (props.sidebarKind === 'talents') return 'Loading talents...'
+  if (props.sidebarKind === 'venues') return 'Loading venues...'
+  return 'Loading events...'
+})
+
+const emptyLabel = computed(() => {
+  if (props.sidebarKind === 'talents') return 'No talents found'
+  if (props.sidebarKind === 'venues') return 'No venues found'
+  return 'No events found'
+})
+
+const listTitleFallback = computed(() => {
+  if (props.sidebarKind === 'talents') return 'Talent Title'
+  if (props.sidebarKind === 'venues') return 'Venue Title'
+  return 'Event Title'
+})
+
 onMounted(() => {
-  myEventStore.fetchMyEvents()
+  if (props.sidebarKind === 'talents') myTalentStore.fetchMyTalents()
+  else if (props.sidebarKind === 'venues') myVenueStore.fetchMyVenues()
+  else myEventStore.fetchMyEvents()
 })
 
 function formatEventDateTime(date, time) {
@@ -132,9 +193,11 @@ function formatEventDateTime(date, time) {
   return `${day}.${month}.${year}${timePart}`
 }
 
-function handleEventClick(event) {
-  myEventStore.selectEvent(event.id)
-  emit('event-selected', event.id)
+function handleListItemClick(item) {
+  if (props.sidebarKind === 'talents') myTalentStore.selectTalent(item.id)
+  else if (props.sidebarKind === 'venues') myVenueStore.selectVenue(item.id)
+  else myEventStore.selectEvent(item.id)
+  emit('event-selected', item.id)
 }
 
 const router = useRouter()

@@ -8,7 +8,7 @@
       <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
         <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar"></div>
         <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
-          <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" @menu-click="closeMobileSidebar" />
+          <EventSidebar sidebar-kind="talents" :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" @menu-click="closeMobileSidebar" />
         </div>
       </div>
 
@@ -81,7 +81,7 @@
 
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
       <div class="tw:hidden tw:md:block">
-        <EventSidebar :menuItems="menuItems"
+        <EventSidebar sidebar-kind="talents" :menuItems="menuItems"
           @back="handleBack" @event-selected="handleEventSelected" />
       </div>
 
@@ -106,7 +106,7 @@
         </div>
 
         <!-- Talent IMAGE — free accounts: upload from device (multipart `image_path`), not gallery modal -->
-        <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
+        <div data-field="talentImage" class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
 
           <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
             <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
@@ -133,16 +133,16 @@
             />
           </label>
 
-          <div v-if="imagePreview" class="tw:relative tw:mt-4 tw:w-full tw:max-w-md">
+          <div v-if="imagePreview" class="tw:relative tw:mt-4 tw:w-full">
             <img
               :src="imagePreview"
               alt="Talent preview"
-              class="tw:w-full tw:h-48 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200"
+              class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200"
             />
             <button
               type="button"
               @click="removeTalentImage"
-              class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-700"
+              class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-(--secondary-color) tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-(--secondary-color)"
             >
               <span class="tw:text-sm tw:leading-none">&times;</span>
             </button>
@@ -183,9 +183,10 @@
               </label>
               <div class="tw:relative">
                 <select v-model="form.talent_category_id" @change="handleCategoryChangeWithValidation"
+                  data-field="category"
                   :disabled="isLoadingCategories || categoriesError" :class="[
                     'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
-                    categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
+                    (categoryError || formErrors.category) ? 'tw:border-red-500' : 'tw:border-gray-200',
                     (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
                   ]">
                   <option value="">
@@ -199,7 +200,7 @@
                 <ChevronDown
                   class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
               </div>
-              <p v-if="categoryError" class="tw:text-red-500 tw:text-sm tw:mt-1">Category is required</p>
+              <p v-if="formErrors.category || categoryError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.category || 'Category is required' }}</p>
             </div>
 
             <!-- Subcategory Multi-Select -->
@@ -209,11 +210,11 @@
               </label>
 
               <!-- Multi-Select Input Field -->
-              <div class="subcategory-dropdown-container" ref="dropdownContainer">
+              <div class="subcategory-dropdown-container" ref="dropdownContainer" data-field="subcategories">
                 <div @click="toggleSubcategoryDropdown" :class="[
                   'subcategory-input',
                   (!form.talent_category_id || categoriesError) ? 'disabled' : '',
-                  subcategoryError ? 'error' : ''
+                  (subcategoryError || formErrors.subcategories) ? 'error' : ''
                 ]">
                   <div class="subcategory-input-content">
                     <span class="subcategory-input-text">
@@ -273,7 +274,7 @@
               <p v-if="subcategoryValidationError" class="validation-error">
                 You can select maximum 5 subcategories only.
               </p>
-              <p v-else-if="subcategoryError" class="validation-error">Please select at least one subcategory</p>
+              <p v-else-if="formErrors.subcategories || subcategoryError" class="validation-error">{{ formErrors.subcategories || 'Please select at least one subcategory' }}</p>
             </div>
           </div>
         </div>
@@ -351,15 +352,20 @@
             </select>
 
         <!-- Talent LOCATION SECTION -->
-        <div class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
-          <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">
-            Talent Location
+        <div id="talent-location-section" class="tw:bg-white tw:rounded-xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6">
+          <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-1">
+            Talent Location <span class="tw:text-red-500">*</span>
           </h3>
+          <p v-if="fieldErrors.address" class="tw:text-red-500 tw:text-sm tw:mb-3">{{ fieldErrors.address[0] }}</p>
 
           <!-- Address Search Input with Loading Spinner -->
           <div class="tw:relative tw:mb-4">
             <input v-model="searchAddress" @input="onSearchInput" type="text" placeholder="Search Address..."
-              class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+              data-field="talentLocationSearch"
+              :class="[
+                'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
+                fieldErrors.address ? 'tw:border-red-500' : 'tw:border-[#E8E1D5]'
+              ]" />
 
             <!-- Loading Spinner -->
             <div v-if="isLoading" class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2">
@@ -391,7 +397,11 @@
               Selected Address
             </label>
             <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
-              class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+              data-field="talentLocation"
+              :class="[
+                'tw:w-full tw:h-12 tw:md:h-auto tw:bg-gray-50 tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed',
+                fieldErrors.address ? 'tw:border-red-500' : 'tw:border-[#E8E1D5]'
+              ]" />
           </div>
 
         </div>
@@ -540,6 +550,8 @@ import {
 } from "lucide-vue-next"
 
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue"
+import { storeToRefs } from "pinia"
+import { useMyTalentStore } from "@/stores/myTalentStore"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
@@ -552,6 +564,9 @@ import "maplibre-gl/dist/maplibre-gl.css"
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+
+const myTalentStore = useMyTalentStore()
+const { talents, loading: talentsLoading, error: talentsError } = storeToRefs(myTalentStore)
 const mobileSidebarOpen = ref(false)
 function toggleMobileSidebar() { mobileSidebarOpen.value = !mobileSidebarOpen.value }
 function closeMobileSidebar() { mobileSidebarOpen.value = false }
@@ -640,6 +655,8 @@ function handleCategoryChangeWithValidation() {
   subcategoryValidationError.value = false
   categoryError.value = false
   showSubcategoryDropdown.value = false
+  clearError('category')
+  clearError('subcategories')
 }
 
 // Handle category change
@@ -667,6 +684,9 @@ function toggleSubcategory(subcategoryId) {
   }
 
   handleSubcategoryChange()
+  if (form.talent_subcategory_ids.length > 0) {
+    clearError('subcategories')
+  }
 }
 
 // Click outside handler to close dropdown
@@ -760,6 +780,9 @@ function handleFileChange(event) {
       URL.revokeObjectURL(imagePreview.value)
     }
     imagePreview.value = URL.createObjectURL(file)
+    const nextErr = { ...fieldErrors.value }
+    delete nextErr.image_path
+    fieldErrors.value = nextErr
   } else {
     selectedImageFile.value = null
     fileName.value = ''
@@ -768,6 +791,13 @@ function handleFileChange(event) {
     }
     imagePreview.value = existingImageUrl.value
   }
+}
+
+function clearAddressFieldError() {
+  if (!fieldErrors.value.address) return
+  const next = { ...fieldErrors.value }
+  delete next.address
+  fieldErrors.value = next
 }
 
 function removeTalentImage() {
@@ -824,18 +854,25 @@ function buildTalentFormData() {
 
 function validateForm() {
   syncFormData()
-  const ok = validate() && validateGenre()
+  const schemaOk = validate()
+  const genreOk = validateGenre()
   const hasImage =
     selectedImageFile.value !== null ||
     (isEditMode.value && !!existingImageUrl.value)
+  const addressOk = !!(selectedAddress.value && String(selectedAddress.value).trim())
   const extra = { ...fieldErrors.value }
   if (!hasImage) {
     extra.image_path = ['Main image is required']
   } else {
     delete extra.image_path
   }
+  if (!addressOk) {
+    extra.address = ['Talent location is required']
+  } else {
+    delete extra.address
+  }
   fieldErrors.value = extra
-  return ok && hasImage
+  return schemaOk && genreOk && hasImage && addressOk
 }
 
 // ── Create Talent ───────────────────────────────────────────────
@@ -993,6 +1030,14 @@ async function handleSubmit() {
 
   if (!validateForm()) {
     await scrollToFirstError()
+    await nextTick()
+    if (fieldErrors.value.address?.length) {
+      document.getElementById('talent-location-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    await nextTick()
+    if (fieldErrors.value.image_path?.length) {
+      document.querySelector('[data-field="talentImage"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
     isSubmitting.value = false
     return
   }
@@ -1066,6 +1111,7 @@ function selectSuggestion(suggestion) {
 
     updateMarker(lon, lat)
   }
+  clearAddressFieldError()
 }
 
 // Update or add marker
@@ -1105,6 +1151,9 @@ async function reverseGeocode(lng, lat) {
     if (response.ok) {
       const data = await response.json()
       selectedAddress.value = data.display_name || "Address not found"
+      if (data.display_name) {
+        clearAddressFieldError()
+      }
     }
   } catch (error) {
     console.error("Error reverse geocoding:", error)

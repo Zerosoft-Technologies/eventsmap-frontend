@@ -8,7 +8,7 @@
       <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
         <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar"></div>
         <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
-          <EventSidebar :menuItems="menuItems"
+          <EventSidebar sidebar-kind="venues" :menuItems="menuItems"
             @back="handleBack" @event-selected="handleEventSelected" @menu-click="closeMobileSidebar" />
         </div>
       </div>
@@ -81,7 +81,7 @@
       </div> -->
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
       <div class="tw:hidden tw:md:block">
-        <EventSidebar :menuItems="menuItems"
+        <EventSidebar sidebar-kind="venues" :menuItems="menuItems"
           @back="handleBack" @event-selected="handleEventSelected" />
       </div>
 
@@ -175,16 +175,16 @@
             />
           </label>
 
-          <div v-if="imagePreview" class="tw:relative tw:mt-4 tw:w-full tw:max-w-md">
+          <div v-if="imagePreview" class="tw:relative tw:mt-4 tw:w-full">
             <img
               :src="imagePreview"
               alt="Venue preview"
-              class="tw:w-full tw:h-48 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200"
+              class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200"
             />
             <button
               type="button"
               @click="removeVenueImage"
-              class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-700"
+              class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-(--secondary-color) tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-(--secondary-color) tw:transition-colors"
             >
               <span class="tw:text-sm tw:leading-none">&times;</span>
             </button>
@@ -626,6 +626,9 @@ import "maplibre-gl/dist/maplibre-gl.css"
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+
+const myVenueStore = useMyVenueStore()
+const { venues, loading: venuesLoading, error: venuesError } = storeToRefs(myVenueStore)
 const mobileSidebarOpen = ref(false)
 function toggleMobileSidebar() { mobileSidebarOpen.value = !mobileSidebarOpen.value }
 function closeMobileSidebar() { mobileSidebarOpen.value = false }

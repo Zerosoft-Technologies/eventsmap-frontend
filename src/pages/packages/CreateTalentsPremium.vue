@@ -8,7 +8,7 @@
             <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
                 <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar"></div>
                 <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
-                    <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar" />
+                    <EventSidebar sidebar-kind="talents" :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar" />
                 </div>
             </div>
 
@@ -81,7 +81,7 @@
 
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
             <div class="tw:hidden tw:md:block">
-                <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" 
+                <EventSidebar sidebar-kind="talents" :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" 
                  @chatbox-click="handleChatboxClick" />
             </div>
 
@@ -165,7 +165,7 @@
                         <img :src="mainImage.image_url" alt="Talent main image preview"
                             class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200" />
                         <button @click="removeMainImage" type="button"
-                            class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-red-700 tw:transition-colors">
+                            class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-(--secondary-color) tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-(--secondary-color) tw:transition-colors">
                             <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
                                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -862,6 +862,8 @@ import {
 } from "lucide-vue-next"
 
 import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick } from "vue"
+import { storeToRefs } from "pinia"
+import { useMyTalentStore } from "@/stores/myTalentStore"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
@@ -881,6 +883,10 @@ import "flatpickr/dist/flatpickr.css"
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+
+const myTalentStore = useMyTalentStore()
+const { talents, loading: talentsLoading, error: talentsError } = storeToRefs(myTalentStore)
+
 const authStore = useAuthStore()
 const chatStore = useChatStore()
 const mobileSidebarOpen = ref(false)
