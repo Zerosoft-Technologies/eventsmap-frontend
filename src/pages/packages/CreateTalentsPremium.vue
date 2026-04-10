@@ -1237,6 +1237,7 @@ async function createTalent() {
         const response = await eventService.createTalent(payload)
         if (response.success) {
             toast.success('Talent created successfully.')
+            await myTalentStore.fetchMyTalents()
             pendingFileMap.value = {}
             resetForm()
         } else {

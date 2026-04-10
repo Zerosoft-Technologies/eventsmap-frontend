@@ -889,6 +889,7 @@ async function createTalent() {
 
     if (response.success) {
       toast.success('Talent created successfully!')
+      await myTalentStore.fetchMyTalents()
       resetForm()
     } else {
       if (response.errors) fieldErrors.value = response.errors
