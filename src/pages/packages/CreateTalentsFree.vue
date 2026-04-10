@@ -954,7 +954,11 @@ async function loadTalent(id) {
       await nextTick()
       const subs = talent.talent_subcategories || talent.subcategories || []
       if (subs.length) {
-        form.talent_subcategory_ids = subs.map((s) => s.id)
+        form.talent_subcategory_ids = subs.map((s) => Number(s.id)).filter((n) => !Number.isNaN(n))
+      } else if (Array.isArray(talent.talent_subcategory_ids) && talent.talent_subcategory_ids.length > 0) {
+        form.talent_subcategory_ids = talent.talent_subcategory_ids.map((id) => Number(id)).filter((n) => !Number.isNaN(n))
+      } else if (Array.isArray(talent.subcategory_ids) && talent.subcategory_ids.length > 0) {
+        form.talent_subcategory_ids = talent.subcategory_ids.map((id) => Number(id)).filter((n) => !Number.isNaN(n))
       }
     }
 

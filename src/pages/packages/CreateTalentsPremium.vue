@@ -946,10 +946,10 @@ const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstErro
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
-const talentNationality = ref('')
+const talentNationality = ref('no')
 const exactNationality = ref('')
 const exactAge = ref('')
-const showAge = ref('show')
+const showAge = ref('no')
 const languagesText = ref('')
 const talentHighlightsText = ref('')
 const showUpcomingEvents = ref("")
@@ -1333,7 +1333,11 @@ async function loadTalent(id) {
             await nextTick()
             const subs = talent.talent_subcategories || talent.subcategories || []
             if (subs.length) {
-                form.talent_subcategory_ids = subs.map((s) => s.id)
+                form.talent_subcategory_ids = subs.map((s) => Number(s.id)).filter((n) => !Number.isNaN(n))
+            } else if (Array.isArray(talent.talent_subcategory_ids) && talent.talent_subcategory_ids.length > 0) {
+                form.talent_subcategory_ids = talent.talent_subcategory_ids.map((id) => Number(id)).filter((n) => !Number.isNaN(n))
+            } else if (Array.isArray(talent.subcategory_ids) && talent.subcategory_ids.length > 0) {
+                form.talent_subcategory_ids = talent.subcategory_ids.map((id) => Number(id)).filter((n) => !Number.isNaN(n))
             }
         }
 
@@ -1428,9 +1432,9 @@ function resetForm() {
     tiktokUrl.value = ''
     fanClubUrl.value = ''
     exactNationality.value = ''
-    talentNationality.value = ''
+    talentNationality.value = 'no'
     exactAge.value = ''
-    showAge.value = 'show'
+    showAge.value = 'no'
     languagesText.value = ''
     talentHighlightsText.value = ''
     showUpcomingEvents.value = false

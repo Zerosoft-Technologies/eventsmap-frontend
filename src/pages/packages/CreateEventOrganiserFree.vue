@@ -504,11 +504,14 @@ async function reverseGeocode(lng, lat) {
 
     if (response.ok) {
       const data = await response.json()
-      selectedAddress.value = data.display_name || "Address not found"
+      const addr = data.display_name || "Address not found"
+      selectedAddress.value = addr
+      searchAddress.value = addr
     }
   } catch (error) {
     console.error("Error reverse geocoding:", error)
     selectedAddress.value = "Error fetching address"
+    searchAddress.value = "Error fetching address"
   } finally {
     isLoading.value = false
   }
@@ -613,6 +616,7 @@ async function loadOrganiser(id) {
 
     formData.organiserTitle = d.title || ''
     selectedAddress.value = d.address || ''
+    searchAddress.value = d.address || ''
 
     if (d.latitude) latitude.value = d.latitude
     if (d.longitude) longitude.value = d.longitude
