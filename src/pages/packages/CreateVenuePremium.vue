@@ -110,7 +110,7 @@
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Create Premium Venue
+                            Create Premium Venue <span class="tw:text-red-500">*</span>
                         </h3>
                         <!-- <button
                             class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -132,6 +132,237 @@
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Venue..."
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                         <p v-if="fieldErrors.description" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.description[0] }}</p>
+                    </div>
+                </div>
+
+                                <!-- MAIN IMAGE SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-6">
+
+                    <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
+                        <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
+                            Main Image <span class="tw:text-red-500">*</span> <span
+                                class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
+                        </h3>
+                    </div>
+
+                    <div
+                        @click="handleMainImageClick"
+                        class="tw:flex tw:items-center tw:w-full tw:max-w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer hover:tw:bg-gray-50">
+
+                        <span
+                            class="tw:px-4 tw:py-2 tw:bg-[#F6F1E7] tw:text-sm tw:text-gray-700 tw:border-r tw:border-[#E8E1D5]">
+                            Choose from Media
+                        </span>
+
+                        <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
+                            {{ mainImage ? mainImage.file_name : 'No Image Selected' }}
+                        </span>
+
+                        <svg class="tw:w-5 tw:h-5 tw:mr-2 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+
+                    <div v-if="mainImage" class="tw:relative tw:mt-4 tw:w-full">
+                        <img :src="mainImage.image_url" alt="Venue main image preview"
+                            class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200" />
+                        <button @click="removeMainImage" type="button"
+                            class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-(--secondary-color) tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-(--secondary-color) tw:transition-colors">
+                            <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p v-if="fieldErrors.image_path" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image_path[0] }}</p>
+                </div>
+
+                                <!-- ADDITIONAL IMAGES SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                            Additional Images (Max. 5 Images) <span class="tw:text-xs tw:text-gray-500"> Recommended
+                                (1200x800) </span>
+                        </h3>
+                    </div>
+
+                    <div
+                        @click="handleAdditionalImagesClick"
+                        class="tw:border-2 tw:border-dashed tw:border-gray-300 tw:rounded-xl tw:p-6 tw:text-center tw:cursor-pointer hover:tw:border-blue-400 tw:bg-gray-50 tw:transition-all tw:duration-200">
+
+                        <div class="tw:flex tw:flex-col tw:items-center tw:gap-2">
+                            <div class="tw:w-12 tw:h-12 tw:rounded-full tw:bg-blue-100 tw:flex tw:items-center tw:justify-center">
+                                <svg class="tw:w-6 tw:h-6 tw:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <p class="tw:text-sm tw:font-medium tw:text-gray-700">Choose from Media Library</p>
+                            <p class="tw:text-xs tw:text-gray-500">Select up to 5 additional images</p>
+                        </div>
+                    </div>
+
+                    <div v-if="resolvedAdditionalImages.length > 0" class="tw:space-y-4">
+                        <div class="tw:flex tw:items-center tw:justify-between">
+                            <span class="tw:text-sm tw:text-gray-600">
+                                {{ resolvedAdditionalImages.length }} / 5 images selected
+                            </span>
+                            <button
+                                @click="clearAllAdditionalImages"
+                                type="button"
+                                class="tw:text-sm tw:text-red-500 hover:tw:text-red-700 tw:transition-colors"
+                            >
+                                Clear All
+                            </button>
+                        </div>
+
+                        <div class="tw:grid tw:grid-cols-2 md:tw:grid-cols-3 lg:tw:grid-cols-5 tw:gap-4">
+                            <div v-for="(image, index) in resolvedAdditionalImages" :key="image.image_id || index"
+                                class="tw:relative tw:group">
+                                <img :src="image.image_url" :alt="`Additional image ${index + 1}`"
+                                    class="tw:w-full tw:h-32 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
+                                <button @click="removeAdditionalImage(index)" type="button"
+                                    class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center tw:opacity-0 group-hover:tw:opacity-100 tw:transition-opacity hover:tw:bg-red-700">
+                                    <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                            clip-rule="evenodd"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                                <!-- GENRE SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <div class="tw:flex tw:justify-between tw:items-center">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                            Genre <span class="tw:text-red-500">*</span>
+                        </h3>
+                        <!-- <button
+                            class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
+                            <Plus class="tw:w-5 tw:h-5" />
+                        </button> -->
+                    </div>
+
+                    <!-- Error Display -->
+                    <div v-if="categoriesError" class="tw:bg-red-50 tw:border tw:border-red-200 tw:rounded-lg tw:p-4 tw:mb-4">
+                        <div class="tw:flex tw:items-center">
+                            <svg class="tw:w-5 tw:h-5 tw:text-red-400 tw:mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <p class="tw:text-red-800 tw:text-sm">{{ categoriesError }}</p>
+                            <button @click="fetchCategories"
+                                class="tw:ml-auto tw:text-red-600 tw:text-sm tw:font-medium hover:tw:text-red-700">
+                                Retry
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Category and Subcategory Dropdowns -->
+                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-4">
+                        <!-- Category Dropdown -->
+                        <div class="tw:flex-1">
+                            <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
+                                Category <span class="tw:text-red-500">*</span>
+                            </label>
+                            <div class="tw:relative">
+                                <select v-model="selectedCategory" @change="handleCategoryChangeWithValidation"
+                                    :disabled="isLoadingCategories || categoriesError" :class="[
+                                        'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                                        categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
+                                        (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
+                                    ]">
+                                    <option value="">
+                                        {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
+                                        'Select') }}
+                                    </option>
+                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() == 'venue')" :key="category.id" :value="category.name">
+                                        {{ category.name }}
+                                    </option>
+                                </select>
+                                <ChevronDown
+                                    class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
+                            </div>
+                            <p v-if="categoryError" class="tw:text-red-500 tw:text-sm tw:mt-1">Category is required</p>
+                        </div>
+
+                        <!-- Subcategory Multi-Select -->
+                        <div class="tw:flex-1">
+                            <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
+                                Subcategories (Max 6) <span class="tw:text-red-500">*</span>
+                            </label>
+
+                            <!-- Multi-Select Input Field -->
+                            <div class="subcategory-dropdown-container" ref="dropdownContainer">
+                                <div @click="toggleSubcategoryDropdown" :class="[
+                                    'subcategory-input',
+                                    (!selectedCategory || categoriesError) ? 'disabled' : '',
+                                    subcategoryError ? 'error' : ''
+                                ]">
+                                    <div class="subcategory-input-content">
+                                        <span class="subcategory-input-text">
+                                            {{ selectedSubcategories.length > 0
+                                                ? `${selectedSubcategories.length} selected`
+                                                : (selectedCategory ? 'Select Subcategories' : 'Select Category First')
+                                            }}
+                                        </span>
+                                        <ChevronDown :class="[
+                                            'dropdown-chevron',
+                                            showSubcategoryDropdown ? 'rotated' : ''
+                                        ]" />
+                                    </div>
+                                </div>
+
+                                <!-- Dropdown Options -->
+                                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError" class="subcategory-dropdown"
+                                    ref="dropdownMenu">
+                                    <div class="dropdown-content">
+                                        <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
+                                            :class="{
+                                                'selected': selectedSubcategories.includes(subcategory),
+                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6
+                                            }" @click="toggleSubcategory(subcategory)">
+                                            <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
+                                                v-model="selectedSubcategories"
+                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6"
+                                                @change="handleSubcategoryChange" @click.stop class="option-checkbox">
+                                            <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
+                                                {{ subcategory }}
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Max selection notice -->
+                                    <div v-if="selectedSubcategories.length >= 6" class="max-selection-notice">
+                                        Maximum 6 subcategories selected
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Selected Tags Display -->
+                            <div v-if="selectedSubcategories.length > 0" class="selected-tags">
+                                <span v-for="subcategory in selectedSubcategories" :key="subcategory" class="selected-tag">
+                                    {{ subcategory }}
+                                    <button @click="removeSubcategory(subcategory)" class="tag-remove">
+                                        <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                    </button>
+                                </span>
+                            </div>
+
+                            <!-- Validation Message -->
+                            <p v-if="subcategoryValidationError" class="validation-error">
+                                You can select maximum 6 subcategories only.
+                            </p>
+                            <p v-else-if="subcategoryError" class="validation-error">Please select at least one subcategory</p>
+                        </div>
                     </div>
                 </div>
 
@@ -241,105 +472,6 @@
                                 </svg>
                             </button>
                         </span>
-                    </div>
-                </div>
-
-                <!-- MAIN IMAGE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-6">
-
-                    <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
-                        <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
-                            Main Image <span class="tw:text-red-500">*</span> <span
-                                class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
-                        </h3>
-                    </div>
-
-                    <div
-                        @click="handleMainImageClick"
-                        class="tw:flex tw:items-center tw:w-full tw:max-w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer hover:tw:bg-gray-50">
-
-                        <span
-                            class="tw:px-4 tw:py-2 tw:bg-[#F6F1E7] tw:text-sm tw:text-gray-700 tw:border-r tw:border-[#E8E1D5]">
-                            Choose from Media
-                        </span>
-
-                        <span class="tw:px-4 tw:py-2 tw:text-sm tw:text-gray-500 tw:flex-1">
-                            {{ mainImage ? mainImage.file_name : 'No Image Selected' }}
-                        </span>
-
-                        <svg class="tw:w-5 tw:h-5 tw:mr-2 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-
-                    <div v-if="mainImage" class="tw:relative tw:mt-4 tw:w-full">
-                        <img :src="mainImage.image_url" alt="Venue main image preview"
-                            class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200" />
-                        <button @click="removeMainImage" type="button"
-                            class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-(--secondary-color) tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-(--secondary-color) tw:transition-colors">
-                            <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <p v-if="fieldErrors.image_path" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image_path[0] }}</p>
-                </div>
-
-                <!-- ADDITIONAL IMAGES SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images (Max. 5 Images) <span class="tw:text-xs tw:text-gray-500"> Recommended
-                                (1200x800) </span>
-                        </h3>
-                    </div>
-
-                    <div
-                        @click="handleAdditionalImagesClick"
-                        class="tw:border-2 tw:border-dashed tw:border-gray-300 tw:rounded-xl tw:p-6 tw:text-center tw:cursor-pointer hover:tw:border-blue-400 tw:bg-gray-50 tw:transition-all tw:duration-200">
-
-                        <div class="tw:flex tw:flex-col tw:items-center tw:gap-2">
-                            <div class="tw:w-12 tw:h-12 tw:rounded-full tw:bg-blue-100 tw:flex tw:items-center tw:justify-center">
-                                <svg class="tw:w-6 tw:h-6 tw:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                            </div>
-                            <p class="tw:text-sm tw:font-medium tw:text-gray-700">Choose from Media Library</p>
-                            <p class="tw:text-xs tw:text-gray-500">Select up to 5 additional images</p>
-                        </div>
-                    </div>
-
-                    <div v-if="resolvedAdditionalImages.length > 0" class="tw:space-y-4">
-                        <div class="tw:flex tw:items-center tw:justify-between">
-                            <span class="tw:text-sm tw:text-gray-600">
-                                {{ resolvedAdditionalImages.length }} / 5 images selected
-                            </span>
-                            <button
-                                @click="clearAllAdditionalImages"
-                                type="button"
-                                class="tw:text-sm tw:text-red-500 hover:tw:text-red-700 tw:transition-colors"
-                            >
-                                Clear All
-                            </button>
-                        </div>
-
-                        <div class="tw:grid tw:grid-cols-2 md:tw:grid-cols-3 lg:tw:grid-cols-5 tw:gap-4">
-                            <div v-for="(image, index) in resolvedAdditionalImages" :key="image.image_id || index"
-                                class="tw:relative tw:group">
-                                <img :src="image.image_url" :alt="`Additional image ${index + 1}`"
-                                    class="tw:w-full tw:h-32 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
-                                <button @click="removeAdditionalImage(index)" type="button"
-                                    class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-red-500 tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center tw:opacity-0 group-hover:tw:opacity-100 tw:transition-opacity hover:tw:bg-red-700">
-                                    <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -477,138 +609,6 @@
                         </select>
                         <ChevronDown
                         class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
-                    </div>
-                </div>
-
-                <!-- GENRE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Genre <span class="tw:text-red-500">*</span>
-                        </h3>
-                        <!-- <button
-                            class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                            <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-
-                    <!-- Error Display -->
-                    <div v-if="categoriesError" class="tw:bg-red-50 tw:border tw:border-red-200 tw:rounded-lg tw:p-4 tw:mb-4">
-                        <div class="tw:flex tw:items-center">
-                            <svg class="tw:w-5 tw:h-5 tw:text-red-400 tw:mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            <p class="tw:text-red-800 tw:text-sm">{{ categoriesError }}</p>
-                            <button @click="fetchCategories"
-                                class="tw:ml-auto tw:text-red-600 tw:text-sm tw:font-medium hover:tw:text-red-700">
-                                Retry
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Category and Subcategory Dropdowns -->
-                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-4">
-                        <!-- Category Dropdown -->
-                        <div class="tw:flex-1">
-                            <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Category <span class="tw:text-red-500">*</span>
-                            </label>
-                            <div class="tw:relative">
-                                <select v-model="selectedCategory" @change="handleCategoryChangeWithValidation"
-                                    :disabled="isLoadingCategories || categoriesError" :class="[
-                                        'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
-                                        categoryError ? 'tw:border-red-500' : 'tw:border-gray-200',
-                                        (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
-                                    ]">
-                                    <option value="">
-                                        {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                                        'Select') }}
-                                    </option>
-                                    <option v-for="category in categories.filter(c => c.name.toLowerCase() == 'venue')" :key="category.id" :value="category.name">
-                                        {{ category.name }}
-                                    </option>
-                                </select>
-                                <ChevronDown
-                                    class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
-                            </div>
-                            <p v-if="categoryError" class="tw:text-red-500 tw:text-sm tw:mt-1">Category is required</p>
-                        </div>
-
-                        <!-- Subcategory Multi-Select -->
-                        <div class="tw:flex-1">
-                            <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories (Max 6) <span class="tw:text-red-500">*</span>
-                            </label>
-
-                            <!-- Multi-Select Input Field -->
-                            <div class="subcategory-dropdown-container" ref="dropdownContainer">
-                                <div @click="toggleSubcategoryDropdown" :class="[
-                                    'subcategory-input',
-                                    (!selectedCategory || categoriesError) ? 'disabled' : '',
-                                    subcategoryError ? 'error' : ''
-                                ]">
-                                    <div class="subcategory-input-content">
-                                        <span class="subcategory-input-text">
-                                            {{ selectedSubcategories.length > 0
-                                                ? `${selectedSubcategories.length} selected`
-                                                : (selectedCategory ? 'Select Subcategories' : 'Select Category First')
-                                            }}
-                                        </span>
-                                        <ChevronDown :class="[
-                                            'dropdown-chevron',
-                                            showSubcategoryDropdown ? 'rotated' : ''
-                                        ]" />
-                                    </div>
-                                </div>
-
-                                <!-- Dropdown Options -->
-                                <div v-if="showSubcategoryDropdown && selectedCategory && !categoriesError" class="subcategory-dropdown"
-                                    ref="dropdownMenu">
-                                    <div class="dropdown-content">
-                                        <div v-for="subcategory in availableSubcategories" :key="subcategory" class="dropdown-option"
-                                            :class="{
-                                                'selected': selectedSubcategories.includes(subcategory),
-                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6
-                                            }" @click="toggleSubcategory(subcategory)">
-                                            <input type="checkbox" :id="`subcategory-${subcategory}`" :value="subcategory"
-                                                v-model="selectedSubcategories"
-                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6"
-                                                @change="handleSubcategoryChange" @click.stop class="option-checkbox">
-                                            <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
-                                                {{ subcategory }}
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <!-- Max selection notice -->
-                                    <div v-if="selectedSubcategories.length >= 6" class="max-selection-notice">
-                                        Maximum 6 subcategories selected
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Selected Tags Display -->
-                            <div v-if="selectedSubcategories.length > 0" class="selected-tags">
-                                <span v-for="subcategory in selectedSubcategories" :key="subcategory" class="selected-tag">
-                                    {{ subcategory }}
-                                    <button @click="removeSubcategory(subcategory)" class="tag-remove">
-                                        <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd"
-                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
-                                    </button>
-                                </span>
-                            </div>
-
-                            <!-- Validation Message -->
-                            <p v-if="subcategoryValidationError" class="validation-error">
-                                You can select maximum 6 subcategories only.
-                            </p>
-                            <p v-else-if="subcategoryError" class="validation-error">Please select at least one subcategory</p>
-                        </div>
                     </div>
                 </div>
 
