@@ -188,10 +188,9 @@
             </div>
           </div>
 
-          <!-- Category and Subcategory Dropdowns -->
-          <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-4">
-            <!-- Category Dropdown -->
-            <div class="tw:flex-1">
+          <!-- Main categories only (no subcategories) -->
+          <div class="tw:flex tw:flex-col tw:gap-4">
+            <div class="tw:w-full">
               <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
                 Category <span class="tw:text-red-500">*</span>
               </label>
@@ -206,7 +205,7 @@
                     {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
                     'Select Category') }}
                   </option>
-                  <option v-for="category in categoriesOrganisers" :key="category.id" :value="category.id">
+                  <option v-for="category in categoriesOrganisersMain" :key="category.id" :value="category.id">
                     {{ category.name }}
                   </option>
                 </select>
@@ -214,80 +213,6 @@
                   class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
               </div>
               <p v-if="categoryError" class="tw:text-red-500 tw:text-sm tw:mt-1">Category is required</p>
-            </div>
-
-            <!-- Subcategory Multi-Select -->
-            <div class="tw:flex-1">
-              <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                Subcategories <span class="tw:text-red-500">*</span>
-              </label>
-
-              <!-- Multi-Select Input Field -->
-              <div class="subcategory-dropdown-container" ref="dropdownContainer">
-                <div @click="toggleSubcategoryDropdown" :class="[
-                  'subcategory-input',
-                  (!form.organiser_category_id || categoriesError) ? 'disabled' : '',
-                  subcategoryError ? 'error' : ''
-                ]">
-                  <div class="subcategory-input-content">
-                    <span class="subcategory-input-text">
-                      {{ form.organiser_subcategory_ids.length > 0
-                          ? `${form.organiser_subcategory_ids.length} selected`
-                          : (form.organiser_category_id ? 'Select Subcategories' : 'Select Category First')
-                      }}
-                    </span>
-                    <ChevronDown :class="[
-                      'dropdown-chevron',
-                      showSubcategoryDropdown ? 'rotated' : ''
-                    ]" />
-                  </div>
-                </div>
-
-                <!-- Dropdown Options -->
-                <div v-if="showSubcategoryDropdown && form.organiser_category_id && !categoriesError" class="subcategory-dropdown"
-                  ref="dropdownMenu">
-                  <div class="dropdown-content">
-                    <div v-for="subcategory in availableSubcategories" :key="subcategory.id" class="dropdown-option"
-                      :class="{
-                        'selected': form.organiser_subcategory_ids.includes(subcategory.id),
-                        'disabled': !form.organiser_subcategory_ids.includes(subcategory.id) && form.organiser_subcategory_ids.length >= 1
-                      }" @click="toggleSubcategory(subcategory.id)">
-                      <input type="checkbox" :id="`subcategory-${subcategory.id}`" :value="subcategory.id"
-                        v-model="form.organiser_subcategory_ids"
-                        :disabled="!form.organiser_subcategory_ids.includes(subcategory.id) && form.organiser_subcategory_ids.length >= 1"
-                        @change="handleSubcategoryChange" @click.stop class="option-checkbox">
-                      <label :for="`subcategory-${subcategory.id}`" class="option-label" @click.stop>
-                        {{ subcategory.name }}
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- Max selection notice -->
-                  <div v-if="form.organiser_subcategory_ids.length >= 5" class="max-selection-notice">
-                    Maximum 5 subcategories selected
-                  </div>
-                </div>
-              </div>
-
-              <!-- Selected Tags Display -->
-              <div v-if="form.organiser_subcategory_ids.length > 0" class="selected-tags">
-                <span v-for="subcategoryId in form.organiser_subcategory_ids" :key="subcategoryId" class="selected-tag">
-                  {{ availableSubcategories.find(s => s.id === subcategoryId)?.name }}
-                  <button @click="removeSubcategory(subcategoryId)" class="tag-remove">
-                    <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clip-rule="evenodd"></path>
-                    </svg>
-                  </button>
-                </span>
-              </div>
-
-              <!-- Validation Message -->
-              <p v-if="subcategoryValidationError" class="validation-error">
-                You can select maximum 5 subcategories only.
-              </p>
-              <p v-else-if="subcategoryError" class="validation-error">Please select at least one subcategory</p>
             </div>
           </div>
         </div>
@@ -403,7 +328,6 @@ import {
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import OrganiserSidebar from "./eventsidebar/OrganiserSidebar.vue"
-import InviteSection from "@/components/invite/InviteSection.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
@@ -433,7 +357,6 @@ const isSubmitting = ref(false)
 const formData = reactive({
   organiserTitle: '',
   category: '',
-  subcategories: [],
 })
 
 // Image state: holds File object (new upload) or UUID string (existing)
@@ -444,39 +367,26 @@ const fieldErrors = ref({})
 const organiserSchema = {
   organiserTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Organiser Title' },
   category: { type: 'select', required: true, label: 'Category' },
-  subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
 }
 
 const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(organiserSchema, formData)
 
-const selectedCategory = ref("")
-const selectedSubcategories = ref([])
 const categoryError = ref(false)
-const subcategoryError = ref(false)
-const subcategoryValidationError = ref(false)
 const categoriesOrganisers = ref([])
 const isLoadingCategories = ref(false)
 const categoriesError = ref(null)
-const showSubcategoryDropdown = ref(false)
 
-// Form for organiser categories
 const form = reactive({
   organiser_category_id: "",
-  organiser_subcategory_ids: []
 })
 
-const dropdownContainer = ref(null)
-const dropdownMenu = ref(null)
+/** Top-level categories only; omit entries that declare a parent (subcategories). */
+const categoriesOrganisersMain = computed(() =>
+  categoriesOrganisers.value.filter((c) => c.parent_id == null || c.parent_id === undefined)
+)
 
-const availableSubcategories = computed(() => {
-  if (!form.organiser_category_id) return []
-  const selectedCategoryData = categoriesOrganisers.value.find(cat => cat.id === form.organiser_category_id)
-  return selectedCategoryData ? selectedCategoryData.subcategories : []
-})
-
-// Computed property for selected category details
 const selectedCategoryDetails = computed(() => {
-  return categoriesOrganisers.value.find(cat => cat.id === form.organiser_category_id)
+  return categoriesOrganisersMain.value.find(cat => String(cat.id) === String(form.organiser_category_id))
 })
 
 async function fetchCategories() {
@@ -498,54 +408,12 @@ async function fetchCategories() {
 }
 
 function handleCategoryChangeWithValidation() {
-  form.organiser_subcategory_ids = []
-  subcategoryError.value = false
-  subcategoryValidationError.value = false
   categoryError.value = false
-  showSubcategoryDropdown.value = false
-}
-
-function toggleSubcategoryDropdown() {
-  if (!form.organiser_category_id || categoriesError.value) return
-  showSubcategoryDropdown.value = !showSubcategoryDropdown.value
-}
-
-function toggleSubcategory(subcategoryId) {
-  if (!form.organiser_subcategory_ids.includes(subcategoryId) && form.organiser_subcategory_ids.length >= 1) {
-    return
-  }
-  const index = form.organiser_subcategory_ids.indexOf(subcategoryId)
-  if (index > -1) {
-    form.organiser_subcategory_ids.splice(index, 1)
-  } else {
-    form.organiser_subcategory_ids.push(subcategoryId)
-  }
-  handleSubcategoryChange()
-}
-
-function handleSubcategoryChange() {
-  subcategoryError.value = false
-  if (form.organiser_subcategory_ids.length > 5) {
-    form.organiser_subcategory_ids = form.organiser_subcategory_ids.slice(0, 5)
-    subcategoryValidationError.value = true
-    setTimeout(() => { subcategoryValidationError.value = false }, 3000)
-  } else {
-    subcategoryValidationError.value = false
-  }
-}
-
-function removeSubcategory(subcategoryIdToRemove) {
-  const index = form.organiser_subcategory_ids.indexOf(subcategoryIdToRemove)
-  if (index > -1) {
-    form.organiser_subcategory_ids.splice(index, 1)
-    subcategoryValidationError.value = false
-  }
 }
 
 function validateGenre() {
   categoryError.value = !form.organiser_category_id
-  subcategoryError.value = form.organiser_subcategory_ids.length === 0
-  return form.organiser_category_id && form.organiser_subcategory_ids.length > 0
+  return !!form.organiser_category_id
 }
 
 // ── Location refs ──────────────────────────────────────────────────────
@@ -704,9 +572,6 @@ function isActive(item) {
 
 function syncFormData() {
   formData.category = selectedCategoryDetails.value?.name || ''
-  formData.subcategories = availableSubcategories.value
-    .filter(s => form.organiser_subcategory_ids.includes(s.id))
-    .map(s => s.name)
 }
 
 // ── Build FormData (shared by create & update) ────────────────────────
@@ -720,11 +585,6 @@ function buildFormData() {
   if (form.organiser_category_id) {
     fd.append('organiser_category_id', form.organiser_category_id)
   }
-
-  // Organiser Subcategory IDs
-  form.organiser_subcategory_ids.forEach(id => {
-    fd.append('organiser_subcategory_ids[]', id)
-  })
 
   fd.append('address', selectedAddress.value)
   if (latitude.value != null) fd.append('latitude', latitude.value)
@@ -757,12 +617,8 @@ async function loadOrganiser(id) {
     if (d.latitude) latitude.value = d.latitude
     if (d.longitude) longitude.value = d.longitude
 
-    // Category / subcategory hydration
     if (d.organiser_category_id) {
       form.organiser_category_id = d.organiser_category_id
-      if (d.organiser_subcategories && Array.isArray(d.organiser_subcategories)) {
-        form.organiser_subcategory_ids = d.organiser_subcategories.map(s => s.id)
-      }
     }
 
     // Image
@@ -789,11 +645,7 @@ async function loadOrganiser(id) {
 function resetForm() {
   formData.organiserTitle = ''
   formData.category = ''
-  formData.subcategories = []
   form.organiser_category_id = ''
-  form.organiser_subcategory_ids = []
-  selectedCategory.value = ''
-  selectedSubcategories.value = []
   selectedAddress.value = ''
   searchAddress.value = ''
   latitude.value = null
@@ -802,11 +654,84 @@ function resetForm() {
   imagePreviewUrl.value = null
   fileName.value = ''
   categoryError.value = false
-  subcategoryError.value = false
-  subcategoryValidationError.value = false
   isEditMode.value = false
   editingOrganiserId.value = null
   resetErrors()
+}
+
+function cancelEdit() {
+  isEditMode.value = false
+  editingOrganiserId.value = null
+  resetForm()
+}
+
+function handleChatboxClick() {}
+
+async function createOrganiser() {
+  try {
+    fieldErrors.value = {}
+    const fd = buildFormData()
+    const response = await eventService.createOrganiser(fd)
+
+    if (response.success) {
+      toast.success('Organiser created successfully.')
+      resetForm()
+      const { useMyOrganiserStore } = await import("@/stores/myOrganiserStore")
+      const myOrganiserStore = useMyOrganiserStore()
+      myOrganiserStore.fetchMyOrganisers()
+    } else {
+      if (response.errors) {
+        fieldErrors.value = response.errors
+        toast.error(response.message || 'Please correct the errors.')
+      } else {
+        toast.error(response.message || 'Failed to create organiser.')
+      }
+    }
+  } catch (error) {
+    console.error('Error creating organiser:', error)
+    if (error.response?.data?.errors) {
+      fieldErrors.value = error.response.data.errors
+      toast.error(error.response.data.message || 'Please correct the errors.')
+    } else {
+      toast.error(error.response?.data?.message || 'Failed to create organiser.')
+    }
+  }
+}
+
+async function updateOrganiser() {
+  if (!editingOrganiserId.value) return
+  try {
+    fieldErrors.value = {}
+    const fd = buildFormData()
+    fd.append('_method', 'PUT')
+
+    const response = await eventService.updateOrganiser(editingOrganiserId.value, fd)
+
+    if (response.success) {
+      toast.success('Organiser updated successfully.')
+      isEditMode.value = false
+      editingOrganiserId.value = null
+      resetForm()
+      const { useMyOrganiserStore } = await import("@/stores/myOrganiserStore")
+      const myOrganiserStore = useMyOrganiserStore()
+      myOrganiserStore.fetchMyOrganisers()
+    } else {
+      if (response.errors) {
+        fieldErrors.value = response.errors
+        toast.error(response.message || 'Please correct the errors.')
+      } else {
+        toast.error(response.message || 'Failed to update organiser.')
+      }
+    }
+  } catch (error) {
+    console.error('Error updating organiser:', error)
+    if (error.response?.data?.errors) {
+      fieldErrors.value = error.response.data.errors
+      toast.error(error.response.data.message || 'Please correct the errors.')
+    } else {
+      toast.error(error.response?.data?.message || 'Failed to update organiser.')
+    }
+  }
 }
 
 // ── Handle Submit ───────────────────────────────────────────────────────
@@ -853,15 +778,8 @@ async function handleSubmit() {
   }
 }
 
-function handleClickOutside(event) {
-  if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
-    showSubcategoryDropdown.value = false
-  }
-}
-
 onMounted(() => {
   fetchCategories()
-  document.addEventListener('click', handleClickOutside)
 
   // Initialize map
   map.value = new maplibregl.Map({
@@ -881,7 +799,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleClickOutside)
   if (map.value) map.value.remove()
 })
 </script>

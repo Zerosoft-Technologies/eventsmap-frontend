@@ -517,14 +517,15 @@
               <div class="tw:relative">
                 <select
                   v-model="dressCode"
-                  @change="clearFieldError('dressCode'); if (dressCode === 'none') dressCodeDescription = ''"
+                  @change="clearFieldError('dressCode'); if (dressCode === 'none' || dressCode === 'formal') dressCodeDescription = ''"
                   :class="[
                     'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-base tw:md:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                     errors.dressCode ? 'tw:border-red-500' : 'tw:border-gray-200'
                   ]">
                   <option value="">Select</option>
+                  <option value="formal">Dress Code</option>
                   <option value="none">No Dress Code</option>
-                  <option value="required">Other, Please Specify</option>
+                  <option value="required">Voor Free Event</option>
                 </select>
                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
@@ -540,66 +541,52 @@
               <p v-if="errors.dressCode" class="tw:text-red-500 tw:text-sm">Please choose a dress code option</p>
             </div>
 
-            <!-- Age Limit -->
+            <!-- Age Limit (Age Group) -->
             <div class="tw:space-y-3">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">
-                Age Limit <span class="tw:text-red-500">*</span>
-              </label>
+              <!-- <div> -->
+                <label class="tw:text-sm tw:font-medium tw:text-gray-700">
+                  Age Limit <span class="tw:text-red-500">*</span>
+                </label>
+                <!-- <p class="tw:text-xs tw:text-gray-500 tw:mt-0.5">(Select one)</p> -->
+              <!-- </div> -->
               <div class="tw:relative">
                 <select
                   v-model="ageLimit"
-                  @change="clearFieldError('ageLimit'); if (ageLimit === 'none') ageLimitDescription = ''"
+                  @change="clearFieldError('ageLimit')"
                   :class="[
                     'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-base tw:md:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                     errors.ageLimit ? 'tw:border-red-500' : 'tw:border-gray-200'
                   ]">
-                  <option value="">Select</option>
-                  <option value="none">No Age Limit</option>
-                  <option value="restricted">Other, Please Specify</option>
+                  <option value="">Select age group</option>
+                  <option v-for="opt in AGE_GROUP_OPTIONS" :key="opt" :value="opt">{{ opt }}</option>
                 </select>
                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
-              <div v-if="ageLimit === 'restricted'" class="tw:space-y-2">
-                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Age Limit</label>
-                <input
-                  v-model="ageLimitDescription"
-                  type="text"
-                  placeholder="e.g., 18+, 21+, Adults only"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all"
-                />
-              </div>
-              <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm">Please choose an age limit option</p>
+              <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm">Please choose an age group</p>
             </div>
 
             <!-- Entrance Status -->
             <div class="tw:space-y-3">
-              <label class="tw:text-sm tw:font-medium tw:text-gray-700">
-                Entrance Status <span class="tw:text-red-500">*</span>
-              </label>
+              <!-- <div> -->
+                <label class="tw:text-sm tw:font-medium tw:text-gray-700">
+                  Entrance Status <span class="tw:text-red-500">*</span>
+                </label>
+                <!-- <p class="tw:text-xs tw:text-gray-500 tw:mt-0.5">(Select one)</p> -->
+              <!-- </div> -->
               <div class="tw:relative">
                 <select
                   v-model="entranceStatus"
-                  @change="clearFieldError('entranceStatus'); if (entranceStatus === 'open') entranceDescription = ''"
+                  @change="clearFieldError('entranceStatus')"
                   :class="[
                     'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-base tw:md:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                     errors.entranceStatus ? 'tw:border-red-500' : 'tw:border-gray-200'
                   ]">
-                  <option value="">Select</option>
-                  <option value="open">Open to All</option>
-                  <option value="restricted">Other, Please Specify</option>
+                  <option value="">Select entrance status</option>
+                  <option v-for="opt in ENTRANCE_STATUS_OPTIONS" :key="opt" :value="opt">{{ opt }}</option>
                 </select>
                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
-              <div v-if="entranceStatus === 'restricted'" class="tw:space-y-2">
-                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Entrance Status</label>
-                <textarea
-                  v-model="entranceDescription"
-                  placeholder="e.g., Members only, Invite-only, VIP access"
-                  rows="3"
-                  class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y tw:min-h-[84px]"
-                ></textarea>
-              </div>
-              <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm">Please choose an entrance option</p>
+              <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm">Please choose an entrance status</p>
             </div>
           </div>
         </div>
@@ -903,13 +890,66 @@ function validateGenre() {
   return selectedCategory.value && selectedSubcategories.value.length > 0
 }
 
+/** Stored/API values match these labels exactly (age_limit & entrance_status). */
+const AGE_GROUP_OPTIONS = [
+  'All Ages',
+  'Family Friendly (0–12)',
+  '0–4 (Toddlers / Babies)',
+  '4–7 (Young Kids)',
+  '8–12 (Kids)',
+  '12–17 (Teens)',
+  '18+ (Adults)',
+  '21+',
+  '25+ (Mature Crowd)',
+  '30+ (30+ Crowd)',
+  'Students',
+  'Senior Friendly (50+ / 60+)',
+  'LGBTQ+ Friendly',
+]
+
+const ENTRANCE_STATUS_OPTIONS = [
+  'Free Entrance',
+  'Paid Entrance',
+  'Donation',
+  'Event Postponed',
+  'Event Cancelled',
+  'Sold Out',
+]
+
 const dressCode = ref("")
-const ageLimit = ref("")
-const entranceFee = ref("")
-const entranceStatus = ref("")
 const dressCodeDescription = ref("")
-const ageLimitDescription = ref("")
-const entranceDescription = ref("")
+
+/** Maps UI dress code selection to API / DB (NOT NULL). */
+function dressCodePayloadValue() {
+  if (dressCode.value === "none") return "no_dress_code"
+  if (dressCode.value === "formal") return "Dress Code"
+  if (dressCode.value === "required") return (dressCodeDescription.value || "").trim()
+  return ""
+}
+
+const ageLimit = ref("")
+const entranceStatus = ref("")
+
+function mapApiAgeLimitToSelect(stored) {
+  const al = (stored ?? '').toString().trim()
+  if (!al || al === 'no_age_limit') return 'All Ages'
+  if (AGE_GROUP_OPTIONS.includes(al)) return al
+  const alLower = al.toLowerCase()
+  const byLabel = AGE_GROUP_OPTIONS.find((o) => o.toLowerCase() === alLower)
+  if (byLabel) return byLabel
+  if (al === 'all_ages') return 'All Ages'
+  return 'All Ages'
+}
+
+function mapApiEntranceStatusToSelect(stored) {
+  const es = (stored ?? '').toString().trim()
+  if (!es || es === 'open_to_all') return 'Free Entrance'
+  if (ENTRANCE_STATUS_OPTIONS.includes(es)) return es
+  const esLower = es.toLowerCase()
+  const byLabel = ENTRANCE_STATUS_OPTIONS.find((o) => o.toLowerCase() === esLower)
+  if (byLabel) return byLabel
+  return 'Free Entrance'
+}
 
 // Event Date and Time
 const eventDate = ref("")
@@ -1479,8 +1519,8 @@ function validateForm() {
 
   // Overview validation
   errors.value.dressCode = !dressCode.value || (dressCode.value === 'required' && !dressCodeDescription.value?.trim())
-  errors.value.ageLimit = !ageLimit.value || (ageLimit.value === 'restricted' && !ageLimitDescription.value?.trim())
-  errors.value.entranceStatus = !entranceStatus.value || (entranceStatus.value === 'restricted' && !entranceDescription.value?.trim())
+  errors.value.ageLimit = !ageLimit.value
+  errors.value.entranceStatus = !entranceStatus.value
 
   const hasOtherErrors = Object.values(errors.value).some(error => error) ||
     categoryError.value ||
@@ -1554,10 +1594,7 @@ function resetForm() {
   dressCode.value = ''
   dressCodeDescription.value = ''
   ageLimit.value = ''
-  ageLimitDescription.value = ''
-  entranceFee.value = ''
   entranceStatus.value = ''
-  entranceDescription.value = ''
   const fileInput = document.querySelector('input[type="file"]')
   if (fileInput) fileInput.value = ''
 }
@@ -1606,9 +1643,9 @@ async function createEvent() {
     formData.append('address', selectedAddress.value)
     formData.append('latitude', latitude.value)
     formData.append('longitude', longitude.value)
-    formData.append('dress_code', dressCode.value === 'none' ? 'no_dress_code' : (dressCodeDescription.value || ''))
-    formData.append('age_limit', ageLimit.value === 'none' ? 'no_age_limit' : (ageLimitDescription.value || ''))
-    formData.append('entrance_status', entranceStatus.value === 'open' ? 'open_to_all' : (entranceDescription.value || ''))
+    formData.append('dress_code', dressCodePayloadValue())
+    formData.append('age_limit', ageLimit.value)
+    formData.append('entrance_status', entranceStatus.value)
 
     // Add image file if exists
     if (selectedImageFile.value) {
@@ -1738,32 +1775,20 @@ async function fetchEventDetails(id) {
       }
 
       // Overview fields
-      const dc = data.dress_code || ''
+      const dc = (data.dress_code || '').toString().trim()
       if (!dc || dc === 'no_dress_code') {
         dressCode.value = 'none'
+        dressCodeDescription.value = ''
+      } else if (dc === 'formal' || dc === 'Dress Code') {
+        dressCode.value = 'formal'
         dressCodeDescription.value = ''
       } else {
         dressCode.value = 'required'
         dressCodeDescription.value = dc
       }
 
-      const al = data.age_limit || ''
-      if (!al || al === 'no_age_limit') {
-        ageLimit.value = 'none'
-        ageLimitDescription.value = ''
-      } else {
-        ageLimit.value = 'restricted'
-        ageLimitDescription.value = al
-      }
-
-      const es = data.entrance_status || ''
-      if (!es || es === 'open_to_all') {
-        entranceStatus.value = 'open'
-        entranceDescription.value = ''
-      } else {
-        entranceStatus.value = 'restricted'
-        entranceDescription.value = es
-      }
+      ageLimit.value = mapApiAgeLimitToSelect(data.age_limit)
+      entranceStatus.value = mapApiEntranceStatusToSelect(data.entrance_status)
 
       // Image
       existingImageUrl.value = data.image_url || data.image_path || null
@@ -1821,9 +1846,9 @@ async function updateEvent() {
     formData.append('address', selectedAddress.value)
     formData.append('latitude', latitude.value)
     formData.append('longitude', longitude.value)
-    formData.append('dress_code', dressCode.value === 'none' ? 'no_dress_code' : (dressCodeDescription.value || ''))
-    formData.append('age_limit', ageLimit.value === 'none' ? 'no_age_limit' : (ageLimitDescription.value || ''))
-    formData.append('entrance_status', entranceStatus.value === 'open' ? 'open_to_all' : (entranceDescription.value || ''))
+    formData.append('dress_code', dressCodePayloadValue())
+    formData.append('age_limit', ageLimit.value)
+    formData.append('entrance_status', entranceStatus.value)
 
     // Only send image if user uploaded a new one
     if (selectedImageFile.value) {
