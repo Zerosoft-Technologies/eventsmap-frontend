@@ -165,7 +165,7 @@ export interface VenueV2Payload {
   contact_phone?: string
   contact_email?: string
   contact_website?: string
-  opening_hours?: string | Record<string, string>
+  opening_hours?: string | string[] | Record<string, string>
   facebook_url?: string
   instagram_url?: string
   tiktok_url?: string

@@ -184,6 +184,8 @@
           </div>
 
           <div id="event-map" class="tw:w-full tw:h-[240px] tw:md:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4"></div>
+          <!-- ✅ FIX 3d: show location validation error -->
+          <p v-if="locationError" class="tw:text-red-500 tw:text-sm tw:-mt-2 tw:mb-2">{{ locationError }}</p>
 
           <div class="tw:space-y-2">
             <label class="tw:block tw:text-sm tw:text-gray-600">Selected Address</label>
@@ -646,6 +648,7 @@ const selectedImageFile = ref(null)
 const imagePreview = ref(null)
 const fileName = ref('')
 const existingImageUrl = ref(null)
+const locationError = ref('')   // ✅ FIX 3a: new ref
 
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
@@ -801,6 +804,10 @@ function handleFileChange(event) {
       URL.revokeObjectURL(imagePreview.value)
     }
     imagePreview.value = URL.createObjectURL(file)
+    // ✅ FIX 1: clear the error as soon as a file is chosen
+    const errs = { ...fieldErrors.value }
+    delete errs.image_path
+    fieldErrors.value = errs
   } else {
     selectedImageFile.value = null
     fileName.value = ''
@@ -892,7 +899,11 @@ function buildVenueFormData() {
 
 function validateForm() {
   syncFormData()
-  const ok = validate() && validateGenre()
+  // ✅ FIX 2: run both independently so all errors show at once
+  const formOk  = validate()
+  const genreOk = validateGenre()
+  const ok = formOk && genreOk
+
   const hasImage =
     selectedImageFile.value !== null ||
     (isEditMode.value && !!existingImageUrl.value)
@@ -902,8 +913,18 @@ function validateForm() {
   } else {
     delete extra.image_path
   }
+  // ✅ FIX 2b: also validate location
+  if (!selectedAddress.value) {
+    locationError.value = 'Venue location is required'
+  } else {
+    locationError.value = ''
+  }
   fieldErrors.value = extra
-  return ok && hasImage
+  return ok && hasImage && !!selectedAddress.value
+}
+
+async function refreshMyVenuesAfterSave() {
+  await myVenueStore.fetchMyVenues()
 }
 
 // ── Create Venue ────────────────────────────────────────────────
@@ -919,7 +940,12 @@ async function createVenue() {
     const response = await eventService.createVenueFormData(formDataBody)
     if (response.success) {
       toast.success('Venue created successfully!')
+      const newId = response.data?.id
       resetForm()
+      await refreshMyVenuesAfterSave()
+      if (newId != null) {
+        myVenueStore.selectVenue(Number(newId))
+      }
     } else {
       if (response.errors) fieldErrors.value = response.errors
       toast.error(response.message || 'Failed to create venue')
@@ -943,7 +969,12 @@ async function updateVenue() {
     const response = await eventService.updateVenueFormData(editingVenueId.value, formDataBody)
     if (response.success) {
       toast.success('Venue updated successfully!')
+      const id = editingVenueId.value
       resetForm()
+      await refreshMyVenuesAfterSave()
+      if (id != null) {
+        myVenueStore.selectVenue(Number(id))
+      }
     } else {
       if (response.errors) fieldErrors.value = response.errors
       toast.error(response.message || 'Failed to update venue')
@@ -959,9 +990,32 @@ async function updateVenue() {
   }
 }
 
+/** Map API booleans / legacy strings to <select value="yes"|"no"> */
+function apiBoolToYesNo(v) {
+  if (v === true || v === 1 || v === '1' || String(v).toLowerCase() === 'true') return 'yes'
+  if (v === false || v === 0 || v === '0' || String(v).toLowerCase() === 'false') return 'no'
+  if (v === 'yes' || v === 'no') return v
+  return ''
+}
+
+/**
+ * GET /v2/venues may return `allow_dogs` (bool) or `allowance_of_dogs` (slug string).
+ */
+function mapAllowDogsFromApi(venue) {
+  const slug = venue.allowance_of_dogs
+  if (typeof slug === 'string' && slug.trim()) return slug
+  const ad = venue.allow_dogs
+  if (ad === true || ad === 1 || ad === '1' || String(ad).toLowerCase() === 'true') return 'all-dogs'
+  if (ad === false || ad === 0 || ad === '0' || String(ad).toLowerCase() === 'false') return 'no-dogs-included'
+  return ''
+}
+
 // ── Load Venue for editing ──────────────────────────────────────
 async function loadVenue(id) {
   try {
+    if (!categories.value.length) {
+      await fetchCategories()
+    }
     const response = await eventService.getVenueById(id)
     const venue = response.data || response
 
@@ -972,15 +1026,31 @@ async function loadVenue(id) {
     selectedAddress.value = venue.address || ''
     searchAddress.value = venue.address || ''
 
-    if (venue.latitude) mapLat.value = venue.latitude
-    if (venue.longitude) mapLng.value = venue.longitude
+    if (venue.latitude != null && venue.latitude !== '') mapLat.value = venue.latitude
+    if (venue.longitude != null && venue.longitude !== '') mapLng.value = venue.longitude
 
-    // Category & subcategories
-    if (venue.category) {
+    // Category & subcategories (API: category_id + subcategory_ids; legacy: nested category)
+    selectedCategory.value = ''
+    selectedSubcategories.value = []
+    const catId = venue.category_id
+    const subIdsRaw = venue.subcategory_ids
+    if (catId != null && Array.isArray(subIdsRaw) && categories.value.length) {
+      const cat = categories.value.find((c) => Number(c.id) === Number(catId))
+      if (cat) {
+        selectedCategory.value = cat.name
+        await nextTick()
+        const idSet = new Set(subIdsRaw.map((x) => Number(x)))
+        selectedSubcategories.value = cat.subcategories
+          .filter((s) => idSet.has(Number(s.id)))
+          .map((s) => s.name)
+      }
+    } else if (venue.category) {
       selectedCategory.value = venue.category.name || ''
       await nextTick()
       if (venue.subcategories && venue.subcategories.length) {
-        selectedSubcategories.value = venue.subcategories.map(s => s.name)
+        selectedSubcategories.value = venue.subcategories.map((s) =>
+          typeof s === 'object' && s !== null ? s.name : s
+        )
       }
     }
 
@@ -997,15 +1067,15 @@ async function loadVenue(id) {
     }
     fieldErrors.value = {}
 
-    // Accessibility
-    allowanceOfDogs.value = venue.allowance_of_dogs || ''
-    wheelchairAccessible.value = venue.wheelchair_accessible || ''
-    accessibleParking.value = venue.accessible_parking || ''
-    valetParking.value = venue.valet_parking || ''
-    childrensPlayArea.value = venue.childrens_play_area || ''
+    // Accessibility / amenities — v2 JSON uses allow_dogs, parking, valet, play_area; submits use *_of_dogs etc.
+    allowanceOfDogs.value = mapAllowDogsFromApi(venue)
+    wheelchairAccessible.value = apiBoolToYesNo(venue.wheelchair_accessible)
+    accessibleParking.value = apiBoolToYesNo(venue.accessible_parking ?? venue.parking)
+    valetParking.value = apiBoolToYesNo(venue.valet_parking ?? venue.valet)
+    childrensPlayArea.value = apiBoolToYesNo(venue.childrens_play_area ?? venue.play_area)
 
     // Center map
-    if (venue.latitude && venue.longitude && map.value) {
+    if (venue.latitude != null && venue.longitude != null && map.value) {
       map.value.flyTo({
         center: [venue.longitude, venue.latitude],
         zoom: 15,
@@ -1031,6 +1101,7 @@ function resetForm() {
   formData.venueTitle = ''
   formData.category = ''
   formData.subcategories = []
+  locationError.value = ''
   selectedCategory.value = ''
   selectedSubcategories.value = []
   selectedAddress.value = ''
@@ -1116,6 +1187,7 @@ const onSearchInput = debounce(async () => {
 }, 400)
 
 function selectSuggestion(suggestion) {
+  locationError.value = '' 
   const { lat, lon, display_name } = suggestion
   searchAddress.value = display_name
   suggestions.value = []
@@ -1188,6 +1260,7 @@ onMounted(async () => {
     mapLng.value = lng
     updateMarker(lng, lat)
     await reverseGeocode(lng, lat)
+    locationError.value = ''
   })
 
   // Check if editing an existing venue via route query

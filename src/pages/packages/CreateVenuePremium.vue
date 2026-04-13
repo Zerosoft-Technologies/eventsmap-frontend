@@ -1327,6 +1327,10 @@ function buildVenuePayload() {
     }
 }
 
+async function refreshMyVenuesAfterSave() {
+    await myVenueStore.fetchMyVenues()
+}
+
 // ── Create Venue ────────────────────────────────────────────────
 async function createVenue() {
     try {
@@ -1336,7 +1340,12 @@ async function createVenue() {
         if (response.success) {
             toast.success('Venue created successfully!')
             pendingFileMap.value = {}
+            const newId = response.data?.id
             resetForm()
+            await refreshMyVenuesAfterSave()
+            if (newId != null) {
+                myVenueStore.selectVenue(Number(newId))
+            }
         } else {
             if (response.errors) {
                 fieldErrors.value = response.errors
@@ -1371,9 +1380,14 @@ async function updateVenue() {
         if (response.success) {
             toast.success('Venue updated successfully!')
             pendingFileMap.value = {}
+            const id = editingVenueId.value
             isEditMode.value = false
             editingVenueId.value = null
             resetForm()
+            await refreshMyVenuesAfterSave()
+            if (id != null) {
+                myVenueStore.selectVenue(Number(id))
+            }
         } else {
             if (response.errors) {
                 fieldErrors.value = response.errors
@@ -1398,6 +1412,22 @@ async function updateVenue() {
     }
 }
 
+function apiBoolToYesNo(v) {
+    if (v === true || v === 1 || v === '1' || String(v).toLowerCase() === 'true') return 'yes'
+    if (v === false || v === 0 || v === '0' || String(v).toLowerCase() === 'false') return 'no'
+    if (v === 'yes' || v === 'no') return v
+    return ''
+}
+
+function mapAllowDogsFromApi(venue) {
+    const slug = venue.allowance_of_dogs
+    if (typeof slug === 'string' && slug.trim()) return slug
+    const ad = venue.allow_dogs
+    if (ad === true || ad === 1 || ad === '1' || String(ad).toLowerCase() === 'true') return 'all-dogs'
+    if (ad === false || ad === 0 || ad === '0' || String(ad).toLowerCase() === 'false') return 'no-dogs-included'
+    return ''
+}
+
 // ── Load Venue for editing ──────────────────────────────────────
 async function loadVenue(id) {
     try {
@@ -1415,15 +1445,31 @@ async function loadVenue(id) {
         selectedAddress.value = venue.address || ''
         searchAddress.value = venue.address || ''
 
-        if (venue.latitude) mapLat.value = venue.latitude
-        if (venue.longitude) mapLng.value = venue.longitude
+        if (venue.latitude != null && venue.latitude !== '') mapLat.value = venue.latitude
+        if (venue.longitude != null && venue.longitude !== '') mapLng.value = venue.longitude
 
-        // Category & subcategories
-        if (venue.category) {
+        // Category & subcategories (API: category_id + subcategory_ids; legacy: nested category)
+        selectedCategory.value = ''
+        selectedSubcategories.value = []
+        const catId = venue.category_id
+        const subIdsRaw = venue.subcategory_ids
+        if (catId != null && Array.isArray(subIdsRaw) && categories.value.length) {
+            const cat = categories.value.find((c) => Number(c.id) === Number(catId))
+            if (cat) {
+                selectedCategory.value = cat.name
+                await nextTick()
+                const idSet = new Set(subIdsRaw.map((x) => Number(x)))
+                selectedSubcategories.value = cat.subcategories
+                    .filter((s) => idSet.has(Number(s.id)))
+                    .map((s) => s.name)
+            }
+        } else if (venue.category) {
             selectedCategory.value = venue.category.name || ''
             await nextTick()
             if (venue.subcategories && venue.subcategories.length) {
-                selectedSubcategories.value = venue.subcategories.map(s => s.name)
+                selectedSubcategories.value = venue.subcategories.map((s) =>
+                    typeof s === 'object' && s !== null ? s.name : s
+                )
             }
         }
 
@@ -1449,12 +1495,12 @@ async function loadVenue(id) {
 
         fieldErrors.value = {}
 
-        // Accessibility
-        allowanceOfDogs.value = venue.allowance_of_dogs || ''
-        wheelchairAccessible.value = venue.wheelchair_accessible || ''
-        accessibleParking.value = venue.accessible_parking || ''
-        valetParking.value = venue.valet_parking || ''
-        childrensPlayArea.value = venue.childrens_play_area || ''
+        // Accessibility / amenities — v2 JSON field names + form values
+        allowanceOfDogs.value = mapAllowDogsFromApi(venue)
+        wheelchairAccessible.value = apiBoolToYesNo(venue.wheelchair_accessible)
+        accessibleParking.value = apiBoolToYesNo(venue.accessible_parking ?? venue.parking)
+        valetParking.value = apiBoolToYesNo(venue.valet_parking ?? venue.valet)
+        childrensPlayArea.value = apiBoolToYesNo(venue.childrens_play_area ?? venue.play_area)
         accessibilityDescription.value = venue.accessibility_description || ''
 
         // Description items
@@ -1470,8 +1516,13 @@ async function loadVenue(id) {
         instagramUrl.value = venue.instagram_url || ''
         tiktokUrl.value = venue.tiktok_url || ''
 
-        // Opening hours
-        if (typeof venue.opening_hours === 'object' && venue.opening_hours !== null) {
+        // Opening hours (API returns string[]; avoid JSON.stringify in the textarea)
+        if (Array.isArray(venue.opening_hours)) {
+            openingHoursText.value = venue.opening_hours
+                .map((line) => (line == null ? '' : String(line).trim()))
+                .filter(Boolean)
+                .join('\n')
+        } else if (typeof venue.opening_hours === 'object' && venue.opening_hours !== null) {
             openingHoursText.value = JSON.stringify(venue.opening_hours)
         } else {
             openingHoursText.value = venue.opening_hours || ''
@@ -1482,7 +1533,7 @@ async function loadVenue(id) {
         showPastEvents.value = venue.show_past_events === '1' || venue.show_past_events === true
 
         // Center map
-        if (venue.latitude && venue.longitude && map.value) {
+        if (venue.latitude != null && venue.longitude != null && map.value) {
             map.value.flyTo({
                 center: [venue.longitude, venue.latitude],
                 zoom: 15,
