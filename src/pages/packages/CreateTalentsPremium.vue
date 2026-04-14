@@ -868,7 +868,6 @@ import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
-import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useAuthStore } from "@/stores/auth"
@@ -1149,16 +1148,33 @@ function clearAllAdditionalImages() {
     formData.additional_images = []
 }
 
-async function fetchGalleryImages(retryCount = 0) {
-    try {
-        const response = await galleryApi.fetchImages(1, 100)
-        galleryImages.value = response.data.images
-    } catch (error) {
-        console.error('Error fetching gallery images:', error)
-        if (retryCount < 2) {
-            setTimeout(() => fetchGalleryImages(retryCount + 1), 1000)
+/** Populate local image metadata from talent detail (avoids GET /gallery-images on load/select). */
+function setGalleryImagesFromTalent(talent) {
+    const items = []
+    const mainId = typeof talent.image_path === 'string' ? talent.image_path.trim() : ''
+    const mainUrl = talent.image_url || talent.main_image_url
+    if (mainId && mainUrl) {
+        items.push({
+            image_id: mainId,
+            image_url: mainUrl,
+            file_name: talent.title ? String(talent.title).slice(0, 80) : 'Main image',
+        })
+    }
+    if (Array.isArray(talent.additional_images)) {
+        for (const raw of talent.additional_images) {
+            if (raw == null || typeof raw !== 'object') continue
+            const id = raw.image_id || raw.image_path || ''
+            const url = raw.image_url
+            if (id && url) {
+                items.push({
+                    image_id: String(id),
+                    image_url: url,
+                    file_name: raw.file_name || 'Image',
+                })
+            }
         }
     }
+    galleryImages.value = items
 }
 
 // Sync category/subcategory selections into formData for validation
@@ -1310,7 +1326,6 @@ function cancelEdit() {
 async function loadTalent(id) {
     try {
         if (!categoriesTalents.value.length) await fetchCategories()
-        await fetchGalleryImages()
 
         const response = await eventService.getTalentById(id)
         const talent = response.data || response
@@ -1361,6 +1376,8 @@ async function loadTalent(id) {
         formData.additional_images = addUuids
         formData.remove_main_image = false
 
+        setGalleryImagesFromTalent(talent)
+
         // Contact & social
         contactPhone.value = talent.contact_phone || ''
         contactEmail.value = talent.contact_email || ''
@@ -1399,9 +1416,11 @@ async function loadTalent(id) {
             })
             updateMarker(talent.longitude, talent.latitude)
         }
+        return true
     } catch (error) {
         console.error('Error loading talent:', error)
         toast.error('Failed to load talent data')
+        return false
     }
 }
 
@@ -1422,6 +1441,7 @@ function resetForm() {
     searchAddress.value = ''
     talentCity.value = ''
     pendingFileMap.value = {}
+    galleryImages.value = []
     mapLat.value = null
     mapLng.value = null
     contactPhone.value = ''
@@ -1605,7 +1625,6 @@ async function handleEventSelected(eventId) {
 // Initialize map on component mount
 onMounted(async () => {
     fetchCategories()
-    fetchGalleryImages()
     document.addEventListener('click', handleClickOutside)
 
     map.value = new maplibregl.Map({
@@ -1623,10 +1642,19 @@ onMounted(async () => {
         await reverseGeocode(lng, lat)
     })
 
-    // Check if editing an existing talent via route query
-    const talentId = route.query.edit || route.params.id
-    if (talentId) {
-        await loadTalent(Number(talentId))
+    const talentId =
+        myTalentStore.takePendingEditorTalentId() ?? route.query.edit ?? route.params.id
+    if (talentId != null && talentId !== '') {
+        const loaded = await loadTalent(Number(talentId))
+        if (loaded && route.query.edit != null && String(route.query.edit) !== '') {
+            const q = { ...route.query }
+            delete q.edit
+            if (Object.keys(q).length) {
+                router.replace({ path: route.path, query: q })
+            } else {
+                router.replace({ path: route.path })
+            }
+        }
     }
 })
 </script>

@@ -207,6 +207,14 @@ function handleListItemClick(item) {
       router.push({ path: home.route })
     }
   }
+
+  if (props.sidebarKind === 'talents') {
+    const home = props.menuItems.find((i) => i.id === 'home' && i.route)
+    if (home && route.path !== home.route) {
+      myTalentStore.setPendingEditorTalentId(item.id)
+      router.push({ path: home.route })
+    }
+  }
 }
 
 const router = useRouter()

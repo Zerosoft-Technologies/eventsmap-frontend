@@ -179,7 +179,7 @@ const isOrganiserRoute = computed(() => {
 /** Matches EventSidebar fetch: venues → /v2/my-venues, talents → /v2/my-talents, else /v2/my-events */
 const eventSidebarKind = computed(() => {
   if (route.path.includes('create-venue-premium') || route.path.includes('create-venue-free')) return 'venues'
-  if (route.path.includes('create-talents-premium')) return 'talents'
+  if (route.path.includes('create-talents-premium') || route.path.includes('create-talents-free')) return 'talents'
   return 'events'
 })
 

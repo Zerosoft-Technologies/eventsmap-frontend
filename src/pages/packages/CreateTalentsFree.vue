@@ -984,9 +984,11 @@ async function loadTalent(id) {
       })
       updateMarker(talent.longitude, talent.latitude)
     }
+    return true
   } catch (error) {
     console.error('Error loading talent:', error)
     toast.error('Failed to load talent data')
+    return false
   }
 }
 
@@ -1194,10 +1196,19 @@ onMounted(async () => {
     await reverseGeocode(lng, lat)
   })
 
-  // Check if editing an existing talent via route query
-  const talentId = route.query.edit || route.params.id
-  if (talentId) {
-    await loadTalent(Number(talentId))
+  const talentId =
+    myTalentStore.takePendingEditorTalentId() ?? route.query.edit ?? route.params.id
+  if (talentId != null && talentId !== '') {
+    const loaded = await loadTalent(Number(talentId))
+    if (loaded && route.query.edit != null && String(route.query.edit) !== '') {
+      const q = { ...route.query }
+      delete q.edit
+      if (Object.keys(q).length) {
+        router.replace({ path: route.path, query: q })
+      } else {
+        router.replace({ path: route.path })
+      }
+    }
   }
 })
 
