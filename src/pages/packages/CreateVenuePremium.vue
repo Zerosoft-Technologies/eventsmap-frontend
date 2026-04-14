@@ -930,7 +930,6 @@ import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
-import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
@@ -1232,16 +1231,33 @@ function clearAllAdditionalImages() {
     formData.additional_images = []
 }
 
-async function fetchGalleryImages(retryCount = 0) {
-    try {
-        const response = await galleryApi.fetchImages(1, 100)
-        galleryImages.value = response.data.images
-    } catch (error) {
-        console.error('Error fetching gallery images:', error)
-        if (retryCount < 2) {
-            setTimeout(() => fetchGalleryImages(retryCount + 1), 1000)
+/** Populate local image metadata from venue detail (avoids GET /gallery-images on load/select). */
+function setGalleryImagesFromVenue(venue) {
+    const items = []
+    const mainId = typeof venue.image_path === 'string' ? venue.image_path.trim() : ''
+    const mainUrl = venue.image_url || venue.main_image_url
+    if (mainId && mainUrl) {
+        items.push({
+            image_id: mainId,
+            image_url: mainUrl,
+            file_name: venue.title ? String(venue.title).slice(0, 80) : 'Main image',
+        })
+    }
+    if (Array.isArray(venue.additional_images)) {
+        for (const raw of venue.additional_images) {
+            if (raw == null || typeof raw !== 'object') continue
+            const id = raw.image_id || raw.image_path || ''
+            const url = raw.image_url
+            if (id && url) {
+                items.push({
+                    image_id: String(id),
+                    image_url: url,
+                    file_name: raw.file_name || 'Image',
+                })
+            }
         }
     }
+    galleryImages.value = items
 }
 
 function handleBack() {
@@ -1432,7 +1448,6 @@ function mapAllowDogsFromApi(venue) {
 async function loadVenue(id) {
     try {
         if (!categories.value.length) await fetchCategories()
-        await fetchGalleryImages()
 
         const response = await eventService.getVenueById(id)
         const venue = response.data || response
@@ -1493,6 +1508,8 @@ async function loadVenue(id) {
         formData.additional_images = addUuids
         formData.remove_main_image = false
 
+        setGalleryImagesFromVenue(venue)
+
         fieldErrors.value = {}
 
         // Accessibility / amenities — v2 JSON field names + form values
@@ -1541,9 +1558,11 @@ async function loadVenue(id) {
             })
             updateMarker(venue.longitude, venue.latitude)
         }
+        return true
     } catch (error) {
         console.error('Error loading venue:', error)
         toast.error('Failed to load venue data')
+        return false
     }
 }
 
@@ -1568,6 +1587,7 @@ function resetForm() {
     selectedAddress.value = ''
     searchAddress.value = ''
     pendingFileMap.value = {}
+    galleryImages.value = []
     mapLat.value = null
     mapLng.value = null
     contactPhone.value = ''
@@ -1724,7 +1744,6 @@ async function reverseGeocode(lng, lat) {
 
 onMounted(async () => {
     fetchCategories()
-    fetchGalleryImages()
     document.addEventListener('click', handleClickOutside)
 
     map.value = new maplibregl.Map({
@@ -1742,10 +1761,19 @@ onMounted(async () => {
         await reverseGeocode(lng, lat)
     })
 
-    // Check if editing an existing venue via route query
-    const venueId = route.query.edit || route.params.id
-    if (venueId) {
-        await loadVenue(Number(venueId))
+    const venueId =
+        myVenueStore.takePendingEditorVenueId() ?? route.query.edit ?? route.params.id
+    if (venueId != null && venueId !== '') {
+        const loaded = await loadVenue(Number(venueId))
+        if (loaded && route.query.edit != null && String(route.query.edit) !== '') {
+            const q = { ...route.query }
+            delete q.edit
+            if (Object.keys(q).length) {
+                router.replace({ path: route.path, query: q })
+            } else {
+                router.replace({ path: route.path })
+            }
+        }
     }
 })
 </script>

@@ -13,7 +13,7 @@
         <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
           <OrganiserSidebar v-if="isOrganiserRoute" :menuItems="menuItems"
             @back="handleBack" @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar" />
-          <EventSidebar v-else :menuItems="menuItems"
+          <EventSidebar v-else :sidebar-kind="eventSidebarKind" :menuItems="menuItems"
             @back="handleBack" @event-selected="handleEventSelected"
             @chatbox-click="handleChatboxClick" @menu-click="closeMobileSidebar" />
         </div>
@@ -23,7 +23,7 @@
       <div class="tw:hidden tw:md:block">
         <OrganiserSidebar v-if="isOrganiserRoute" :menuItems="menuItems"
           @back="handleBack" @chatbox-click="handleChatboxClick" />
-        <EventSidebar v-else :menuItems="menuItems"
+        <EventSidebar v-else :sidebar-kind="eventSidebarKind" :menuItems="menuItems"
           @back="handleBack" @event-selected="handleEventSelected"
           @chatbox-click="handleChatboxClick" />
       </div>
@@ -174,6 +174,13 @@ const editAltTarget = ref<GalleryImage | null>(null)
 // Determine which sidebar to use
 const isOrganiserRoute = computed(() => {
   return route.path.includes('organiser')
+})
+
+/** Matches EventSidebar fetch: venues → /v2/my-venues, talents → /v2/my-talents, else /v2/my-events */
+const eventSidebarKind = computed(() => {
+  if (route.path.includes('create-venue-premium') || route.path.includes('create-venue-free')) return 'venues'
+  if (route.path.includes('create-talents-premium')) return 'talents'
+  return 'events'
 })
 
 // Menu items for sidebar

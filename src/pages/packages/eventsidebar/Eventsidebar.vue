@@ -198,6 +198,15 @@ function handleListItemClick(item) {
   else if (props.sidebarKind === 'venues') myVenueStore.selectVenue(item.id)
   else myEventStore.selectEvent(item.id)
   emit('event-selected', item.id)
+
+  // From any sub-route (report, gallery, future pages), open the venue form without ?edit= in the URL.
+  if (props.sidebarKind === 'venues') {
+    const home = props.menuItems.find((i) => i.id === 'home' && i.route)
+    if (home && route.path !== home.route) {
+      myVenueStore.setPendingEditorVenueId(item.id)
+      router.push({ path: home.route })
+    }
+  }
 }
 
 const router = useRouter()

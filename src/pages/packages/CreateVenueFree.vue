@@ -1083,9 +1083,11 @@ async function loadVenue(id) {
       })
       updateMarker(venue.longitude, venue.latitude)
     }
+    return true
   } catch (error) {
     console.error('Error loading venue:', error)
     toast.error('Failed to load venue data')
+    return false
   }
 }
 
@@ -1263,10 +1265,19 @@ onMounted(async () => {
     locationError.value = ''
   })
 
-  // Check if editing an existing venue via route query
-  const venueId = route.query.edit || route.params.id
-  if (venueId) {
-    await loadVenue(Number(venueId))
+  const venueId =
+    myVenueStore.takePendingEditorVenueId() ?? route.query.edit ?? route.params.id
+  if (venueId != null && venueId !== '') {
+    const loaded = await loadVenue(Number(venueId))
+    if (loaded && route.query.edit != null && String(route.query.edit) !== '') {
+      const q = { ...route.query }
+      delete q.edit
+      if (Object.keys(q).length) {
+        router.replace({ path: route.path, query: q })
+      } else {
+        router.replace({ path: route.path })
+      }
+    }
   }
 })
 

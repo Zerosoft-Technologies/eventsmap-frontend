@@ -4,8 +4,11 @@ export default {
   /**
    * GET /api/v2/my-venues — same auth/axios pattern as eventService.getMyEvents()
    */
-  async getMyVenues() {
-    const response = await api.get('/v2/my-venues')
+  /**
+   * @param {import('axios').AxiosRequestConfig} [axiosConfig] e.g. `{ signal }` to cancel in-flight requests
+   */
+  async getMyVenues(axiosConfig = {}) {
+    const response = await api.get('/v2/my-venues', axiosConfig)
     return response.data
   },
 }

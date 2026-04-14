@@ -8,14 +8,14 @@
             <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
                 <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar"></div>
                 <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
-                    <EventSidebar :menuItems="menuItems"
+                    <EventSidebar sidebar-kind="venues" :menuItems="menuItems"
                         @back="handleBack" @event-selected="handleEventSelected" @menu-click="closeMobileSidebar" />
                 </div>
             </div>
 
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
             <div class="tw:hidden tw:md:block">
-                <EventSidebar :menuItems="menuItems"
+                <EventSidebar sidebar-kind="venues" :menuItems="menuItems"
                     @back="handleBack" @event-selected="handleEventSelected" />
             </div>
 
