@@ -2483,11 +2483,12 @@ async function loadEvent(id) {
             ? d.additional_images.filter(id => id !== null && id !== '').map((id) => String(id))
             : []
 
-        // Clear file refs when loading existing event
+        // Clear file refs when loading existing event (avoid stale Files forcing main_image binary on save)
         mainImageFile.value = null
         additionalImageFiles.value = []
         selectedImageFile.value = null
         additionalImages.value = []
+        pendingFileMap.value = {}
 
         setGalleryImagesFromEvent(d)
 
@@ -2655,22 +2656,15 @@ async function updateEvent() {
         invitedVenueIds.value.forEach(id => formData.append('invited_venues[]', id))
         
         // ── Main image ──────────────────────────────────────────────────────
+        // Prefer gallery UUID (same as create flow). Upload-via-modal already assigns form.image_path after the image exists server-side.
         if (form.remove_main_image) {
-        formData.append('remove_main_image', 'true')
+            formData.append('remove_main_image', 'true')
         } else if (form.image_path) {
-        // Check pendingFileMap first: user may have uploaded a new file this session
-        const pendingFile = pendingFileMap.value[form.image_path]
-        if (pendingFile instanceof File) {
-            formData.append('main_image', pendingFile)
+            formData.append('image_path', String(form.image_path))
         } else if (mainImageFile.value instanceof File) {
-            // Legacy path — kept for safety
             formData.append('main_image', mainImageFile.value)
         } else if (selectedImageFile.value instanceof File) {
             formData.append('main_image', selectedImageFile.value)
-        } else {
-            // Existing gallery image — send its id so backend keeps it
-            formData.append('image_path', form.image_path)
-        }
         }
 
         // ── Additional images ────────────────────────────────────────────────
