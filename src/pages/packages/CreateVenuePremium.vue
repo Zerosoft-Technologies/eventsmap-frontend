@@ -930,6 +930,7 @@ import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
+import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
@@ -974,12 +975,12 @@ const pendingFileMap = ref({})
 
 const mainImage = computed(() => {
     if (!formData.image_path) return null
-    return galleryImages.value.find(img => img.image_id === formData.image_path)
+    return galleryImages.value.find((img) => img.image_id === formData.image_path)
 })
 
 const resolvedAdditionalImages = computed(() => {
     return formData.additional_images
-        .map(id => galleryImages.value.find(img => img.image_id === id))
+        .map((id) => galleryImages.value.find((img) => img.image_id === id))
         .filter(Boolean)
 })
 const contactPhone = ref("")
@@ -1191,6 +1192,16 @@ function handleAdditionalImagesClick() {
     showMediaModal.value = true
 }
 
+// Same pattern as CreateEventPremium: preload gallery for id → preview resolution (no API on modal confirm).
+const fetchGalleryImages = async () => {
+    try {
+        const response = await galleryApi.fetchImages(1, 100)
+        galleryImages.value = response.data.images
+    } catch (error) {
+        console.error('Error fetching gallery images:', error)
+    }
+}
+
 function handleMediaSelect(ids) {
     if (selectedMediaType.value === 'main') {
         formData.image_path = ids[0] || ''
@@ -1231,7 +1242,7 @@ function clearAllAdditionalImages() {
     formData.additional_images = []
 }
 
-/** Populate local image metadata from venue detail (avoids GET /gallery-images on load/select). */
+/** Merge venue detail image URLs into galleryImages (after fetchGalleryImages preload). */
 function setGalleryImagesFromVenue(venue) {
     const items = []
     const mainId = typeof venue.image_path === 'string' ? venue.image_path.trim() : ''
@@ -1257,7 +1268,11 @@ function setGalleryImagesFromVenue(venue) {
             }
         }
     }
-    galleryImages.value = items
+    const byId = new Map(galleryImages.value.map((img) => [String(img.image_id), img]))
+    for (const item of items) {
+        byId.set(String(item.image_id), item)
+    }
+    galleryImages.value = Array.from(byId.values())
 }
 
 function handleBack() {
@@ -1745,6 +1760,8 @@ async function reverseGeocode(lng, lat) {
 onMounted(async () => {
     fetchCategories()
     document.addEventListener('click', handleClickOutside)
+
+    await fetchGalleryImages()
 
     map.value = new maplibregl.Map({
         container: "event-map",
