@@ -199,13 +199,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                   </svg>
                 </div>
-                <p class="tw:text-base tw:font-semibold tw:text-gray-800 tw:mb-1">Upload Images</p>
-                <p class="tw:text-sm tw:text-gray-400 tw:mb-5">PNG, JPG, GIF — up to 10MB each</p>
+                <p class="tw:text-base tw:font-semibold tw:text-gray-800 tw:mb-1">Upload Image</p>
+                <p class="tw:text-sm tw:text-gray-400 tw:mb-5">PNG, JPG, GIF — up to 10MB (one file per upload)</p>
 
                 <input
                   ref="fileInput"
                   type="file"
-                  :multiple="multiple"
                   accept="image/*"
                   class="tw:hidden"
                   @change="handleFileSelect"
@@ -216,7 +215,7 @@
                   :disabled="uploading"
                   class="tw:px-5 tw:py-2.5 tw:text-sm tw:font-medium tw:text-white tw:bg-orange-500 hover:tw:bg-orange-600 tw:rounded-lg tw:transition-colors disabled:tw:opacity-50 disabled:tw:cursor-not-allowed tw:shadow-sm"
                 >
-                  {{ uploading ? 'Uploading...' : 'Choose Files' }}
+                  {{ uploading ? 'Uploading...' : 'Choose File' }}
                 </button>
 
                 <!-- Progress -->
@@ -374,34 +373,32 @@ const toggleImageSelection = (image) => {
 const handleFileSelect = async (event) => {
   const files = event.target.files
   if (!files || files.length === 0) return
-  
+
+  const file = files[0]
+  if (!(file instanceof File)) return
+
   uploading.value = true
   uploadProgress.value = 0
-  
+
   try {
-    const uploadPromises = Array.from(files).map(file =>
-      galleryApi.uploadImage(file, undefined, undefined, (progress) => {
-        uploadProgress.value = progress
-      })
-    )
-    
-    const responses = await Promise.all(uploadPromises)
-    
-    // Add uploaded images to the gallery
-    const newImages = responses.map(res => res.data)
-    images.value = [...newImages, ...images.value]
-    
-    // Emit uploaded images to parent to update their gallery state
-    // Include both the uploaded image data and the original files
-    emit('image-updated', newImages, Array.from(files))
-    
-    // Auto-select uploaded images
+    const response = await galleryApi.uploadImage(file, undefined, undefined, (progress) => {
+      uploadProgress.value = progress
+    })
+
+    const newImage = response.data
+    images.value = [newImage, ...images.value]
+
+    emit('image-updated', [newImage], [file])
+
     if (props.multiple) {
-      const availableSlots = props.maxSelection ? props.maxSelection - selectedImages.value.length : files.length
-      const toSelect = newImages.slice(0, Math.max(0, availableSlots)).map(img => img.image_id)
-      selectedImages.value = [...selectedImages.value, ...toSelect]
-    } else if (newImages.length > 0) {
-      selectedImages.value = [newImages[0].image_id]
+      const availableSlots = props.maxSelection
+        ? props.maxSelection - selectedImages.value.length
+        : 1
+      if (availableSlots > 0) {
+        selectedImages.value = [...selectedImages.value, newImage.image_id]
+      }
+    } else {
+      selectedImages.value = [newImage.image_id]
     }
     
     // Switch to library tab to show uploaded images
