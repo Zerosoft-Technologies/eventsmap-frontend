@@ -477,7 +477,11 @@ const handleClose = () => {
 }
 
 const handleConfirm = () => {
-  emit('select', [...selectedImages.value])
+  const ids = [...selectedImages.value]
+  const items = ids
+    .map((id) => images.value.find((img) => String(img.image_id) === String(id)))
+    .filter(Boolean)
+  emit('select', ids, items)
   handleClose()
 }
 

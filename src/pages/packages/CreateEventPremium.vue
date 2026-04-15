@@ -1676,15 +1676,29 @@ function removeImage() {
 const showMediaModal = ref(false)
 const selectedMediaType = ref('main')
 
+// Merge picker selections into local gallery so id → URL previews work (library picks are not loaded via event detail).
+function mergeGalleryPickerItems(items) {
+    if (!items?.length) return
+    const byId = new Map(galleryImages.value.map((img) => [String(img.image_id), img]))
+    for (const img of items) {
+        byId.set(String(img.image_id), img)
+    }
+    galleryImages.value = Array.from(byId.values())
+}
+
 // Computed properties for resolving image_ids to URLs
 const mainImage = computed(() => {
     if (!form.image_path) return null
-    return galleryImages.value.find(img => img.image_id === form.image_path)
+    const id = String(form.image_path)
+    return galleryImages.value.find((img) => String(img.image_id) === id) ?? null
 })
 
 const resolvedAdditionalImages = computed(() => {
     return form.additional_images
-        .map(id => galleryImages.value.find(img => img.image_id === id))
+        .map((rawId) => {
+            const id = String(rawId)
+            return galleryImages.value.find((img) => String(img.image_id) === id)
+        })
         .filter(Boolean)
 })
 
@@ -1696,12 +1710,13 @@ const openMediaModal = (type) => {
     console.log('showMediaModal set to:', showMediaModal.value)
 }
 
-const handleMediaSelect = (ids) => {
+const handleMediaSelect = (ids, items = []) => {
+    mergeGalleryPickerItems(items)
     if (selectedMediaType.value === 'main') {
-        form.image_path = ids[0] || ''
+        form.image_path = ids[0] != null && ids[0] !== '' ? String(ids[0]) : ''
         form.remove_main_image = false
     } else {
-        form.additional_images = ids.slice(0, 5)
+        form.additional_images = ids.slice(0, 5).map((id) => String(id))
         additionalImages.value = []
     }
 }

@@ -975,12 +975,16 @@ const pendingFileMap = ref({})
 
 const mainImage = computed(() => {
     if (!formData.image_path) return null
-    return galleryImages.value.find((img) => img.image_id === formData.image_path)
+    const id = String(formData.image_path)
+    return galleryImages.value.find((img) => String(img.image_id) === id) ?? null
 })
 
 const resolvedAdditionalImages = computed(() => {
     return formData.additional_images
-        .map((id) => galleryImages.value.find((img) => img.image_id === id))
+        .map((rawId) => {
+            const id = String(rawId)
+            return galleryImages.value.find((img) => String(img.image_id) === id)
+        })
         .filter(Boolean)
 })
 const contactPhone = ref("")
@@ -1202,12 +1206,22 @@ const fetchGalleryImages = async () => {
     }
 }
 
-function handleMediaSelect(ids) {
+function mergeGalleryPickerItems(items) {
+    if (!items?.length) return
+    const byId = new Map(galleryImages.value.map((img) => [String(img.image_id), img]))
+    for (const img of items) {
+        byId.set(String(img.image_id), img)
+    }
+    galleryImages.value = Array.from(byId.values())
+}
+
+function handleMediaSelect(ids, items = []) {
+    mergeGalleryPickerItems(items)
     if (selectedMediaType.value === 'main') {
-        formData.image_path = ids[0] || ''
+        formData.image_path = ids[0] != null && ids[0] !== '' ? String(ids[0]) : ''
         formData.remove_main_image = false
     } else {
-        formData.additional_images = ids.slice(0, 5)
+        formData.additional_images = ids.slice(0, 5).map((id) => String(id))
     }
 }
 
