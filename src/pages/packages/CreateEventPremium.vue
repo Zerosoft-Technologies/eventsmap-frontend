@@ -253,7 +253,7 @@
 
                         <!-- Images Grid -->
                         <div class="tw:grid tw:grid-cols-2 md:tw:grid-cols-3 lg:tw:grid-cols-5 tw:gap-4">
-                            <div v-for="(image, index) in resolvedAdditionalImages" :key="image.image_id" 
+                            <div v-for="(image, index) in resolvedAdditionalImages" :key="`additional-${index}-${image.image_id}`" 
                                 class="tw:relative tw:group">
                                 <img :src="image.image_url" :alt="image.file_name"
                                     class="tw:w-full tw:h-32 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
@@ -1801,16 +1801,30 @@ function setGalleryImagesFromEvent(d) {
         })
     }
     if (Array.isArray(d.additional_images)) {
-        for (const raw of d.additional_images) {
-            if (raw == null || typeof raw !== 'object') continue
-            const id = raw.image_id || raw.image_path || ''
-            const url = raw.image_url
-            if (id && url) {
-                items.push({
-                    image_id: String(id),
-                    image_url: url,
-                    file_name: raw.file_name || 'Image',
-                })
+        const urlList = Array.isArray(d.additional_image_urls) ? d.additional_image_urls : []
+        for (let i = 0; i < d.additional_images.length; i++) {
+            const raw = d.additional_images[i]
+            if (raw == null || raw === '') continue
+            if (typeof raw === 'string' || typeof raw === 'number') {
+                const id = String(raw).trim()
+                const url = (urlList[i] || '').toString()
+                if (id && url) {
+                    items.push({
+                        image_id: id,
+                        image_url: url,
+                        file_name: 'Image',
+                    })
+                }
+            } else if (typeof raw === 'object') {
+                const id = raw.image_id || raw.image_path || ''
+                const url = raw.image_url
+                if (id && url) {
+                    items.push({
+                        image_id: String(id),
+                        image_url: url,
+                        file_name: raw.file_name || 'Image',
+                    })
+                }
             }
         }
     }
@@ -2465,7 +2479,9 @@ async function loadEvent(id) {
         // Load image_ids from event
         form.image_path = d.image_path || ''
         // form.additional_images = Array.isArray(d.additional_images) ? d.additional_images : []
-        form.additional_images = Array.isArray(d.additional_images) ? d.additional_images.filter(id => id !== null && id !== '') : []
+        form.additional_images = Array.isArray(d.additional_images)
+            ? d.additional_images.filter(id => id !== null && id !== '').map((id) => String(id))
+            : []
 
         // Clear file refs when loading existing event
         mainImageFile.value = null

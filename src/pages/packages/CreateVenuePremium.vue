@@ -217,7 +217,7 @@
                         </div>
 
                         <div class="tw:grid tw:grid-cols-2 md:tw:grid-cols-3 lg:tw:grid-cols-5 tw:gap-4">
-                            <div v-for="(image, index) in resolvedAdditionalImages" :key="image.image_id || index"
+                            <div v-for="(image, index) in resolvedAdditionalImages" :key="`additional-${index}-${image.image_id}`"
                                 class="tw:relative tw:group">
                                 <img :src="image.image_url" :alt="`Additional image ${index + 1}`"
                                     class="tw:w-full tw:h-32 tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
@@ -1269,16 +1269,30 @@ function setGalleryImagesFromVenue(venue) {
         })
     }
     if (Array.isArray(venue.additional_images)) {
-        for (const raw of venue.additional_images) {
-            if (raw == null || typeof raw !== 'object') continue
-            const id = raw.image_id || raw.image_path || ''
-            const url = raw.image_url
-            if (id && url) {
-                items.push({
-                    image_id: String(id),
-                    image_url: url,
-                    file_name: raw.file_name || 'Image',
-                })
+        const urlList = Array.isArray(venue.additional_image_urls) ? venue.additional_image_urls : []
+        for (let i = 0; i < venue.additional_images.length; i++) {
+            const raw = venue.additional_images[i]
+            if (raw == null || raw === '') continue
+            if (typeof raw === 'string' || typeof raw === 'number') {
+                const id = String(raw).trim()
+                const url = (urlList[i] || '').toString()
+                if (id && url) {
+                    items.push({
+                        image_id: id,
+                        image_url: url,
+                        file_name: 'Image',
+                    })
+                }
+            } else if (typeof raw === 'object') {
+                const id = raw.image_id || raw.image_path || ''
+                const url = raw.image_url
+                if (id && url) {
+                    items.push({
+                        image_id: String(id),
+                        image_url: url,
+                        file_name: raw.file_name || 'Image',
+                    })
+                }
             }
         }
     }
