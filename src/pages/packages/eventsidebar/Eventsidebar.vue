@@ -67,7 +67,7 @@
             ]"
           >
             <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF]">
-              {{ item.title || listTitleFallback }}
+              {{ item.title || item.name || listTitleFallback }}
             </h2>
 
             <div
@@ -107,10 +107,12 @@ import { onMounted, computed } from "vue"
 import { useMyEventStore } from "@/stores/myEventStore"
 import { useMyTalentStore } from "@/stores/myTalentStore"
 import { useMyVenueStore } from "@/stores/myVenueStore"
+import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
 
 const myEventStore = useMyEventStore()
 const myTalentStore = useMyTalentStore()
 const myVenueStore = useMyVenueStore()
+const myOrganiserStore = useMyOrganiserStore()
 
 // Props
 const props = defineProps({
@@ -118,11 +120,11 @@ const props = defineProps({
     type: Array,
     required: true
   },
-  /** 'events' (default) uses GET /v2/my-events; 'talents' → /v2/my-talents; 'venues' → /v2/my-venues */
+  /** 'events' (default) uses GET /v2/my-events; 'talents' → /v2/my-talents; 'venues' → /v2/my-venues; 'organisers' → /v2/my-organisers */
   sidebarKind: {
     type: String,
     default: 'events',
-    validator: (v) => ['events', 'talents', 'venues'].includes(v)
+    validator: (v) => ['events', 'talents', 'venues', 'organisers'].includes(v)
   }
 })
 
@@ -132,18 +134,21 @@ const emit = defineEmits(['back', 'event-selected', 'chatbox-click', 'menu-click
 const listLoading = computed(() => {
   if (props.sidebarKind === 'talents') return myTalentStore.loading
   if (props.sidebarKind === 'venues') return myVenueStore.loading
+  if (props.sidebarKind === 'organisers') return myOrganiserStore.loading
   return myEventStore.loading
 })
 
 const listItems = computed(() => {
   if (props.sidebarKind === 'talents') return myTalentStore.talents
   if (props.sidebarKind === 'venues') return myVenueStore.venues
+  if (props.sidebarKind === 'organisers') return myOrganiserStore.organisers
   return myEventStore.events
 })
 
 const selectedListId = computed(() => {
   if (props.sidebarKind === 'talents') return myTalentStore.selectedTalentId
   if (props.sidebarKind === 'venues') return myVenueStore.selectedVenueId
+  if (props.sidebarKind === 'organisers') return myOrganiserStore.selectedOrganiserId
   return myEventStore.selectedEventId
 })
 
@@ -156,30 +161,35 @@ const listError = computed(() => {
 const backSectionTitle = computed(() => {
   if (props.sidebarKind === 'talents') return 'Back To Talents'
   if (props.sidebarKind === 'venues') return 'Back To Venues'
+  if (props.sidebarKind === 'organisers') return 'Back To Organisers'
   return 'Back To Events'
 })
 
 const loadingLabel = computed(() => {
   if (props.sidebarKind === 'talents') return 'Loading talents...'
   if (props.sidebarKind === 'venues') return 'Loading venues...'
+  if (props.sidebarKind === 'organisers') return 'Loading organisers...'
   return 'Loading events...'
 })
 
 const emptyLabel = computed(() => {
   if (props.sidebarKind === 'talents') return 'No talents found'
   if (props.sidebarKind === 'venues') return 'No venues found'
+  if (props.sidebarKind === 'organisers') return 'No organisers found'
   return 'No events found'
 })
 
 const listTitleFallback = computed(() => {
   if (props.sidebarKind === 'talents') return 'Talent Title'
   if (props.sidebarKind === 'venues') return 'Venue Title'
+  if (props.sidebarKind === 'organisers') return 'Organiser Title'
   return 'Event Title'
 })
 
 onMounted(() => {
   if (props.sidebarKind === 'talents') myTalentStore.fetchMyTalents()
   else if (props.sidebarKind === 'venues') myVenueStore.fetchMyVenues()
+  else if (props.sidebarKind === 'organisers') myOrganiserStore.fetchMyOrganisers()
   else myEventStore.fetchMyEvents()
 })
 
@@ -196,6 +206,7 @@ function formatEventDateTime(date, time) {
 function handleListItemClick(item) {
   if (props.sidebarKind === 'talents') myTalentStore.selectTalent(item.id)
   else if (props.sidebarKind === 'venues') myVenueStore.selectVenue(item.id)
+  else if (props.sidebarKind === 'organisers') myOrganiserStore.selectOrganiser(item.id)
   else myEventStore.selectEvent(item.id)
   emit('event-selected', item.id)
 
@@ -212,6 +223,14 @@ function handleListItemClick(item) {
     const home = props.menuItems.find((i) => i.id === 'home' && i.route)
     if (home && route.path !== home.route) {
       myTalentStore.setPendingEditorTalentId(item.id)
+      router.push({ path: home.route })
+    }
+  }
+
+  if (props.sidebarKind === 'organisers') {
+    const home = props.menuItems.find((i) => i.id === 'home' && i.route)
+    if (home && route.path !== home.route) {
+      myOrganiserStore.setPendingEditorOrganiserId(item.id)
       router.push({ path: home.route })
     }
   }

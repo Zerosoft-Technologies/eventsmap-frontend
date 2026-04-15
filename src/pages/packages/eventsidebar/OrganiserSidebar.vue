@@ -121,6 +121,12 @@ onMounted(() => {
 
 function handleOrganiserClick(organiser) {
   myOrganiserStore.selectOrganiser(organiser.id)
+  const home = props.menuItems.find((i) => i.id === 'home' && i.route)
+  if (home && route.path !== home.route) {
+    myOrganiserStore.setPendingEditorOrganiserId(organiser.id)
+    router.push({ path: home.route })
+    return
+  }
   emit('organiser-selected', organiser.id)
 }
 

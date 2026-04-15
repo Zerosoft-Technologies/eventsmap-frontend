@@ -7,7 +7,7 @@
   >
     <!-- Sidebar Slot -->
     <template #sidebar>
-      <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" />
+      <EventSidebar sidebar-kind="organisers" :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected" />
     </template>
 
     <!-- Content Slot -->

@@ -1,5 +1,5 @@
 import api from '@/services/api'
-import type { AxiosResponse } from 'axios'
+import type { AxiosRequestConfig, AxiosResponse } from 'axios'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export interface CreateEventPayload {
@@ -272,8 +272,8 @@ const eventService = {
     return response.data
   },
 
-  async getMyOrganisers(): Promise<MyEventsResponse> {
-    const response: AxiosResponse<MyEventsResponse> = await api.get('/v2/my-organisers')
+  async getMyOrganisers(config?: AxiosRequestConfig): Promise<MyEventsResponse> {
+    const response: AxiosResponse<MyEventsResponse> = await api.get('/v2/my-organisers', config)
     return response.data
   },
 

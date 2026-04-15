@@ -331,11 +331,13 @@ import OrganiserSidebar from "./eventsidebar/OrganiserSidebar.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
 const router = useRouter()
 const route = useRoute()
+const myOrganiserStore = useMyOrganiserStore()
 const toast = useToast()
 const mobileSidebarOpen = ref(false)
 
@@ -609,7 +611,11 @@ async function loadOrganiser(id) {
     if (!categoriesOrganisers.value.length) await fetchCategories()
 
     const response = await eventService.getOrganiserById(id)
-    const d = response.data || response
+    if (!response.success || !response.data) {
+      toast.error(response.message || 'Failed to load organiser.')
+      return false
+    }
+    const d = response.data
 
     isEditMode.value = true
     editingOrganiserId.value = id
@@ -640,9 +646,11 @@ async function loadOrganiser(id) {
       map.value.flyTo({ center: [d.longitude, d.latitude], zoom: 15, essential: true })
       updateMarker(d.longitude, d.latitude)
     }
+    return true
   } catch (error) {
     console.error('Error loading organiser:', error)
     toast.error('Failed to load organiser data')
+    return false
   }
 }
 
@@ -782,7 +790,7 @@ async function handleSubmit() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   fetchCategories()
 
   // Initialize map
@@ -800,6 +808,21 @@ onMounted(() => {
     updateMarker(lng, lat)
     await reverseGeocode(lng, lat)
   })
+
+  const organiserId =
+    myOrganiserStore.takePendingEditorOrganiserId() ?? route.query.edit ?? route.params.id
+  if (organiserId != null && organiserId !== '') {
+    const loaded = await loadOrganiser(Number(organiserId))
+    if (loaded && route.query.edit != null && String(route.query.edit) !== '') {
+      const q = { ...route.query }
+      delete q.edit
+      if (Object.keys(q).length) {
+        router.replace({ path: route.path, query: q })
+      } else {
+        router.replace({ path: route.path })
+      }
+    }
+  }
 })
 
 onBeforeUnmount(() => {

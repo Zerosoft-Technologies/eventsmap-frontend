@@ -90,6 +90,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/create-organiser-free', name: 'CreateEventOrganiserFree', component: CreateEventOrganiserFree, meta: { requiresAuth: true } },
   { path: '/create-organiser-free/report', name: 'EventOrganiserReport', component: EventOrganiserReport, meta: { requiresAuth: true } },
   { path: '/create-organiser-free/settings', name: 'EventOrganiserSettings', component: EventOrganiserSettings, meta: { requiresAuth: true } },
+  { path: '/create-organiser-free/gallery-images', name: 'EventOrganiserFreeGallery', component: GalleryImagesPage, meta: { requiresAuth: true } },
 
   { path: '/create-organiser-premium', name: 'CreateEventOrganiserPremium', component: CreateEventOrganiserPremium, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-organiser-premium/report', name: 'EventOrganiserPremiumReport', component: EventOrganiserPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },

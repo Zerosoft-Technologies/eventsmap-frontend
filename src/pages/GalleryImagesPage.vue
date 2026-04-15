@@ -176,10 +176,11 @@ const isOrganiserRoute = computed(() => {
   return route.path.includes('organiser')
 })
 
-/** Matches EventSidebar fetch: venues → /v2/my-venues, talents → /v2/my-talents, else /v2/my-events */
+/** Matches EventSidebar fetch: venues → /v2/my-venues, talents → /v2/my-talents, organisers → /v2/my-organisers, else /v2/my-events */
 const eventSidebarKind = computed(() => {
   if (route.path.includes('create-venue-premium') || route.path.includes('create-venue-free')) return 'venues'
   if (route.path.includes('create-talents-premium') || route.path.includes('create-talents-free')) return 'talents'
+  if (route.path.includes('create-organiser-premium') || route.path.includes('create-organiser-free')) return 'organisers'
   return 'events'
 })
 
@@ -189,12 +190,15 @@ const menuItems = computed(() => {
   const isOrganiser = route.path.includes('organiser')
   
   if (isOrganiser) {
+    const base = route.path.includes('create-organiser-premium')
+      ? '/create-organiser-premium'
+      : '/create-organiser-free'
     return [
-      { id: 'home', label: 'Home', icon: Home, route: '/create-organiser-premium' },
-      { id: 'details', label: 'Details', icon: Calendar, route: '/create-organiser-premium' },
-      { id: 'analytics', label: 'Analytics', icon: BarChart3, route: '/create-organiser-premium/report' },
-      { id: 'gallery', label: 'Gallery', icon: Images, route: '/create-organiser-premium/gallery-images' },
-      { id: 'settings', label: 'Settings', icon: Settings, route: '/create-organiser-premium/settings' },
+      { id: 'home', label: 'Home', icon: Home, route: base },
+      { id: 'details', label: 'Details', icon: Calendar, route: base },
+      { id: 'analytics', label: 'Analytics', icon: BarChart3, route: `${base}/report` },
+      { id: 'gallery', label: 'Gallery', icon: Images, route: `${base}/gallery-images` },
+      { id: 'settings', label: 'Settings', icon: Settings, route: `${base}/settings` },
       { id: 'calendar', label: 'Calendar', icon: Calendar },
       { id: 'chatbox', label: 'Chatbox', icon: MessageSquareText },
     ]

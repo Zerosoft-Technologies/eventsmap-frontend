@@ -834,8 +834,8 @@ import OrganiserSidebar from "./eventsidebar/OrganiserSidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
-import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
+import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { useAuthStore } from "@/stores/auth"
@@ -848,6 +848,7 @@ import "flatpickr/dist/flatpickr.css"
 
 const router = useRouter()
 const route = useRoute()
+const myOrganiserStore = useMyOrganiserStore()
 const toast = useToast()
 const authStore = useAuthStore()
 const chatStore = useChatStore()
@@ -1134,20 +1135,33 @@ const clearAllAdditionalImages = () => {
     additionalImages.value = []
 }
 
-// Fetch gallery images for resolution with retry
-const fetchGalleryImages = async (retryCount = 0) => {
-    try {
-        const response = await galleryApi.fetchImages(1, 100)
-        galleryImages.value = response.data.images
-    } catch (error) {
-        console.error('Error fetching gallery images:', error)
-        if (retryCount < 2) {
-            console.log(`Retrying gallery images fetch... Attempt ${retryCount + 1}`)
-            setTimeout(() => fetchGalleryImages(retryCount + 1), 1000)
-        } else {
-            console.warn('Failed to load gallery images after 3 attempts. Media picker may not show existing images.')
+/** Populate local image metadata from organiser detail (avoids GET /gallery-images on load/select). */
+function setGalleryImagesFromOrganiser(org) {
+    const items = []
+    const mainId = typeof org.image_path === 'string' ? org.image_path.trim() : ''
+    const mainUrl = org.image_url || org.main_image_url
+    if (mainId && mainUrl) {
+        items.push({
+            image_id: mainId,
+            image_url: mainUrl,
+            file_name: org.title ? String(org.title).slice(0, 80) : 'Main image',
+        })
+    }
+    if (Array.isArray(org.additional_images)) {
+        for (const raw of org.additional_images) {
+            if (raw == null || typeof raw !== 'object') continue
+            const id = raw.image_id || raw.image_path || ''
+            const url = raw.image_url
+            if (id && url) {
+                items.push({
+                    image_id: String(id),
+                    image_url: url,
+                    file_name: raw.file_name || 'Image',
+                })
+            }
         }
     }
+    galleryImages.value = items
 }
 
 // ── Form Validation ───────────────────────────────────────────────────
@@ -1372,7 +1386,7 @@ async function loadOrganiser(id) {
         const response = await eventService.getOrganiserById(id)
         if (!response.success || !response.data) {
             toast.error(response.message || 'Failed to load organiser.')
-            return
+            return false
         }
         const d = response.data
 
@@ -1404,6 +1418,7 @@ async function loadOrganiser(id) {
         fileName.value = d.image_path ? 'Existing image' : ''
 
         pendingFileMap.value = {}
+        setGalleryImagesFromOrganiser(d)
         // clearAllImages.value = false
 
         // Category / subcategory hydration
@@ -1417,9 +1432,11 @@ async function loadOrganiser(id) {
         fieldErrors.value = {}
         isEditMode.value = true
         editingOrganiserId.value = d.id
+        return true
     } catch (error) {
         console.error('Error loading organiser:', error)
         toast.error(error.response?.data?.message || 'Failed to load organiser.')
+        return false
     }
 }
 
@@ -1464,6 +1481,7 @@ function resetForm() {
     subcategoryValidationError.value = false
     isEditMode.value = false
     editingOrganiserId.value = null
+    galleryImages.value = []
     resetErrors()
 }
 
@@ -1603,7 +1621,7 @@ async function handleEventSelected(eventId) {
 }
 
 // ── Lifecycle ──────────────────────────────────────────────────────────
-onMounted(() => {
+onMounted(async () => {
     fetchCategories()
     document.addEventListener('click', handleClickOutside)
 
@@ -1621,6 +1639,21 @@ onMounted(() => {
         updateMarker(lng, lat)
         await reverseGeocode(lng, lat)
     })
+
+    const organiserId =
+        myOrganiserStore.takePendingEditorOrganiserId() ?? route.query.edit ?? route.params.id
+    if (organiserId != null && organiserId !== '') {
+        const loaded = await loadOrganiser(Number(organiserId))
+        if (loaded && route.query.edit != null && String(route.query.edit) !== '') {
+            const q = { ...route.query }
+            delete q.edit
+            if (Object.keys(q).length) {
+                router.replace({ path: route.path, query: q })
+            } else {
+                router.replace({ path: route.path })
+            }
+        }
+    }
 })
 
 onBeforeUnmount(() => {
