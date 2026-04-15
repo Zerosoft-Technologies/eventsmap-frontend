@@ -1150,7 +1150,6 @@ const form = reactive({
 const mainImageFile = ref(null)
 const mainImagePickerRef = ref(null)
 const additionalImageFiles = ref([])
-const pendingFileMap = ref({})
 const selectedImageFile = ref(null)
 const imagePreview = ref(null)
 const fileName = ref('')
@@ -1721,28 +1720,22 @@ const handleMediaSelect = (ids, items = []) => {
     }
 }
 
-const handleImageUpdated = (newImages, files) => {
-  // Add newly uploaded images to the gallery resolution list
+const handleImageUpdated = (newImages, _files) => {
+  if (!newImages?.length) return
   galleryImages.value = [...newImages, ...galleryImages.value]
 
-  if (!files || files.length === 0) return
-
-  // Map every uploaded image_id → its File so it survives the modal confirm
-  newImages.forEach((img, i) => {
-    if (files[i] instanceof File) {
-      pendingFileMap.value[img.image_id] = files[i]
-    }
-  })
-
-  // Update form image references so the preview shows correctly
-  if (selectedMediaType.value === 'main' && newImages.length > 0) {
-    form.image_path = newImages[0].image_id
+  if (selectedMediaType.value === 'main') {
+    form.image_path = String(newImages[0].image_id)
     form.remove_main_image = false
-    // Clear legacy file refs — state now lives in pendingFileMap
     mainImageFile.value = null
     selectedImageFile.value = null
   } else if (selectedMediaType.value === 'additional') {
-    form.additional_images = newImages.map(img => img.image_id)
+    const existing = (form.additional_images || []).map(String)
+    for (const img of newImages) {
+      const id = String(img.image_id)
+      if (!existing.includes(id) && existing.length < 5) existing.push(id)
+    }
+    form.additional_images = existing.slice(0, 5)
     additionalImageFiles.value = []
     additionalImages.value = []
   }
@@ -2488,7 +2481,6 @@ async function loadEvent(id) {
         additionalImageFiles.value = []
         selectedImageFile.value = null
         additionalImages.value = []
-        pendingFileMap.value = {}
 
         setGalleryImagesFromEvent(d)
 
@@ -2528,7 +2520,6 @@ function resetForm() {
     // Reset file refs
     mainImageFile.value = null
     additionalImageFiles.value = []
-    pendingFileMap.value = {}
     galleryImages.value = []
     // Legacy resets
     imagePreview.value = null
@@ -2667,19 +2658,13 @@ async function updateEvent() {
             formData.append('main_image', selectedImageFile.value)
         }
 
-        // ── Additional images ────────────────────────────────────────────────
+        // ── Additional images (gallery UUIDs only; uploads already exist server-side) ──
         if (form.additional_images && form.additional_images.length > 0) {
-        form.additional_images.forEach((id) => {
-            const pendingFile = pendingFileMap.value[id]
-            if (pendingFile instanceof File) {
-            formData.append('additional_images[]', pendingFile)
-            } else {
-            formData.append('additional_images[]', id)
-            }
-        })
+            form.additional_images.forEach((id) => {
+                formData.append('additional_images[]', String(id))
+            })
         } else {
-        // User cleared all — send empty marker so backend knows to clear
-        formData.append('additional_images[]', '')
+            formData.append('additional_images[]', '')
         }
         
         // Debug: Log FormData contents
@@ -2697,7 +2682,6 @@ async function updateEvent() {
 
         if (response.data.success) {
             toast.success('Event updated successfully.')
-            pendingFileMap.value = {}
             isEditMode.value = false
             editingEventId.value = null
             resetForm()
