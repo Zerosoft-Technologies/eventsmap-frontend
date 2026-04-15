@@ -1093,7 +1093,6 @@ import { useAuthStore } from "@/stores/auth"
 import { useMyEventStore } from "@/stores/myEventStore"
 import { useChatStore } from "@/stores/chatStore"
 import { useToast } from "@/composables/useToast"
-import { galleryApi } from "@/api/gallery"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -1772,14 +1771,37 @@ const removeMainImage = () => {
     fileName.value = 'No File Chosen'
 }
 
-// Fetch gallery images for resolution
-const fetchGalleryImages = async () => {
-    try {
-        const response = await galleryApi.fetchImages(1, 100)
-        galleryImages.value = response.data.images
-    } catch (error) {
-        console.error('Error fetching gallery images:', error)
+/** Merge event detail image metadata into galleryImages (no GET /gallery-images). */
+function setGalleryImagesFromEvent(d) {
+    const items = []
+    const mainId = typeof d.image_path === 'string' ? d.image_path.trim() : ''
+    const mainUrl = d.image_url || d.main_image_url
+    if (mainId && mainUrl) {
+        items.push({
+            image_id: mainId,
+            image_url: mainUrl,
+            file_name: d.title ? String(d.title).slice(0, 80) : 'Main image',
+        })
     }
+    if (Array.isArray(d.additional_images)) {
+        for (const raw of d.additional_images) {
+            if (raw == null || typeof raw !== 'object') continue
+            const id = raw.image_id || raw.image_path || ''
+            const url = raw.image_url
+            if (id && url) {
+                items.push({
+                    image_id: String(id),
+                    image_url: url,
+                    file_name: raw.file_name || 'Image',
+                })
+            }
+        }
+    }
+    const byId = new Map(galleryImages.value.map((img) => [String(img.image_id), img]))
+    for (const item of items) {
+        byId.set(String(item.image_id), item)
+    }
+    galleryImages.value = Array.from(byId.values())
 }
 
 // Past date validation
@@ -2207,10 +2229,9 @@ function normalizeUser(u) {
 }
 
 // Initialize map on component mount
-onMounted(() => {
+onMounted(async () => {
     fetchUsers()
     fetchCategories()
-    fetchGalleryImages()
 
     // Add click outside listener for dropdown
     document.addEventListener('click', handleClickOutside)
@@ -2256,6 +2277,21 @@ onMounted(() => {
             validateEndAfterStartDateTime()
         }
     })
+
+    const rawId =
+        myEvtStore.takePendingEditorEventId() ?? route.query.edit ?? route.params.id
+    if (rawId != null && String(rawId).trim() !== '') {
+        await clickEvent(Number(rawId))
+        if (route.query.edit != null && String(route.query.edit) !== '') {
+            const q = { ...route.query }
+            delete q.edit
+            if (Object.keys(q).length) {
+                router.replace({ path: route.path, query: q })
+            } else {
+                router.replace({ path: route.path })
+            }
+        }
+    }
 })
 
 async function clickEvent(eventId) {
@@ -2409,14 +2445,7 @@ async function loadEvent(id) {
         selectedImageFile.value = null
         additionalImages.value = []
 
-        // Legacy image preview fallback
-        if (d.image_url && !form.image_path) {
-            // Try to find image in gallery by URL
-            const matchingImage = galleryImages.value.find(img => img.image_url === d.image_url)
-            if (matchingImage) {
-                form.image_path = matchingImage.image_id
-            }
-        }
+        setGalleryImagesFromEvent(d)
 
         fieldErrors.value = {}
         isEditMode.value = true
@@ -2455,6 +2484,7 @@ function resetForm() {
     mainImageFile.value = null
     additionalImageFiles.value = []
     pendingFileMap.value = {}
+    galleryImages.value = []
     // Legacy resets
     imagePreview.value = null
     selectedImageFile.value = null

@@ -267,8 +267,8 @@ const eventService = {
   /**
    * Fetch authenticated user's events
    */
-  async getMyEvents(): Promise<MyEventsResponse> {
-    const response: AxiosResponse<MyEventsResponse> = await api.get('/v2/my-events')
+  async getMyEvents(config?: AxiosRequestConfig): Promise<MyEventsResponse> {
+    const response: AxiosResponse<MyEventsResponse> = await api.get('/v2/my-events', config)
     return response.data
   },
 

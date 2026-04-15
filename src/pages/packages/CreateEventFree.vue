@@ -1370,6 +1370,23 @@ onMounted(async () => {
       validateEndAfterStartDateTime()
     }
   })
+
+  const rawId =
+    myEvtStore.takePendingEditorEventId() ?? route.query.edit ?? route.params.id
+  if (rawId != null && String(rawId).trim() !== '') {
+    editEventId.value = Number(rawId)
+    isEditMode.value = true
+    await fetchEventDetails(Number(rawId))
+    if (route.query.edit != null && String(route.query.edit) !== '') {
+      const q = { ...route.query }
+      delete q.edit
+      if (Object.keys(q).length) {
+        router.replace({ path: route.path, query: q })
+      } else {
+        router.replace({ path: route.path })
+      }
+    }
+  }
 })
 
 // Cleanup on unmount

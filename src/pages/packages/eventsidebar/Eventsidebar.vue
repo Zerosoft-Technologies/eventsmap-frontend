@@ -210,6 +210,14 @@ function handleListItemClick(item) {
   else myEventStore.selectEvent(item.id)
   emit('event-selected', item.id)
 
+  if (props.sidebarKind === 'events') {
+    const home = props.menuItems.find((i) => i.id === 'home' && i.route)
+    if (home && route.path !== home.route) {
+      myEventStore.setPendingEditorEventId(item.id)
+      router.push({ path: home.route })
+    }
+  }
+
   // From any sub-route (report, gallery, future pages), open the venue form without ?edit= in the URL.
   if (props.sidebarKind === 'venues') {
     const home = props.menuItems.find((i) => i.id === 'home' && i.route)
