@@ -1439,63 +1439,74 @@ function clearFieldError(fieldName) {
   }
 }
 
-// Scroll to first invalid field
+// Scroll to first invalid field (document order must match the form layout)
 async function scrollToFirstError() {
   await nextTick()
 
-  // Find first field with error
-  const errorFields = ['eventTitle', 'eventImage', 'category', 'subcategories', 'eventDate', 'address', 'dressCode', 'ageLimit', 'entranceStatus']
-  const firstErrorField = errorFields.find(field =>
-    errors.value[field] ||
-    (field === 'category' && categoryError.value) ||
-    (field === 'subcategories' && subcategoryError.value)
-  )
-
-  if (firstErrorField) {
-    let element
-
-    // Map field names to DOM elements
-    switch (firstErrorField) {
-      case 'eventTitle':
-        element = document.querySelector('input[placeholder="Enter Event Title"]')
-        break
-      case 'eventImage':
-        element = document.querySelector('input[type="file"]')
-        break
-      case 'category':
-        element = document.querySelector('select')
-        break
-      case 'subcategories':
-        element = document.querySelector('.subcategory-dropdown-container')
-        break
-      case 'eventDate':
-        element = document.querySelector('input[placeholder="MM/DD/YYYY"]')
-        break
-      case 'address':
-        element = document.querySelector('input[readonly]')
-        break
-      case 'dressCode':
-        element = document.querySelectorAll('select')[1] // Second select
-        break
-      case 'ageLimit':
-        element = document.querySelectorAll('select')[2] // Third select
-        break
-      case 'entranceStatus':
-        element = document.querySelectorAll('select')[3] // Fourth select
-        break
-    }
-
-    if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      })
-
-      // Focus the element if it's an input or select
-      if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
-        element.focus()
+  function scrollEl(el) {
+    if (!el) return false
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    const tag = el.tagName
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
+      try {
+        el.focus({ preventScroll: true })
+      } catch {
+        el.focus()
       }
     }
+    return true
+  }
+
+  const selects = () => Array.from(document.querySelectorAll('select'))
+
+  if (errors.value.eventTitle || fieldErrors.value.title?.length) {
+    scrollEl(document.querySelector('input[placeholder="Enter Event Title"]'))
+    return
+  }
+  if (errors.value.eventImage) {
+    const fileInput = document.querySelector('input[type="file"]')
+    scrollEl(document.getElementById('file-name') || fileInput?.closest('label'))
+    return
+  }
+  if (categoryError.value || errors.value.category) {
+    scrollEl(selects()[0])
+    return
+  }
+  if (subcategoryError.value || errors.value.subcategories) {
+    scrollEl(dropdownContainer.value)
+    return
+  }
+  if (errors.value.eventDate || pastDateError.value || fieldErrors.value.event_date?.length) {
+    scrollEl(dateInput.value)
+    return
+  }
+  if (hasStartError.value) {
+    scrollEl(startMMInput.value)
+    return
+  }
+  if (hasEndDateError.value) {
+    scrollEl(endDateInput.value)
+    return
+  }
+  if (hasEndError.value || datetimeRangeError.value) {
+    scrollEl(endMMInput.value)
+    return
+  }
+  if (errors.value.address) {
+    scrollEl(document.querySelector('input[placeholder="Address Will Auto Fill Here"]'))
+    return
+  }
+  if (errors.value.dressCode) {
+    scrollEl(selects()[1])
+    return
+  }
+  if (errors.value.ageLimit) {
+    scrollEl(selects()[2])
+    return
+  }
+  if (errors.value.entranceStatus) {
+    scrollEl(selects()[3])
+    return
   }
 }
 
@@ -1877,6 +1888,10 @@ async function updateEvent() {
 
     if (response.success) {
       toast.success('Event updated successfully!')
+      resetForm()
+      isEditMode.value = false
+      editEventId.value = null
+      existingImageUrl.value = null
       await myEvtStore.fetchMyEvents()
     } else {
       if (response.errors) {

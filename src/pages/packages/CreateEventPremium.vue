@@ -171,6 +171,7 @@
 
                     <!-- Custom File Input -->
                     <div
+                        ref="mainImagePickerRef"
                         @click="handleMainImageClick"
                         class="tw:flex tw:items-center tw:w-full tw:max-w-full tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:overflow-hidden tw:bg-white tw:cursor-pointer hover:tw:bg-gray-50">
 
@@ -1147,6 +1148,7 @@ const form = reactive({
 })
 
 const mainImageFile = ref(null)
+const mainImagePickerRef = ref(null)
 const additionalImageFiles = ref([])
 const pendingFileMap = ref({})
 const selectedImageFile = ref(null)
@@ -1827,66 +1829,77 @@ function validatePastDate() {
     pastDateError.value = selected < today
 }
 
-// Scroll to first invalid field
+// Scroll to first invalid field (document order must match the form layout)
 async function scrollToFirstError() {
     await nextTick()
 
-    // Find first field with error
-    const errorFields = ['eventTitle', 'eventImage', 'description', 'category', 'subcategories', 'eventDate', 'address', 'dressCode', 'ageLimit', 'entranceStatus']
-    const firstErrorField = errorFields.find(field =>
-        errors.value[field] ||
-        (field === 'category' && categoryError.value) ||
-        (field === 'subcategories' && subcategoryError.value)
-    )
-
-    if (firstErrorField) {
-        let element
-
-        // Map field names to DOM elements
-        switch (firstErrorField) {
-            case 'eventTitle':
-                element = document.querySelector('input[placeholder="Enter Event Title"]')
-                break
-            case 'description':
-                element = document.querySelector('textarea[placeholder="Describe Your Event..."]')
-                break
-            case 'eventImage':
-                element = document.querySelector('input[type="file"]')
-                break
-            case 'category':
-                element = document.querySelector('select')
-                break
-            case 'subcategories':
-                element = document.querySelector('.subcategory-dropdown-container')
-                break
-            case 'eventDate':
-                element = document.querySelector('input[placeholder="MM/DD/YYYY"]')
-                break
-            case 'address':
-                element = document.querySelector('input[readonly]')
-                break
-            case 'dressCode':
-                element = document.querySelectorAll('select')[1]
-                break
-            case 'ageLimit':
-                element = document.querySelectorAll('select')[2]
-                break
-            case 'entranceStatus':
-                element = document.querySelectorAll('select')[3]
-                break
-        }
-
-        if (element) {
-            element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            })
-
-            // Focus the element if it's an input or select
-            if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
-                element.focus()
+    function scrollEl(el) {
+        if (!el) return false
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        const tag = el.tagName
+        if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
+            try {
+                el.focus({ preventScroll: true })
+            } catch {
+                el.focus()
             }
         }
+        return true
+    }
+
+    const selects = () => Array.from(document.querySelectorAll('select'))
+
+    if (errors.value.eventTitle || fieldErrors.value.title?.length) {
+        scrollEl(document.querySelector('input[placeholder="Enter Event Title"]'))
+        return
+    }
+    if (errors.value.description || fieldErrors.value.description?.length) {
+        scrollEl(document.querySelector('textarea[placeholder="Describe Your Event..."]'))
+        return
+    }
+    if (errors.value.eventImage || fieldErrors.value.image?.length) {
+        scrollEl(mainImagePickerRef.value)
+        return
+    }
+    if (categoryError.value || errors.value.category) {
+        scrollEl(selects()[0])
+        return
+    }
+    if (subcategoryError.value || errors.value.subcategories) {
+        scrollEl(dropdownContainer.value)
+        return
+    }
+    if (errors.value.eventDate || pastDateError.value || fieldErrors.value.start_date?.length) {
+        scrollEl(dateInput.value)
+        return
+    }
+    if (hasStartError.value) {
+        scrollEl(startMMInput.value)
+        return
+    }
+    if (hasEndDateError.value) {
+        scrollEl(endDateInput.value)
+        return
+    }
+    if (hasEndError.value || datetimeRangeError.value) {
+        scrollEl(endMMInput.value)
+        return
+    }
+    if (errors.value.address) {
+        scrollEl(document.querySelector('input[placeholder="Address Will Auto Fill Here"]'))
+        return
+    }
+    if (errors.value.dressCode) {
+        scrollEl(selects()[1])
+        return
+    }
+    if (errors.value.ageLimit) {
+        scrollEl(selects()[2])
+        return
+    }
+    if (errors.value.entranceStatus) {
+        scrollEl(selects()[3])
+        return
     }
 }
 
@@ -2662,6 +2675,7 @@ async function updateEvent() {
             pendingFileMap.value = {}
             isEditMode.value = false
             editingEventId.value = null
+            resetForm()
             await myEvtStore.fetchMyEvents()
         } else {
             if (response.data.errors) {
