@@ -525,7 +525,7 @@
                   <option value="">Select</option>
                   <option value="formal">Dress Code</option>
                   <option value="none">No Dress Code</option>
-                  <option value="required">Voor Free Event</option>
+                  <option value="required">Other, Please Specify</option>
                 </select>
                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
