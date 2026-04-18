@@ -125,6 +125,7 @@
     "ageRequirement": "Âge Requis",
     "allAges": "Tous âges bienvenus",
     "notSpecified": "Non spécifié",
+    "venueDetailsAvailable": "Détails du lieu disponibles",
     "dateTime": "Date & Heure",
     "location": "Lieu",
     "tabContentComingSoon": "Contenu à venir...",
@@ -147,7 +148,10 @@
       "about": "À propos",
       "dateLocation": "Date & Lieu",
       "talents": "Talents",
-      "community": "Communauté"
+      "organisers": "Organisateurs",
+      "venues": "Lieux",
+      "community": "Communauté",
+      "venue": "Lieu"
     }
   },
   "about": {

@@ -1,4 +1,10 @@
-import type { Event, PaginationMeta, Talent } from '@/types/events'
+import type {
+  Event,
+  InvitedEventProfile,
+  InvitedVenueObject,
+  PaginationMeta,
+  Talent
+} from '@/types/events'
 
 /**
  * Raw event from API v2 response
@@ -309,6 +315,26 @@ export function mapEventV2ToUI(event: EventV2Raw): Event {
     view_count: event.view_count || 0,
     like_count: event.like_count || 0,
     subcategories: event.subcategories || [],
+
+    // API v2 invited entities (list responses include full objects)
+    invited_talents: Array.isArray(event.invited_talents)
+      ? (event.invited_talents as Array<string | number>)
+      : undefined,
+    invited_organisers: Array.isArray(event.invited_organisers)
+      ? (event.invited_organisers as Array<string | number>)
+      : undefined,
+    invited_venues: Array.isArray(event.invited_venues)
+      ? (event.invited_venues as Array<string | number>)
+      : undefined,
+    invited_talents_objects: (Array.isArray(event.invited_talents_objects)
+      ? event.invited_talents_objects
+      : []) as InvitedEventProfile[],
+    invited_organisers_objects: (Array.isArray(event.invited_organisers_objects)
+      ? event.invited_organisers_objects
+      : []) as InvitedEventProfile[],
+    invited_venues_objects: (Array.isArray(event.invited_venues_objects)
+      ? event.invited_venues_objects
+      : []) as InvitedVenueObject[],
     
     // Timestamps
     created_at: event.created_at || '',

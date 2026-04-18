@@ -170,6 +170,7 @@
     "ageRequirement": "Age Requirement",
     "allAges": "All ages welcome",
     "notSpecified": "Not specified",
+    "venueDetailsAvailable": "Venue details available",
     "dateTime": "Date & Time",
     "location": "Location",
     "tabContentComingSoon": "Content coming soon...",
@@ -192,6 +193,8 @@
       "about": "About",
       "dateLocation": "Date & Location",
       "talents": "Talents",
+      "organisers": "Organisers",
+      "venues": "Venues",
       "community": "Community",
       "venue": "Venue"
     }

@@ -203,6 +203,25 @@ export interface EventImage {
 }
 
 /**
+ * API v2 embedded profiles on event responses (invited_talents_objects, etc.)
+ */
+export interface InvitedEventProfile {
+  id?: number
+  name?: string
+  email?: string
+  role?: string
+  is_active?: boolean
+}
+
+export interface InvitedVenueObject {
+  id?: number
+  name?: string
+  address?: string
+  slug?: string
+  user_id?: number | null
+}
+
+/**
  * Event entity from the API
  */
 export interface Event {
@@ -287,6 +306,14 @@ export interface Event {
   venue?: unknown
   organisers?: Array<unknown>
   is_free_package?: boolean
+
+  /** API v2: ID lists for invites */
+  invited_talents?: Array<string | number>
+  invited_organisers?: Array<string | number>
+  invited_venues?: Array<string | number>
+  invited_talents_objects?: InvitedEventProfile[]
+  invited_organisers_objects?: InvitedEventProfile[]
+  invited_venues_objects?: InvitedVenueObject[]
 }
 
 /**

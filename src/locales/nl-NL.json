@@ -125,6 +125,7 @@
     "ageRequirement": "Leeftijdsvereiste",
     "allAges": "Alle leeftijden welkom",
     "notSpecified": "Niet gespecificeerd",
+    "venueDetailsAvailable": "Locatiedetails beschikbaar",
     "dateTime": "Datum & Tijd",
     "location": "Locatie",
     "tabContentComingSoon": "Inhoud komt binnenkort...",
@@ -147,7 +148,10 @@
       "about": "Over",
       "dateLocation": "Datum & Locatie",
       "talents": "Talenten",
-      "community": "Community"
+      "organisers": "Organisatoren",
+      "venues": "Locaties",
+      "community": "Community",
+      "venue": "Locatie"
     }
   },
   "about": {

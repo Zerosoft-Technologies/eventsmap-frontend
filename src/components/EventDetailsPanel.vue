@@ -196,9 +196,17 @@
                   </svg>
                 </div>
                 <div class="tw:flex-1">
-                  <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Venue Name</p>
-                  <p class="tw:text-sm tw:font-medium tw:text-gray-900">
-                    {{ event?.venue?.name || (event?.invited_venues && event.invited_venues.length > 0 ? 'Venue details available' : $t('eventDetails.notSpecified')) }}
+                  <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Venue name</p>
+                  <button
+                    v-if="invitedVenuesObjects.length && primaryInvitedVenueName"
+                    type="button"
+                    class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700 tw:text-left tw:underline-offset-2 hover:tw:underline"
+                    @click="activeTab = 'venues'"
+                  >
+                    {{ primaryInvitedVenueName }}
+                  </button>
+                  <p v-else class="tw:text-sm tw:font-medium tw:text-gray-900">
+                    {{ overviewVenueDisplay }}
                   </p>
                 </div>
               </div>
@@ -215,6 +223,109 @@
             </div>
           </div>
 
+          <!-- Talents Tab (invited API objects and/or legacy talents) -->
+          <div v-else-if="activeTab === 'talents'" class="tw:p-3">
+            <div v-if="invitedTalentsObjects.length" class="tw:space-y-3">
+              <div
+                v-for="(talent, index) in invitedTalentsObjects"
+                :key="talent.id ?? `talent-${index}`"
+                class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-[#FAFBFF] tw:p-4"
+              >
+                <div class="tw:flex tw:gap-3">
+                  <div
+                    class="tw:w-12 tw:h-12 tw:rounded-full tw:bg-gray-200 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0 tw:text-sm tw:font-semibold tw:text-gray-600"
+                  >
+                    {{ initialsFromName(talent.name) }}
+                  </div>
+                  <div class="tw:flex-1 tw:min-w-0">
+                    <p class="tw:font-semibold tw:text-gray-900 tw:truncate">{{ talent.name || '—' }}</p>
+                    <p v-if="talent.email" class="tw:text-sm tw:text-gray-600 tw:truncate">{{ talent.email }}</p>
+                    <div class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-2">
+                      <span
+                        v-if="talent.role"
+                        class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full tw:bg-gray-100 tw:text-gray-700"
+                      >
+                        {{ talent.role }}
+                      </span>
+                      <span
+                        v-if="talent.is_active !== undefined"
+                        class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full"
+                        :class="talent.is_active ? 'tw:bg-green-50 tw:text-green-800' : 'tw:bg-gray-100 tw:text-gray-600'"
+                      >
+                        {{ talent.is_active ? 'Active' : 'Inactive' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <TalentsTab v-else :talents="event?.talents || []" />
+          </div>
+
+          <!-- Organisers Tab (invited API objects) -->
+          <div v-else-if="activeTab === 'organisers'" class="tw:p-3">
+            <div class="tw:space-y-3">
+              <div
+                v-for="(org, index) in invitedOrganisersObjects"
+                :key="org.id ?? `org-${index}`"
+                class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-[#FAFBFF] tw:p-4"
+              >
+                <div class="tw:flex tw:gap-3">
+                  <div
+                    class="tw:w-12 tw:h-12 tw:rounded-full tw:bg-indigo-50 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0"
+                  >
+                    <svg class="tw:w-6 tw:h-6 tw:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div class="tw:flex-1 tw:min-w-0">
+                    <p class="tw:font-semibold tw:text-gray-900 tw:truncate">{{ org.name || '—' }}</p>
+                    <p v-if="org.email" class="tw:text-sm tw:text-gray-600 tw:truncate">{{ org.email }}</p>
+                    <div class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-2">
+                      <span
+                        v-if="org.role"
+                        class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full tw:bg-gray-100 tw:text-gray-700"
+                      >
+                        {{ org.role }}
+                      </span>
+                      <span
+                        v-if="org.is_active !== undefined"
+                        class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full"
+                        :class="org.is_active ? 'tw:bg-green-50 tw:text-green-800' : 'tw:bg-gray-100 tw:text-gray-600'"
+                      >
+                        {{ org.is_active ? 'Active' : 'Inactive' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Invited Venues Tab -->
+          <div v-else-if="activeTab === 'venues'" class="tw:p-3">
+            <div class="tw:space-y-3">
+              <div
+                v-for="(venue, index) in invitedVenuesObjects"
+                :key="venue.id ?? `venue-${index}`"
+                class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-[#FAFBFF] tw:p-4"
+              >
+                <div class="tw:flex tw:gap-3">
+                  <div class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-orange-50 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0">
+                    <svg class="tw:w-5 tw:h-5 tw:text-[#FF7700]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <div class="tw:flex-1 tw:min-w-0">
+                    <p class="tw:font-semibold tw:text-gray-900">{{ venue.name || '—' }}</p>
+                    <p v-if="venue.address" class="tw:text-sm tw:text-gray-600 tw:mt-1">{{ venue.address }}</p>
+                    <p v-if="venue.slug" class="tw:text-xs tw:text-gray-400 tw:mt-1 tw:font-mono">/{{ venue.slug }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- About Tab -->
           <AboutTab v-else-if="activeTab === 'about'" :about="event?.about"
             :description="event?.about?.description || event?.description" />
@@ -223,13 +334,9 @@
           <DateLocationTab v-else-if="activeTab === 'dateLocation'" :event="event"
             :location-details="event?.location_details" />
 
-          <!-- Venue Tab -->
+          <!-- Venue Tab (legacy location_details) -->
           <VenueTab v-else-if="activeTab === 'venue'" :event="event"
             :location-details="event?.location_details" />
-
-          <!-- Talents Tab -->
-          <TalentsTab v-else-if="activeTab === 'talents'" :talents="event?.talents || []" />
-          <!-- <TalentsTab v-else-if="activeTab === 'talents'" :talents="mockTalents" /> -->
 
           <!-- Community Tab -->
           <!-- <CommunityTab v-else-if="activeTab === 'community'" :community="event?.community || mockCommunity" /> -->
@@ -332,27 +439,84 @@ async function handleWishlistToggle() {
 const currentImageIndex = ref(0)
 const activeTab = ref('overview')
 
-// Tab configuration
-const tabs = [
-  { id: 'overview', labelKey: 'eventDetails.tabs.overview' },
-  // { id: 'about', labelKey: 'eventDetails.tabs.about' },
-  { id: 'dateLocation', labelKey: 'eventDetails.tabs.dateLocation' },
-  // { id: 'venue', labelKey: 'eventDetails.tabs.venue' },
-  // { id: 'talents', labelKey: 'eventDetails.tabs.talents' },
-  // { id: 'community', labelKey: 'eventDetails.tabs.community' }
-]
+function normalizeInvitedList(raw) {
+  if (!raw) return []
+  return Array.isArray(raw) ? raw.filter(Boolean) : []
+}
 
-// Debug: Log event prop and coordinates
-watch(() => props.event, (newEvent) => {
-  console.log('[EventDetailsPanel] Event prop received:', newEvent)
-  if (newEvent) {
-    console.log('[EventDetailsPanel] Event ID:', newEvent.id)
-    console.log('[EventDetailsPanel] Event title:', newEvent.title)
-    console.log('[EventDetailsPanel] latitude:', newEvent.latitude, 'type:', typeof newEvent.latitude)
-    console.log('[EventDetailsPanel] longitude:', newEvent.longitude, 'type:', typeof newEvent.longitude)
-    console.log('[EventDetailsPanel] address:', newEvent.address)
+const invitedTalentsObjects = computed(() =>
+  normalizeInvitedList(props.event?.invited_talents_objects)
+)
+
+const invitedOrganisersObjects = computed(() =>
+  normalizeInvitedList(props.event?.invited_organisers_objects)
+)
+
+const invitedVenuesObjects = computed(() =>
+  normalizeInvitedList(props.event?.invited_venues_objects)
+)
+
+const showTalentsTab = computed(
+  () =>
+    invitedTalentsObjects.value.length > 0 ||
+    (props.event?.talents?.length ?? 0) > 0
+)
+
+const tabs = computed(() => {
+  const list = [
+    { id: 'overview', labelKey: 'eventDetails.tabs.overview' },
+    { id: 'dateLocation', labelKey: 'eventDetails.tabs.dateLocation' }
+  ]
+  if (showTalentsTab.value) {
+    list.push({ id: 'talents', labelKey: 'eventDetails.tabs.talents' })
   }
-}, { immediate: true, deep: true })
+  if (invitedOrganisersObjects.value.length > 0) {
+    list.push({ id: 'organisers', labelKey: 'eventDetails.tabs.organisers' })
+  }
+  if (invitedVenuesObjects.value.length > 0) {
+    list.push({
+      id: 'venues',
+      labelKey:
+        invitedVenuesObjects.value.length > 1
+          ? 'eventDetails.tabs.venues'
+          : 'eventDetails.tabs.venue'
+    })
+  }
+  return list
+})
+
+const primaryInvitedVenueName = computed(() => {
+  const v = invitedVenuesObjects.value[0]
+  return v?.name?.trim() || ''
+})
+
+const overviewVenueDisplay = computed(() => {
+  const ev = props.event
+  if (ev?.venue?.name) return ev.venue.name
+  const first = invitedVenuesObjects.value[0]?.name
+  if (first) return first
+  if (ev?.venue_name) return ev.venue_name
+  if (ev?.invited_venues?.length) return t('eventDetails.venueDetailsAvailable')
+  return t('eventDetails.notSpecified')
+})
+
+function initialsFromName(name) {
+  if (!name || typeof name !== 'string') return '?'
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+function syncActiveTabWithTabs() {
+  const ids = tabs.value.map((tab) => tab.id)
+  if (!ids.includes(activeTab.value)) {
+    activeTab.value = 'overview'
+  }
+}
+
+watch(tabs, () => {
+  syncActiveTabWithTabs()
+})
 
 const mockTalents = [
   { name: "DJ Shadow", image: "https://picsum.photos/seed/talent1/200/200.jpg" },

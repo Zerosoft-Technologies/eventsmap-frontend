@@ -31,20 +31,20 @@
           </div>
           
           <!-- Tabs Navigation -->
-          <div class="tw:flex tw:border-b tw:border-gray-200 tw:px-6">
+          <div class="tw:flex tw:border-b tw:border-gray-200 tw:px-4 tw:overflow-x-auto tw:scrollbar-hide">
             <button
               v-for="tab in tabs"
               :key="tab.id"
+              type="button"
               @click="activeTab = tab.id"
               :class="[
-                'tw:px-4 tw:py-3 tw:text-sm tw:font-medium tw:relative tw:transition-colors',
+                'tw:px-3 tw:py-3 tw:text-sm tw:font-medium tw:relative tw:transition-colors tw:flex-shrink-0 tw:whitespace-nowrap',
                 activeTab === tab.id
-                  ? 'tw-text-[#FF7700]'
+                  ? 'tw:text-[#FF7700]'
                   : 'tw:text-gray-500 hover:tw:text-gray-700'
               ]"
             >
               {{ tab.label }}
-              <!-- Active indicator -->
               <span
                 v-if="activeTab === tab.id"
                 class="tw:absolute tw:bottom-0 tw:left-0 tw:right-0 tw:h-0.5 tw:bg-[#FF7700] tw:rounded-full"
@@ -107,9 +107,20 @@
                       </svg>
                     </div>
                     <div class="tw:flex-1">
-                      <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Venue Name</p>
-                      <p class="tw:text-sm tw:font-medium tw:text-gray-900">
-                        {{ event?.venue?.name || (event?.invited_venues && event.invited_venues.length > 0 ? 'Venue details available' : 'Not specified') }}
+                      <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Venue name</p>
+                      <button
+                        v-if="hasVenueTab && primaryInvitedVenueName"
+                        type="button"
+                        class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700 tw:text-left tw:underline-offset-2 hover:tw:underline"
+                        @click="activeTab = 'venues'"
+                      >
+                        {{ primaryInvitedVenueName }}
+                      </button>
+                      <p
+                        v-else
+                        class="tw:text-sm tw:font-medium tw:text-gray-900"
+                      >
+                        {{ overviewVenueDisplay }}
                       </p>
                     </div>
                   </div>
@@ -123,6 +134,108 @@
                     </svg>
                     Like Event
                   </button>
+                </div>
+              </div>
+
+              <!-- Talents Tab -->
+              <div v-else-if="activeTab === 'talents'" key="talents" class="tw:p-6">
+                <div class="tw:space-y-3">
+                  <div
+                    v-for="(talent, index) in invitedTalentsObjects"
+                    :key="talent.id ?? `talent-${index}`"
+                    class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-[#FAFBFF] tw:p-4"
+                  >
+                    <div class="tw:flex tw:gap-3">
+                      <div
+                        class="tw:w-12 tw:h-12 tw:rounded-full tw:bg-gray-200 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0 tw:text-sm tw:font-semibold tw:text-gray-600"
+                      >
+                        {{ initialsFromName(talent.name) }}
+                      </div>
+                      <div class="tw:flex-1 tw:min-w-0">
+                        <p class="tw:font-semibold tw:text-gray-900 tw:truncate">{{ talent.name || '—' }}</p>
+                        <p v-if="talent.email" class="tw:text-sm tw:text-gray-600 tw:truncate">{{ talent.email }}</p>
+                        <div class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-2">
+                          <span
+                            v-if="talent.role"
+                            class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full tw:bg-gray-100 tw:text-gray-700"
+                          >
+                            {{ talent.role }}
+                          </span>
+                          <span
+                            v-if="talent.is_active !== undefined"
+                            class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full"
+                            :class="talent.is_active ? 'tw:bg-green-50 tw:text-green-800' : 'tw:bg-gray-100 tw:text-gray-600'"
+                          >
+                            {{ talent.is_active ? 'Active' : 'Inactive' }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Organisers Tab -->
+              <div v-else-if="activeTab === 'organisers'" key="organisers" class="tw:p-6">
+                <div class="tw:space-y-3">
+                  <div
+                    v-for="(org, index) in invitedOrganisersObjects"
+                    :key="org.id ?? `org-${index}`"
+                    class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-[#FAFBFF] tw:p-4"
+                  >
+                    <div class="tw:flex tw:gap-3">
+                      <div
+                        class="tw:w-12 tw:h-12 tw:rounded-full tw:bg-indigo-50 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0"
+                      >
+                        <svg class="tw:w-6 tw:h-6 tw:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div class="tw:flex-1 tw:min-w-0">
+                        <p class="tw:font-semibold tw:text-gray-900 tw:truncate">{{ org.name || '—' }}</p>
+                        <p v-if="org.email" class="tw:text-sm tw:text-gray-600 tw:truncate">{{ org.email }}</p>
+                        <div class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-2">
+                          <span
+                            v-if="org.role"
+                            class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full tw:bg-gray-100 tw:text-gray-700"
+                          >
+                            {{ org.role }}
+                          </span>
+                          <span
+                            v-if="org.is_active !== undefined"
+                            class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full"
+                            :class="org.is_active ? 'tw:bg-green-50 tw:text-green-800' : 'tw:bg-gray-100 tw:text-gray-600'"
+                          >
+                            {{ org.is_active ? 'Active' : 'Inactive' }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Venues Tab -->
+              <div v-else-if="activeTab === 'venues'" key="venues" class="tw:p-6">
+                <div class="tw:space-y-3">
+                  <div
+                    v-for="(venue, index) in invitedVenuesObjects"
+                    :key="venue.id ?? `venue-${index}`"
+                    class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-[#FAFBFF] tw:p-4"
+                  >
+                    <div class="tw:flex tw:gap-3">
+                      <div class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-orange-50 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0">
+                        <svg class="tw:w-5 tw:h-5 tw:text-[#FF7700]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                      </div>
+                      <div class="tw:flex-1 tw:min-w-0">
+                        <p class="tw:font-semibold tw:text-gray-900">{{ venue.name || '—' }}</p>
+                        <p v-if="venue.address" class="tw:text-sm tw:text-gray-600 tw:mt-1">{{ venue.address }}</p>
+                        <p v-if="venue.slug" class="tw:text-xs tw:text-gray-400 tw:mt-1 tw:font-mono">/{{ venue.slug }}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -279,11 +392,66 @@ const isMapLoading = ref(false)
 const copySuccess = ref(false)
 const activeTab = ref('overview')
 
-// Tab configuration
-const tabs = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'dateLocation', label: 'Date & Location' }
-]
+function normalizeInvitedList(raw) {
+  if (!raw) return []
+  return Array.isArray(raw) ? raw.filter(Boolean) : []
+}
+
+const invitedTalentsObjects = computed(() =>
+  normalizeInvitedList(props.event?.invited_talents_objects)
+)
+
+const invitedOrganisersObjects = computed(() =>
+  normalizeInvitedList(props.event?.invited_organisers_objects)
+)
+
+const invitedVenuesObjects = computed(() =>
+  normalizeInvitedList(props.event?.invited_venues_objects)
+)
+
+const tabs = computed(() => {
+  const list = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'dateLocation', label: 'Date & Location' }
+  ]
+  if (invitedTalentsObjects.value.length > 0) {
+    list.push({ id: 'talents', label: 'Talents' })
+  }
+  if (invitedOrganisersObjects.value.length > 0) {
+    list.push({ id: 'organisers', label: 'Organisers' })
+  }
+  if (invitedVenuesObjects.value.length > 0) {
+    list.push({
+      id: 'venues',
+      label: invitedVenuesObjects.value.length > 1 ? 'Venues' : 'Venue'
+    })
+  }
+  return list
+})
+
+const hasVenueTab = computed(() => invitedVenuesObjects.value.length > 0)
+
+const primaryInvitedVenueName = computed(() => {
+  const v = invitedVenuesObjects.value[0]
+  return v?.name?.trim() || ''
+})
+
+const overviewVenueDisplay = computed(() => {
+  const ev = props.event
+  if (ev?.venue?.name) return ev.venue.name
+  const first = invitedVenuesObjects.value[0]?.name
+  if (first) return first
+  if (ev?.venue_name) return ev.venue_name
+  if (ev?.invited_venues?.length) return 'See Venue tab'
+  return 'Not specified'
+})
+
+function initialsFromName(name) {
+  if (!name || typeof name !== 'string') return '?'
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
 
 // Computed
 const isOpen = computed(() => props.modelValue)
@@ -433,6 +601,17 @@ watch(activeTab, (newTab) => {
   }
 })
 
+function syncActiveTabWithAvailableTabs() {
+  const ids = tabs.value.map((t) => t.id)
+  if (!ids.includes(activeTab.value)) {
+    activeTab.value = 'overview'
+  }
+}
+
+watch(tabs, () => {
+  syncActiveTabWithAvailableTabs()
+})
+
 // Watch for modal open/close
 watch(isOpen, (open) => {
   if (open) {
@@ -444,13 +623,18 @@ watch(isOpen, (open) => {
 })
 
 // Watch for event changes
-watch(() => props.event, (newEvent) => {
-  if (newEvent && activeTab.value === 'dateLocation' && hasCoordinates.value) {
-    nextTick(() => {
-      initializeMap()
-    })
-  }
-}, { deep: true })
+watch(
+  () => props.event,
+  (newEvent) => {
+    syncActiveTabWithAvailableTabs()
+    if (newEvent && activeTab.value === 'dateLocation' && hasCoordinates.value) {
+      nextTick(() => {
+        initializeMap()
+      })
+    }
+  },
+  { deep: true }
+)
 
 // Cleanup on unmount
 onUnmounted(() => {
@@ -545,5 +729,14 @@ onUnmounted(() => {
 
 :deep(.maplibregl-popup-tip) {
   border-top-color: white;
+}
+
+.tw\:scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tw\:scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>
