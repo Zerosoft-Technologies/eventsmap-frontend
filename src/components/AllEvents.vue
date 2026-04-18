@@ -1,150 +1,154 @@
 <template>
-    <!-- CTA Button when minimized -->
-    <transition name="slide-left">
-      <button 
-        v-if="!visible && computedEvents.length > 0"
-        @click="expand"
-        class="tw:fixed tw:top-1/2 tw:-translate-y-1/2 tw:left-0 tw:z-50 tw:bg-white tw:px-4 tw:py-3 tw:rounded-r-lg tw:shadow-lg tw:border tw:border-(--secondary-color) tw:flex tw:items-center tw:gap-2 tw:transition-all hover:tw:translate-x-1"
-      >
-        <span class="tw:font-medium">Events</span>
-        <img src="../assets/arrow-right.png" alt="Expand" class="tw:w-4 tw:h-4">
-      </button>
-    </transition>
+  <!-- CTA Button when panel is closed -->
+  <transition name="slide-left">
+    <button
+      v-if="!visible && computedEvents.length > 0"
+      @click="expand"
+      class="tw:fixed tw:top-1/2 tw:-translate-y-1/2 tw:left-0 tw:z-50 tw:bg-white tw:px-4 tw:py-3 tw:rounded-r-xl tw:shadow-lg tw:border tw:border-gray-200 tw:flex tw:items-center tw:gap-2 tw:transition-all hover:tw:translate-x-1"
+    >
+      <span class="tw:text-sm tw:font-semibold tw:text-gray-700">Events</span>
+      <img src="../assets/arrow-right.png" alt="Expand" class="tw:w-4 tw:h-4">
+    </button>
+  </transition>
 
-    <!-- Events Panel -->
-    <transition name="fade">
-      <div v-if="visible" 
-        :class="[
-          isMinimized 
-            ? 'tw:w-16 tw:h-16 tw:p-2 tw:cursor-pointer' 
-            : 'tw:p-4 tw:max-w-[500px]'
-        , 
-          'tw:fixed tw:bg-white tw:rounded-lg tw:md:left-7 tw:bottom-2 tw:z-50 tw:lg:z-10 tw:transition-all tw:duration-300'
-        ]"   
-        @click="isMinimized && expand()"
-      >
-        <!-- Minimized State -->
-        <div v-if="isMinimized" class="tw:flex tw:items-center tw:justify-center tw:h-full">
-          <span class="tw:font-semibold tw:text-lg">Events</span>
+  <!-- Events Panel -->
+  <transition name="fade">
+    <div
+      v-if="visible"
+      :class="[
+        isMinimized
+          ? 'tw:w-16 tw:h-16 tw:rounded-2xl tw:shadow-lg tw:cursor-pointer tw:flex tw:items-center tw:justify-center'
+          : 'tw:w-full tw:md:w-[380px] tw:max-h-[85vh] tw:md:max-h-[90vh] tw:rounded-t-2xl tw:md:rounded-2xl tw:shadow-xl tw:flex tw:flex-col',
+        'tw:fixed tw:bottom-0 tw:md:bottom-2 tw:left-0 tw:md:left-7 tw:bg-white tw:z-50 tw:lg:z-10 tw:transition-all tw:duration-300 tw:overflow-hidden'
+      ]"
+      @click="isMinimized && expand()"
+    >
+      <!-- Minimized State -->
+      <template v-if="isMinimized">
+        <span class="tw:text-sm tw:font-semibold tw:text-gray-700">Events</span>
+      </template>
+
+      <!-- Expanded State -->
+      <template v-else>
+        <!-- Mobile drag handle -->
+        <div class="tw:flex tw:justify-center tw:pt-2.5 tw:pb-1 tw:md:hidden tw:flex-shrink-0">
+          <div class="tw:w-10 tw:h-1 tw:bg-gray-300 tw:rounded-full"></div>
         </div>
-        
-        <!-- Expanded State -->
-        <div v-else>
-          <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
-            <h3 class="tw:font-semibold tw:text-2xl tw:leading-[1.35] tw:tracking-[-0.006em]">{{ $t('allEvents.title') }}</h3>
-            <div class="tw:flex tw:gap-2" style="align-items: center;">
-              <img 
-                class="tw:cursor-pointer" 
-                @click.stop="minimize" 
-                src="../assets/chevron-bold-left.png" 
-                alt="Minimize icon"
-                title="Minimize"
-                style="width: 13px; height: 15px;"
-              >
-              <img 
-                class="tw:cursor-pointer" 
-                @click.stop="close" 
-                src="../assets/cancel.png" 
-                alt="Close icon"
-              >
-            </div>
-          </div>        
-          <div 
-            v-if="!isMinimized" 
-            class="tw:max-h-[80vh] tw:lg:max-h-[60vh] tw:space-y-4 tw:pr-2 tw:overflow-y-auto"
-          >
-          <!-- Loading state with skeleton -->
-          <div v-if="isLoading" class="tw:space-y-4">
-            <div v-for="i in 3" :key="i" class="tw:p-3 tw:bg-[#ECEEF4] tw:rounded-xl tw:animate-pulse">            
-              <!-- Header section -->
-              <div class="tw:flex tw:justify-between tw:md:gap-5 tw:flex-wrap tw:items-center">
-                <div class="tw:flex tw:gap-[13px] tw:items-center">
-                  <!-- Logo skeleton -->
-                  <div class="tw:border tw:w-10 tw:h-10 tw:bg-gray-300 tw:border-gray-400 tw:rounded-full"></div>
-                  <!-- Title skeleton -->
-                  <div class="tw:h-5 tw:bg-gray-300 tw:rounded tw:w-40"></div>
+
+        <!-- Filter chips row (flex-shrink-0 so it never scrolls away) -->
+        <div class="events-chips tw:flex tw:gap-2 tw:px-4 tw:pt-3 tw:pb-2 tw:overflow-x-auto tw:flex-nowrap tw:flex-shrink-0">
+          <button class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:flex-shrink-0">
+            Categories <span class="tw:text-gray-400">&#8594;</span>
+          </button>
+          <button class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:flex-shrink-0">
+            40,00 EUR <span class="tw:text-gray-400">&#8594;</span>
+          </button>
+          <button class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:flex-shrink-0">
+            12:47 &#8211; 01:47 <span class="tw:text-gray-400">&#8594;</span>
+          </button>
+        </div>
+
+        <!-- Search organiser button -->
+        <div class="tw:px-4 tw:pb-3 tw:flex-shrink-0">
+          <button class="tw:inline-flex tw:items-center tw:gap-2 tw:px-4 tw:py-2 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:text-gray-500 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors">
+            <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            Search organiser
+          </button>
+        </div>
+
+        <!-- Section header -->
+        <div class="tw:flex tw:justify-between tw:items-center tw:px-4 tw:pb-3 tw:border-b tw:border-gray-100 tw:flex-shrink-0">
+          <h3 class="tw:text-sm tw:font-bold tw:text-gray-600 tw:tracking-[0.1em] tw:uppercase">{{ $t('allEvents.title') }}</h3>
+          <div class="tw:flex tw:items-center tw:gap-3">
+            <img
+              class="tw:cursor-pointer tw:opacity-60 hover:tw:opacity-100 tw:transition-opacity"
+              @click.stop="minimize"
+              src="../assets/chevron-bold-left.png"
+              alt="Minimize"
+              style="width:13px;height:15px;"
+            >
+            <button
+              @click.stop="close"
+              class="tw:w-6 tw:h-6 tw:flex tw:items-center tw:justify-center tw:text-gray-400 hover:tw:text-gray-700 tw:rounded-full hover:tw:bg-gray-100 tw:transition-colors"
+            >
+              <svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable event list (flex-1 + min-h-0 ensures it fills remaining height and scrolls) -->
+        <div class="events-scroll tw:flex-1 tw:min-h-0 tw:overflow-y-auto">
+
+          <!-- Loading skeleton -->
+          <div v-if="isLoading" class="tw:p-4 tw:space-y-4">
+            <div v-for="i in 3" :key="i" class="tw:bg-white tw:rounded-2xl tw:border tw:border-gray-100 tw:overflow-hidden tw:shadow-sm tw:animate-pulse">
+              <div class="tw:h-40 tw:bg-gray-200 tw:w-full"></div>
+              <div class="tw:p-3 tw:space-y-2">
+                <div class="tw:flex tw:justify-between tw:items-start">
+                  <div class="tw:h-5 tw:bg-gray-200 tw:rounded tw:w-36"></div>
+                  <div class="tw:w-10 tw:h-12 tw:bg-gray-200 tw:rounded-lg"></div>
                 </div>
-                <!-- Live button skeleton -->
-                <div class="tw:h-8 tw:bg-gray-300 tw:rounded-md tw:w-24"></div>
+                <div class="tw:h-3 tw:bg-gray-200 tw:rounded tw:w-full"></div>
+                <div class="tw:h-3 tw:bg-gray-200 tw:rounded tw:w-4/5"></div>
+                <div class="tw:grid tw:grid-cols-2 tw:gap-2">
+                  <div class="tw:h-3 tw:bg-gray-200 tw:rounded"></div>
+                  <div class="tw:h-3 tw:bg-gray-200 tw:rounded"></div>
+                  <div class="tw:h-3 tw:bg-gray-200 tw:rounded"></div>
+                  <div class="tw:h-3 tw:bg-gray-200 tw:rounded"></div>
+                </div>
+                <div class="tw:flex tw:gap-2 tw:pt-1">
+                  <div class="tw:h-8 tw:bg-gray-200 tw:rounded-lg tw:flex-1"></div>
+                  <div class="tw:h-8 tw:bg-gray-200 tw:rounded-lg tw:flex-1"></div>
+                  <div class="tw:h-8 tw:bg-gray-200 tw:rounded-lg tw:flex-1"></div>
+                </div>
               </div>
-
-              <!-- Main content section -->
-              <div class="tw:flex tw:md:justify-start tw:justify-between tw:md:gap-4 tw:mt-4">
-                <!-- Image skeleton -->
-                <div class="tw:rounded-lg tw:w-30 tw:h-24 tw:bg-gray-300"></div>
-
-                <div class="tw:flex-1">
-                  <!-- Countdown skeleton -->
-                  <div class="tw:flex tw:gap-3 tw:md:gap-6 tw:text-center tw:mb-3">
-                    <div v-for="j in 4" :key="j" class="tw:space-y-1">
-                      <div class="tw:h-4 tw:bg-gray-300 tw:rounded tw:w-8 tw:mx-auto"></div>
-                      <div class="tw:h-3 tw:bg-gray-300 tw:rounded tw:w-10"></div>
-                    </div>
-                  </div>
-
-                  <!-- Detail rows skeleton -->
-                  <div class="tw:space-y-3">
-                    <div v-for="j in 6" :key="j" class="tw:flex tw:gap-2 tw:items-center">
-                      <div class="tw:w-4 tw:h-4 tw:bg-gray-300 tw:rounded"></div>
-                      <div class="tw:h-3 tw:bg-gray-300 tw:rounded tw:flex-1"></div>
-                    </div>
-                  </div>
-                </div>                    
-              </div>    
-
-              <!-- Footer section -->
-              <div class="tw:flex tw:justify-between tw:items-center tw:mt-4">
-                <!-- Favourite link skeleton -->
-                <div class="tw:flex tw:gap-1 tw:items-center">
-                  <div class="tw:w-4 tw:h-4 tw:bg-gray-300 tw:rounded"></div>
-                  <div class="tw:h-4 tw:bg-gray-300 tw:rounded tw:w-12"></div>
-                </div>
-
-                <!-- Buttons skeleton -->
-                <div class="tw:flex tw:gap-3">
-                  <div class="tw:h-9 tw:bg-gray-300 tw:rounded-md tw:w-20"></div>
-                  <div class="tw:h-9 tw:bg-gray-300 tw:rounded-md tw:w-28"></div>
-                </div>
-              </div>                            
             </div>
           </div>
-          
-          <!-- Events empty state -->
-          <div v-else-if="computedEvents.length === 0" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:py-12 tw:px-6">
-            <div class="tw:w-24 tw:h-24 tw:bg-[#ECEEF4] tw:rounded-full tw:flex tw:items-center tw:justify-center tw:mb-6">
-              <svg class="tw:w-12 tw:h-12 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+
+          <!-- Empty state -->
+          <div v-else-if="computedEvents.length === 0" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:py-16 tw:px-6">
+            <div class="tw:w-20 tw:h-20 tw:bg-gray-100 tw:rounded-full tw:flex tw:items-center tw:justify-center tw:mb-5">
+              <svg class="tw:w-10 tw:h-10 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
             </div>
-            <h4 class="tw:text-xl tw:font-semibold tw:text-gray-800 tw:mb-2 tw:text-center">{{ $t('allEvents.noEventsFound') }}</h4>
-            <p class="tw:text-gray-500 tw:text-center tw:mb-6 tw:max-w-xs">
-              {{ $t('allEvents.noEventsMessage') }}
-            </p>
-            <button 
-              @click="reset" 
-              class="tw:bg-[var(--primary-color)] tw:text-white tw:px-6 tw:py-2.5 tw:rounded-lg tw:text-sm tw:font-medium tw:transition-all hover:tw:opacity-90"
+            <h4 class="tw:text-lg tw:font-semibold tw:text-gray-800 tw:mb-2 tw:text-center">{{ $t('allEvents.noEventsFound') }}</h4>
+            <p class="tw:text-sm tw:text-gray-500 tw:text-center tw:mb-6 tw:max-w-xs">{{ $t('allEvents.noEventsMessage') }}</p>
+            <button
+              @click="reset"
+              class="tw:bg-orange-500 tw:text-white tw:px-6 tw:py-2.5 tw:rounded-lg tw:text-sm tw:font-medium tw:transition-all hover:tw:bg-orange-600"
             >
               {{ $t('common.clearFilters') }}
             </button>
           </div>
-          
+
           <!-- Events list -->
-          <transition-group v-else name="panel-fade" tag="div" class="tw:space-y-4">
+          <transition-group v-else name="panel-fade" tag="div" class="tw:p-4 tw:space-y-4">
             <div v-for="event in computedEvents" :key="event.id">
               <Event :event="event" @viewEvent="handleViewEvent"></Event>
             </div>
           </transition-group>
-          
-          <div v-if="!isLoading && computedEvents.length > 0" class="tw:text-center">
-            <button @click="reset" class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)">                
-                {{ $t('header.resetSearch') }}
+
+          <!-- Reset search -->
+          <div v-if="!isLoading && computedEvents.length > 0" class="tw:text-center tw:pb-5">
+            <button
+              @click="reset"
+              class="tw:text-sm tw:text-gray-500 tw:px-5 tw:py-2 tw:rounded-lg tw:border tw:border-gray-200 hover:tw:bg-gray-50 tw:transition-colors"
+            >
+              {{ $t('header.resetSearch') }}
             </button>
           </div>
-          </div>
+
         </div>
-      </div>
-    </transition>  
+      </template>
+    </div>
+  </transition>
 </template>
+
 <script setup>
 import { useI18n } from 'vue-i18n'
 import { defineAsyncComponent, ref, computed } from 'vue'
@@ -266,4 +270,14 @@ function handleViewEvent(event) {
 .tw\:max-h-\[80vh\]::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Scrollable events area */
+.events-scroll::-webkit-scrollbar { width: 5px; }
+.events-scroll::-webkit-scrollbar-track { background: #F3F4F6; border-radius: 8px; }
+.events-scroll::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 8px; }
+.events-scroll::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* Hide scrollbar on filter chips row */
+.events-chips { scrollbar-width: none; }
+.events-chips::-webkit-scrollbar { display: none; }
 </style>
