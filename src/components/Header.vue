@@ -609,7 +609,22 @@
     @continue-without="() => {}"
       /> -->
   <div v-if="showResults">
-    <AllEvents @closeResults="handleClose" @resetSearch="handleReset" @viewEvent="handleViewEvent" :events="events" :loading="eventsLoading" />
+    <AllEvents
+      :events="events"
+      :loading="eventsLoading"
+      :selected-category="selectedCategory"
+      :available-subcategories="availableSubcategories"
+      :selected-subcategory-slugs="selectedSubcategorySlugs"
+      :start-time="startTime"
+      :end-time="endTime"
+      @closeResults="handleClose"
+      @resetSearch="handleReset"
+      @viewEvent="handleViewEvent"
+      @toggleSubcategory="toggleSubcategory"
+      @clearSubcategories="clearSubcategories"
+      @update:startTime="startTime = $event"
+      @update:endTime="endTime = $event"
+    />
   </div>
   
   <!-- Event Details Panel -->
@@ -831,7 +846,18 @@ const searchResults = ref([])
 const categories = ref([])
 const categoriesLoading = ref(false)
 const selectedCategory = ref(null)
+/** Subcategory slugs (multi-select), filtered by `selectedCategory.subcategories` */
+const selectedSubcategorySlugs = ref([])
+const startTime = ref(null)
+const endTime = ref(null)
 const categoriesScrollEl = ref(null)
+
+/** Subcategories for the header-selected category */
+const availableSubcategories = computed(() => {
+  const c = selectedCategory.value
+  if (!c || !Array.isArray(c.subcategories)) return []
+  return c.subcategories
+})
 const catIsDragging = ref(false)
 const catDidDrag = ref(false)
 let catDragStartX = 0
@@ -941,18 +967,31 @@ async function loadCategories() {
   }
 }
 
-// Handle category selection
+// Handle category selection (subcategories reset; refetch via watch)
 function selectCategory(category) {
   if (catDidDrag.value) return
-  selectedCategory.value = category;
-  showSuggestion.value = false;
-  loadEventsFromApi(searchTerm.value.trim());
-  showResults.value = true;
+  selectedCategory.value = category
+  selectedSubcategorySlugs.value = []
+  showSuggestion.value = false
+  showResults.value = true
 }
 
 function clearCategoryFilter() {
   selectedCategory.value = null
-  loadEventsFromApi(searchTerm.value.trim())
+  selectedSubcategorySlugs.value = []
+  showResults.value = true
+}
+
+function toggleSubcategory(slug) {
+  const arr = selectedSubcategorySlugs.value
+  const i = arr.indexOf(slug)
+  selectedSubcategorySlugs.value =
+    i >= 0 ? arr.filter((s) => s !== slug) : [...arr, slug]
+  showResults.value = true
+}
+
+function clearSubcategories() {
+  selectedSubcategorySlugs.value = []
   showResults.value = true
 }
 
@@ -1022,6 +1061,9 @@ function handleReset(){
   searchInput.value.blur();
   city.value = "Amsterdam";
   selectedCategory.value = null
+  selectedSubcategorySlugs.value = []
+  startTime.value = null
+  endTime.value = null
   selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" };
   sessionFilter.value = {
     morning: false,
@@ -1103,6 +1145,12 @@ function debounce(fn, delay = 450) {
   }
 }
 
+/** Refetch when header category, sidebar subcategories, or time window change (300ms) */
+const debouncedFilterEvents = debounce(() => {
+  loadEventsFromApi(searchTerm.value.trim())
+  showResults.value = true
+}, 300)
+
 // Load events from API
 async function loadEventsFromApi(searchQuery = '') {
   eventsLoading.value = true;
@@ -1124,6 +1172,18 @@ async function loadEventsFromApi(searchQuery = '') {
     // Add category filter if selected
     if (selectedCategory.value) {
       params.category = selectedCategory.value.slug;
+    }
+
+    // Subcategories (comma-separated slugs)
+    if (selectedSubcategorySlugs.value.length > 0) {
+      params.subcategory = selectedSubcategorySlugs.value.join(',')
+    }
+
+    if (startTime.value) {
+      params.start_time = startTime.value
+    }
+    if (endTime.value) {
+      params.end_time = endTime.value
     }
     
     // Add date range if selected
@@ -1168,6 +1228,19 @@ watch(dateRange, () => {
 watch(sessionFilter, () => {
   debouncedReloadEvents()
 }, { deep: true })
+
+// Sidebar pills + header category: debounced refetch
+watch(
+  () => [
+    selectedCategory.value?.id ?? null,
+    [...selectedSubcategorySlugs.value].sort().join(','),
+    startTime.value,
+    endTime.value
+  ],
+  () => {
+    debouncedFilterEvents()
+  }
+)
 
 const searchCity = async () => {
   if (!searchLocation.value?.trim()) {

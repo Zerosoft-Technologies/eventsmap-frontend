@@ -381,6 +381,11 @@ export interface EventFilters {
   // Subcategory filter (use slug from categories API)
   subcategory?: string | null
 
+  /** Event start-time window (HH:MM or HH:MM:SS), e.g. filter sessions starting after this time */
+  start_time?: string | null
+  /** Event end-time window (HH:MM or HH:MM:SS) */
+  end_time?: string | null
+
   // Live now filter
   live_now?: boolean
 

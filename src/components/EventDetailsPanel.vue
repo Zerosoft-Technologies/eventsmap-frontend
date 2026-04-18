@@ -127,14 +127,16 @@
             <div class="tw:flex tw:justify-between tw:items-center tw:mb-6">
 
               <div class="tw:flex tw:gap-3">
-                <button @click="handleWishlistToggle"
+                <button
+                  type="button"
+                  @click.stop="handleWishlistToggle"
                   class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color) tw:transition-all tw:duration-200"
-                  :class="wishlistStore.isWishlisted(event?.id) ? 'tw:border-red-400 tw:bg-red-50' : ''"
-                  :disabled="wishlistLoading">
+                  :class="detailsWishlistBtnClass"
+                  :aria-busy="wishlistStore.isWishlistPending(event?.id)"
+                >
                   <svg 
                     class="tw:w-4 tw:h-4 tw:transition-colors tw:duration-200" 
-                    :class="wishlistStore.isWishlisted(event?.id) ? 'tw:text-red-500 tw:fill-red-500' : 'tw:text-gray-400 tw:fill-none'"
-                    :style="wishlistLoading ? 'opacity: 0.5' : ''"
+                    :class="detailsWishlistIconClass"
                     xmlns="http://www.w3.org/2000/svg" 
                     viewBox="0 0 24 24" 
                     stroke="currentColor" 
@@ -314,22 +316,32 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['close', 'link', 'route', 'share'])
 
-// Wishlist state
-const wishlistLoading = ref(false)
+const detailsWishlistBtnClass = computed(() => {
+  const pending = wishlistStore.isWishlistPending(props.event?.id)
+  const base = pending
+    ? 'tw:opacity-90 tw:pointer-events-none tw:cursor-wait'
+    : ''
+  if (wishlistStore.isWishlisted(props.event?.id)) {
+    return `${base} tw:border-[var(--primary-color)] tw:bg-[var(--primary-color)]/10`
+  }
+  return `${base}`
+})
 
-// Wishlist toggle handler
+const detailsWishlistIconClass = computed(() => {
+  if (wishlistStore.isWishlisted(props.event?.id)) {
+    return 'tw:text-[var(--primary-color)] tw:fill-[var(--primary-color)] tw:stroke-[var(--primary-color)]'
+  }
+  return 'tw:text-gray-400 tw:fill-none'
+})
+
+// Wishlist toggle (optimistic UI + rollback + toast in store)
 async function handleWishlistToggle() {
   if (!authStore.isAuthenticated) {
     router.push({ name: 'Login' })
     return
   }
-  if (wishlistLoading.value) return
-  wishlistLoading.value = true
-  try {
-    await wishlistStore.toggleWishlist(props.event)
-  } finally {
-    wishlistLoading.value = false
-  }
+  if (!props.event) return
+  await wishlistStore.toggleWishlist(props.event)
 }
 
 // State

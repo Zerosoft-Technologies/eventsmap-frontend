@@ -92,6 +92,13 @@ export function buildQueryParams(filters: EventFilters): URLSearchParams {
     params.set('subcategory', filters.subcategory)
   }
 
+  if (filters.start_time) {
+    params.set('start_time', filters.start_time)
+  }
+  if (filters.end_time) {
+    params.set('end_time', filters.end_time)
+  }
+
   if (filters.sessions) {
     params.set('sessions', filters.sessions)
   }
