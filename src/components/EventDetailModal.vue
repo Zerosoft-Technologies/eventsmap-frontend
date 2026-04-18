@@ -39,7 +39,7 @@
               :class="[
                 'tw:px-4 tw:py-3 tw:text-sm tw:font-medium tw:relative tw:transition-colors',
                 activeTab === tab.id
-                  ? 'tw:text-blue-600'
+                  ? 'tw-text-[#FF7700]'
                   : 'tw:text-gray-500 hover:tw:text-gray-700'
               ]"
             >
@@ -47,7 +47,7 @@
               <!-- Active indicator -->
               <span
                 v-if="activeTab === tab.id"
-                class="tw:absolute tw:bottom-0 tw:left-0 tw:right-0 tw:h-0.5 tw:bg-blue-600 tw:rounded-full"
+                class="tw:absolute tw:bottom-0 tw:left-0 tw:right-0 tw:h-0.5 tw:bg-[#FF7700] tw:rounded-full"
               ></span>
             </button>
           </div>
@@ -57,25 +57,72 @@
             <Transition name="tab-fade" mode="out-in">
               
               <!-- Overview Tab -->
-              <div v-if="activeTab === 'overview'" key="overview" class="tw:p-6">
-                <div class="tw:space-y-4">
-                  <div>
-                    <h3 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-2">{{ event?.title }}</h3>
-                    <p class="tw:text-gray-600 tw:leading-relaxed">
-                      {{ event?.description || 'No description available for this event.' }}
-                    </p>
-                  </div>
-                  
-                  <div class="tw:grid tw:grid-cols-2 tw:gap-4 tw:pt-4 tw:border-t tw:border-gray-100">
-                    <div>
-                      <span class="tw:text-sm tw:text-gray-500">Date & Time</span>
-                      <p class="tw:text-sm tw:font-medium tw:text-gray-900">{{ event?.formatted_date || 'Not specified' }}</p>
+              <div v-if="activeTab === 'overview'" key="overview" class="tw:p-3">
+                <!-- Event Details List -->
+                <div class="tw:space-y-1">
+                  <!-- Dress Code -->
+                  <div class="tw:flex tw:items-center tw:gap-2 tw:py-2 tw:border-b tw:border-gray-100">
+                    <div class="tw:flex tw:items-center tw:justify-center tw:w-5">
+                      <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                      </svg>
                     </div>
-                    <div>
-                      <span class="tw:text-sm tw:text-gray-500">Location</span>
-                      <p class="tw:text-sm tw:font-medium tw:text-gray-900">{{ event?.address || 'Not specified' }}</p>
+                    <div class="tw:flex-1">
+                      <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Dress Code</p>
+                      <p class="tw:text-sm tw:font-medium tw:text-gray-900 tw:capitalize">{{ event?.dresscode || 'Not specified' }}</p>
                     </div>
                   </div>
+
+                  <!-- Age -->
+                  <div class="tw:flex tw:items-center tw:gap-2 tw:py-2 tw:border-b tw:border-gray-100">
+                    <div class="tw:flex tw:items-center tw:justify-center tw:w-5">
+                      <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                    <div class="tw:flex-1">
+                      <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Age</p>
+                      <p class="tw:text-sm tw:font-medium tw:text-gray-900">{{ event?.age_limit || 'All ages' }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Entrance Status -->
+                  <div class="tw:flex tw:items-center tw:gap-2 tw:py-2 tw:border-b tw:border-gray-100">
+                    <div class="tw:flex tw:items-center tw:justify-center tw:w-5">
+                      <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                    <div class="tw:flex-1">
+                      <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Entrance Status</p>
+                      <p class="tw:text-sm tw:font-medium tw:text-gray-900 tw:capitalize">{{ event?.entrance_status || 'Not specified' }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Venue Name -->
+                  <div class="tw:flex tw:items-center tw:gap-2 tw:py-2">
+                    <div class="tw:flex tw:items-center tw:justify-center tw:w-5">
+                      <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                    <div class="tw:flex-1">
+                      <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Venue Name</p>
+                      <p class="tw:text-sm tw:font-medium tw:text-gray-900">
+                        {{ event?.venue?.name || (event?.invited_venues && event.invited_venues.length > 0 ? 'Venue details available' : 'Not specified') }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Like Button -->
+                <div class="tw:mt-6 tw:px-3">
+                  <button class="tw:w-full tw:flex tw:items-center tw:justify-center tw:gap-2 tw:px-4 tw:py-2.5 tw:bg-[#FF7700] tw:text-white tw:font-medium tw:rounded-lg tw:transition-colors hover:tw:bg-[#E66800]">
+                    <svg class="tw:w-5 tw:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                    Like Event
+                  </button>
                 </div>
               </div>
               
