@@ -7,9 +7,9 @@
     </h1>
     <div v-if="!isProfilePage" class="tw:hidden tw:relative tw:md:flex tw:items-center tw:gap-3">
       <div class="search-bar tw:flex tw:relative tw:bg-white tw:gap-6 tw:items-center tw:py-3 tw:pr-3 tw:pl-4 tw:rounded-lg" style="height: 40px;">
-        <div class="tw:flex tw:gap-2 tw:relative tw:cursor-pointer tw:items-center tw:w-[169px] overflow-hidden">
+        <div class="tw:flex tw:gap-2 tw:relative tw:cursor-pointer tw:items-center tw:w-[169px] overflow-hidden" @click="openSearchSuggestions">
           <img src="../assets/search.png" alt="Search Icon" class="search-icon" />
-          <input ref="searchInput" @keyup.enter="filterBy('search')" v-model="searchTerm" @focus="showSuggestion = true" @blur="handleSuggestionBlur" type="text" class="tw:outline-none tw:placeholder-(--primary-color) search-input tw:bg-transparent tw:text-sm" :placeholder="$t('header.search.placeholder')">        
+          <input ref="searchInput" @keyup.enter="filterBy('search')" v-model="searchTerm" @focus="openSearchSuggestions" @blur="handleSuggestionBlur" type="text" class="tw:outline-none tw:placeholder-(--primary-color) search-input tw:bg-transparent tw:text-sm" :placeholder="$t('header.search.placeholder')">        
         </div>
         <div class="divider-v"></div>
         <div class="tw:flex tw:gap-1.5 tw:cursor-pointer tw:items-center location-pill" ref="locationToggler" @click="toggleLocation">
@@ -819,6 +819,12 @@ function handleNotificationDropdownOutsideClick(e) {
 
 function handleSuggestionBlur() {
   setTimeout(() => { showSuggestion.value = false }, 150)
+}
+
+/** Opens category strip; also runs on click so it works when input stays focused after picking a category (mousedown.prevent on the panel avoids blur). */
+function openSearchSuggestions() {
+  showSuggestion.value = true
+  searchInput.value?.focus()
 }
 
 function scrollCategories(direction) {
