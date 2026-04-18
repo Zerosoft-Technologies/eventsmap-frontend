@@ -129,7 +129,7 @@
 
       <!-- Tabs Navigation -->
       <div class="tw:px-3 tw:pb-0 tw:bg-[#FAFBFF] tw:sticky tw:top-0 tw:z-10 tw:flex-shrink-0">
-        <div class="tw:flex tw:overflow-x-auto tw:scrollbar-hide tw:border-b tw:border-gray-200">
+        <div class="tw:flex tw:overflow-x-auto tw:scrollbar-hide">
           <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
             'tw:px-3 tw:py-3 tw:text-sm tw:font-medium tw:whitespace-nowrap tw:relative tw:border-b-2 tw:flex-shrink-0 tw:transition-colors tw:duration-200',
             activeTab === tab.id
@@ -146,66 +146,63 @@
         <!-- Tab Content -->
         <div class="tw:flex-1 tw:overflow-y-auto">
           <!-- Overview Tab -->
-          <div v-if="activeTab === 'overview'" class="tw:p-3">
-            <!-- Event Details List -->
-            <div class="tw:space-y-1">
-              <!-- Dress Code -->
-              <div class="tw:flex tw:items-center tw:gap-2 tw:py-2 tw:border-b tw:border-gray-100">
-                <div class="tw:flex tw:items-center tw:justify-center tw:w-5">
-                  <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          <div v-if="activeTab === 'overview'" class="tw:px-4 tw:py-4">
+            <!-- Event details: label above value; checkmarks on first three rows only -->
+            <div class="tw:space-y-6">
+              <!-- Dress code -->
+              <div>
+                <p class="tw:text-base tw:font-semibold tw:text-gray-900">
+                  {{ $t('eventDetails.overviewDressCode') }}
+                </p>
+                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
+                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                   </svg>
-                </div>
-                <div class="tw:flex-1">
-                  <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Dress Code</p>
-                  <p class="tw:text-sm tw:font-medium tw:text-gray-900 tw:capitalize">{{ event?.dresscode || $t('eventDetails.notSpecified') }}</p>
+                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewDresscodeDisplay }}</span>
                 </div>
               </div>
 
               <!-- Age -->
-              <div class="tw:flex tw:items-center tw:gap-2 tw:py-2 tw:border-b tw:border-gray-100">
-                <div class="tw:flex tw:items-center tw:justify-center tw:w-5">
-                  <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              <div>
+                <p class="tw:text-base tw:font-semibold tw:text-gray-900">
+                  {{ $t('eventDetails.overviewAge') }}
+                </p>
+                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
+                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                   </svg>
-                </div>
-                <div class="tw:flex-1">
-                  <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Age</p>
-                  <p class="tw:text-sm tw:font-medium tw:text-gray-900">{{ event?.age_limit || $t('eventDetails.allAges') }}</p>
+                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewAgeDisplay }}</span>
                 </div>
               </div>
 
-              <!-- Entrance Status -->
-              <div class="tw:flex tw:items-center tw:gap-2 tw:py-2 tw:border-b tw:border-gray-100">
-                <div class="tw:flex tw:items-center tw:justify-center tw:w-5">
-                  <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              <!-- Entrance fee -->
+              <div>
+                <p class="tw:text-base tw:font-semibold tw:text-gray-900">
+                  {{ $t('eventDetails.overviewEntranceFee') }}
+                </p>
+                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
+                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                   </svg>
-                </div>
-                <div class="tw:flex-1">
-                  <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Entrance Status</p>
-                  <p class="tw:text-sm tw:font-medium tw:text-gray-900 tw:capitalize">{{ event?.entrance_status || $t('eventDetails.notSpecified') }}</p>
+                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewEntranceFeeDisplay }}</span>
                 </div>
               </div>
 
-              <!-- Venue Name -->
-              <div class="tw:flex tw:items-center tw:gap-3 tw:py-2">
-                <div class="tw:w-10 tw:h-10 tw:bg-gray-100 tw:rounded-xl tw:flex tw:items-center tw:justify-center">
-                  <svg class="tw:w-5 tw:h-5 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                </div>
-                <div class="tw:flex-1">
-                  <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Venue name</p>
+              <!-- Venue name (no checkmark; blue text) -->
+              <div>
+                <p class="tw:text-base tw:font-semibold tw:text-gray-900">
+                  {{ $t('eventDetails.overviewVenueName') }}
+                </p>
+                <div class="tw:mt-2">
                   <button
                     v-if="invitedVenuesObjects.length && primaryInvitedVenueName"
                     type="button"
-                    class="tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:text-blue-700 tw:text-left tw:underline-offset-2 hover:tw:underline"
+                    class="tw:text-base tw:font-medium tw:text-[#1a73e8] tw:text-left hover:tw:underline tw:underline-offset-2"
                     @click="activeTab = 'venues'"
                   >
                     {{ primaryInvitedVenueName }}
                   </button>
-                  <p v-else class="tw:text-sm tw:font-medium tw:text-gray-900">
+                  <p v-else class="tw:text-base tw:font-medium tw:text-[#1a73e8]">
                     {{ overviewVenueDisplay }}
                   </p>
                 </div>
@@ -213,12 +210,13 @@
             </div>
 
             <!-- Like Button -->
-            <div class="tw:mt-6 tw:px-3">
-              <button class="tw:w-full tw:flex tw:items-center tw:justify-center tw:gap-2 tw:px-4 tw:py-2.5 tw:bg-[#FF7700] tw:text-white tw:font-medium tw:rounded-lg tw:transition-colors hover:tw:bg-[#E66800]">
-                <svg class="tw:w-5 tw:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
-                Like Event
+            <div class="tw:mt-8">
+              <button
+                type="button"
+                class="tw:inline-flex tw:items-center tw:justify-center tw:gap-2 tw:px-5 tw:py-2.5 tw:bg-white tw:border-2 tw:border-[#FF7700] tw:rounded-lg tw:text-[#1a73e8] tw:font-medium tw:transition-colors hover:tw:bg-[#FFFAF5] focus:tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[#FF7700]/40"
+              >
+                <ThumbsUp class="tw:w-5 tw:h-5 tw:flex-shrink-0" :stroke-width="2" aria-hidden="true" />
+                Like
               </button>
             </div>
           </div>
@@ -369,7 +367,8 @@ import {
   UsersIcon,
   CalendarIcon,
   LinkIcon,
-  UserIcon
+  UserIcon,
+  ThumbsUp
 } from 'lucide-vue-next'
 import AboutTab from './AboutTab.vue'
 import DateLocationTab from './DateLocationTab.vue'
@@ -497,6 +496,32 @@ const overviewVenueDisplay = computed(() => {
   if (first) return first
   if (ev?.venue_name) return ev.venue_name
   if (ev?.invited_venues?.length) return t('eventDetails.venueDetailsAvailable')
+  return t('eventDetails.notSpecified')
+})
+
+const overviewDresscodeDisplay = computed(() => {
+  const raw = props.event?.dresscode
+  if (raw == null || String(raw).trim() === '') return t('eventDetails.notSpecified')
+  return String(raw).replace(/_/g, ' ')
+})
+
+const overviewAgeDisplay = computed(() => {
+  const raw = props.event?.age_limit
+  if (raw == null || String(raw).trim() === '') return t('eventDetails.allAges')
+  return String(raw)
+})
+
+const overviewEntranceFeeDisplay = computed(() => {
+  const ev = props.event
+  const fp = ev?.formatted_price
+  if (fp != null && String(fp).trim() !== '') return String(fp)
+  const p = ev?.price
+  if (p != null && String(p).trim() !== '') return String(p)
+  if (ev?.entrance_fee != null && String(ev.entrance_fee).trim() !== '') return String(ev.entrance_fee)
+  const es = ev?.entrance_status
+  if (es != null && String(es).trim() !== '') {
+    return String(es).replace(/_/g, ' ')
+  }
   return t('eventDetails.notSpecified')
 })
 
