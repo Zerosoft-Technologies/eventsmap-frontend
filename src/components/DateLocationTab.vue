@@ -1,79 +1,148 @@
 <template>
-  <div class="tw:px-4 tw:py-4">
-    <!-- Date & Time Section -->
-    <div class="tw:mb-6">
-      <div class="tw:flex tw:items-start tw:gap-3">
-        <div class="tw:w-10 tw:h-10 tw:bg-blue-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center tw:flex-shrink-0">
-          <svg class="tw:w-5 tw:h-5 tw:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </div>
-        <div class="tw:flex-1">
-          <h4 class="tw:text-sm tw:font-semibold tw:text-gray-900 tw:mb-1">Date & Time</h4>
-          <p class="tw:text-sm tw:text-gray-700">{{ displayDate }}</p>
-        </div>
+  <div class="tw:px-4 tw:py-4 tw:space-y-4">
+    <!-- Date & times card -->
+    <div
+      class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:p-4 tw:shadow-sm"
+    >
+      <div>
+        <p class="tw:text-base tw:font-semibold tw:text-[#1a73e8]">
+          {{ t('dateLocation.eventDate') }}
+        </p>
+        <p class="tw:mt-2 tw:text-base tw:font-normal tw:text-gray-600">
+          {{ formattedLongEventDate }}
+        </p>
       </div>
-    </div>
 
-    <!-- Location Section -->
-    <div class="tw:mb-6">
-      <div class="tw:flex tw:items-start tw:gap-3">
-        <div class="tw:w-10 tw:h-10 tw:bg-green-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center tw:flex-shrink-0">
-          <svg class="tw:w-5 tw:h-5 tw:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </div>
-        <div class="tw:flex-1">
-          <h4 class="tw:text-sm tw:font-semibold tw:text-gray-900 tw:mb-1">Location</h4>
-          <p class="tw:text-sm tw:text-gray-700 tw:mb-2">{{ displayAddress }}</p>
-          
-          <!-- Coordinates -->
-          <div v-if="hasValidCoordinates" class="tw:flex tw:gap-3 tw:mb-3">
-            <span class="tw:text-xs tw:text-gray-500 tw:bg-gray-100 tw:px-2 tw:py-1 tw:rounded">
-              Lat: {{ latitudeValue.toFixed(6) }}
+      <div class="tw:mt-5 tw:grid tw:grid-cols-2 tw:gap-4">
+        <div>
+          <p class="tw:text-base tw:font-semibold tw:text-[#1a73e8]">
+            {{ t('dateLocation.startTime') }}
+          </p>
+          <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
+            <span
+              class="tw:inline-flex tw:items-center tw:justify-center tw:w-8 tw:h-8 tw:flex-shrink-0 tw:text-[#FF7700]"
+              aria-hidden="true"
+            >
+              <svg class="tw:w-5 tw:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </span>
-            <span class="tw:text-xs tw:text-gray-500 tw:bg-gray-100 tw:px-2 tw:py-1 tw:rounded">
-              Lng: {{ longitudeValue.toFixed(6) }}
-            </span>
+            <span class="tw:text-base tw:text-gray-600">{{ displayStartTime }}</span>
           </div>
-          
-          <!-- Action Buttons -->
-          <div class="tw:flex tw:gap-2">
-            <button 
-              @click="openDirections"
-              :disabled="!hasValidCoordinates"
-              class="tw:inline-flex tw:items-center tw:gap-1.5 tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:text-blue-600 tw:bg-blue-50 tw:rounded-lg hover:tw:bg-blue-100 tw:transition-colors disabled:tw:opacity-50 disabled:tw:cursor-not-allowed"
+        </div>
+        <div>
+          <p class="tw:text-base tw:font-semibold tw:text-[#1a73e8]">
+            {{ t('dateLocation.endTime') }}
+          </p>
+          <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
+            <span
+              class="tw:inline-flex tw:items-center tw:justify-center tw:w-8 tw:h-8 tw:flex-shrink-0 tw:text-[#FF7700]"
+              aria-hidden="true"
             >
-              <svg class="tw:w-3.5 tw:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              <svg class="tw:w-5 tw:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Get Directions
-            </button>
-            <button 
-              @click="copyAddress"
-              :disabled="!displayAddress"
-              class="tw:inline-flex tw:items-center tw:gap-1.5 tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:text-gray-600 tw:bg-gray-100 tw:rounded-lg hover:tw:bg-gray-200 tw:transition-colors disabled:tw:opacity-50 disabled:tw:cursor-not-allowed"
-            >
-              <svg class="tw:w-3.5 tw:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              {{ copySuccess ? 'Copied!' : 'Copy Address' }}
-            </button>
+            </span>
+            <span class="tw:text-base tw:text-gray-600">{{ displayEndTime }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Map Section -->
-    <div>
-      <h4 class="tw:text-sm tw:font-semibold tw:text-gray-900 tw:mb-3">Venue Map</h4>
-      
-      <div class="tw:relative tw:rounded-xl tw:overflow-hidden tw:border tw:border-gray-200 tw:shadow-sm">
-        <!-- Loading State -->
+    <!-- Event status & countdown -->
+    <div
+      v-if="showEventStatusSection"
+      class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:p-4 tw:shadow-sm"
+    >
+      <p class="tw:text-base tw:font-semibold tw:text-[#1a73e8] tw:mb-4">
+        {{ t('dateLocation.eventStatus') }}
+      </p>
+
+      <div
+        class="tw:rounded-2xl tw:bg-gradient-to-r tw:from-[#3B82F6] tw:to-[#1D4ED8] tw:px-4 tw:py-5 sm:tw:px-6"
+      >
+        <template v-if="eventPhase === 'past'">
+          <div class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:gap-3 tw:min-h-[120px]">
+            <span
+              class="tw:inline-flex tw:items-center tw:gap-2 tw:rounded-full tw:bg-white tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:text-gray-900"
+            >
+              <svg class="tw:w-4 tw:h-4 tw:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ t('eventCard.pastEvent') }}
+            </span>
+            <p class="tw:text-center tw:text-base tw:font-semibold tw:text-white">
+              {{ t('dateLocation.eventHasEnded') }}
+            </p>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="tw:flex tw:flex-col tw:items-center tw:gap-4">
+            <span
+              class="tw:inline-flex tw:items-center tw:gap-2 tw:rounded-full tw:bg-white tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:text-gray-900"
+            >
+              <svg class="tw:w-4 tw:h-4 tw:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ statusBadgeLabel }}
+            </span>
+
+            <p class="tw:text-center tw:text-base tw:font-bold tw:text-white">
+              {{ countdownSectionTitle }}
+            </p>
+
+            <div class="tw:grid tw:grid-cols-4 tw:gap-2 tw:w-full tw:max-w-md tw:mx-auto">
+              <div
+                v-for="unit in countdownUnits"
+                :key="unit.key"
+                class="tw:bg-white tw:rounded-xl tw:px-1 tw:py-3 tw:text-center tw:min-w-0 tw:shadow-sm"
+              >
+                <p class="tw:text-xl sm:tw:text-2xl tw:font-bold tw:text-gray-900 tw:tabular-nums">
+                  {{ unit.value }}
+                </p>
+                <p class="tw:text-[10px] sm:tw:text-xs tw:text-gray-600 tw:mt-1 tw:leading-tight">
+                  {{ unit.label }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Event Location: venue, address, map, more info / directions -->
+    <div
+      class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:p-4 tw:shadow-sm"
+    >
+      <p class="tw:text-base tw:font-semibold tw:text-[#1a73e8] tw:mb-4">
+        {{ t('dateLocation.eventLocation') }}
+      </p>
+
+      <div class="tw:flex tw:gap-3 tw:items-start">
+        <span
+          class="tw:inline-flex tw:flex-shrink-0 tw:pt-0.5 tw:text-[#FF7700]"
+          aria-hidden="true"
+        >
+          <svg class="tw:w-6 tw:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </span>
+        <div class="tw:flex-1 tw:min-w-0">
+          <p class="tw:text-base tw:font-bold tw:text-gray-800">
+            {{ eventVenueName }}
+          </p>
+          <p class="tw:mt-1 tw:text-sm tw:text-gray-600 tw:leading-relaxed">
+            {{ displayAddress }}
+          </p>
+        </div>
+      </div>
+
+      <div class="tw:mt-4 tw:relative tw:rounded-xl tw:overflow-hidden tw:border tw:border-gray-200 tw:shadow-sm">
         <Transition name="fade">
-          <div 
-            v-if="isMapLoading" 
+          <div
+            v-if="isMapLoading"
             class="tw:absolute tw:inset-0 tw:bg-gray-100 tw:flex tw:items-center tw:justify-center tw:z-10"
           >
             <div class="tw:flex tw:flex-col tw:items-center tw:gap-3">
@@ -82,18 +151,16 @@
             </div>
           </div>
         </Transition>
-        
-        <!-- Map Container (shown when coordinates valid) -->
-        <div 
+
+        <div
           v-if="hasValidCoordinates"
-          ref="mapContainerRef" 
-          class="tw:h-[300px] lg:tw:h-[400px] tw:w-full"
+          ref="mapContainerRef"
+          class="tw:h-[220px] sm:tw:h-[280px] tw:w-full"
         ></div>
-        
-        <!-- No Coordinates Fallback -->
-        <div 
+
+        <div
           v-else
-          class="tw:h-[300px] lg:tw:h-[400px] tw:bg-gray-50 tw:flex tw:items-center tw:justify-center"
+          class="tw:h-[220px] sm:tw:h-[280px] tw:bg-gray-50 tw:flex tw:items-center tw:justify-center"
         >
           <div class="tw:flex tw:flex-col tw:items-center tw:gap-3 tw:text-center tw:px-6">
             <div class="tw:w-12 tw:h-12 tw:bg-gray-200 tw:rounded-full tw:flex tw:items-center tw:justify-center">
@@ -106,11 +173,34 @@
           </div>
         </div>
       </div>
-      
-      <!-- Map Attribution -->
-      <p class="tw:text-xs tw:text-gray-400 tw:mt-2 tw:text-right">
+
+      <!-- <p class="tw:text-xs tw:text-gray-400 tw:mt-2 tw:text-right">
         © MapTiler © OpenStreetMap contributors
-      </p>
+      </p> -->
+
+      <div class="tw:grid tw:grid-cols-2 tw:gap-3 tw:mt-4">
+        <button
+          type="button"
+          class="tw:flex tw:w-full tw:items-center tw:justify-center tw:gap-2 tw:py-2.5 tw:px-3 tw:rounded-lg tw:border-2 tw:border-[#1a73e8] tw:bg-white tw:text-[#1a73e8] tw:font-medium tw:text-sm hover:tw:bg-blue-50 tw:transition-colors"
+          @click="openMoreInfo"
+        >
+          <svg class="tw:w-4 tw:h-4 tw:flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {{ t('dateLocation.moreInfo') }}
+        </button>
+        <button
+          type="button"
+          class="tw:flex tw:w-full tw:items-center tw:justify-center tw:gap-2 tw:py-2.5 tw:px-3 tw:rounded-lg tw:bg-[#FF7700] tw:text-white tw:font-medium tw:text-sm hover:tw:bg-[#1557b8] tw:transition-colors disabled:tw:opacity-50 disabled:tw:cursor-not-allowed"
+          :disabled="!hasValidCoordinates"
+          @click="openDirections"
+        >
+          <svg class="tw:w-4 tw:h-4 tw:flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+          {{ t('dateLocation.directions') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -143,106 +233,293 @@ const mapInstance = ref(null)
 const markerInstance = ref(null)
 const isMapLoading = ref(false)
 const isMapInitialized = ref(false)
-const copySuccess = ref(false)
 
-// Debug: Log event prop changes
-watch(() => props.event, (newEvent) => {
-  console.log('[DateLocationTab] Event prop changed:', newEvent)
-  console.log('[DateLocationTab] lat:', newEvent?.lat, 'latitude:', newEvent?.latitude)
-  console.log('[DateLocationTab] lng:', newEvent?.lng, 'longitude:', newEvent?.longitude)
-}, { immediate: true, deep: true })
+function formatTimeHHMM(timeStr) {
+  if (timeStr == null || String(timeStr).trim() === '') return ''
+  const s = String(timeStr).trim()
+  const parts = s.split(':')
+  if (parts.length >= 2) {
+    const h = parts[0].padStart(2, '0')
+    const m = parts[1].padStart(2, '0')
+    return `${h}:${m}`
+  }
+  return s
+}
 
 // Computed - Convert coordinates to numbers and validate
 // Support both lat/lng (transformed UI event) and latitude/longitude (raw API event)
 const latitudeValue = computed(() => {
   const event = props.event
-  if (!event) {
-    console.log('[DateLocationTab] latitudeValue: event is null/undefined')
-    return null
-  }
-  
-  // Check both property names: lat (UI) and latitude (API)
+  if (!event) return null
   const lat = event.lat ?? event.latitude
-  console.log('[DateLocationTab] Raw latitude - lat:', event.lat, 'latitude:', event.latitude, 'using:', lat)
-  
-  if (lat === null || lat === undefined || lat === '') {
-    console.log('[DateLocationTab] latitudeValue: lat is null/undefined/empty')
-    return null
-  }
-  
+  if (lat === null || lat === undefined || lat === '') return null
   const num = Number(lat)
-  if (isNaN(num) || num === 0) {
-    console.log('[DateLocationTab] latitudeValue: invalid number:', num)
-    return null
-  }
-  
-  console.log('[DateLocationTab] latitudeValue: valid =', num)
+  if (isNaN(num) || num === 0) return null
   return num
 })
 
 const longitudeValue = computed(() => {
   const event = props.event
-  if (!event) {
-    console.log('[DateLocationTab] longitudeValue: event is null/undefined')
-    return null
-  }
-  
-  // Check both property names: lng (UI) and longitude (API)
+  if (!event) return null
   const lng = event.lng ?? event.longitude
-  console.log('[DateLocationTab] Raw longitude - lng:', event.lng, 'longitude:', event.longitude, 'using:', lng)
-  
-  if (lng === null || lng === undefined || lng === '') {
-    console.log('[DateLocationTab] longitudeValue: lng is null/undefined/empty')
-    return null
-  }
-  
+  if (lng === null || lng === undefined || lng === '') return null
   const num = Number(lng)
-  if (isNaN(num)) {
-    console.log('[DateLocationTab] longitudeValue: invalid number:', num)
-    return null
-  }
-  
-  console.log('[DateLocationTab] longitudeValue: valid =', num)
+  if (isNaN(num)) return null
   return num
 })
 
 const hasValidCoordinates = computed(() => {
-  const lat = latitudeValue.value
-  const lng = longitudeValue.value
-  const valid = lat !== null && lng !== null
-  console.log('[DateLocationTab] hasValidCoordinates:', valid, '(lat:', lat, 'lng:', lng, ')')
-  return valid
+  return latitudeValue.value !== null && longitudeValue.value !== null
 })
 
-const displayDate = computed(() => {
-  return props.event?.formatted_date || props.event?.date || 'Not specified'
+const formattedLongEventDate = computed(() => {
+  const ev = props.event
+  if (!ev) return t('dateLocation.notSpecified')
+  const dateStr =
+    ev.event_date ||
+    ev.start_date ||
+    (ev.start_datetime ? String(ev.start_datetime).split('T')[0] : null)
+  if (!dateStr) {
+    return ev.formatted_date || t('dateLocation.notSpecified')
+  }
+  const d = new Date(`${dateStr}T12:00:00`)
+  if (isNaN(d.getTime())) {
+    return ev.formatted_date || dateStr
+  }
+  return d.toLocaleDateString(locale.value, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+})
+
+const displayStartTime = computed(() => {
+  const ev = props.event
+  if (!ev) return t('dateLocation.notSpecified')
+  if (ev.start_time) {
+    const formatted = formatTimeHHMM(ev.start_time)
+    return formatted || t('dateLocation.notSpecified')
+  }
+  if (ev.start_datetime) {
+    const d = new Date(ev.start_datetime)
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleTimeString(locale.value, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      })
+    }
+  }
+  return t('dateLocation.notSpecified')
+})
+
+const displayEndTime = computed(() => {
+  const ev = props.event
+  if (!ev) return t('dateLocation.notSpecified')
+  if (ev.end_time) {
+    const formatted = formatTimeHHMM(ev.end_time)
+    return formatted || t('dateLocation.notSpecified')
+  }
+  if (ev.end_datetime) {
+    const d = new Date(ev.end_datetime)
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleTimeString(locale.value, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      })
+    }
+  }
+  return t('dateLocation.notSpecified')
 })
 
 const displayAddress = computed(() => {
   if (props.locationDetails?.full_address) {
     return props.locationDetails.full_address
   }
-  
   const parts = []
   if (props.event?.address) parts.push(props.event.address)
   if (props.event?.city) parts.push(props.event.city)
   if (props.event?.country) parts.push(props.event.country)
-  
-  return parts.length > 0 ? parts.join(', ') : 'Address not specified'
+  return parts.length > 0 ? parts.join(', ') : t('dateLocation.notSpecified')
 })
+
+const eventVenueName = computed(() => {
+  const ev = props.event
+  if (ev?.venue?.name) return ev.venue.name
+  const inv = ev?.invited_venues_objects
+  if (Array.isArray(inv) && inv.length && inv[0]?.name) return inv[0].name
+  if (ev?.venue_name) return ev.venue_name
+  if (props.locationDetails?.venue_name) return props.locationDetails.venue_name
+  return t('dateLocation.notSpecified')
+})
+
+const venueWebsitePrimary = computed(() => {
+  const inv = props.event?.invited_venues_objects
+  if (Array.isArray(inv) && inv[0]?.website) {
+    let w = String(inv[0].website).trim()
+    if (w && !/^https?:\/\//i.test(w)) w = `https://${w}`
+    return w
+  }
+  if (props.locationDetails?.venue_website) {
+    const w = String(props.locationDetails.venue_website).trim()
+    if (w && !/^https?:\/\//i.test(w)) return `https://${w}`
+    return w || null
+  }
+  return null
+})
+
+function openMoreInfo() {
+  if (venueWebsitePrimary.value) {
+    window.open(venueWebsitePrimary.value, '_blank', 'noopener,noreferrer')
+    return
+  }
+  const q = `${eventVenueName.value} ${displayAddress.value}`.trim()
+  if (q.length > 0) {
+    window.open(
+      `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+      '_blank',
+      'noopener,noreferrer'
+    )
+  }
+}
+
+function normalizeTimePart(timeStr) {
+  if (!timeStr) return '00:00:00'
+  const s = String(timeStr).trim()
+  if (s.length === 5 && s.includes(':') && s.split(':').length === 2) {
+    return `${s}:00`
+  }
+  return s
+}
+
+const eventStartMs = computed(() => {
+  const ev = props.event
+  if (!ev) return null
+  if (ev.start_datetime) {
+    const d = new Date(ev.start_datetime)
+    return isNaN(d.getTime()) ? null : d.getTime()
+  }
+  if (ev.event_date && ev.start_time) {
+    const d = new Date(`${ev.event_date}T${normalizeTimePart(ev.start_time)}`)
+    return isNaN(d.getTime()) ? null : d.getTime()
+  }
+  return null
+})
+
+const eventEndMs = computed(() => {
+  const ev = props.event
+  if (!ev) return null
+  if (ev.end_datetime) {
+    const d = new Date(ev.end_datetime)
+    return isNaN(d.getTime()) ? null : d.getTime()
+  }
+  if (ev.event_date && ev.end_time) {
+    const d = new Date(`${ev.event_date}T${normalizeTimePart(ev.end_time)}`)
+    return isNaN(d.getTime()) ? null : d.getTime()
+  }
+  return null
+})
+
+const eventPhase = computed(() => {
+  const now = Date.now()
+  const start = eventStartMs.value
+  const end = eventEndMs.value
+  if (start == null) return 'unknown'
+  if (now < start) return 'upcoming'
+  if (end != null && now <= end) return 'live'
+  return 'past'
+})
+
+const countdownTargetMs = computed(() => {
+  if (eventPhase.value === 'upcoming') return eventStartMs.value
+  if (eventPhase.value === 'live') return eventEndMs.value
+  return null
+})
+
+const showEventStatusSection = computed(() => eventStartMs.value != null)
+
+const statusBadgeLabel = computed(() => {
+  if (eventPhase.value === 'live') return t('eventCard.liveNow')
+  return t('eventCard.upcomingEvent')
+})
+
+const countdownSectionTitle = computed(() => {
+  if (eventPhase.value === 'live') return t('dateLocation.countdownToEventEnd')
+  return t('dateLocation.countdownToEventStart')
+})
+
+const countdownParts = ref({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+
+function padTwo(n) {
+  return String(Math.max(0, Math.floor(Number(n)))).padStart(2, '0')
+}
+
+function updateCountdown() {
+  const phase = eventPhase.value
+  if (phase === 'past' || phase === 'unknown') {
+    countdownParts.value = { days: 0, hours: 0, minutes: 0, seconds: 0 }
+    return
+  }
+  const target = countdownTargetMs.value
+  if (target == null) {
+    countdownParts.value = { days: 0, hours: 0, minutes: 0, seconds: 0 }
+    return
+  }
+  let diff = Math.max(0, target - Date.now())
+  const days = Math.floor(diff / (24 * 60 * 60 * 1000))
+  diff -= days * 24 * 60 * 60 * 1000
+  const hours = Math.floor(diff / (60 * 60 * 1000))
+  diff -= hours * 60 * 60 * 1000
+  const minutes = Math.floor(diff / (60 * 1000))
+  diff -= minutes * 60 * 1000
+  const seconds = Math.floor(diff / 1000)
+  countdownParts.value = { days, hours, minutes, seconds }
+}
+
+const countdownUnits = computed(() => [
+  {
+    key: 'd',
+    value: String(Math.max(0, countdownParts.value.days)),
+    label: t('eventCard.countdownDays')
+  },
+  {
+    key: 'h',
+    value: padTwo(countdownParts.value.hours),
+    label: t('eventCard.countdownHours')
+  },
+  {
+    key: 'm',
+    value: padTwo(countdownParts.value.minutes),
+    label: t('eventCard.countdownMinutes')
+  },
+  {
+    key: 's',
+    value: padTwo(countdownParts.value.seconds),
+    label: t('eventCard.countdownSeconds')
+  }
+])
+
+let countdownTimerId = null
+
+watch(
+  () => props.event,
+  () => {
+    updateCountdown()
+  },
+  { deep: true }
+)
 
 // Initialize map
 const initializeMap = async () => {
   if (!hasValidCoordinates.value) {
-    console.log('No valid coordinates, skipping map init')
     return
   }
   
   if (!mapContainerRef.value) {
-    console.log('Map container not ready, waiting...')
     await nextTick()
     if (!mapContainerRef.value) {
-      console.log('Map container still not available')
       return
     }
   }
@@ -257,8 +534,6 @@ const initializeMap = async () => {
     
     const lng = longitudeValue.value
     const lat = latitudeValue.value
-    
-    console.log('Initializing map at:', { lat, lng })
     
     mapInstance.value = new maplibregl.Map({
       container: mapContainerRef.value,
@@ -276,7 +551,6 @@ const initializeMap = async () => {
     
     // Handle map load
     mapInstance.value.on('load', () => {
-      console.log('Map loaded successfully')
       isMapLoading.value = false
       isMapInitialized.value = true
       
@@ -376,26 +650,10 @@ const openDirections = () => {
   emit('route', props.event)
 }
 
-// Copy address to clipboard
-const copyAddress = async () => {
-  if (!displayAddress.value) return
-  try {
-    await navigator.clipboard.writeText(displayAddress.value)
-    copySuccess.value = true
-    setTimeout(() => {
-      copySuccess.value = false
-    }, 2000)
-  } catch (error) {
-    console.error('Failed to copy address:', error)
-  }
-}
-
 // Watch for coordinate changes and reinitialize map
 watch(
   [hasValidCoordinates, latitudeValue, longitudeValue],
   async ([hasCoords, lat, lng], [prevHasCoords, prevLat, prevLng]) => {
-    console.log('[DateLocationTab] Coordinates watch triggered:', { hasCoords, lat, lng, prevHasCoords, prevLat, prevLng })
-    
     if (hasCoords) {
       // Wait for DOM to update (v-if renders the container)
       await nextTick()
@@ -403,7 +661,6 @@ watch(
       // Additional delay to ensure container is fully rendered
       setTimeout(() => {
         if (!mapContainerRef.value) {
-          console.log('[DateLocationTab] Map container not ready yet, retrying...')
           setTimeout(() => {
             if (mapContainerRef.value && hasValidCoordinates.value && !isMapInitialized.value) {
               initializeMap()
@@ -414,14 +671,12 @@ watch(
         
         // Initialize or reinitialize if coordinates changed
         if (!isMapInitialized.value || lat !== prevLat || lng !== prevLng) {
-          console.log('[DateLocationTab] Triggering map initialization')
           initializeMap()
         }
       }, 50)
     } else {
       // Destroy map if coordinates became invalid
       if (isMapInitialized.value) {
-        console.log('[DateLocationTab] Destroying map - coordinates invalid')
         destroyMap()
       }
     }
@@ -431,14 +686,11 @@ watch(
 
 // Lifecycle
 onMounted(() => {
-  console.log('[DateLocationTab] Component mounted')
-  console.log('[DateLocationTab] props.event:', props.event)
-  console.log('[DateLocationTab] hasValidCoordinates:', hasValidCoordinates.value)
-  
-  // Ensure map initializes after mount if coordinates are valid
+  updateCountdown()
+  countdownTimerId = setInterval(updateCountdown, 1000)
+
   if (hasValidCoordinates.value && !isMapInitialized.value) {
     setTimeout(() => {
-      console.log('[DateLocationTab] Delayed mount init check')
       if (mapContainerRef.value && hasValidCoordinates.value && !isMapInitialized.value) {
         initializeMap()
       }
@@ -447,6 +699,10 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (countdownTimerId) {
+    clearInterval(countdownTimerId)
+    countdownTimerId = null
+  }
   destroyMap()
 })
 </script>

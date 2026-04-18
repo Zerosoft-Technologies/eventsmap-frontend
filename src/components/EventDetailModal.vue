@@ -347,9 +347,9 @@
                     </div>
                     
                     <!-- Map Attribution -->
-                    <p class="tw:text-xs tw:text-gray-400 tw:mt-2 tw:text-right">
+                    <!-- <p class="tw:text-xs tw:text-gray-400 tw:mt-2 tw:text-right">
                       © MapLibre | OpenStreetMap contributors
-                    </p>
+                    </p> -->
                   </div>
                   
                 </div>
