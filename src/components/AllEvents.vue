@@ -18,8 +18,8 @@
       :class="[
         isMinimized
           ? 'tw:w-16 tw:h-16 tw:rounded-2xl tw:shadow-lg tw:cursor-pointer tw:flex tw:items-center tw:justify-center'
-          : 'tw:w-full tw:md:w-[380px] tw:max-h-[85vh] tw:md:max-h-[90vh] tw:rounded-t-2xl tw:md:rounded-2xl tw:shadow-xl tw:flex tw:flex-col',
-        'tw:fixed tw:bottom-0 tw:md:bottom-2 tw:left-0 tw:md:left-7 tw:bg-white tw:z-50 tw:lg:z-10 tw:transition-all tw:duration-300 tw:overflow-hidden'
+          : 'tw:w-full tw:md:w-[380px] tw:max-h-[85vh] tw:md:max-h-[80vh] tw:rounded-t-2xl tw:md:rounded-2xl tw:shadow-xl tw:flex tw:flex-col',
+        'tw:fixed tw:bottom-0 tw:md:bottom-2 tw:left-0 tw:md:left-7 tw:bg-white tw:z-50 tw:lg:z-10 tw:transition-all tw:duration-300 tw:overflow-visible'
       ]"
       @click="isMinimized && expand()"
     >
@@ -35,28 +35,18 @@
           <div class="tw:w-10 tw:h-1 tw:bg-gray-300 tw:rounded-full"></div>
         </div>
 
-        <!-- Filter chips row (flex-shrink-0 so it never scrolls away) -->
-        <div class="events-chips tw:flex tw:gap-2 tw:px-4 tw:pt-3 tw:pb-2 tw:overflow-x-auto tw:flex-nowrap tw:flex-shrink-0">
-          <button class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:flex-shrink-0">
-            Categories <span class="tw:text-gray-400">&#8594;</span>
-          </button>
-          <button class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:flex-shrink-0">
-            40,00 EUR <span class="tw:text-gray-400">&#8594;</span>
-          </button>
-          <button class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:flex-shrink-0">
-            12:47 &#8211; 01:47 <span class="tw:text-gray-400">&#8594;</span>
-          </button>
-        </div>
-
-        <!-- Search organiser button -->
-        <div class="tw:px-4 tw:pb-3 tw:flex-shrink-0">
-          <button class="tw:inline-flex tw:items-center tw:gap-2 tw:px-4 tw:py-2 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:text-gray-500 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors">
-            <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            Search organiser
-          </button>
-        </div>
+        <!-- Subcategories + time window (synced with header category + API) -->
+        <MapEventsFilterPills
+          :available-subcategories="availableSubcategories"
+          :selected-slugs="selectedSubcategorySlugs"
+          :start-time="startTime"
+          :end-time="endTime"
+          :disabled-subcategories="!selectedCategory"
+          @toggle-subcategory="(slug) => $emit('toggleSubcategory', slug)"
+          @clear-subcategories="$emit('clearSubcategories')"
+          @update:start-time="$emit('update:startTime', $event)"
+          @update:end-time="$emit('update:endTime', $event)"
+        />
 
         <!-- Section header -->
         <div class="tw:flex tw:justify-between tw:items-center tw:px-4 tw:pb-3 tw:border-b tw:border-gray-100 tw:flex-shrink-0">
@@ -152,6 +142,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
 import { defineAsyncComponent, ref, computed } from 'vue'
+import MapEventsFilterPills from '@/components/events/MapEventsFilterPills.vue'
 
 // Lazy load Event to avoid circular import issue
 const Event = defineAsyncComponent(() => import('./Event.vue'))
@@ -167,9 +158,39 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  /** Header-selected category (for subcategory list + disabled state) */
+  selectedCategory: {
+    type: Object,
+    default: null
+  },
+  /** `category.subcategories` for the selected header category */
+  availableSubcategories: {
+    type: Array,
+    default: () => []
+  },
+  selectedSubcategorySlugs: {
+    type: Array,
+    default: () => []
+  },
+  startTime: {
+    type: String,
+    default: null
+  },
+  endTime: {
+    type: String,
+    default: null
+  }
 });
 
-const emit = defineEmits(['closeResults', 'resetSearch', 'viewEvent']);
+const emit = defineEmits([
+  'closeResults',
+  'resetSearch',
+  'viewEvent',
+  'toggleSubcategory',
+  'clearSubcategories',
+  'update:startTime',
+  'update:endTime'
+]);
 
 // Computed: events list
 const computedEvents = computed(() => props.events)

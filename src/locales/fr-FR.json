@@ -27,7 +27,13 @@
     "comingSoon": "Bientôt",
     "pastEvent": "Événement Passé",
     "upcomingEvent": "Événement Avenir",
-    "openingHours": "Horaires d'ouverture"
+    "openingHours": "Horaires d'ouverture",
+    "addToWishlist": "Ajouter aux favoris",
+    "removeFromWishlist": "Retirer des favoris",
+    "countdownDays": "Jours",
+    "countdownHours": "Heures",
+    "countdownMinutes": "Minutes",
+    "countdownSeconds": "Secondes"
   },
   "forms": {
     "submit": "Soumettre",

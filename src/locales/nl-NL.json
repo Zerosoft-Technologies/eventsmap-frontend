@@ -27,7 +27,13 @@
     "comingSoon": "Binnenkort",
     "pastEvent": "Verleden Evenement",
     "upcomingEvent": "Aankomend Evenement",
-    "openingHours": "Openingstijden"
+    "openingHours": "Openingstijden",
+    "addToWishlist": "Toevoegen aan verlanglijst",
+    "removeFromWishlist": "Verwijderen van verlanglijst",
+    "countdownDays": "Dagen",
+    "countdownHours": "Uren",
+    "countdownMinutes": "Minuten",
+    "countdownSeconds": "Seconden"
   },
   "forms": {
     "submit": "Versturen",

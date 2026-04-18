@@ -300,22 +300,32 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['close', 'link', 'route', 'share'])
 
-// Wishlist state
-const wishlistLoading = ref(false)
+const detailsWishlistBtnClass = computed(() => {
+  const pending = wishlistStore.isWishlistPending(props.event?.id)
+  const base = pending
+    ? 'tw:opacity-90 tw:pointer-events-none tw:cursor-wait'
+    : ''
+  if (wishlistStore.isWishlisted(props.event?.id)) {
+    return `${base} tw:border-[var(--primary-color)] tw:bg-[var(--primary-color)]/10`
+  }
+  return `${base}`
+})
 
-// Wishlist toggle handler
+const detailsWishlistIconClass = computed(() => {
+  if (wishlistStore.isWishlisted(props.event?.id)) {
+    return 'tw:text-[var(--primary-color)] tw:fill-[var(--primary-color)] tw:stroke-[var(--primary-color)]'
+  }
+  return 'tw:text-gray-400 tw:fill-none'
+})
+
+// Wishlist toggle (optimistic UI + rollback + toast in store)
 async function handleWishlistToggle() {
   if (!authStore.isAuthenticated) {
     router.push({ name: 'Login' })
     return
   }
-  if (wishlistLoading.value) return
-  wishlistLoading.value = true
-  try {
-    await wishlistStore.toggleWishlist(props.event)
-  } finally {
-    wishlistLoading.value = false
-  }
+  if (!props.event) return
+  await wishlistStore.toggleWishlist(props.event)
 }
 
 // State

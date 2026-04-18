@@ -32,7 +32,13 @@
     "comingSoon": "Coming Soon",
     "pastEvent": "Past Event",
     "upcomingEvent": "Upcoming Event",
-    "openingHours": "Opening Hours"
+    "openingHours": "Opening Hours",
+    "addToWishlist": "Add to wishlist",
+    "removeFromWishlist": "Remove from wishlist",
+    "countdownDays": "Days",
+    "countdownHours": "Hours",
+    "countdownMinutes": "Minutes",
+    "countdownSeconds": "Seconds"
   },
   "forms": {
     "submit": "Submit",
