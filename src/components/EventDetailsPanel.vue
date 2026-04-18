@@ -2,233 +2,216 @@
   <!-- Panel -->
   <transition name="slide">
     <div v-if="visible"
-      class="tw:fixed tw:p-0 tw:bg-white tw:rounded-2xl tw:bottom-4 tw:z-50 tw:w-[420px] tw:max-w-[calc(100vw-2rem)] tw:shadow-xl tw:flex tw:flex-col tw:overflow-visible"
-      style="left: 540px;">
-      <!-- Filter Chips -->
-      <div class="tw:absolute tw:z-[60] tw:z-10" style="top: -45px;">
-        <div class="tw:flex tw:gap-2">
-          <!-- Opening Hours Chip -->
-          <button
-            class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)"
-            style="border-radius: 30px;">
-            <img src="../assets/music-note.png" alt="Category" class="tw:w-3 tw:h-3">
-            <span class="tw:text-xs">{{ event?.category.name }}</span>
-          </button>
-          <button v-if="event?.start_datetime"
-            class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)"
-            style="border-radius: 30px;">
-            <img src="../assets/timer.png" alt="Opening Hours" class="tw:w-3 tw:h-3">
-            <span class="tw:text-xs">{{ openingHours }}</span>
-          </button>
+      class="tw:fixed tw:p-0 tw:bg-white tw:rounded-2xl tw:top-32 tw:bottom-4 tw:z-40 tw:w-[420px] tw:max-w-[calc(100vw-2rem)] tw:shadow-xl tw:flex tw:flex-col tw:overflow-hidden"
+      style="left: 430px;">
+      
+      <!-- Gallery Slider - AT THE VERY TOP -->
+      <div class="tw:relative tw:h-56 tw:md:h-64 tw:overflow-hidden tw:flex-shrink-0">
+        <div class="tw:flex tw:transition-transform tw:duration-300 tw:ease-in-out tw:h-full"
+          :style="{ transform: `translateX(-${currentImageIndex * 100}%)` }">
+          <div v-for="(image, index) in images" :key="index" class="tw:w-full tw:flex-shrink-0 tw:h-full">
+            <img :src="image" :alt="`${event?.title} - Image ${index + 1}`"
+              class="tw:w-full tw:h-full tw:object-cover" />
+          </div>
+        </div>
 
-          <!-- Price Chip -->
-          <button v-if="event?.price || event?.min_price || event?.max_price"
-            class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)"
-            style="border-radius: 30px;">
-            <img src="../assets/sack-doller.png" alt="Price" class="tw:w-3 tw:h-3">
-            <span class="tw:text-xs">{{ formattedPrice }}</span>
-          </button>
+        <!-- Left arrow -->
+        <button v-if="images.length > 1" @click="prevImage" 
+          class="tw:absolute tw:left-4 tw:top-1/2 tw:-translate-y-1/2
+          tw:w-8 tw:h-8
+          tw:bg-white/90 tw:backdrop-blur-sm tw:rounded-full
+          tw:flex tw:items-center tw:justify-center
+          tw:transition-all tw:duration-200 hover:tw:bg-white tw:shadow-lg tw:z-10" 
+          :aria-label="$t('eventDetails.previousImage')">
+          <ChevronLeftIcon class="tw:w-4 tw:h-4 tw:text-gray-700" />
+        </button>
 
-          <!-- Event Status Chip -->
-          <!-- <button v-if="eventStatus" class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center 
-            tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border 
-            tw:border-(--secondary-color)" style="border-radius: 30px;">
-            <img src="../assets/live-streaming-blue.png" :alt="eventStatus.text" class="tw:w-3 tw:h-3">
-            <span class="tw:text-xs"> {{ eventStatus.text }}</span>
-          </button> -->
+        <!-- Right arrow -->
+        <button v-if="images.length > 1" @click="nextImage" 
+          class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2
+          tw:w-8 tw:h-8
+          tw:bg-white/90 tw:backdrop-blur-sm tw:rounded-full
+          tw:flex tw:items-center tw:justify-center
+          tw:transition-all tw:duration-200 hover:tw:bg-white tw:shadow-lg tw:z-10" 
+          :aria-label="$t('eventDetails.nextImage')">
+          <ChevronRightIcon class="tw:w-4 tw:h-4 tw:text-gray-700" />
+        </button>
 
+        <!-- Image counter -->
+        <div v-if="images.length > 1"
+          class="tw:absolute tw:bottom-4 tw:right-4 tw:px-2 tw:py-1 tw:bg-black/60 tw:backdrop-blur-sm tw:rounded-full tw:z-10">
+          <span class="tw:text-xs tw:text-white tw:font-medium">
+            {{ currentImageIndex + 1 }} / {{ images.length }}
+          </span>
         </div>
       </div>
-      <!-- Event Title -->
-      <!-- Event Title + Status -->
-      <div class="tw:px-4 tw:py-4 tw:flex tw:items-center tw:justify-between tw:gap-3">
 
-        <!-- Title -->
+      <!-- Header with Title and Event Status -->
+      <div class="tw:px-4 tw:py-4 tw:flex tw:items-center tw:justify-between tw:gap-3">
         <h2 class="tw:text-xl tw:font-semibold tw:leading-tight tw:flex-1">
           {{ event?.title || $t('eventDetails.untitled') }}
         </h2>
-
+        
         <!-- Event Status Button -->
-        <button v-if="eventStatus" class="tw:flex tw:items-center tw:gap-1
-           tw:px-3 tw:py-1.5
-           tw:text-xs tw:font-medium
-           tw:rounded-full
-           tw:border tw:border-(--secondary-color)
-           tw:bg-white">
-          <img src="../assets/live-streaming-blue.png" :alt="eventStatus.text" class="tw:w-3 tw:h-3" />
+        <button v-if="eventStatus" class="tw:flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:rounded-full tw:border tw:border-[#0061FF] tw:bg-white">
+          <!-- <img src="../assets/live-streaming-blue.png" :alt="eventStatus.text" class="tw:w-3 tw:h-3" /> -->
           <span>{{ eventStatus.text }}</span>
         </button>
-
       </div>
 
-      <div class="tw:h-px tw:bg-gray-200 tw:mb-3"></div>
+      <!-- <div class="tw:h-px tw:bg-gray-200 tw:mb-3"></div> -->
+
+      <!-- Filter Chips - COMMENTED OUT -->
+      <!-- <div class="tw:px-4 tw:py-3 tw:flex tw:gap-2 tw:overflow-x-auto tw:scrollbar-hide tw:flex-shrink-0">
+        <button
+          class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:flex-shrink-0">
+          <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+          </svg>
+          {{ event?.category ? event.category.name : 'Category' }}
+        </button>
+        <button v-if="event?.start_datetime"
+          class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:flex-shrink-0">
+          <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          {{ openingHours }}
+        </button>
+        <button v-if="event?.price || event?.min_price || event?.max_price"
+          class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:flex-shrink-0">
+          <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          {{ formattedPrice }}
+        </button>
+        <button v-if="eventStatus" 
+          class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:flex-shrink-0">
+          <span class="tw:w-2 tw:h-2 tw:bg-red-500 tw:rounded-full" :class="eventStatus.type === 'live' ? 'tw:animate-pulse' : ''"></span>
+          {{ eventStatus.text }}
+        </button>
+      </div> -->
+
+      <!-- Action Buttons - COMMENTED OUT -->
+      <!-- <div class="tw:px-4 tw:pb-4 tw:flex tw:gap-2 tw:flex-shrink-0">
+        <button @click="handleWishlistToggle"
+          class="tw:flex-1 tw:inline-flex tw:items-center tw:justify-center tw:gap-2 tw:px-4 tw:py-2.5 tw:text-sm tw:font-medium tw:rounded-lg tw:border tw:border-gray-200 tw:bg-white tw:text-gray-700 tw:transition-all tw:duration-200 hover:tw:bg-gray-50"
+          :class="wishlistStore.isWishlisted(event?.id) ? 'tw:border-red-200 tw:bg-red-50 tw:text-red-600' : ''"
+          :disabled="wishlistLoading">
+          <svg 
+            class="tw:w-4 tw:h-4 tw:transition-colors tw:duration-200" 
+            :class="wishlistStore.isWishlisted(event?.id) ? 'tw:text-red-500 tw:fill-red-500' : 'tw:text-gray-400 tw:fill-none'"
+            :style="wishlistLoading ? 'opacity: 0.5' : ''"
+            xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor" 
+            stroke-width="2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          {{ $t('eventCard.save') }}
+        </button>
+        <button @click="handleRoute"
+          class="tw:flex-1 tw:inline-flex tw:items-center tw:justify-center tw:gap-2 tw:px-4 tw:py-2.5 tw:text-sm tw:font-medium tw:rounded-lg tw:border tw:border-gray-200 tw:bg-white tw:text-gray-700 tw:transition-all tw:duration-200 hover:tw:bg-gray-50">
+          <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          {{ $t('eventCard.route') }}
+        </button>
+        <button @click="handleShare"
+          class="tw:flex-1 tw:inline-flex tw:items-center tw:justify-center tw:gap-2 tw:px-4 tw:py-2.5 tw:text-sm tw:font-medium tw:rounded-lg tw:border tw:border-gray-200 tw:bg-white tw:text-gray-700 tw:transition-all tw:duration-200 hover:tw:bg-gray-50">
+          <svg class="tw:w-4 tw:h-4 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+          </svg>
+          {{ $t('event.share') }}
+        </button>
+      </div> -->
+
+      <!-- Tabs Navigation -->
+      <div class="tw:px-3 tw:pb-0 tw:bg-[#FAFBFF] tw:sticky tw:top-0 tw:z-10 tw:flex-shrink-0">
+        <div class="tw:flex tw:overflow-x-auto tw:scrollbar-hide tw:border-b tw:border-gray-200">
+          <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
+            'tw:px-3 tw:py-3 tw:text-sm tw:font-medium tw:whitespace-nowrap tw:relative tw:border-b-2 tw:flex-shrink-0 tw:transition-colors tw:duration-200',
+            activeTab === tab.id
+              ? 'tw:text-[#FF7700] tw:border-[#FF7700]'
+              : 'tw:text-gray-500 tw:border-transparent hover:tw:text-gray-700'
+          ]">
+            {{ $t(tab.labelKey) }}
+          </button>
+        </div>
+      </div>
 
       <!-- Scrollable content area -->
-      <div
-        class="tw:flex-1 tw:overflow-y-auto tw:pr-2 tw:max-h-[80vh] tw:lg:max-h-[60vh] tw:space-y-4 tw:pr-2 tw:overflow-y-auto">
-        <!-- Gallery Slider -->
-        <div class="tw:relative tw:h-48 tw:overflow-hidden tw:rounded-t-2xl tw:mb-2">
-          <div class="tw:flex tw:transition-transform tw:duration-300 tw:ease-in-out tw:h-full"
-            :style="{ transform: `translateX(-${currentImageIndex * 100}%)` }">
-            <div v-for="(image, index) in images" :key="index" class="tw:w-full tw:flex-shrink-0 tw:h-full tw:px-4">
-              <img :src="image" :alt="`${event?.title} - Image ${index + 1}`"
-                class="tw:w-full tw:h-full tw:object-cover" style="border-radius: 20px;" />
-            </div>
-          </div>
-
-          <!-- Left arrow -->
-          <button v-if="images.length > 1" @click="prevImage" class="tw:absolute tw:left-6 tw:top-1/2 tw:-translate-y-1/2
-         tw:w-8 tw:h-8
-         tw:bg-black/20 tw:backdrop-blur-sm tw:rounded-full
-         tw:flex tw:items-center tw:justify-center
-         tw:transition-all tw:duration-200 hover:tw:bg-black/30 tw:z-10" :aria-label="$t('eventDetails.previousImage')"
-            style="background: white; box-shadow: 0px 0px 2px 0px black;">
-            <ChevronLeftIcon class="tw:w-4 tw:h-4 tw:text-black" />
-          </button>
-
-          <!-- Right arrow -->
-          <button v-if="images.length > 1" @click="nextImage" class="tw:absolute tw:right-6 tw:top-1/2 tw:-translate-y-1/2
-         tw:w-8 tw:h-8
-         tw:bg-black/20 tw:backdrop-blur-sm tw:rounded-full
-         tw:flex tw:items-center tw:justify-center
-         tw:transition-all tw:duration-200 hover:tw:bg-black/30 tw:z-10" :aria-label="$t('eventDetails.nextImage')"
-            style="background: white; box-shadow: 0px 0px 2px 0px black;">
-            <ChevronRightIcon class="tw:w-4 tw:h-4 tw:text-black" />
-          </button>
-
-          <!-- Image counter -->
-          <div v-if="images.length > 1"
-            class="tw:absolute tw:bottom-4 tw:right-4 tw:px-2 tw:py-1 tw:bg-black/50 tw:backdrop-blur-sm tw:rounded-full tw:z-10">
-            <span class="tw:text-xs tw:text-white font-medium">
-              {{ currentImageIndex + 1 }} / {{ images.length }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Tabs Navigation -->
-        <div class="tw:px-4 tw:pb-4">
-          <div class="tw:flex tw:overflow-x-auto tw:scrollbar-hide tw:border-b tw:border-gray-200 justify-between">
-            <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
-              'tw:px-0 tw:py-3 tw:text-sm tw:font-medium tw:whitespace-nowrap tw:mr-8 tw:relative tw:border-b-2 tw:flex-shrink-0 tw:transition-colors tw:duration-200',
-              activeTab === tab.id
-                ? 'tw:text-[var(--secondary-color)] tw:border-[var(--secondary-color)]'
-                : 'tw:text-[var(--primary-color)] tw:border-transparent hover:tw:text-[var(--secondary-color)] hover:tw:border-[var(--secondary-color)]'
-            ]" style="margin: 0 5px;">
-              {{ $t(tab.labelKey) }}
-            </button>
-          </div>
-        </div>
-
+      <div class="tw:flex-1 tw:overflow-y-auto tw:overscroll-contain">
         <!-- Tab Content -->
         <div class="tw:flex-1 tw:overflow-y-auto">
           <!-- Overview Tab -->
-          <div v-if="activeTab === 'overview'" class="tw:p-4">
-            <!-- Action Buttons -->
-            <div class="tw:flex tw:justify-between tw:items-center tw:mb-6">
-
-              <div class="tw:flex tw:gap-3">
-                <button
-                  type="button"
-                  @click.stop="handleWishlistToggle"
-                  class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color) tw:transition-all tw:duration-200"
-                  :class="detailsWishlistBtnClass"
-                  :aria-busy="wishlistStore.isWishlistPending(event?.id)"
-                >
-                  <svg 
-                    class="tw:w-4 tw:h-4 tw:transition-colors tw:duration-200" 
-                    :class="detailsWishlistIconClass"
-                    xmlns="http://www.w3.org/2000/svg" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor" 
-                    stroke-width="2"
-                  >
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                  <!-- <span class="tw:leading-[1.2]">{{ $t('eventCard.link') }}</span> -->
-                </button>
-                <button @click="handleRoute"
-                  class="tw:bg-white tw:gap-1 tw:px-3 tw:py-2 tw:flex tw:items-center tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)">
-                  <span>{{ $t('eventCard.route') }}</span>
-                  <img src="../assets/location-03.png" alt="Location Icon">
-                </button>
-
-                <button @click="handleShare"
-                  class="tw:bg-white tw:px-3 tw:py-2 tw:flex tw:items-center tw:gap-1 tw:text-sm tw:leading-[1.2] tw:rounded-md tw:border tw:border-(--secondary-color)">
-                  <img src="../assets/share.png" alt="Share Icon" style="width: 16px; height: 16px;">
-                  <span>{{ $t('event.share') }}</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Description -->
-            <p class="tw:text-sm tw:leading-relaxed tw:mb-6">
-              {{ event?.description || $t('eventDetails.noDescription') }}
-            </p>
-
+          <div v-if="activeTab === 'overview'" class="tw:p-3">
             <!-- Event Details List -->
-            <div class="tw:space-y-4">
-
-              <!-- Date and Time -->
-              <div class="tw:flex tw:items-center tw:gap-3 tw:pb-4 tw:pt-4 tw:border-b tw:border-t tw:border-gray-100">
-                <div class="tw:w-8 tw:h-8 tw:bg-blue-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center">
-                  <CalendarIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
+            <div class="tw:space-y-1">
+              <!-- Dress Code -->
+              <div class="tw:flex tw:items-center tw:gap-2 tw:py-2 tw:border-b tw:border-gray-100">
+                <div class="tw:flex tw:items-center tw:justify-center tw:w-5">
+                  <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
                 </div>
-                <div>
-                  <p class="tw:text-sm tw:font-medium">{{ event?.event_date || $t('eventDetails.notSpecified') }}</p>
+                <div class="tw:flex-1">
+                  <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Dress Code</p>
+                  <p class="tw:text-sm tw:font-medium tw:text-gray-900 tw:capitalize">{{ event?.dresscode || $t('eventDetails.notSpecified') }}</p>
                 </div>
               </div>
-              <!-- Organisator -->
-              <div class="tw:flex tw:items-center tw:gap-3 tw:pb-4 tw:border-b tw:border-gray-100">
-                <div class="tw:w-8 tw:h-8 tw:bg-blue-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center">
-                  <img src="../assets/filecircle.png" alt="Organizer Icon" class="tw:w-4 tw:h-4 tw:text-blue-500">
+
+              <!-- Age -->
+              <div class="tw:flex tw:items-center tw:gap-2 tw:py-2 tw:border-b tw:border-gray-100">
+                <div class="tw:flex tw:items-center tw:justify-center tw:w-5">
+                  <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
                 </div>
-                <div>
-                  <p class="tw:text-sm tw:font-medium">{{ event?.organizer_name || $t('eventDetails.notSpecified') }}
+                <div class="tw:flex-1">
+                  <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Age</p>
+                  <p class="tw:text-sm tw:font-medium tw:text-gray-900">{{ event?.age_limit || $t('eventDetails.allAges') }}</p>
+                </div>
+              </div>
+
+              <!-- Entrance Status -->
+              <div class="tw:flex tw:items-center tw:gap-2 tw:py-2 tw:border-b tw:border-gray-100">
+                <div class="tw:flex tw:items-center tw:justify-center tw:w-5">
+                  <svg class="tw:w-4 tw:h-4 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+                <div class="tw:flex-1">
+                  <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Entrance Status</p>
+                  <p class="tw:text-sm tw:font-medium tw:text-gray-900 tw:capitalize">{{ event?.entrance_status || $t('eventDetails.notSpecified') }}</p>
+                </div>
+              </div>
+
+              <!-- Venue Name -->
+              <div class="tw:flex tw:items-center tw:gap-3 tw:py-2">
+                <div class="tw:w-10 tw:h-10 tw:bg-gray-100 tw:rounded-xl tw:flex tw:items-center tw:justify-center">
+                  <svg class="tw:w-5 tw:h-5 tw:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+                <div class="tw:flex-1">
+                  <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Venue Name</p>
+                  <p class="tw:text-sm tw:font-medium tw:text-gray-900">
+                    {{ event?.venue?.name || (event?.invited_venues && event.invited_venues.length > 0 ? 'Venue details available' : $t('eventDetails.notSpecified')) }}
                   </p>
                 </div>
               </div>
+            </div>
 
-              <!-- Music Category -->
-              <div class="tw:flex tw:items-center tw:gap-3 tw:pb-4 tw:border-b tw:border-gray-100">
-                <div class="tw:w-8 tw:h-8 tw:bg-blue-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center">
-                  <MusicIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
-                </div>
-                <div>
-                  <p class="tw:text-sm tw:font-medium">{{ event?.category ? event?.category.name :
-                    $t('eventDetails.notSpecified') }}</p>
-                </div>
-              </div>
-
-              <!-- Price -->
-              <div class="tw:flex tw:items-center tw:gap-3 tw:pb-4 tw:border-b tw:border-gray-100">
-                <div class="tw:w-8 tw:h-8 tw:bg-blue-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center">
-                  <img src="../assets/sack-doller.png" alt="Price Icon" class="tw:w-4 tw:h-4 tw:text-blue-500">
-                </div>
-                <div>
-                  <p class="tw:text-sm tw:font-medium">{{ formattedPrice || $t('eventDetails.notSpecified') }}</p>
-                </div>
-              </div>
-
-              <!-- Dresscode -->
-              <div class="tw:flex tw:items-center tw:gap-3 tw:pb-4 tw:border-b tw:border-gray-100">
-                <div class="tw:w-8 tw:h-8 tw:bg-blue-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center">
-                  <ShirtIcon class="tw:w-4 tw:h-4 tw:text-blue-500" />
-                </div>
-                <div>
-                  <p class="tw:text-sm tw:font-medium tw:capitalize">{{ event?.dresscode ||
-                    $t('eventDetails.notSpecified') }}</p>
-                </div>
-              </div>
-
-              <!-- Age Requirement -->
-              <div class="tw:flex tw:items-center tw:gap-3">
-                <div class="tw:w-8 tw:h-8 tw:bg-blue-50 tw:rounded-lg tw:flex tw:items-center tw:justify-center">
-                  <img src="../assets/users-group.png" alt="Age Icon" class="tw:w-4 tw:h-4 tw:text-blue-500">
-                </div>
-                <div>
-                  <p class="tw:text-sm tw:font-medium">{{ ageRequirement || $t('eventDetails.allAges') }}</p>
-                </div>
-              </div>
+            <!-- Like Button -->
+            <div class="tw:mt-6 tw:px-3">
+              <button class="tw:w-full tw:flex tw:items-center tw:justify-center tw:gap-2 tw:px-4 tw:py-2.5 tw:bg-[#FF7700] tw:text-white tw:font-medium tw:rounded-lg tw:transition-colors hover:tw:bg-[#E66800]">
+                <svg class="tw:w-5 tw:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                Like Event
+              </button>
             </div>
           </div>
 
@@ -252,6 +235,7 @@
           <!-- <CommunityTab v-else-if="activeTab === 'community'" :community="event?.community || mockCommunity" /> -->
         </div>
       </div>
+      <!-- Close button -->
       <button @click="close"
         class="tw:absolute tw:z-[60] tw:top-1/2 tw:-translate-y-1/2 tw:-right-3 tw:w-7 tw:h-12 tw:bg-white tw:shadow-md tw:flex tw:items-center tw:justify-center hover:tw:shadow-lg tw:transition-all hover:tw:-right-4"
         style="border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; right: -28px;">
@@ -351,10 +335,10 @@ const activeTab = ref('overview')
 // Tab configuration
 const tabs = [
   { id: 'overview', labelKey: 'eventDetails.tabs.overview' },
-  { id: 'about', labelKey: 'eventDetails.tabs.about' },
+  // { id: 'about', labelKey: 'eventDetails.tabs.about' },
   { id: 'dateLocation', labelKey: 'eventDetails.tabs.dateLocation' },
-  { id: 'venue', labelKey: 'eventDetails.tabs.venue' },
-  { id: 'talents', labelKey: 'eventDetails.tabs.talents' },
+  // { id: 'venue', labelKey: 'eventDetails.tabs.venue' },
+  // { id: 'talents', labelKey: 'eventDetails.tabs.talents' },
   // { id: 'community', labelKey: 'eventDetails.tabs.community' }
 ]
 
@@ -586,8 +570,15 @@ function handleShare() {
 
 .slide-enter-from,
 .slide-leave-to {
-  transform: translateX(-100%);
+  transform: translateX(100%);
   opacity: 0;
+}
+
+@media (max-width: 768px) {
+  .slide-enter-from,
+  .slide-leave-to {
+    transform: translateX(-100%);
+  }
 }
 
 /* Hide scrollbar for tabs and filter chips */
