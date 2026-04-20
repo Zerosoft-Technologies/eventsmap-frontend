@@ -52,11 +52,22 @@
           {{ event?.title || $t('eventDetails.untitled') }}
         </h2>
         
-        <!-- Event Status Button -->
-        <button v-if="eventStatus" class="tw:flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:rounded-full tw:border tw:border-[#0061FF] tw:bg-white">
-          <!-- <img src="../assets/live-streaming-blue.png" :alt="eventStatus.text" class="tw:w-3 tw:h-3" /> -->
-          <span>{{ eventStatus.text }}</span>
-        </button>
+        <div class="tw:flex tw:items-center tw:gap-2">
+          <!-- Event Status Button -->
+          <button v-if="eventStatus" class="tw:flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:rounded-full tw:border tw:border-[#0061FF] tw:bg-white">
+            <!-- <img src="../assets/live-streaming-blue.png" :alt="eventStatus.text" class="tw:w-3 tw:h-3" /> -->
+            <span>{{ eventStatus.text }}</span>
+          </button>
+          
+          <!-- Close Button in Header -->
+          <button 
+            @click="close"
+            class="tw:p-2 tw:rounded-lg tw:hover:tw:bg-gray-100 tw:transition-colors tw:tw-flex tw:items-center tw:justify-center"
+            :aria-label="$t('eventDetails.close')"
+          >
+            <XIcon class="tw:w-5 tw:h-5 tw:text-gray-600" />
+          </button>
+        </div>
       </div>
 
       <!-- <div class="tw:h-px tw:bg-gray-200 tw:mb-3"></div> -->
@@ -629,40 +640,45 @@ const ageRequirement = computed(() => {
 
 // Computed: Event status (upcoming/live/past)
 const eventStatus = computed(() => {
-  if (!props.event?.start_datetime) {
+  if (!props.event?.event_date || !props.event?.start_time) {
     return null
   }
 
   const now = new Date()
-  // const start = new Date(props.event.start_datetime)
-  // const end = props.event.end_datetime ? new Date(props.event.end_datetime) : start
 
-  const startDate = new Date(`${props.event.event_date}T${props.event.start_datetime}`)
-  const endDate = new Date(`${props.event.event_date}T${props.event.end_datetime}`)
-  const start = startDate.getTime()
-  const end = endDate.getTime()
+  const start = new Date(
+    `${props.event.event_date}T${props.event.start_time}`
+  )
+
+  const end = props.event.end_time
+    ? new Date(`${props.event.event_date}T${props.event.end_time}`)
+    : new Date(start)
+
+  // Overnight event (02:38 is next day)
+  if (end < start) {
+    end.setDate(end.getDate() + 1)
+  }
 
   if (now < start) {
-    // Upcoming event
     return {
       type: 'upcoming',
       text: t('eventCard.upcomingEvent'),
       icon: '../assets/calendar-upcoming.png'
     }
-  } else if (now >= start && now <= end) {
-    // Live event
+  }
+
+  if (now >= start && now <= end) {
     return {
       type: 'live',
       text: t('eventCard.liveNow'),
       icon: '../assets/live-streaming.png'
     }
-  } else {
-    // Past event
-    return {
-      type: 'past',
-      text: t('eventCard.pastEvent'),
-      icon: '../assets/calendar-past.png'
-    }
+  }
+
+  return {
+    type: 'past',
+    text: t('eventCard.pastEvent'),
+    icon: '../assets/calendar-past.png'
   }
 })
 

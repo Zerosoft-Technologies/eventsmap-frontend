@@ -50,7 +50,7 @@
     </div>
 
     <!-- Event status & countdown -->
-    <div
+    <!-- <div
       v-if="showEventStatusSection"
       class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:p-4 tw:shadow-sm"
     >
@@ -109,7 +109,7 @@
           </div>
         </template>
       </div>
-    </div>
+    </div> -->
 
     <!-- Event Location: venue, address, map, more info / directions -->
     <div
@@ -598,16 +598,7 @@ const addMarker = () => {
   `
   
   // Create popup
-  const popupContent = `
-    <div style="padding: 10px; min-width: 180px;">
-      <h4 style="font-weight: 600; font-size: 14px; color: #111827; margin: 0 0 6px 0;">
-        ${props.event?.title || 'Event Location'}
-      </h4>
-      <p style="font-size: 12px; color: #6B7280; margin: 0; line-height: 1.4;">
-        ${displayAddress.value}
-      </p>
-    </div>
-  `
+  const popupContent = ``
   
   const popup = new maplibregl.Popup({
     offset: [0, -40],
