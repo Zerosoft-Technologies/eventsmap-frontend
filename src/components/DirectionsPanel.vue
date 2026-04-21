@@ -228,11 +228,11 @@ const ROUTE_SRC = 'dp-route-geo'
 const ROUTE_LAYER = 'dp-route-line'
 const ROUTE_HALO = 'dp-route-halo'
 
-const modes: { value: TransportMode; icon: string; label: string }[] = [
-  { value: 'driving', icon: '🚗', label: 'Drive' },
-  { value: 'walking', icon: '🚶', label: 'Walk' },
-  { value: 'cycling', icon: '🚲', label: 'Cycle' },
-]
+// const modes: { value: TransportMode; icon: string; label: string }[] = [
+//   { value: 'driving', icon: '🚗', label: 'Drive' },
+//   { value: 'walking', icon: '🚶', label: 'Walk' },
+//   { value: 'cycling', icon: '🚲', label: 'Cycle' },
+// ]
 
 const activeMode = ref<TransportMode>('driving')
 const cache = ref<Partial<Record<TransportMode, RouteResult>>>({})
