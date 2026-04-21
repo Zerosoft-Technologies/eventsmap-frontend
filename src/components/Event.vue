@@ -125,27 +125,32 @@
             <svg class="tw:w-4 tw:h-4 tw:shrink-0 tw:text-[var(--primary-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
             </svg>
-            <span class="tw:text-xs tw:text-[var(--primary-color)] tw:truncate">{{ event.dresscode }}</span>
+            <span class="tw:text-xs tw:text-[var(--primary-color)] tw:truncate">{{ formatLabel(event.dresscode) }}</span>
           </div>
           <div class="tw:flex tw:items-center tw:gap-1.5">
             <svg class="tw:w-4 tw:h-4 tw:shrink-0 tw:text-[var(--primary-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            <span class="tw:text-xs tw:text-[var(--primary-color)] tw:truncate">{{ event.age_limit }}</span>
+            <span class="tw:text-xs tw:text-[var(--primary-color)] tw:truncate">{{ formatLabel(event.age_limit) }}</span>
           </div>
           <!-- Entrance status -->
           <div class="tw:flex tw:items-center tw:gap-1.5">
             <svg class="tw:w-4 tw:h-4 tw:shrink-0 tw:text-[var(--primary-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 012-2h6M9 19h6m-6 0l3.553 3.553a1 1 0 001.414 0L21 13M5 10h2a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2z"/>
             </svg>
-            <span class="tw:text-xs tw:text-[var(--primary-color)] tw:truncate">{{ event.entrance_status }}</span>
+            <span class="tw:text-xs tw:text-[var(--primary-color)] tw:truncate">{{ formatLabel(event.entrance_status) }}</span>
           </div>
         </div>
       </div>
 
       <!-- Action buttons -->
       <div class="tw:flex tw:gap-2 tw:pt-2 tw:border-t tw:border-gray-100">
-        <button type="button" class="tw:flex-1 tw:text-sm tw:px-2 tw:py-1.5 tw:rounded-lg tw:border tw:border-[var(--primary-color)]/35 tw:text-[var(--primary-color)] tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 hover:tw:bg-blue-50/90 hover:tw:border-[var(--primary-color)]/50">
+        <button
+          type="button"
+          :disabled="!hasMapCoordinates"
+          @click.stop="handleRouteClick"
+          class="tw:flex-1 tw:text-sm tw:px-2 tw:py-1.5 tw:rounded-lg tw:border tw:border-[var(--primary-color)]/35 tw:text-[var(--primary-color)] tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 hover:tw:bg-blue-50/90 hover:tw:border-[var(--primary-color)]/50 disabled:tw:opacity-40 disabled:tw:pointer-events-none disabled:hover:tw:bg-white"
+        >
           <svg class="tw:w-3.5 tw:h-3.5 tw:shrink-0 tw:text-[var(--primary-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
           </svg>
@@ -208,13 +213,13 @@ onBeforeUnmount(() => clearInterval(interval))
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import router from '@/router'
 import DetailRow from './DetailedRow.vue'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useAuthStore } from '@/stores/auth'
+import { requestEventMapFocus } from '@/utils/mapEventFocus'
 
 const { t } = useI18n()
-const router = useRouter()
 const wishlistStore = useWishlistStore()
 const authStore = useAuthStore()
 
@@ -226,6 +231,25 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['viewEvent'])
+
+function getEventCoordinates(ev) {
+    if (!ev) return null
+    const lat = ev.lat ?? ev.latitude
+    const lng = ev.lng ?? ev.longitude
+    if (lat == null || lng == null) return null
+    const la = Number(lat)
+    const ln = Number(lng)
+    if (!Number.isFinite(la) || !Number.isFinite(ln)) return null
+    return { lat: la, lng: ln }
+}
+
+const hasMapCoordinates = computed(() => getEventCoordinates(props.event) != null)
+
+function handleRouteClick() {
+    const c = getEventCoordinates(props.event)
+    if (!c) return
+    requestEventMapFocus(c.lat, c.lng)
+}
 
 /* ------------------ WISHLIST (optimistic in store; pending = block double-click) ------------------ */
 const isWishlisted = computed(() => wishlistStore.isWishlisted(props.event.id))
@@ -252,10 +276,18 @@ const wishlistIconClass = computed(() => {
 
 async function handleWishlistToggle() {
     if (!authStore.isAuthenticated) {
-        router.push({ name: 'Login' })
+        await router.push({ name: 'Login' })
         return
     }
     await wishlistStore.toggleWishlist(props.event)
+}
+
+const formatLabel = (value) => {
+  if (!value) return ''
+
+  return value
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, char => char.toUpperCase())
 }
 
 /* ------------------ TIME VALUES (API may send full ISO or date + time fragment) ------------------ */

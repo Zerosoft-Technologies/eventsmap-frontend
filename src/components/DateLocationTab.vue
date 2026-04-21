@@ -193,7 +193,7 @@
           type="button"
           class="tw:flex tw:w-full tw:items-center tw:justify-center tw:gap-2 tw:py-2.5 tw:px-3 tw:rounded-lg tw:bg-[#FF7700] tw:text-white tw:font-medium tw:text-sm hover:tw:bg-[#1557b8] tw:transition-colors disabled:tw:opacity-50 disabled:tw:cursor-not-allowed"
           :disabled="!hasValidCoordinates"
-          @click="openDirections"
+          @click="showDirections = true"
         >
           <svg class="tw:w-4 tw:h-4 tw:flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -202,6 +202,15 @@
         </button>
       </div>
     </div>
+
+    <!-- In-app directions panel (replaces old Google Maps redirect) -->
+    <DirectionsPanel
+      :visible="showDirections"
+      :event="event"
+      @close="showDirections = false"
+      @routeDrawn="drawRouteOnDetailMap"
+      @routeCleared="clearRouteFromDetailMap"
+    />
   </div>
 </template>
 
@@ -211,8 +220,11 @@ import { useI18n } from 'vue-i18n'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { MAP_CONFIG } from '../config/mapConfig'
+import DirectionsPanel from './DirectionsPanel.vue'
 
 const { t, locale } = useI18n()
+
+const showDirections = ref(false)
 
 const props = defineProps({
   event: {
@@ -633,12 +645,63 @@ const destroyMap = () => {
   isMapInitialized.value = false
 }
 
-// Open directions in Google Maps
-const openDirections = () => {
-  if (!hasValidCoordinates.value) return
-  const url = `https://www.google.com/maps/dir/?api=1&destination=${latitudeValue.value},${longitudeValue.value}`
-  window.open(url, '_blank')
-  emit('route', props.event)
+// Route overlay state for the inline map
+let routeSource = null
+let routeLayer = null
+let userMarkerObj = null
+
+function drawRouteOnDetailMap(payload) {
+  clearRouteFromDetailMap()
+
+  const m = mapInstance.value
+  if (!m || !m.loaded()) return
+
+  const geojson = {
+    type: 'Feature',
+    geometry: {
+      type: 'LineString',
+      coordinates: payload.polyline.map(([lat, lng]) => [lng, lat]),
+    },
+    properties: {},
+  }
+
+  const srcId  = 'dp-route-src'
+  const layId  = 'dp-route-layer'
+
+  m.addSource(srcId, { type: 'geojson', data: geojson })
+  m.addLayer({
+    id: layId, type: 'line', source: srcId,
+    paint: { 'line-color': '#F97316', 'line-width': 4, 'line-opacity': 0.85 },
+    layout: { 'line-join': 'round', 'line-cap': 'round' },
+  })
+  routeSource = srcId
+  routeLayer  = layId
+
+  // User location marker
+  const el = document.createElement('div')
+  el.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#3B82F6;border:3px solid #fff;box-shadow:0 0 6px rgba(59,130,246,0.5);'
+  userMarkerObj = new maplibregl.Marker({ element: el })
+    .setLngLat([payload.userLng, payload.userLat])
+    .addTo(m)
+
+  // Fit bounds to show full route
+  const bounds = new maplibregl.LngLatBounds()
+  bounds.extend([payload.userLng, payload.userLat])
+  const lat = latitudeValue.value
+  const lng = longitudeValue.value
+  if (lat != null && lng != null) bounds.extend([lng, lat])
+  m.fitBounds(bounds, { padding: 50, duration: 600 })
+}
+
+function clearRouteFromDetailMap() {
+  const m = mapInstance.value
+  if (m && m.loaded()) {
+    if (routeLayer && m.getLayer(routeLayer))  m.removeLayer(routeLayer)
+    if (routeSource && m.getSource(routeSource)) m.removeSource(routeSource)
+  }
+  routeLayer = null
+  routeSource = null
+  if (userMarkerObj) { userMarkerObj.remove(); userMarkerObj = null }
 }
 
 // Watch for coordinate changes and reinitialize map
