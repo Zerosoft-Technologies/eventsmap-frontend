@@ -478,19 +478,19 @@ async function loadRoute(mode: TransportMode) {
   }
 }
 
-function switchMode(mode: TransportMode) {
-  activeMode.value = mode
-  if (cache.value[mode]) {
-    emit('routeDrawn', {
-      polyline: cache.value[mode]!.polyline,
-      userLat: userLoc.value?.lat ?? 0,
-      userLng: userLoc.value?.lng ?? 0,
-    })
-    void syncRouteMap()
-  } else {
-    void loadRoute(mode)
-  }
-}
+// function switchMode(mode: TransportMode) {
+//   activeMode.value = mode
+//   if (cache.value[mode]) {
+//     emit('routeDrawn', {
+//       polyline: cache.value[mode]!.polyline,
+//       userLat: userLoc.value?.lat ?? 0,
+//       userLng: userLoc.value?.lng ?? 0,
+//     })
+//     void syncRouteMap()
+//   } else {
+//     void loadRoute(mode)
+//   }
+// }
 
 function resetPanel() {
   cache.value = {}
