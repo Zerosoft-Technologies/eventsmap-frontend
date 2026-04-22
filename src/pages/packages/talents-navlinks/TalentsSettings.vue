@@ -312,7 +312,7 @@ const menuItems = [
     { id: "details", icon: FileText, label: "Details", route: "/create-talents-free" },
     { id: "analytics", icon: BarChart3, route: "/create-talents-free/report", label: "Analytics" },
     { id: "settings", icon: Settings, route: "/create-talents-free/settings", label: "Settings" },
-    { id: "calendar", icon: Calendar, label: "Calendar" },
+    // { id: "calendar", icon: Calendar, label: "Calendar" }" },
 ]
 
 function handleBack() {

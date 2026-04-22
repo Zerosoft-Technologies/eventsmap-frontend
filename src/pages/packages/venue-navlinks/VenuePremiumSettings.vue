@@ -324,7 +324,7 @@
         { id: "analytics", icon: BarChart3, route: "/create-venue-premium/report", label: "Analytics" },
         { id: "gallery", icon: Images, route: "/create-venue-premium/gallery-images", label: "Gallery" },
         { id: "settings", icon: Settings, route: "/create-venue-premium/settings", label: "Settings" },
-        { id: "calendar", icon: Calendar, label: "Calendar" },
+        // { id: "calendar", icon: Calendar, label: "Calendar" }" },
         { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
     ]
 

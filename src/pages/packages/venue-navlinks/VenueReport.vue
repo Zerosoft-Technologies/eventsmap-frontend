@@ -94,7 +94,7 @@ const menuItems = [
   { id: "details", icon: FileText, label: "Details", route: "/create-venue-free" },
   { id: "analytics", icon: BarChart3, route: "/create-venue-free/report", label: "Analytics" },
   { id: "settings", icon: Settings, route: "/create-venue-free/settings", label: "Settings" },
-  { id: "calendar", icon: Calendar, label: "Calendar" },
+  // { id: "calendar", icon: Calendar, label: "Calendar" }" },
 ]
 
 function handleBack() {

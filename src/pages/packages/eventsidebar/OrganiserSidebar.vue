@@ -1,6 +1,7 @@
 <template>
   <div
-    class="tw:w-full tw:max-w-[92vw] tw:md:w-[400px] tw:bg-[#F3F2EE] tw:rounded-lg tw:border-[10px] tw:border-[#F6F1E7] tw:flex tw:h-[calc(100vh-1rem)] tw:md:h-[85vh] tw:static tw:md:sticky tw:md:top-0">
+    class="tw:w-full tw:max-w-[92vw] tw:md:w-[400px] tw:bg-[#F3F2EE] tw:rounded-lg tw:border-[10px] tw:border-[#F6F1E7] tw:flex tw:h-[calc(100vh-1rem)] tw:md:h-[85vh] tw:static tw:md:sticky tw:md:top-4 tw:md:z-20 tw:md:shrink-0"
+  >
 
     <!-- Sidebar -->
     <div

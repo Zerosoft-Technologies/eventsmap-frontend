@@ -1094,7 +1094,7 @@ const menuItems = [
     { id: "analytics", icon: BarChart3, route: "/create-talents-premium/report", label: "Analytics" },
     { id: "gallery", icon: Images, route: "/create-talents-premium/gallery-images", label: "Gallery" },
     { id: "settings", icon: Settings, route: "/create-talents-premium/settings", label: "Settings" },
-    { id: "calendar", icon: Calendar, label: "Calendar" },
+    // { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
     { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
 ]

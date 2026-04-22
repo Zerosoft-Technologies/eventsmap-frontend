@@ -103,7 +103,7 @@ const menuItems = [
   { id: "details", icon: FileText, label: "Details", route: "/create-organiser-free" },
   { id: "analytics", icon: BarChart3, route: "/create-organiser-free/report", label: "Analytics" },
   { id: "settings", icon: Settings, route: "/create-organiser-free/settings", label: "Settings" },
-  { id: "calendar", icon: Calendar, label: "Calendar" },
+  // { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
 
 function handleBack() {

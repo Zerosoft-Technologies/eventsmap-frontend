@@ -319,7 +319,7 @@
         { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
         { id: "gallery", icon: Images, route: "/create-organiser-premium/gallery-images", label: "Gallery" },
         { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
-        { id: "calendar", icon: Calendar, label: "Calendar" },
+        // { id: "calendar", icon: Calendar, label: "Calendar" },
         { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
     ]
 

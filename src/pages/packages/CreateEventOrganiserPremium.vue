@@ -1229,7 +1229,7 @@ const menuItems = [
     { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
     { id: 'gallery', label: 'Gallery', icon: Images, route: `/create-organiser-premium/gallery-images` },
     { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
-    { id: "calendar", icon: Calendar, label: "Calendar" },
+    // { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
     { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
 ]

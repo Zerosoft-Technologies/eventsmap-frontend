@@ -1,6 +1,6 @@
 <template>
-    <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-4 tw:px-3 tw:md:py-10 tw:md:px-6 tw:overflow-x-hidden">
-        <div class="tw:w-full tw:max-w-7xl tw:flex tw:flex-col tw:md:flex-row tw:gap-4 tw:md:gap-6">
+    <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-4 tw:px-3 tw:md:py-10 tw:md:px-6">
+        <div class="tw:w-full tw:max-w-7xl tw:min-w-0 tw:flex tw:flex-col tw:md:flex-row tw:md:items-stretch tw:gap-4 tw:md:gap-6">
             <!-- Mobile Header -->
             <div class="tw:md:hidden tw:flex tw:items-center tw:justify-between tw:bg-white tw:rounded-xl tw:shadow-sm tw:px-4 tw:py-3">
                 <button type="button" @click="handleBack" class="tw:text-sm tw:font-medium tw:text-[#0061FF]">
@@ -84,13 +84,13 @@
                 </div>
             </div> -->
             <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-            <div class="tw:hidden tw:md:block">
+            <div class="tw:hidden tw:shrink-0 tw:md:block">
                 <EventSidebar :menuItems="menuItems" @back="handleBack" @event-selected="handleEventSelected"
                     @chatbox-click="handleChatboxClick" />
             </div>
 
             <!-- ================= RIGHT CARD ================= -->
-            <div class="tw:flex-1 tw:max-w-full tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
+            <div class="tw:min-w-0 tw:flex-1 tw:max-w-full tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
 
                 <!-- IMAGE UPLOAD SECTION -->
                 <!-- <div
@@ -133,12 +133,12 @@
                         <div class="tw:flex tw:justify-between tw:items-center">
                             <label class="tw:text-sm tw:text-gray-700">Description <span
                                     class="tw:text-red-500">*</span></label>
-                            <button type="button"
+                            <!-- <button type="button"
                                 class="tw:inline-flex tw:items-center tw:gap-1.5 tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:text-blue-600 hover:tw:text-blue-700 hover:tw:bg-blue-50 tw:rounded-lg tw:transition-colors"
                                 @click="showDescriptionExpandModal = true" title="Expand to read full description">
                                 <Maximize2 class="tw:w-4 tw:h-4" />
                                 Expand
-                            </button>
+                            </button> -->
                         </div>
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Event..."
                             @input="clearFieldError('description')" :class="[
@@ -648,7 +648,7 @@
                     </div>
 
                     <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-3 tw:gap-6">
-                        <!-- Dress Code -->
+                        <!-- Dress Code (aligned with Free event profile) -->
                         <div class="tw:space-y-3">
                             <label class="tw:text-sm tw:font-medium tw:text-gray-700">
                                 Dress Code <span class="tw:text-red-500">*</span>
@@ -656,21 +656,23 @@
                             <div class="tw:relative">
                                 <select
                                     v-model="dressCode"
-                                    @change="clearFieldError('dressCode'); if (dressCode === 'none') customDressCode = ''"
+                                    @change="clearFieldError('dressCode'); if (dressCode === 'none' || dressCode === 'formal') dressCodeDescription = ''"
                                     :class="[
-                                        'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                                        'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-base tw:md:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                                         errors.dressCode ? 'tw:border-red-500' : 'tw:border-gray-200'
-                                    ]">
+                                    ]"
+                                >
                                     <option value="">Select</option>
+                                    <option value="formal">Dress Code</option>
                                     <option value="none">No Dress Code</option>
-                                    <option value="required">Other, Please Specify</option>
+                                    <option value="required">Other, Please specify</option>
                                 </select>
                                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
                             <div v-if="dressCode === 'required'" class="tw:space-y-2">
                                 <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Dress Code</label>
                                 <textarea
-                                    v-model="customDressCode"
+                                    v-model="dressCodeDescription"
                                     placeholder="e.g., Formal wear, White party, Business casual"
                                     rows="3"
                                     class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y tw:min-h-[84px]"
@@ -679,7 +681,7 @@
                             <p v-if="errors.dressCode" class="tw:text-red-500 tw:text-sm">Please choose a dress code option</p>
                         </div>
 
-                        <!-- Age Limit -->
+                        <!-- Age Limit (Free options + Premium-only “Other, Please specify”) -->
                         <div class="tw:space-y-3">
                             <label class="tw:text-sm tw:font-medium tw:text-gray-700">
                                 Age Limit <span class="tw:text-red-500">*</span>
@@ -687,30 +689,31 @@
                             <div class="tw:relative">
                                 <select
                                     v-model="ageLimit"
-                                    @change="clearFieldError('ageLimit'); if (ageLimit === 'none') customAgeLimit = ''"
+                                    @change="clearFieldError('ageLimit'); if (ageLimit !== 'required') ageLimitDescription = ''"
                                     :class="[
-                                        'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                                        'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-base tw:md:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                                         errors.ageLimit ? 'tw:border-red-500' : 'tw:border-gray-200'
-                                    ]">
-                                    <option value="">Select</option>
-                                    <option value="none">No Age Limit</option>
-                                    <option value="restricted">Other, Please Specify</option>
+                                    ]"
+                                >
+                                    <option value="">Select age group</option>
+                                    <option v-for="opt in AGE_GROUP_OPTIONS" :key="opt" :value="opt">{{ opt }}</option>
+                                    <option value="required">Other, Please specify</option>
                                 </select>
                                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
-                            <div v-if="ageLimit === 'restricted'" class="tw:space-y-2">
-                                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Age Limit</label>
-                                <input
-                                    v-model="customAgeLimit"
-                                    type="text"
-                                    placeholder="e.g., 18+, 21+, Adults only"
-                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all"
-                                />
+                            <div v-if="ageLimit === 'required'" class="tw:space-y-2">
+                                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe age limit</label>
+                                <textarea
+                                    v-model="ageLimitDescription"
+                                    placeholder="e.g., 16+ with parent, no children under 10"
+                                    rows="3"
+                                    class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y tw:min-h-[84px]"
+                                ></textarea>
                             </div>
-                            <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm">Please choose an age limit option</p>
+                            <p v-if="errors.ageLimit" class="tw:text-red-500 tw:text-sm">Please choose an age group</p>
                         </div>
 
-                        <!-- Entrance Status -->
+                        <!-- Entrance Status (Free options + Premium-only “Other, Please specify”) -->
                         <div class="tw:space-y-3">
                             <label class="tw:text-sm tw:font-medium tw:text-gray-700">
                                 Entrance Status <span class="tw:text-red-500">*</span>
@@ -718,27 +721,28 @@
                             <div class="tw:relative">
                                 <select
                                     v-model="entranceStatus"
-                                    @change="clearFieldError('entranceStatus'); if (entranceStatus === 'open') customEntranceFee = ''"
+                                    @change="clearFieldError('entranceStatus'); if (entranceStatus !== 'required') entranceStatusDescription = ''"
                                     :class="[
-                                        'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                                        'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2.5 tw:text-base tw:md:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
                                         errors.entranceStatus ? 'tw:border-red-500' : 'tw:border-gray-200'
-                                    ]">
-                                    <option value="">Select</option>
-                                    <option value="open">Open to All</option>
-                                    <option value="restricted">Other, Please Specify</option>
+                                    ]"
+                                >
+                                    <option value="">Select entrance status</option>
+                                    <option v-for="opt in ENTRANCE_STATUS_OPTIONS" :key="opt" :value="opt">{{ opt }}</option>
+                                    <option value="required">Other, Please specify</option>
                                 </select>
                                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
-                            <div v-if="entranceStatus === 'restricted'" class="tw:space-y-2">
-                                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe Entrance Status</label>
+                            <div v-if="entranceStatus === 'required'" class="tw:space-y-2">
+                                <label class="tw:text-xs tw:font-medium tw:text-gray-600">Describe entrance status</label>
                                 <textarea
-                                    v-model="customEntranceFee"
-                                    placeholder="e.g., Members only, Invite-only, VIP access"
+                                    v-model="entranceStatusDescription"
+                                    placeholder="e.g., members only, pre-registration required"
                                     rows="3"
                                     class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-3 tw:py-2 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-y tw:min-h-[84px]"
                                 ></textarea>
                             </div>
-                            <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm">Please choose an entrance option</p>
+                            <p v-if="errors.entranceStatus" class="tw:text-red-500 tw:text-sm">Please choose an entrance status</p>
                         </div>
                     </div>
                 </div>
@@ -855,8 +859,8 @@
                         Booking & Ticket Info
                     </h3>
 
-                    <input v-model="ticketUrl" type="text" placeholder="Ticket / Booking URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <!-- <input v-model="ticketUrl" type="text" placeholder="Ticket / Booking URL"
+                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" /> -->
 
                     <textarea v-model="bookingInstructions" rows="4" placeholder="Booking Instructions"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
@@ -917,77 +921,6 @@
                             />
                             <span class="tw:text-sm tw:text-gray-700">Copy Event</span>
                         </label>
-                    </div>
-                </div>
-
-                <!-- EVENT VISIBILITY SECTION -->
-                <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-6">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Event Visibility
-                    </h3>
-
-                    <!-- Show Upcoming Events -->
-                    <div class="tw:flex tw:flex-col tw:gap-2">
-                        <p class="tw:text-sm tw:font-medium tw:text-gray-900">
-                            Show Upcoming Events (max 1 year)
-                        </p>
-                        <!-- <p class="tw:text-xs tw:text-gray-500">
-                            If YES, upcoming events within the next year will be visible.
-                        </p> -->
-                        <div class="tw:flex tw:gap-4 tw:mt-1">
-                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="show-upcoming-events"
-                                    :checked="showUpcomingEvents === true"
-                                    @change="showUpcomingEvents = true"
-                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
-                                />
-                                <span class="tw:text-sm tw:text-gray-700">Yes</span>
-                            </label>
-                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="show-upcoming-events"
-                                    :checked="showUpcomingEvents === false"
-                                    @change="showUpcomingEvents = false"
-                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
-                                />
-                                <span class="tw:text-sm tw:text-gray-700">No</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Show Past Events -->
-                    <div class="tw:flex tw:flex-col tw:gap-2">
-                        <p class="tw:text-sm tw:font-medium tw:text-gray-900">
-                            Show Past Events (max 1 year)
-                        </p>
-                        <!-- <p class="tw:text-xs tw:text-gray-500">
-                            If YES, past events within the last year will be visible.
-                        </p> -->
-                        <div class="tw:flex tw:gap-4 tw:mt-1">
-                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="show-past-events"
-                                    :checked="showPastEvents === true"
-                                    @change="showPastEvents = true"
-                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
-                                />
-                                <span class="tw:text-sm tw:text-gray-700">Yes</span>
-                            </label>
-                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="show-past-events"
-                                    :checked="showPastEvents === false"
-                                    @change="showPastEvents = false"
-                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
-                                />
-                                <span class="tw:text-sm tw:text-gray-700">No</span>
-                            </label>
-                        </div>
                     </div>
                 </div>
 
@@ -1205,17 +1138,106 @@ function clearFieldError(fieldName) {
 const additionalImages = ref([])
 const selectedVenue = ref("")
 const selectedGenre = ref("")
-// Overview (clean UX modes)
-// dressCode: 'none' | 'required'
-// ageLimit: 'none' | 'restricted'
-// entranceStatus: 'open' | 'restricted'
+/** Same option lists as Free event profile (age_limit & entrance_status stored as labels). */
+const AGE_GROUP_OPTIONS = [
+    'All Ages',
+    'Family Friendly (0–12)',
+    '0–4 (Toddlers / Babies)',
+    '4–7 (Young Kids)',
+    '8–12 (Kids)',
+    '12–17 (Teens)',
+    '18+ (Adults)',
+    '21+',
+    '25+ (Mature Crowd)',
+    '30+ (30+ Crowd)',
+    'Students',
+    'Senior Friendly (50+ / 60+)',
+    'LGBTQ+ Friendly',
+]
+
+const ENTRANCE_STATUS_OPTIONS = [
+    'Free Entrance',
+    'Paid Entrance',
+    'Donation',
+    'Event Postponed',
+    'Event Cancelled',
+    'Sold Out',
+]
+
 const dressCode = ref("")
+const dressCodeDescription = ref("")
 const ageLimit = ref("")
-// const entranceFee = ref("")
+const ageLimitDescription = ref("")
 const entranceStatus = ref("")
-const customDressCode = ref("")
-const customAgeLimit = ref("")
-const customEntranceFee = ref("")
+const entranceStatusDescription = ref("")
+
+function dressCodePayloadValue() {
+    if (dressCode.value === 'none') return 'no_dress_code'
+    if (dressCode.value === 'formal') return 'Dress Code'
+    if (dressCode.value === 'required') return (dressCodeDescription.value || '').trim()
+    return ''
+}
+
+function ageLimitPayloadValue() {
+    if (ageLimit.value === 'required') return (ageLimitDescription.value || '').trim()
+    return ageLimit.value
+}
+
+function entranceStatusPayloadValue() {
+    if (entranceStatus.value === 'required') return (entranceStatusDescription.value || '').trim()
+    return entranceStatus.value
+}
+
+function hydrateAgeLimitFromApi(stored) {
+    const al = (stored ?? '').toString().trim()
+    if (!al || al === 'no_age_limit') {
+        ageLimit.value = 'All Ages'
+        ageLimitDescription.value = ''
+        return
+    }
+    if (al === 'all_ages') {
+        ageLimit.value = 'All Ages'
+        ageLimitDescription.value = ''
+        return
+    }
+    if (AGE_GROUP_OPTIONS.includes(al)) {
+        ageLimit.value = al
+        ageLimitDescription.value = ''
+        return
+    }
+    const alLower = al.toLowerCase()
+    const byLabel = AGE_GROUP_OPTIONS.find((o) => o.toLowerCase() === alLower)
+    if (byLabel) {
+        ageLimit.value = byLabel
+        ageLimitDescription.value = ''
+        return
+    }
+    ageLimit.value = 'required'
+    ageLimitDescription.value = al
+}
+
+function hydrateEntranceStatusFromApi(stored) {
+    const es = (stored ?? '').toString().trim()
+    if (!es || es === 'open_to_all') {
+        entranceStatus.value = 'Free Entrance'
+        entranceStatusDescription.value = ''
+        return
+    }
+    if (ENTRANCE_STATUS_OPTIONS.includes(es)) {
+        entranceStatus.value = es
+        entranceStatusDescription.value = ''
+        return
+    }
+    const esLower = es.toLowerCase()
+    const byLabel = ENTRANCE_STATUS_OPTIONS.find((o) => o.toLowerCase() === esLower)
+    if (byLabel) {
+        entranceStatus.value = byLabel
+        entranceStatusDescription.value = ''
+        return
+    }
+    entranceStatus.value = 'required'
+    entranceStatusDescription.value = es
+}
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
@@ -1497,7 +1519,7 @@ const menuItems = [
     { id: 'gallery', label: 'Gallery', icon: Images, route: `/create-event-premium/gallery-images` },
     { id: "settings", icon: Settings, route: "/create-event-premium/settings", label: "Settings" },
     { id: "invites", icon: UserPlus, label: "Invites", route: "/create-event-premium/invites" },
-    { id: "calendar", icon: Calendar, label: "Calendar" },
+    // { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
     { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
 ]
@@ -1952,17 +1974,15 @@ function validateForm() {
     hasEndDateError.value = !endDate.value
     errors.value.address = !selectedAddress.value
     
-    // Dress code validation
-    errors.value.dressCode = !dressCode.value || 
-        (dressCode.value === 'required' && !customDressCode.value?.trim())
-    
-    // Age limit validation
-    errors.value.ageLimit = !ageLimit.value || 
-        (ageLimit.value === 'restricted' && !customAgeLimit.value?.trim())
-    
-    // Entrance status validation
-    errors.value.entranceStatus = !entranceStatus.value || 
-        (entranceStatus.value === 'restricted' && !customEntranceFee.value?.trim())
+    errors.value.dressCode =
+        !dressCode.value ||
+        (dressCode.value === 'required' && !dressCodeDescription.value?.trim())
+    errors.value.ageLimit =
+        !ageLimit.value ||
+        (ageLimit.value === 'required' && !ageLimitDescription.value?.trim())
+    errors.value.entranceStatus =
+        !entranceStatus.value ||
+        (entranceStatus.value === 'required' && !entranceStatusDescription.value?.trim())
     
     // Contact details are optional for premium users
     errors.value.contactPhone = false // Always optional
@@ -2049,11 +2069,9 @@ async function createEvent() {
         formData.append('address', selectedAddress.value)
         formData.append('latitude', latitude.value)
         formData.append('longitude', longitude.value)
-        // Overview fields (backwards-compatible keys)
-        formData.append('dress_code', dressCode.value === 'none' ? 'no_dress_code' : (customDressCode.value || ''))
-        formData.append('age_limit', ageLimit.value === 'none' ? 'no_age_limit' : (customAgeLimit.value || ''))
-        // formData.append('entrance_fee', entranceFee.value)
-        formData.append('entrance_status', entranceStatus.value === 'open' ? 'open_to_all' : (customEntranceFee.value || ''))
+        formData.append('dress_code', dressCodePayloadValue())
+        formData.append('age_limit', ageLimitPayloadValue())
+        formData.append('entrance_status', entranceStatusPayloadValue())
         formData.append('contact_phone', contactPhone.value)
         formData.append('contact_email', contactEmail.value)
         formData.append('description', eventDescription.value)
@@ -2368,33 +2386,20 @@ async function loadEvent(id) {
         ticketUrl.value = d.ticket_url ?? ''
         bookingInstructions.value = d.booking_instructions ?? ''
 
-        // Overview hydration (backwards-compatible with whatever backend stored)
-        const dc = (d.dress_code ?? '').toString()
+        // Overview hydration (match Free create form)
+        const dc = (d.dress_code ?? '').toString().trim()
         if (!dc || dc === 'no_dress_code') {
             dressCode.value = 'none'
-            customDressCode.value = ''
+            dressCodeDescription.value = ''
+        } else if (dc === 'formal' || dc === 'Dress Code' || dc === 'dress_code') {
+            dressCode.value = 'formal'
+            dressCodeDescription.value = ''
         } else {
             dressCode.value = 'required'
-            customDressCode.value = dc
+            dressCodeDescription.value = dc
         }
-
-        const al = (d.age_limit ?? '').toString()
-        if (!al || al === 'no_age_limit' || al === 'all_ages') {
-            ageLimit.value = 'none'
-            customAgeLimit.value = ''
-        } else {
-            ageLimit.value = 'restricted'
-            customAgeLimit.value = al
-        }
-
-        const es = (d.entrance_status ?? '').toString()
-        if (!es || es === 'open_to_all') {
-            entranceStatus.value = 'open'
-            customEntranceFee.value = ''
-        } else {
-            entranceStatus.value = 'restricted'
-            customEntranceFee.value = es
-        }
+        hydrateAgeLimitFromApi(d.age_limit)
+        hydrateEntranceStatusFromApi(d.entrance_status)
 
         const startFrom = d.start_datetime ? String(d.start_datetime) : null
         const endFrom = d.end_datetime ? String(d.end_datetime) : null
@@ -2546,11 +2551,11 @@ function resetForm() {
     latitude.value = null
     longitude.value = null
     dressCode.value = ''
+    dressCodeDescription.value = ''
     ageLimit.value = ''
+    ageLimitDescription.value = ''
     entranceStatus.value = ''
-    customDressCode.value = ''
-    customAgeLimit.value = ''
-    customEntranceFee.value = ''
+    entranceStatusDescription.value = ''
     contactPhone.value = ''
     contactEmail.value = ''
     contactWebsite.value = ''
@@ -2615,10 +2620,9 @@ async function updateEvent() {
         formData.append('address', selectedAddress.value)
         formData.append('description', eventDescription.value)
         
-        // Overview fields
-        formData.append('dress_code', dressCode.value === 'none' ? 'no_dress_code' : (customDressCode.value || ''))
-        formData.append('age_limit', ageLimit.value === 'none' ? 'no_age_limit' : (customAgeLimit.value || ''))
-        formData.append('entrance_status', entranceStatus.value === 'open' ? 'open_to_all' : (customEntranceFee.value || ''))
+        formData.append('dress_code', dressCodePayloadValue())
+        formData.append('age_limit', ageLimitPayloadValue())
+        formData.append('entrance_status', entranceStatusPayloadValue())
         
         // Optional fields
         if (contactPhone.value) formData.append('contact_phone', contactPhone.value)

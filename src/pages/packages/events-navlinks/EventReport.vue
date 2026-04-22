@@ -1,6 +1,6 @@
 <template>
-  <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-4 tw:px-3 tw:md:py-10 tw:md:px-6 tw:overflow-x-hidden">
-    <div class="tw:w-full tw:max-w-7xl tw:flex tw:flex-col tw:md:flex-row tw:gap-4 tw:md:gap-6">
+  <div class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-4 tw:px-3 tw:md:py-10 tw:md:px-6">
+    <div class="tw:w-full tw:max-w-7xl tw:min-w-0 tw:flex tw:flex-col tw:md:flex-row tw:md:items-stretch tw:gap-4 tw:md:gap-6">
       <!-- Mobile Header -->
       <div class="tw:md:hidden tw:flex tw:items-center tw:justify-between tw:bg-white tw:rounded-xl tw:shadow-sm tw:px-4 tw:py-3">
         <button type="button" @click="handleBack" class="tw:text-sm tw:font-medium tw:text-[#0061FF]">Event Map</button>
@@ -21,7 +21,7 @@
       </div>
 
       <!-- ================= LEFT CARD (Sidebar Component) ================= -->
-      <div class="tw:hidden tw:md:block">
+      <div class="tw:hidden tw:shrink-0 tw:md:block">
         <EventSidebar 
           :menuItems="menuItems"
           @back="handleBack"
@@ -30,7 +30,7 @@
       </div>
 
       <!-- ================= RIGHT CARD ================= -->
-      <div class="tw:flex-1 tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6">
+      <div class="tw:min-w-0 tw:flex-1 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6">
 
         <!-- Inner White Card -->
         <div class="tw:bg-white tw:rounded-2xl tw:p-5 tw:md:p-10">
@@ -106,7 +106,7 @@ const menuItems = [
   { id: "analytics", icon: BarChart3, route: "/create-event-free/report", label: "Analytics" },
   { id: "settings", icon: Settings, route: "/create-event-free/settings", label: "Settings" },
   { id: "invites", icon: UserPlus, label: "Invites", route: "/create-event-free/invites" },
-  { id: "calendar", icon: Calendar, label: "Calendar" },
+  // { id: "calendar", icon: Calendar, label: "Calendar" }" },
 ]
 
 function handleBack() {

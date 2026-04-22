@@ -1,9 +1,9 @@
 <template>
   <div
-    class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-4 tw:px-3 tw:md:py-10 tw:md:px-6 tw:overflow-x-hidden"
+    class="tw:min-h-screen tw:bg-gray-50 tw:flex tw:justify-center tw:py-4 tw:px-3 tw:md:py-10 tw:md:px-6"
   >
     <div
-      class="tw:w-full tw:max-w-7xl tw:flex tw:flex-col tw:md:flex-row tw:gap-4 tw:md:gap-6"
+      class="tw:w-full tw:max-w-7xl tw:min-w-0 tw:flex tw:flex-col tw:md:flex-row tw:md:items-stretch tw:gap-4 tw:md:gap-6"
     >
       <!-- Mobile Header -->
       <div
@@ -47,7 +47,7 @@
         </div>
       </div>
 
-      <div class="tw:hidden tw:md:block">
+      <div class="tw:hidden tw:shrink-0 tw:md:block">
         <EventSidebar
           :menuItems="menuItems"
           @back="handleBack"
@@ -57,7 +57,7 @@
       </div>
 
       <div
-        class="tw:flex-1 tw:max-w-full tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6"
+        class="tw:min-w-0 tw:flex-1 tw:max-w-full tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6"
       >
         <div class="tw:space-y-4 tw:md:space-y-6">
           <!-- Page header -->
@@ -391,7 +391,7 @@ const menuItems = computed(() => {
       },
       { id: "settings", icon: Settings, route: `${b}/settings`, label: "Settings" },
       { id: "invites", icon: UserPlus, label: "Invites", route: invitesRoute.value },
-      { id: "calendar", icon: Calendar, label: "Calendar" },
+      // { id: "calendar", icon: Calendar, label: "Calendar" },
       { id: "back", icon: SkipBackIcon, label: "Back" },
       { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
     ]
@@ -402,7 +402,7 @@ const menuItems = computed(() => {
     { id: "analytics", icon: BarChart3, route: `${b}/report`, label: "Analytics" },
     { id: "settings", icon: Settings, route: `${b}/settings`, label: "Settings" },
     { id: "invites", icon: UserPlus, label: "Invites", route: invitesRoute.value },
-    { id: "calendar", icon: Calendar, label: "Calendar" },
+    // { id: "calendar", icon: Calendar, label: "Calendar" },
   ]
 })
 
