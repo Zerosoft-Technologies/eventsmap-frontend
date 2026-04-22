@@ -14,10 +14,15 @@ export interface AccountInvitesSummary {
 export interface AccountInviteRow {
   id: string | number
   name: string
+  email: string | null
+  /** Public profile slug (e.g. from API) */
+  slug: string | null
+  profileId: string | number | null
   inviteType: AccountInviteType
   eventId: string | number | null
   eventTitle: string
   imageUrl: string | null
+  /** When API sends absolute profile URL; otherwise UI may build from slug */
   viewProfileUrl: string | null
   raw: Record<string, unknown>
 }
@@ -78,7 +83,12 @@ function normalizeOne(raw: Record<string, unknown>, index: number): AccountInvit
     'title',
   ])
 
+  const email = pickString(raw, ['email', 'user_email']) || null
+  const slug = pickString(raw, ['slug', 'profile_slug']) || null
+  const profileId = pickId(raw, ['profile_id', 'profileId', 'user_id'])
+
   const imageUrl = pickString(raw, [
+    'image_path',
     'image_url',
     'avatar_url',
     'profile_image',
@@ -98,9 +108,19 @@ function normalizeOne(raw: Record<string, unknown>, index: number): AccountInvit
 
   const typeRaw =
     raw.invite_type ?? raw.type ?? raw.role ?? raw.profile_type ?? raw.invited_type
+
+  const id =
+    pickId(raw, ['id', 'invite_id']) ??
+    (eventId != null && profileId != null
+      ? `${eventId}-${profileId}`
+      : `invite-${index}`)
+
   return {
-    id: pickId(raw, ['id', 'invite_id']) ?? `invite-${index}`,
+    id,
     name: name || 'Unknown',
+    email,
+    slug: slug || null,
+    profileId,
     inviteType: mapInviteType(typeRaw),
     eventId,
     eventTitle: eventTitle || 'Event',

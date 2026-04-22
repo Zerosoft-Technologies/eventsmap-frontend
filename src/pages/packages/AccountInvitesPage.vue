@@ -89,12 +89,24 @@
             <div
               v-for="card in statCards"
               :key="card.key"
-              class="tw:bg-white tw:rounded-2xl tw:border tw:border-gray-100 tw:p-4 tw:shadow-sm"
+              class="tw:group tw:bg-white tw:rounded-2xl tw:border tw:border-gray-100/80 tw:p-4 tw:shadow-sm tw:transition-all tw:duration-200 hover:tw:shadow-md hover:tw:border-blue-100 tw:relative tw:overflow-hidden"
             >
-              <p class="tw:text-xs tw:font-medium tw:text-gray-500 tw:uppercase tw:tracking-wide">
-                {{ card.label }}
-              </p>
-              <p class="tw:text-2xl tw:font-bold tw:text-gray-900 tw:mt-1">
+              <div
+                class="tw:absolute tw:inset-x-0 tw:top-0 tw:h-1 tw:bg-gradient-to-r tw:opacity-95"
+                :class="card.accentClass"
+              />
+              <div class="tw:flex tw:items-start tw:justify-between tw:gap-2">
+                <p
+                  class="tw:text-[11px] tw:font-semibold tw:text-gray-500 tw:uppercase tw:tracking-wider"
+                >
+                  {{ card.label }}
+                </p>
+                <component
+                  :is="card.icon"
+                  class="tw:w-4 tw:h-4 tw:text-gray-300 group-hover:tw:text-blue-400 tw:transition-colors"
+                />
+              </div>
+              <p class="tw:text-2xl tw:font-bold tw:text-gray-900 tw:mt-2 tw:tabular-nums">
                 {{ card.value }}
               </p>
             </div>
@@ -175,188 +187,118 @@
             </div>
           </div>
 
-          <!-- List -->
-          <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:overflow-hidden">
+          <!-- Invites grid -->
+          <div>
             <div
               v-if="loading"
-              class="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:py-16 tw:text-gray-500"
+              class="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:py-20 tw:rounded-2xl tw:bg-white/80 tw:backdrop-blur-sm tw:border tw:border-gray-100 tw:shadow-sm tw:text-gray-500"
             >
-              <Loader2 class="tw:w-5 tw:h-5 tw:animate-spin" />
+              <Loader2 class="tw:w-5 tw:h-5 tw:animate-spin tw:text-[#0061FF]" />
               <span>Loading invites…</span>
             </div>
 
             <div
               v-else-if="loadError"
-              class="tw:p-8 tw:text-center tw:text-red-600 tw:text-sm"
+              class="tw:p-8 tw:rounded-2xl tw:bg-red-50 tw:border tw:border-red-100 tw:text-center tw:text-red-700 tw:text-sm"
             >
               {{ loadError }}
             </div>
 
             <div
               v-else-if="visibleInvites.length === 0"
-              class="tw:py-16 tw:px-4 tw:text-center"
+              class="tw:py-20 tw:px-4 tw:rounded-2xl tw:bg-gradient-to-b tw:from-white tw:to-gray-50/80 tw:border tw:border-gray-100 tw:shadow-sm tw:text-center"
             >
-              <Users
-                class="tw:w-12 tw:h-12 tw:mx-auto tw:text-gray-300"
-              />
-              <p class="tw:mt-4 tw:text-gray-600 tw:font-medium">
-                No invites yet across your account.
+              <div
+                class="tw:mx-auto tw:w-16 tw:h-16 tw:rounded-2xl tw:bg-gray-100 tw:flex tw:items-center tw:justify-center tw:mb-4"
+              >
+                <Users class="tw:w-7 tw:h-7 tw:text-gray-400" />
+              </div>
+              <p class="tw:text-lg tw:font-semibold tw:text-gray-800">
+                No invites yet
+              </p>
+              <p class="tw:mt-1 tw:text-sm tw:text-gray-500 tw:max-w-sm tw:mx-auto">
+                You have not invited anyone across your events yet. Use Invite New
+                to add talents, venues, or organisers.
               </p>
             </div>
 
-            <!-- Desktop table -->
-            <div v-else class="tw:hidden tw:md:block tw:overflow-x-auto">
-              <table class="tw:w-full tw:text-left tw:text-sm">
-                <thead
-                  class="tw:bg-gray-50 tw:text-xs tw:uppercase tw:text-gray-500"
-                >
-                  <tr>
-                    <th class="tw:px-4 tw:py-3">Invite</th>
-                    <th class="tw:px-4 tw:py-3">Type</th>
-                    <th class="tw:px-4 tw:py-3">Event</th>
-                    <!-- <th class="tw:px-4 tw:py-3 tw:text-right">Actions</th> -->
-                  </tr>
-                </thead>
-                <tbody class="tw:divide-y tw:divide-gray-100">
-                  <tr v-for="row in visibleInvites" :key="String(row.id)">
-                    <td class="tw:px-4 tw:py-3">
-                      <div class="tw:flex tw:items-center tw:gap-3">
-                        <div
-                          class="tw:w-10 tw:h-10 tw:rounded-full tw:overflow-hidden tw:bg-gray-100 tw:flex-shrink-0 tw:border tw:border-gray-200"
-                        >
-                          <img
-                            v-if="row.imageUrl"
-                            :src="row.imageUrl"
-                            alt=""
-                            class="tw:w-full tw:h-full tw:object-cover"
-                          />
-                          <div
-                            v-else
-                            class="tw:w-full tw:h-full tw:flex tw:items-center tw:justify-center tw:text-gray-400 tw:text-xs"
-                          >
-                            ?
-                          </div>
-                        </div>
-                        <span class="tw:font-medium tw:text-gray-900">{{
-                          row.name
-                        }}</span>
-                      </div>
-                    </td>
-                    <td class="tw:px-4 tw:py-3">
-                      <span
-                        :class="badgeClass(row.inviteType)"
-                        class="tw:inline-flex tw:items-center tw:px-2.5 tw:py-0.5 tw:rounded-full tw:text-xs tw:font-medium"
-                      >
-                        {{ typeLabel(row.inviteType) }}
-                      </span>
-                    </td>
-                    <td class="tw:px-4 tw:py-3">
-                      <span
-                        class="tw:inline-flex tw:items-center tw:px-2.5 tw:py-0.5 tw:rounded-md tw:text-xs tw:font-medium tw:bg-[#EEF2FF] tw:text-indigo-800"
-                      >
-                        {{ row.eventTitle }}
-                      </span>
-                    </td>
-                    <!-- <td
-                      class="tw:px-4 tw:py-3 tw:text-right tw:whitespace-nowrap"
-                    >
-                      <a
-                        v-if="row.viewProfileUrl"
-                        :href="row.viewProfileUrl"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="tw:text-sm tw:font-medium tw:text-[#0061FF] hover:tw:underline tw:mr-3"
-                        >View Profile</a
-                      >
-                      <span
-                        v-else
-                        class="tw:text-sm tw:text-gray-400 tw:mr-3 tw:cursor-not-allowed"
-                        >View Profile</span
-                      >
-                      <button
-                        type="button"
-                        class="tw:text-sm tw:font-medium tw:text-red-600 hover:tw:text-red-700 disabled:tw:opacity-50"
-                        :disabled="removingId === row.id"
-                        @click="removeInvite(row)"
-                      >
-                        {{
-                          removingId === row.id ? "Removing…" : "Remove Invite"
-                        }}
-                      </button>
-                    </td> -->
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Mobile cards -->
-            <div class="tw:md:hidden tw:divide-y tw:divide-gray-100">
-              <div
-                v-for="row in visibleInvites"
-                :key="`m-${row.id}`"
-                class="tw:p-4 tw:space-y-3"
+            <div
+              v-else
+              class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:xl:grid-cols-3 tw:gap-4"
+            >
+              <article
+                v-for="{ row, link } in displayRows"
+                :key="String(row.id)"
+                class="tw:group tw:relative tw:flex tw:flex-col tw:rounded-2xl tw:border tw:border-gray-100/90 tw:bg-white tw:shadow-sm tw:overflow-hidden tw:transition-all tw:duration-200 hover:tw:shadow-lg hover:tw:shadow-blue-500/5 hover:tw:-translate-y-0.5 hover:tw:border-blue-200/60"
               >
-                <div class="tw:flex tw:items-start tw:gap-3">
-                  <div
-                    class="tw:w-12 tw:h-12 tw:rounded-full tw:overflow-hidden tw:bg-gray-100 tw:flex-shrink-0 tw:border tw:border-gray-200"
-                  >
-                    <img
-                      v-if="row.imageUrl"
-                      :src="row.imageUrl"
-                      alt=""
-                      class="tw:w-full tw:h-full tw:object-cover"
-                    />
+                <div
+                  class="tw:h-1.5 tw:bg-gradient-to-r"
+                  :class="gradientClass(row.inviteType)"
+                />
+                <div class="tw:p-5 tw:flex-1 tw:flex tw:flex-col tw:gap-4">
+                  <div class="tw:flex tw:items-start tw:gap-4">
                     <div
-                      v-else
-                      class="tw:w-full tw:h-full tw:flex tw:items-center tw:justify-center tw:text-gray-400"
+                      class="tw:relative tw:w-16 tw:h-16 tw:rounded-2xl tw:overflow-hidden tw:ring-2 tw:ring-white tw:shadow-md tw:bg-gradient-to-br tw:from-slate-100 tw:to-slate-50 tw:flex-shrink-0"
                     >
-                      ?
+                      <img
+                        v-if="row.imageUrl"
+                        :src="row.imageUrl"
+                        :alt="row.name"
+                        class="tw:w-full tw:h-full tw:object-cover"
+                        loading="lazy"
+                      />
+                      <div
+                        v-else
+                        class="tw:w-full tw:h-full tw:flex tw:items-center tw:justify-center tw:text-lg tw:font-bold tw:text-slate-500"
+                      >
+                        {{ initials(row.name) }}
+                      </div>
+                    </div>
+                    <div class="tw:flex-1 tw:min-w-0">
+                      <h3
+                        class="tw:text-base tw:font-bold tw:text-gray-900 tw:leading-tight tw:line-clamp-2"
+                      >
+                        {{ row.name }}
+                      </h3>
+                      <a
+                        v-if="row.email"
+                        :href="`mailto:${row.email}`"
+                        class="tw:mt-1.5 tw:inline-flex tw:items-center tw:gap-1.5 tw:text-xs tw:text-gray-500 hover:tw:text-[#0061FF] tw:transition-colors tw:max-w-full"
+                      >
+                        <Mail class="tw:w-3.5 tw:h-3.5 tw:flex-shrink-0" />
+                        <span class="tw:truncate">{{ row.email }}</span>
+                      </a>
+                      <p
+                        v-else
+                        class="tw:mt-1.5 tw:text-xs tw:text-gray-400"
+                      >
+                        No email on file
+                      </p>
                     </div>
                   </div>
-                  <div class="tw:flex-1 tw:min-w-0">
-                    <p class="tw:font-semibold tw:text-gray-900">
-                      {{ row.name }}
-                    </p>
-                    <div class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-2">
+
+                  <div class="tw:flex tw:flex-wrap tw:gap-2">
+                    <span
+                      :class="badgeClass(row.inviteType)"
+                      class="tw:inline-flex tw:items-center tw:gap-1 tw:pl-2 tw:pr-2.5 tw:py-1 tw:rounded-full tw:text-xs tw:font-semibold tw:ring-1 tw:ring-inset tw:ring-black/5"
+                    >
                       <span
-                        :class="badgeClass(row.inviteType)"
-                        class="tw:inline-flex tw:px-2 tw:py-0.5 tw:rounded-full tw:text-xs tw:font-medium"
-                        >{{ typeLabel(row.inviteType) }}</span
-                      >
-                      <span
-                        class="tw:inline-flex tw:px-2 tw:py-0.5 tw:rounded-md tw:text-xs tw:font-medium tw:bg-[#EEF2FF] tw:text-indigo-800"
-                        >{{ row.eventTitle }}</span
-                      >
-                    </div>
+                        class="tw:w-1.5 tw:h-1.5 tw:rounded-full tw:bg-current tw:opacity-60"
+                      />
+                      {{ typeLabel(row.inviteType) }}
+                    </span>
+                    <span
+                      class="tw:inline-flex tw:items-center tw:gap-1 tw:pl-2 tw:pr-2.5 tw:py-1 tw:rounded-lg tw:text-xs tw:font-medium tw:bg-indigo-50 tw:text-indigo-800 tw:ring-1 tw:ring-indigo-100"
+                      :title="row.eventTitle"
+                    >
+                      <Calendar class="tw:w-3.5 tw:h-3.5 tw:flex-shrink-0 tw:opacity-70" />
+                      <span class="tw:truncate tw:max-w-[200px]">{{
+                        row.eventTitle
+                      }}</span>
+                    </span>
                   </div>
                 </div>
-                <div class="tw:flex tw:flex-wrap tw:gap-2 tw:pt-1">
-                  <a
-                    v-if="row.viewProfileUrl"
-                    :href="row.viewProfileUrl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="tw:flex-1 tw:min-w-[120px] tw:text-center tw:px-3 tw:py-2 tw:rounded-lg tw:text-sm tw:font-medium tw:text-[#0061FF] tw:border tw:border-[#0061FF] hover:tw:bg-blue-50"
-                    >View Profile</a
-                  >
-                  <button
-                    v-else
-                    type="button"
-                    disabled
-                    class="tw:flex-1 tw:min-w-[120px] tw:px-3 tw:py-2 tw:rounded-lg tw:text-sm tw:font-medium tw:text-gray-400 tw:border tw:border-gray-200 tw:cursor-not-allowed"
-                  >
-                    View Profile
-                  </button>
-                  <button
-                    type="button"
-                    class="tw:flex-1 tw:min-w-[120px] tw:px-3 tw:py-2 tw:rounded-lg tw:text-sm tw:font-medium tw:text-white tw:bg-red-600 hover:tw:bg-red-700 disabled:tw:opacity-50"
-                    :disabled="removingId === row.id"
-                    @click="removeInvite(row)"
-                  >
-                    {{ removingId === row.id ? "Removing…" : "Remove Invite" }}
-                  </button>
-                </div>
-              </div>
+              </article>
             </div>
           </div>
         </div>
@@ -382,13 +324,22 @@ import {
   MessageSquareText,
   Images,
   SkipBackIcon,
+  Mail,
+  ExternalLink,
+  Trash2,
+  LayoutGrid,
+  Mic2,
+  Briefcase,
+  Building2,
 } from "lucide-vue-next"
+import type { RouteLocationRaw } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import { useChatStore } from "@/stores/chatStore"
 import {
   fetchAccountInvites,
   deleteAccountInvite,
   type AccountInviteRow,
+  type AccountInviteType,
 } from "@/services/accountInvitesService"
 import { useToast } from "@/composables/useToast"
 const route = useRoute()
@@ -458,11 +409,41 @@ const menuItems = computed(() => {
 const statCards = computed(() => {
   const s = summary.value
   return [
-    { key: "events", label: "Total Events", value: s.totalEvents },
-    { key: "talents", label: "Talents Invited", value: s.talentsInvited },
-    { key: "org", label: "Organisers Invited", value: s.organisersInvited },
-    { key: "venues", label: "Venues Invited", value: s.venuesInvited },
-    { key: "total", label: "Total Invites", value: s.totalInvites },
+    {
+      key: "events",
+      label: "Total Events",
+      value: s.totalEvents,
+      icon: LayoutGrid,
+      accentClass: "tw:from-violet-500 tw:to-fuchsia-500",
+    },
+    {
+      key: "talents",
+      label: "Talents Invited",
+      value: s.talentsInvited,
+      icon: Mic2,
+      accentClass: "tw:from-sky-500 tw:to-cyan-400",
+    },
+    {
+      key: "org",
+      label: "Organisers Invited",
+      value: s.organisersInvited,
+      icon: Briefcase,
+      accentClass: "tw:from-amber-500 tw:to-orange-400",
+    },
+    {
+      key: "venues",
+      label: "Venues Invited",
+      value: s.venuesInvited,
+      icon: Building2,
+      accentClass: "tw:from-emerald-500 tw:to-teal-400",
+    },
+    {
+      key: "total",
+      label: "Total Invites",
+      value: s.totalInvites,
+      icon: Users,
+      accentClass: "tw:from-[#0061FF] tw:to-blue-400",
+    },
   ]
 })
 
@@ -490,13 +471,24 @@ const visibleInvites = computed(() => {
   }
   const q = search.value.trim().toLowerCase()
   if (q) {
-    list = list.filter(
-      (i) =>
+    list = list.filter((i) => {
+      const email = (i.email || "").toLowerCase()
+      return (
         i.name.toLowerCase().includes(q) ||
-        (i.eventTitle && i.eventTitle.toLowerCase().includes(q)),
-    )
+        (i.eventTitle && i.eventTitle.toLowerCase().includes(q)) ||
+        email.includes(q) ||
+        (i.slug && i.slug.toLowerCase().includes(q))
+      )
+    })
   }
   return list
+})
+
+const displayRows = computed(() => {
+  return visibleInvites.value.map((row) => ({
+    row,
+    link: inviteProfileLink(row),
+  }))
 })
 
 function typeLabel(t: AccountInviteRow["inviteType"]): string {
@@ -509,6 +501,61 @@ function badgeClass(t: AccountInviteRow["inviteType"]): string {
   if (t === "venue") return "tw:bg-emerald-100 tw:text-emerald-800"
   if (t === "organiser") return "tw:bg-violet-100 tw:text-violet-800"
   return "tw:bg-sky-100 tw:text-sky-800"
+}
+
+function gradientClass(t: AccountInviteType): string {
+  if (t === "venue") return "tw:from-emerald-500 tw:via-teal-400 tw:to-cyan-300"
+  if (t === "organiser") return "tw:from-violet-500 tw:via-purple-500 tw:to-fuchsia-400"
+  return "tw:from-sky-500 tw:via-[#0061FF] tw:to-indigo-500"
+}
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return "?"
+  const first = parts[0]
+  if (parts.length === 1)
+    return (first ?? "?").slice(0, 2).toUpperCase()
+  const last = parts[parts.length - 1]
+  const a = first?.[0]
+  const b = last?.[0]
+  if (a && b) return (a + b).toUpperCase()
+  return (first ?? "?").slice(0, 2).toUpperCase()
+}
+
+/** Profile link: external URL, or in-app map with slug query (Home can hook later). */
+function profileTarget(
+  row: AccountInviteRow,
+):
+  | { external: true; href: string }
+  | { external: false; to: RouteLocationRaw }
+  | null {
+  const u = row.viewProfileUrl?.trim()
+  if (u) {
+    if (/^https?:\/\//i.test(u)) return { external: true, href: u }
+    if (u.startsWith("/")) return { external: false, to: u }
+  }
+  if (row.slug) {
+    return {
+      external: false,
+      to: {
+        path: "/",
+        query: { profileSlug: row.slug, profileType: row.inviteType },
+      },
+    }
+  }
+  return null
+}
+
+function inviteProfileLink(
+  row: AccountInviteRow,
+):
+  | { type: "external"; href: string }
+  | { type: "app"; to: RouteLocationRaw }
+  | null {
+  const p = profileTarget(row)
+  if (!p) return null
+  if (p.external) return { type: "external", href: p.href }
+  return { type: "app", to: p.to }
 }
 
 function toggleMobileSidebar() {
