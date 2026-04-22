@@ -227,7 +227,7 @@
               class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:xl:grid-cols-3 tw:gap-4"
             >
               <article
-                v-for="{ row, link } in displayRows"
+                v-for="row in visibleInvites"
                 :key="String(row.id)"
                 class="tw:group tw:relative tw:flex tw:flex-col tw:rounded-2xl tw:border tw:border-gray-100/90 tw:bg-white tw:shadow-sm tw:overflow-hidden tw:transition-all tw:duration-200 hover:tw:shadow-lg hover:tw:shadow-blue-500/5 hover:tw:-translate-y-0.5 hover:tw:border-blue-200/60"
               >
@@ -325,27 +325,21 @@ import {
   Images,
   SkipBackIcon,
   Mail,
-  ExternalLink,
-  Trash2,
   LayoutGrid,
   Mic2,
   Briefcase,
   Building2,
 } from "lucide-vue-next"
-import type { RouteLocationRaw } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import { useChatStore } from "@/stores/chatStore"
 import {
   fetchAccountInvites,
-  deleteAccountInvite,
   type AccountInviteRow,
   type AccountInviteType,
 } from "@/services/accountInvitesService"
-import { useToast } from "@/composables/useToast"
 const route = useRoute()
 const router = useRouter()
 const chatStore = useChatStore()
-const toast = useToast()
 
 const mobileSidebarOpen = ref(false)
 const invites = ref<AccountInviteRow[]>([])
@@ -361,7 +355,6 @@ const loadError = ref("")
 const filterType = ref<"all" | "talent" | "organiser" | "venue">("all")
 const search = ref("")
 const selectedEvent = ref("all")
-const removingId = ref<string | number | null>(null)
 
 const isPremium = computed(
   () => route.path.includes("create-event-premium") === true,
@@ -484,13 +477,6 @@ const visibleInvites = computed(() => {
   return list
 })
 
-const displayRows = computed(() => {
-  return visibleInvites.value.map((row) => ({
-    row,
-    link: inviteProfileLink(row),
-  }))
-})
-
 function typeLabel(t: AccountInviteRow["inviteType"]): string {
   if (t === "venue") return "Venue"
   if (t === "organiser") return "Organiser"
@@ -520,42 +506,6 @@ function initials(name: string): string {
   const b = last?.[0]
   if (a && b) return (a + b).toUpperCase()
   return (first ?? "?").slice(0, 2).toUpperCase()
-}
-
-/** Profile link: external URL, or in-app map with slug query (Home can hook later). */
-function profileTarget(
-  row: AccountInviteRow,
-):
-  | { external: true; href: string }
-  | { external: false; to: RouteLocationRaw }
-  | null {
-  const u = row.viewProfileUrl?.trim()
-  if (u) {
-    if (/^https?:\/\//i.test(u)) return { external: true, href: u }
-    if (u.startsWith("/")) return { external: false, to: u }
-  }
-  if (row.slug) {
-    return {
-      external: false,
-      to: {
-        path: "/",
-        query: { profileSlug: row.slug, profileType: row.inviteType },
-      },
-    }
-  }
-  return null
-}
-
-function inviteProfileLink(
-  row: AccountInviteRow,
-):
-  | { type: "external"; href: string }
-  | { type: "app"; to: RouteLocationRaw }
-  | null {
-  const p = profileTarget(row)
-  if (!p) return null
-  if (p.external) return { type: "external", href: p.href }
-  return { type: "app", to: p.to }
 }
 
 function toggleMobileSidebar() {
@@ -599,20 +549,6 @@ async function load() {
     summary.value = { ...res.summary }
   }
   loading.value = false
-}
-
-async function removeInvite(row: AccountInviteRow) {
-  if (!row.id) return
-  if (!window.confirm("Remove this invite?")) return
-  removingId.value = row.id
-  const r = await deleteAccountInvite(row.id)
-  removingId.value = null
-  if (r.success) {
-    toast.success("Invite removed")
-    await load()
-  } else {
-    toast.error(r.message || "Remove failed")
-  }
 }
 
 watch(
