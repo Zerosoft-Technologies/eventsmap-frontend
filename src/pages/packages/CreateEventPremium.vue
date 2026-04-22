@@ -1080,7 +1080,8 @@ import {
     MessageSquareText,
     Maximize2,
     X,
-    Images
+    Images,
+    UserPlus,
 } from "lucide-vue-next"
 
 import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch, reactive } from "vue"
@@ -1495,6 +1496,7 @@ const menuItems = [
     { id: "analytics", icon: BarChart3, route: "/create-event-premium/report", label: "Analytics" },
     { id: 'gallery', label: 'Gallery', icon: Images, route: `/create-event-premium/gallery-images` },
     { id: "settings", icon: Settings, route: "/create-event-premium/settings", label: "Settings" },
+    { id: "invites", icon: UserPlus, label: "Invites", route: "/create-event-premium/invites" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
     { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },

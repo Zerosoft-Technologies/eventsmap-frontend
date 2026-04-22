@@ -125,7 +125,8 @@ import {
   BarChart3, 
   MessageSquareText, 
   Settings,
-  Images 
+  Images,
+  UserPlus,
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -204,12 +205,26 @@ const menuItems = computed(() => {
     ]
   }
   
+  const isEventOwnerRoute =
+    route.path.includes('create-event-free') ||
+    route.path.includes('create-event-premium')
+
   return [
     { id: 'home', label: 'Home', icon: Home, route: `/${baseRoute}` },
     { id: 'details', label: 'Details', icon: Calendar, route: `/${baseRoute}` },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, route: `/${baseRoute}/report` },
     { id: 'gallery', label: 'Gallery', icon: Images, route: `/${baseRoute}/gallery-images` },
     { id: 'settings', label: 'Settings', icon: Settings, route: `/${baseRoute}/settings` },
+    ...(isEventOwnerRoute
+      ? [
+          {
+            id: 'invites',
+            label: 'Invites',
+            icon: UserPlus,
+            route: `/${baseRoute}/invites`,
+          },
+        ]
+      : []),
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'chatbox', label: 'chatbox', icon: MessageSquareText },
   ]

@@ -16,6 +16,7 @@ import CreateProfile from '../pages/CreateProfile.vue'
 import CreateEventFree from '../pages/packages/CreateEventFree.vue'
 import EventReport from '../pages/packages/events-navlinks/EventReport.vue'
 import EventSettings from '../pages/packages/events-navlinks/EventSettings.vue'
+import AccountInvitesPage from '../pages/packages/AccountInvitesPage.vue'
 import CreateEventPremium from '../pages/packages/CreateEventPremium.vue'
 import EventPremiumReport from '../pages/packages/events-navlinks/EventPremiumReport.vue'
 import EventPremiumSettings from '../pages/packages/events-navlinks/EventPremiumSettings.vue'
@@ -81,11 +82,13 @@ const routes: RouteRecordRaw[] = [
   { path: '/create-event-free', name: 'CreateEventFree', component: CreateEventFree, meta: { requiresAuth: true } },
   { path: '/create-event-free/report', name: 'EventReport', component: EventReport, meta: { requiresAuth: true } },
   { path: '/create-event-free/settings', name: 'EventSettings', component: EventSettings, meta: { requiresAuth: true } },
+  { path: '/create-event-free/invites', name: 'AccountInvitesFree', component: AccountInvitesPage, meta: { requiresAuth: true } },
 
   { path: '/create-event-premium', name: 'CreateEventPremium', component: CreateEventPremium, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-event-premium/report', name: 'EventPremiumReport', component: EventPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-event-premium/settings', name: 'EventPremiumSettings', component: EventPremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-event-premium/gallery-images', name: 'EventPremiumGallery', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-event-premium/invites', name: 'AccountInvitesPremium', component: AccountInvitesPage, meta: { requiresAuth: true, requiresPremium: true } },
 
   { path: '/create-organiser-free', name: 'CreateEventOrganiserFree', component: CreateEventOrganiserFree, meta: { requiresAuth: true } },
   { path: '/create-organiser-free/report', name: 'EventOrganiserReport', component: EventOrganiserReport, meta: { requiresAuth: true } },

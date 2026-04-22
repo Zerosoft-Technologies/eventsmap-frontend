@@ -73,7 +73,7 @@
 <script setup>
 import { ref } from "vue"
 import { useRouter } from "vue-router"
-import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
+import { Home, FileText, BarChart3, Settings, Calendar, UserPlus } from "lucide-vue-next"
 import EventSidebar from "../eventsidebar/Eventsidebar.vue"
 
 const router = useRouter()
@@ -105,6 +105,7 @@ const menuItems = [
   { id: "details", icon: FileText, label: "Details", route: "/create-event-free" },
   { id: "analytics", icon: BarChart3, route: "/create-event-free/report", label: "Analytics" },
   { id: "settings", icon: Settings, route: "/create-event-free/settings", label: "Settings" },
+  { id: "invites", icon: UserPlus, label: "Invites", route: "/create-event-free/invites" },
   { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
 

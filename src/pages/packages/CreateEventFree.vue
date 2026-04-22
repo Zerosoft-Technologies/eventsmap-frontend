@@ -341,8 +341,7 @@
           </h3>
 
           <div class="tw:space-y-4">
-            <!-- Row: Event Start -->
-            <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-4">
+            <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-3 tw:gap-4">
               <div class="tw:space-y-2">
                 <label class="tw:block tw:text-sm tw:text-gray-600">
                   Event Start Date <span class="tw:text-red-500">*</span>
@@ -351,7 +350,7 @@
                   <input ref="dateInput" v-model="eventDate" placeholder="YYYY-MM-DD" inputmode="numeric" :class="[
                     'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-base tw:md:text-[16px] tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
                     (errors.eventDate || startDateFormatError || fieldErrors.event_date) ? 'tw:border-red-500' : 'tw:border-gray-200'
-                  ]" @input="clearFieldError('eventDate'); startDateFormatError = ''" />
+                  ]" @input="onEventDateInput" />
                   <Calendar
                     class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
                 </div>
@@ -384,29 +383,10 @@
                     @input="onTimeInput('startMM', $event)" @blur="onTimeBlur('startMM')"
                     class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
                     :class="startMM ? 'tw:text-black' : 'tw:text-gray-500'" />
-                  <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                  <!-- <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" /> -->
                 </div>
                 <p v-if="hasStartError" class="tw:text-red-500 tw:text-sm">Start time is required</p>
                 <p class="tw:text-xs tw:text-gray-500">Format: HH:mm (24-hour). “00:00” represents midnight.</p>
-              </div>
-            </div>
-
-            <!-- Row: Event End -->
-            <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-4">
-              <div class="tw:space-y-2">
-                <label class="tw:block tw:text-sm tw:text-gray-600">
-                  Event End Date <span class="tw:text-red-500">*</span>
-                </label>
-                <div class="tw:relative">
-                  <input ref="endDateInput" v-model="endDate" placeholder="YYYY-MM-DD" inputmode="numeric" :class="[
-                    'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:pr-10 tw:text-base tw:md:text-[16px] tw:text-gray-700 tw:placeholder-[#666666] focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
-                    (hasEndDateError || endDateFormatError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'
-                  ]" @input="hasEndDateError = false; datetimeRangeError = ''; endDateFormatError = ''" />
-                  <Calendar
-                    class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
-                </div>
-                <p v-if="hasEndDateError" class="tw:text-red-500 tw:text-sm">End date is required</p>
-                <p v-else-if="endDateFormatError" class="tw:text-red-500 tw:text-sm">{{ endDateFormatError }}</p>
               </div>
 
               <div class="tw:space-y-2">
@@ -431,20 +411,11 @@
                     @input="onTimeInput('endMM', $event)" @blur="onTimeBlur('endMM')"
                     class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
                     :class="endMM ? 'tw:text-black' : 'tw:text-gray-500'" />
-                  <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" />
+                  <!-- <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" /> -->
                 </div>
                 <p v-if="hasEndError" class="tw:text-red-500 tw:text-sm">End time is required</p>
                 <p v-if="datetimeRangeError" class="tw:text-red-500 tw:text-sm">{{ datetimeRangeError }}</p>
-
-                <div v-if="showOvernightSuggestion" class="tw:mt-2 tw:flex tw:flex-wrap tw:items-center tw:gap-2">
-                  <p class="tw:text-xs tw:text-gray-600">
-                    End time is earlier than start time. Did you mean the end date to be the next day?
-                  </p>
-                  <button type="button" @click="applyOvernightSuggestion"
-                    class="tw:text-xs tw:font-medium tw:text-blue-600 hover:tw:text-blue-700 tw:underline">
-                    Set end date to next day
-                  </button>
-                </div>
+                <p class="tw:text-xs tw:text-gray-500">Format: HH:mm (24-hour).</p>
               </div>
             </div>
           </div>
@@ -525,7 +496,7 @@
                   <option value="">Select</option>
                   <option value="formal">Dress Code</option>
                   <option value="none">No Dress Code</option>
-                  <option value="required">Other, Please Specify</option>
+                  <!-- <option value="required">Other, Please Specify</option> -->
                 </select>
                 <ChevronDown class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
               </div>
@@ -671,6 +642,7 @@ import {
   Clock,
   Lock,
   Loader2,
+  UserPlus,
 } from "lucide-vue-next"
 
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue"
@@ -961,28 +933,31 @@ const startTimeInput = ref(null)
 const endTimeInput = ref(null)
 
 const dateInput = ref(null)
-const endDateInput = ref(null)
-// ── Time split refs ──────────────────────────────────────────────────
-const startHH = ref("")
-const startMM = ref("")
-const endHH = ref("")
-const endMM = ref("")
+// ── Time split refs (defaults: 00:00–23:00 same day) ─────────────────
+const startHH = ref("00")
+const startMM = ref("00")
+const endHH = ref("23")
+const endMM = ref("00")
 const startMMInput = ref(null)
 const endMMInput = ref(null)
 const datetimeRangeError = ref("")
 const hasStartError = ref(false)
 const hasEndError = ref(false)
-const hasEndDateError = ref(false)
 const startDateFormatError = ref("")
-const endDateFormatError = ref("")
-const showOvernightSuggestion = computed(() => {
-  if (!eventDate.value || !endDate.value || !startTime.value || !endTime.value) return false
-  if (eventDate.value !== endDate.value) return false
-  const s = parseTimeToMinutes(startTime.value)
-  const e = parseTimeToMinutes(endTime.value)
-  if (s == null || e == null) return false
-  return e < s
-})
+
+function syncEndDateToEventDate() {
+  if (eventDate.value) {
+    endDate.value = eventDate.value
+  } else {
+    endDate.value = ""
+  }
+}
+
+function onEventDateInput() {
+  clearFieldError("eventDate")
+  startDateFormatError.value = ""
+  syncEndDateToEventDate()
+}
 
 // Computed HH:MM strings for API
 const startTime = computed(() => {
@@ -1041,8 +1016,8 @@ function onTimeBlur(field) {
 function validateEndAfterStartDateTime() {
   datetimeRangeError.value = ""
   startDateFormatError.value = ""
-  endDateFormatError.value = ""
 
+  syncEndDateToEventDate()
   if (!eventDate.value || !endDate.value || !startTime.value || !endTime.value) return
 
   const startDt = buildDateTime(eventDate.value, startTime.value)
@@ -1052,24 +1027,12 @@ function validateEndAfterStartDateTime() {
     return
   }
   if (!endDt) {
-    endDateFormatError.value = "Use YYYY-MM-DD (e.g., 2026-03-18)"
     return
   }
 
   if (endDt.getTime() <= startDt.getTime()) {
     datetimeRangeError.value = "End date & time must be after start date & time"
   }
-}
-
-function applyOvernightSuggestion() {
-  if (!eventDate.value) return
-  const d = parseYmd(eventDate.value)
-  if (!d) return
-  d.setDate(d.getDate() + 1)
-  const pad2 = (n) => String(n).padStart(2, '0')
-  endDate.value = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
-  hasEndDateError.value = false
-  validateEndAfterStartDateTime()
 }
 
 // Enforce max 2 digits + valid range, then validate end > start (full datetime)
@@ -1114,7 +1077,7 @@ function onTimeInput(field, event) {
     if (field === "endHH") endMM.value = ""
   }
 
-  if (!endDate.value && eventDate.value) endDate.value = eventDate.value
+  syncEndDateToEventDate()
   validateEndAfterStartDateTime()
 }
 
@@ -1129,14 +1092,9 @@ function onTimeInput(field, event) {
 //   applyServerErrors: applyTimeServerErrors,
 // } = useTimeRangeValidation(startTime, endTime)
 
-watch([eventDate, endDate, startTime, endTime], () => {
+watch(eventDate, () => {
+  syncEndDateToEventDate()
   validatePastDate()
-  if (!endDate.value && eventDate.value) endDate.value = eventDate.value
-  const s = parseYmd(eventDate.value)
-  const e = parseYmd(endDate.value)
-  if (s && e && e.getTime() < s.getTime()) {
-    endDate.value = eventDate.value
-  }
   validateEndAfterStartDateTime()
 })
 
@@ -1179,6 +1137,7 @@ const menuItems = [
   { id: "details", icon: FileText, label: "Details", route: "/create-event-free" },
   { id: "analytics", icon: BarChart3, route: "/create-event-free/report", label: "Analytics" },
   { id: "settings", icon: Settings, route: "/create-event-free/settings", label: "Settings" },
+  { id: "invites", icon: UserPlus, label: "Invites", route: "/create-event-free/invites" },
   { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
 function handleMenuClick(item) {
@@ -1357,16 +1316,7 @@ onMounted(async () => {
     allowInput: false,
     onChange: (selectedDates, dateStr) => {
       eventDate.value = dateStr
-    }
-  })
-
-  flatpickr(endDateInput.value, {
-    dateFormat: "Y-m-d",
-    minDate: "today",
-    allowInput: false,
-    onChange: (selectedDates, dateStr) => {
       endDate.value = dateStr
-      hasEndDateError.value = false
       validateEndAfterStartDateTime()
     }
   })
@@ -1484,10 +1434,6 @@ async function scrollToFirstError() {
     scrollEl(startMMInput.value)
     return
   }
-  if (hasEndDateError.value) {
-    scrollEl(endDateInput.value)
-    return
-  }
   if (hasEndError.value || datetimeRangeError.value) {
     scrollEl(endMMInput.value)
     return
@@ -1529,7 +1475,7 @@ function validateForm() {
   errors.value.subcategories = selectedSubcategories.value.length === 0
   errors.value.eventDate = !eventDate.value
   errors.value.address = !selectedAddress.value
-  hasEndDateError.value = !endDate.value
+  syncEndDateToEventDate()
 
   // Set category/subcategory specific errors
   categoryError.value = !selectedCategory.value
@@ -1542,7 +1488,6 @@ function validateForm() {
   const timeValid =
     startTime.value !== "" &&
     endTime.value !== "" &&
-    endDate.value !== "" &&
     !datetimeRangeError.value
 
   // Overview validation
@@ -1555,7 +1500,7 @@ function validateForm() {
     subcategoryError.value ||
     pastDateError.value
 
-  return !hasOtherErrors && !hasEndDateError.value && timeValid
+  return !hasOtherErrors && timeValid
 }
 
 // Submit handler function
@@ -1589,10 +1534,10 @@ function resetForm() {
   eventTitle.value = ''
   eventDate.value = ''
   endDate.value = ''
-  startHH.value = ''
-  startMM.value = ''
-  endHH.value = ''
-  endMM.value = ''
+  startHH.value = '00'
+  startMM.value = '00'
+  endHH.value = '23'
+  endMM.value = '00'
   selectedAddress.value = ''
   searchAddress.value = ''
   selectedCategory.value = ''
@@ -1611,7 +1556,6 @@ function resetForm() {
   errors.value.entranceStatus = false
   hasStartError.value = false
   hasEndError.value = false
-  hasEndDateError.value = false
   datetimeRangeError.value = ''
   categoryError.value = false
   subcategoryError.value = false
@@ -1770,9 +1714,9 @@ async function fetchEventDetails(id) {
         }
       }
 
-      // Dates
+      // Dates (end date always matches start date for this form)
       eventDate.value = data.event_date || data.start_date || ''
-      endDate.value = data.end_date || ''
+      endDate.value = eventDate.value
 
       // Times
       if (data.start_time) {

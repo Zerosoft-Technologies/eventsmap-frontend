@@ -5,6 +5,7 @@ import {
   Settings,
   Calendar,
   SkipBackIcon,
+  UserPlus,
 } from "lucide-vue-next"
 
 // Menu configurations for all pages
@@ -15,6 +16,7 @@ export const menuConfigs = {
     { id: "details", icon: FileText, label: "Details", route: "/create-event-free" },
     { id: "analytics", icon: BarChart3, route: "/create-event-free/report", label: "Analytics" },
     { id: "settings", icon: Settings, route: "/create-event-free/settings", label: "Settings" },
+    { id: "invites", icon: UserPlus, label: "Invites", route: "/create-event-free/invites" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
   ],
 
@@ -24,6 +26,7 @@ export const menuConfigs = {
     { id: "details", icon: FileText, label: "Details", route: "/create-event-premium" },
     { id: "analytics", icon: BarChart3, route: "/create-event-premium/report", label: "Analytics" },
     { id: "settings", icon: Settings, route: "/create-event-premium/settings", label: "Settings" },
+    { id: "invites", icon: UserPlus, label: "Invites", route: "/create-event-premium/invites" },
     { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
   ],

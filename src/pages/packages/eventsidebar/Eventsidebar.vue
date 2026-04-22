@@ -281,6 +281,7 @@ function isActive(item) {
             !currentPath.includes('/report') && 
             !currentPath.includes('/settings') &&
             !currentPath.includes('/gallery-images') &&
+            !currentPath.includes('/invites') &&
             !currentPath.includes('/calendar'))
   }
   
@@ -292,6 +293,10 @@ function isActive(item) {
   // For analytics/settings/other routes with sub-paths
   if (item.id === 'analytics' || item.id === 'settings') {
     return currentPath === item.route || currentPath.startsWith(item.route + '/')
+  }
+
+  if (item.id === 'invites' && item.route) {
+    return currentPath === item.route
   }
   
   return false
