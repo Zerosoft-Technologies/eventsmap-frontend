@@ -1,5 +1,6 @@
 import type {
   Event,
+  EventAdditionalImage,
   InvitedEventProfile,
   InvitedVenueObject,
   PaginationMeta,
@@ -22,7 +23,9 @@ export interface EventV2Raw {
   image_path?: string
   cover_image?: string
   images?: string[]
-  
+  additional_images?: Array<{ id?: unknown; url?: string; caption?: string | null } | string>
+  social_media_urls?: Record<string, unknown>
+
   // Category - might be object or string
   category?: {
     id: number
@@ -140,6 +143,15 @@ export interface EventsV2Response {
       to?: number
     }
   }
+}
+
+function pickSocialMediaUrls(raw: unknown): Record<string, string> | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const out: Record<string, string> = {}
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof v === 'string' && v.trim()) out[k] = v.trim()
+  }
+  return Object.keys(out).length ? out : undefined
 }
 
 /**
@@ -289,6 +301,9 @@ export function mapEventV2ToUI(event: EventV2Raw): Event {
     // Images
     cover_image: getImageUrl(),
     images: event.images,
+    additional_images: Array.isArray(event.additional_images)
+      ? (event.additional_images as Array<EventAdditionalImage | string>)
+      : undefined,
     
     // Status flags
     is_published: event.is_published ?? true,
@@ -308,6 +323,7 @@ export function mapEventV2ToUI(event: EventV2Raw): Event {
     
     // Additional fields from API v2
     entrance_status: event.entrance_status,
+    social_media_urls: pickSocialMediaUrls(event.social_media_urls),
     venue: event.venue,
     organisers: (event.organisers || []) as Talent[],  // Cast to Talent[]
     talents: (event.talents || []) as Talent[],  // Cast to Talent[]

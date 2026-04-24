@@ -192,10 +192,15 @@
     "entryFee": "Entry Fee",
     "free": "Free",
     "ageLimit": "Age Limit",
+    "socials": {
+      "subtitle": "Connect with this event on social media.",
+      "openLink": "Open {platform} link in a new tab"
+    },
     "tabs": {
       "overview": "Overview",
       "about": "About",
       "dateLocation": "Date & Location",
+      "socials": "Socials",
       "talents": "Talents",
       "organisers": "Organisers",
       "venues": "Venues",

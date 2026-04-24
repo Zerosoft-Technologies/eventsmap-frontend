@@ -1,9 +1,44 @@
 <template>
   <div class="tw:bg-white tw:rounded-2xl tw:shadow-md tw:overflow-hidden tw:border tw:border-gray-100 hover:tw:shadow-lg tw:transition-all tw:duration-200">
 
-    <!-- ── Hero Image ── -->
+    <!-- ── Hero: cover only, or carousel when additional_images exist ── -->
     <div class="tw:relative tw:h-40 tw:overflow-hidden tw:rounded-t-2xl">
-      <img :src="event.cover_image" class="tw:w-full tw:h-full tw:object-cover" alt="" />
+      <div
+        class="tw:flex tw:h-full tw:transition-transform tw:duration-300 tw:ease-in-out"
+        :style="{ transform: `translateX(-${heroImageIndex * 100}%)` }"
+      >
+        <div
+          v-for="(src, idx) in heroImages"
+          :key="idx"
+          class="tw:h-full tw:w-full tw:flex-shrink-0"
+        >
+          <img :src="src" class="tw:h-full tw:w-full tw:object-cover" alt="" />
+        </div>
+      </div>
+      <button
+        v-if="heroImages.length > 1"
+        type="button"
+        class="tw:absolute tw:left-2 tw:top-1/2 tw:z-[3] tw:flex tw:h-7 tw:w-7 tw:-translate-y-1/2 tw:items-center tw:justify-center tw:rounded-full tw:bg-white/90 tw:shadow-md tw:backdrop-blur-sm tw:transition-colors hover:tw:bg-white"
+        :aria-label="t('eventDetails.previousImage')"
+        @click.stop="prevHeroImage"
+      >
+        <ChevronLeftIcon class="tw:h-3.5 tw:w-3.5 tw:text-gray-700" />
+      </button>
+      <button
+        v-if="heroImages.length > 1"
+        type="button"
+        class="tw:absolute tw:right-2 tw:top-1/2 tw:z-[3] tw:flex tw:h-7 tw:w-7 tw:-translate-y-1/2 tw:items-center tw:justify-center tw:rounded-full tw:bg-white/90 tw:shadow-md tw:backdrop-blur-sm tw:transition-colors hover:tw:bg-white"
+        :aria-label="t('eventDetails.nextImage')"
+        @click.stop="nextHeroImage"
+      >
+        <ChevronRightIcon class="tw:h-3.5 tw:w-3.5 tw:text-gray-700" />
+      </button>
+      <div
+        v-if="heroImages.length > 1"
+        class="tw:absolute tw:bottom-2 tw:right-2 tw:z-[3] tw:rounded-full tw:bg-black/60 tw:px-2 tw:py-0.5 tw:text-[10px] tw:font-medium tw:text-white tw:backdrop-blur-sm"
+      >
+        {{ heroImageIndex + 1 }} / {{ heroImages.length }}
+      </div>
       <!-- Light vignette (below countdown z-index) -->
       <div class="tw:pointer-events-none tw:absolute tw:inset-0 tw:z-[1] tw:bg-gradient-to-t tw:from-black/25 tw:to-transparent"></div>
 
@@ -213,11 +248,13 @@ onBeforeUnmount(() => clearInterval(interval))
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next'
 import router from '@/router'
 import DetailRow from './DetailedRow.vue'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useAuthStore } from '@/stores/auth'
 import { requestEventMapFocus } from '@/utils/mapEventFocus'
+import { buildEventGalleryImageUrls } from '@/utils/eventGalleryImages'
 
 const { t } = useI18n()
 const wishlistStore = useWishlistStore()
@@ -231,6 +268,30 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['viewEvent'])
+
+const heroImageIndex = ref(0)
+const heroImages = computed(() => {
+  const urls = buildEventGalleryImageUrls(props.event || {})
+  if (urls.length > 0) return urls
+  const dummyImage = new URL('../assets/dummy-event.png', import.meta.url).href
+  return [dummyImage]
+})
+
+function prevHeroImage() {
+  const n = heroImages.value.length
+  if (n <= 1) return
+  heroImageIndex.value = (heroImageIndex.value - 1 + n) % n
+}
+
+function nextHeroImage() {
+  const n = heroImages.value.length
+  if (n <= 1) return
+  heroImageIndex.value = (heroImageIndex.value + 1) % n
+}
+
+watch(heroImages, (urls) => {
+  if (heroImageIndex.value >= urls.length) heroImageIndex.value = 0
+})
 
 function getEventCoordinates(ev) {
     if (!ev) return null
@@ -436,6 +497,7 @@ onMounted(() => {
 watch(
     () => props.event?.id,
     () => {
+        heroImageIndex.value = 0
         startCountdownInterval()
     }
 )

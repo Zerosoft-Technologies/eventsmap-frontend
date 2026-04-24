@@ -221,6 +221,13 @@ export interface InvitedVenueObject {
   user_id?: number | null
 }
 
+/** Gallery item from API (event additional_images) */
+export interface EventAdditionalImage {
+  id?: number | string | null
+  url?: string | null
+  caption?: string | null
+}
+
 /**
  * Event entity from the API
  */
@@ -260,12 +267,16 @@ export interface Event {
   images?: string[]
   event_images?: EventImage[]
   cover_image?: string
+  /** Resolved image URLs for gallery (objects or plain strings from API) */
+  additional_images?: Array<EventAdditionalImage | string>
   video_url?: string
   talents?: Talent[]
   about?: EventAbout
   location_details?: EventLocationDetails
   booking?: EventBooking
   social_links?: EventSocialLinks
+  /** API v2: keyed social profile URLs (e.g. facebook, instagram, tiktok) */
+  social_media_urls?: Record<string, string>
   is_published: boolean
   is_live_now: boolean
   is_featured?: boolean

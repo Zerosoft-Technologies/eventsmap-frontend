@@ -335,6 +335,14 @@
             </div>
           </div>
 
+          <!-- Socials Tab -->
+          <div
+            v-else-if="activeTab === 'socials'"
+            class="tw:px-4 tw:py-4 tw:bg-gradient-to-b tw:from-[#FAFBFF] tw:to-white tw:min-h-[120px]"
+          >
+            <SocialsTab :links="socialMediaLinks" />
+          </div>
+
           <!-- About Tab -->
           <AboutTab v-else-if="activeTab === 'about'" :about="event?.about"
             :description="event?.about?.description || event?.description" />
@@ -386,9 +394,12 @@ import DateLocationTab from './DateLocationTab.vue'
 import VenueTab from './VenueTab.vue'
 import TalentsTab from './TalentsTab.vue'
 import CommunityTab from './CommunityTab.vue'
+import SocialsTab from './SocialsTab.vue'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import { buildEventGalleryImageUrls } from '@/utils/eventGalleryImages'
+import { parseSocialMediaUrlEntries } from '@/utils/socialMediaUrls'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -472,11 +483,20 @@ const showTalentsTab = computed(
     (props.event?.talents?.length ?? 0) > 0
 )
 
+const socialMediaLinks = computed(() =>
+  parseSocialMediaUrlEntries(props.event?.social_media_urls)
+)
+
+const showSocialsTab = computed(() => socialMediaLinks.value.length > 0)
+
 const tabs = computed(() => {
   const list = [
     { id: 'overview', labelKey: 'eventDetails.tabs.overview' },
     { id: 'dateLocation', labelKey: 'eventDetails.tabs.dateLocation' }
   ]
+  if (showSocialsTab.value) {
+    list.push({ id: 'socials', labelKey: 'eventDetails.tabs.socials' })
+  }
   if (showTalentsTab.value) {
     list.push({ id: 'talents', labelKey: 'eventDetails.tabs.talents' })
   }
@@ -606,15 +626,17 @@ watch(() => props.event, () => {
   activeTab.value = 'overview'
 })
 
-// Computed: Get event images or fallback to dummy
+// Computed: cover only, or cover + additional_images as carousel slides
 const images = computed(() => {
-  return [props.event?.cover_image]
-  if (props.event?.images && props.event.images.length > 0) {
-    return props.event.images
+  const ev = props.event
+  if (!ev) {
+    const dummyImage = new URL('../assets/dummy-event.png', import.meta.url).href
+    return [dummyImage]
   }
-  // Fallback to dummy image - create multiple for demo
+  const urls = buildEventGalleryImageUrls(ev)
+  if (urls.length > 0) return urls
   const dummyImage = new URL('../assets/dummy-event.png', import.meta.url).href
-  return [dummyImage, dummyImage, dummyImage]
+  return [dummyImage]
 })
 
 // Computed: Current displayed image

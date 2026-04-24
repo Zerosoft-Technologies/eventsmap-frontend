@@ -147,10 +147,15 @@
     "entryFee": "Toegangsprijs",
     "free": "Gratis",
     "ageLimit": "Leeftijdslimiet",
+    "socials": {
+      "subtitle": "Volg dit evenement op social media.",
+      "openLink": "{platform}-link openen in een nieuw tabblad"
+    },
     "tabs": {
       "overview": "Overzicht",
       "about": "Over",
       "dateLocation": "Datum & Locatie",
+      "socials": "Socials",
       "talents": "Talenten",
       "organisers": "Organisatoren",
       "venues": "Locaties",

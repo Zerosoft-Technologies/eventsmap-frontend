@@ -147,10 +147,15 @@
     "entryFee": "Frais d'Entrée",
     "free": "Gratuit",
     "ageLimit": "Limite d'Âge",
+    "socials": {
+      "subtitle": "Suivez cet événement sur les réseaux sociaux.",
+      "openLink": "Ouvrir le lien {platform} dans un nouvel onglet"
+    },
     "tabs": {
       "overview": "Aperçu",
       "about": "À propos",
       "dateLocation": "Date & Lieu",
+      "socials": "Réseaux",
       "talents": "Talents",
       "organisers": "Organisateurs",
       "venues": "Lieux",
