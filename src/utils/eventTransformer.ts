@@ -47,6 +47,9 @@ export interface UIEvent {
     phone?: string
     website?: string
   }
+  contact_phone?: string
+  contact_email?: string
+  contact_website?: string
   about?: any
   location_details?: any
   booking?: any
@@ -84,6 +87,24 @@ export interface UIEvent {
   
 //   return `${dayName} ${day} ${month}, ${formatTime(start)} - ${formatTime(end)}${tzString}`
 // }
+
+function mergeContactInfoFromApi(apiEvent: ApiEvent): ApiEvent['contact_info'] {
+  const ci = apiEvent.contact_info || {}
+  const phone = [apiEvent.contact_phone, ci.phone].find((x) => typeof x === 'string' && x.trim()) as
+    | string
+    | undefined
+  const email = [apiEvent.contact_email, ci.email].find((x) => typeof x === 'string' && x.trim()) as
+    | string
+    | undefined
+  const website = [apiEvent.contact_website, ci.website].find((x) => typeof x === 'string' && x.trim()) as
+    | string
+    | undefined
+  const out: NonNullable<ApiEvent['contact_info']> = {}
+  if (phone?.trim()) out.phone = phone.trim()
+  if (email?.trim()) out.email = email.trim()
+  if (website?.trim()) out.website = website.trim()
+  return Object.keys(out).length ? out : undefined
+}
 
 /**
  * Extract category name from category object or string
@@ -178,7 +199,10 @@ export function transformApiEventToUI(apiEvent: ApiEvent): UIEvent {
     distance_km: typeof apiEvent.distance_km === 'number' ? apiEvent.distance_km : parseFloat(apiEvent.distance_km || '0'),
     category_id: apiEvent.category_id,
     subcategory_id: apiEvent.subcategory_id,
-    contact_info: apiEvent.contact_info,
+    contact_info: mergeContactInfoFromApi(apiEvent),
+    contact_phone: apiEvent.contact_phone,
+    contact_email: apiEvent.contact_email,
+    contact_website: apiEvent.contact_website,
     about: apiEvent.about,
     location_details: apiEvent.location_details,
     booking: apiEvent.booking,

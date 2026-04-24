@@ -1,4 +1,5 @@
 import type {
+  ContactInfo,
   Event,
   EventAdditionalImage,
   InvitedEventProfile,
@@ -154,6 +155,46 @@ function pickSocialMediaUrls(raw: unknown): Record<string, string> | undefined {
   return Object.keys(out).length ? out : undefined
 }
 
+function pickStr(...vals: unknown[]): string | undefined {
+  for (const v of vals) {
+    if (typeof v === 'string' && v.trim()) return v.trim()
+  }
+  return undefined
+}
+
+function pickContactInfo(raw: unknown): ContactInfo | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const o = raw as Record<string, unknown>
+  const phone = pickStr(o.phone, o.telephone, o.contact_phone)
+  const email = pickStr(o.email, o.contact_email)
+  const website = pickStr(o.website, o.contact_website, o.event_website, o.url)
+  const out: ContactInfo = {}
+  if (phone) out.phone = phone
+  if (email) out.email = email
+  if (website) out.website = website
+  return Object.keys(out).length ? out : undefined
+}
+
+function buildContactInfoFromEvent(event: EventV2Raw): ContactInfo | undefined {
+  const nested = pickContactInfo(event.contact_info)
+  const e = event as Record<string, unknown>
+  // Root-level contact_* from API takes precedence; nested contact_info fills gaps
+  const phone = pickStr(e.contact_phone, nested?.phone, e.phone, e.telephone)
+  const email = pickStr(e.contact_email, nested?.email, e.email)
+  const website = pickStr(
+    e.contact_website,
+    nested?.website,
+    e.website,
+    e.event_website,
+    e.external_url
+  )
+  const out: ContactInfo = {}
+  if (phone) out.phone = phone
+  if (email) out.email = email
+  if (website) out.website = website
+  return Object.keys(out).length ? out : undefined
+}
+
 /**
  * Map a single event from API v2 format to UI format
  * Handles field name variations and ensures proper types
@@ -297,7 +338,10 @@ export function mapEventV2ToUI(event: EventV2Raw): Event {
     // Organizer
     organizer_name: event.organizer_name,
     organizer_id: event.organizer_id,
-    
+    contact_phone: pickStr((event as Record<string, unknown>).contact_phone),
+    contact_email: pickStr((event as Record<string, unknown>).contact_email),
+    contact_website: pickStr((event as Record<string, unknown>).contact_website),
+
     // Images
     cover_image: getImageUrl(),
     images: event.images,
@@ -324,6 +368,7 @@ export function mapEventV2ToUI(event: EventV2Raw): Event {
     // Additional fields from API v2
     entrance_status: event.entrance_status,
     social_media_urls: pickSocialMediaUrls(event.social_media_urls),
+    contact_info: buildContactInfoFromEvent(event),
     venue: event.venue,
     organisers: (event.organisers || []) as Talent[],  // Cast to Talent[]
     talents: (event.talents || []) as Talent[],  // Cast to Talent[]

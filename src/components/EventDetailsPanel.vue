@@ -375,6 +375,14 @@
             <SocialsTab :links="socialMediaLinks" />
           </div>
 
+          <!-- Contact Tab -->
+          <div
+            v-else-if="activeTab === 'contact'"
+            class="tw:px-4 tw:py-4 tw:bg-gradient-to-b tw:from-[#FAFBFF] tw:to-white tw:min-h-[120px]"
+          >
+            <ContactTab :event="event" />
+          </div>
+
           <!-- About Tab -->
           <AboutTab v-else-if="activeTab === 'about'" :about="event?.about"
             :description="event?.about?.description || event?.description" />
@@ -427,6 +435,7 @@ import VenueTab from './VenueTab.vue'
 import TalentsTab from './TalentsTab.vue'
 import CommunityTab from './CommunityTab.vue'
 import SocialsTab from './SocialsTab.vue'
+import ContactTab from './ContactTab.vue'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -617,6 +626,7 @@ const tabs = computed(() => {
           : 'eventDetails.tabs.venue'
     })
   }
+  list.push({ id: 'contact', labelKey: 'eventDetails.tabs.contact' })
   return list
 })
 

@@ -263,6 +263,10 @@ export interface Event {
   address: string | null
   organizer_name?: string
   organizer_id?: number | null
+  /** Backend may send these at the root; UI merges them into contact display */
+  contact_phone?: string
+  contact_email?: string
+  contact_website?: string
   contact_info?: ContactInfo
   images?: string[]
   event_images?: EventImage[]
