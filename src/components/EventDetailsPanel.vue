@@ -138,16 +138,48 @@
         </button>
       </div> -->
 
-      <!-- Tabs Navigation -->
-      <div class="tw:px-3 tw:pb-0 tw:bg-[#FAFBFF] tw:sticky tw:top-0 tw:z-10 tw:flex-shrink-0">
-        <div class="tw:flex tw:overflow-x-auto tw:scrollbar-hide">
-          <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
-            'tw:px-3 tw:py-3 tw:text-sm tw:font-medium tw:whitespace-nowrap tw:relative tw:border-b-2 tw:flex-shrink-0 tw:transition-colors tw:duration-200',
-            activeTab === tab.id
-              ? 'tw:text-[#FF7700] tw:border-[#FF7700]'
-              : 'tw:text-gray-500 tw:border-transparent hover:tw:text-gray-700'
-          ]">
-            {{ $t(tab.labelKey) }}
+      <!-- Tabs Navigation (scroll + arrows when overflow) -->
+      <div class="tw:px-2 tw:pb-0 tw:bg-[#FAFBFF] tw:sticky tw:top-0 tw:z-10 tw:flex-shrink-0">
+        <div class="tw:flex tw:items-center tw:gap-1">
+          <button
+            v-show="tabsOverflow"
+            type="button"
+            class="tw:flex tw:h-9 tw:w-9 tw:flex-shrink-0 tw:items-center tw:justify-center tw:rounded-lg tw:border tw:border-gray-200 tw:bg-white tw:text-gray-700 tw:shadow-sm tw:transition-colors hover:tw:border-[#FF7700]/40 hover:tw:text-[#FF7700] disabled:tw:pointer-events-none disabled:tw:opacity-35"
+            :disabled="!canScrollTabsLeft"
+            :aria-label="$t('eventDetails.tabsScrollPrevious')"
+            @click="scrollTabsPrev"
+          >
+            <ChevronLeftIcon class="tw:h-4 tw:w-4" aria-hidden="true" />
+          </button>
+          <div
+            ref="tabsScrollEl"
+            class="tw:flex tw:min-w-0 tw:flex-1 tw:overflow-x-auto tw:scrollbar-hide"
+            @scroll.passive="updateTabsScrollArrows"
+          >
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              type="button"
+              @click="activeTab = tab.id"
+              :class="[
+                'tw:px-3 tw:py-3 tw:text-sm tw:font-medium tw:whitespace-nowrap tw:relative tw:border-b-2 tw:flex-shrink-0 tw:transition-colors tw:duration-200',
+                activeTab === tab.id
+                  ? 'tw:text-[#FF7700] tw:border-[#FF7700]'
+                  : 'tw:text-gray-500 tw:border-transparent hover:tw:text-gray-700'
+              ]"
+            >
+              {{ $t(tab.labelKey) }}
+            </button>
+          </div>
+          <button
+            v-show="tabsOverflow"
+            type="button"
+            class="tw:flex tw:h-9 tw:w-9 tw:flex-shrink-0 tw:items-center tw:justify-center tw:rounded-lg tw:border tw:border-gray-200 tw:bg-white tw:text-gray-700 tw:shadow-sm tw:transition-colors hover:tw:border-[#FF7700]/40 hover:tw:text-[#FF7700] disabled:tw:pointer-events-none disabled:tw:opacity-35"
+            :disabled="!canScrollTabsRight"
+            :aria-label="$t('eventDetails.tabsScrollNext')"
+            @click="scrollTabsNext"
+          >
+            <ChevronRightIcon class="tw:h-4 tw:w-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -226,7 +258,7 @@
                 type="button"
                 class="tw:inline-flex tw:items-center tw:justify-center tw:gap-2 tw:px-5 tw:py-2.5 tw:bg-white tw:border-2 tw:border-[#FF7700] tw:rounded-lg tw:text-[#1a73e8] tw:font-medium tw:transition-colors hover:tw:bg-[#FFFAF5] focus:tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[#FF7700]/40"
               >
-                <ThumbsUp class="tw:w-5 tw:h-5 tw:flex-shrink-0" :stroke-width="2" aria-hidden="true" />
+                <ThumbsUpIcon class="tw:w-5 tw:h-5 tw:flex-shrink-0" :stroke-width="2" aria-hidden="true" />
                 Like
               </button>
             </div>
@@ -371,7 +403,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   XIcon,
@@ -387,7 +419,7 @@ import {
   CalendarIcon,
   LinkIcon,
   UserIcon,
-  ThumbsUp
+  ThumbsUpIcon
 } from 'lucide-vue-next'
 import AboutTab from './AboutTab.vue'
 import DateLocationTab from './DateLocationTab.vue'
@@ -459,6 +491,79 @@ async function handleWishlistToggle() {
 // State
 const currentImageIndex = ref(0)
 const activeTab = ref('overview')
+
+/** Horizontal tab strip scroll (many tabs on narrow panel) */
+const tabsScrollEl = ref(null)
+const tabsOverflow = ref(false)
+const canScrollTabsLeft = ref(false)
+const canScrollTabsRight = ref(false)
+
+function updateTabsScrollArrows() {
+  const el = tabsScrollEl.value
+  if (!el) {
+    tabsOverflow.value = false
+    canScrollTabsLeft.value = false
+    canScrollTabsRight.value = false
+    return
+  }
+  const { scrollLeft, scrollWidth, clientWidth } = el
+  const overflow = scrollWidth > clientWidth + 2
+  tabsOverflow.value = overflow
+  if (!overflow) {
+    canScrollTabsLeft.value = false
+    canScrollTabsRight.value = false
+    return
+  }
+  canScrollTabsLeft.value = scrollLeft > 2
+  canScrollTabsRight.value = scrollLeft + clientWidth < scrollWidth - 2
+}
+
+function scrollTabsPrev() {
+  const el = tabsScrollEl.value
+  if (!el) return
+  const step = Math.max(100, Math.floor(el.clientWidth * 0.65))
+  el.scrollBy({ left: -step, behavior: 'smooth' })
+  window.setTimeout(updateTabsScrollArrows, 320)
+}
+
+function scrollTabsNext() {
+  const el = tabsScrollEl.value
+  if (!el) return
+  const step = Math.max(100, Math.floor(el.clientWidth * 0.65))
+  el.scrollBy({ left: step, behavior: 'smooth' })
+  window.setTimeout(updateTabsScrollArrows, 320)
+}
+
+let tabsResizeObserver = null
+
+watch(
+  tabsScrollEl,
+  (el, prev) => {
+    if (typeof ResizeObserver === 'undefined') return
+    if (!tabsResizeObserver) {
+      tabsResizeObserver = new ResizeObserver(() => updateTabsScrollArrows())
+    }
+    if (prev) tabsResizeObserver.unobserve(prev)
+    if (el) tabsResizeObserver.observe(el)
+    nextTick(updateTabsScrollArrows)
+  },
+  { flush: 'post' }
+)
+
+onBeforeUnmount(() => {
+  tabsResizeObserver?.disconnect()
+  tabsResizeObserver = null
+})
+
+watch(
+  () => props.visible,
+  async (v) => {
+    if (!v) return
+    await nextTick()
+    updateTabsScrollArrows()
+    requestAnimationFrame(() => updateTabsScrollArrows())
+  }
+)
 
 function normalizeInvitedList(raw) {
   if (!raw) return []
@@ -570,8 +675,10 @@ function syncActiveTabWithTabs() {
   }
 }
 
-watch(tabs, () => {
+watch(tabs, async () => {
   syncActiveTabWithTabs()
+  await nextTick()
+  updateTabsScrollArrows()
 })
 
 const mockTalents = [

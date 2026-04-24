@@ -114,6 +114,8 @@
   },
   "eventDetails": {
     "untitled": "Naamloos Evenement",
+    "tabsScrollPrevious": "Tabs naar links scrollen",
+    "tabsScrollNext": "Tabs naar rechts scrollen",
     "previousImage": "Vorige afbeelding",
     "nextImage": "Volgende afbeelding",
     "image": "Afbeelding",

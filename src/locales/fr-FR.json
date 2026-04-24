@@ -114,6 +114,8 @@
   },
   "eventDetails": {
     "untitled": "Événement Sans Titre",
+    "tabsScrollPrevious": "Faire défiler les onglets vers la gauche",
+    "tabsScrollNext": "Faire défiler les onglets vers la droite",
     "previousImage": "Image précédente",
     "nextImage": "Image suivante",
     "image": "Image",

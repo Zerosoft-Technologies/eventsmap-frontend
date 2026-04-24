@@ -159,6 +159,8 @@
   },
   "eventDetails": {
     "untitled": "Untitled Event",
+    "tabsScrollPrevious": "Scroll tabs left",
+    "tabsScrollNext": "Scroll tabs right",
     "previousImage": "Previous image",
     "nextImage": "Next image",
     "image": "Image",

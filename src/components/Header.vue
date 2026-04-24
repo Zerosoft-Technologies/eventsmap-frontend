@@ -633,9 +633,9 @@ import { getCreateRoute } from '@/utils/routeResolver';
 import { Bell, Images, Loader2 } from 'lucide-vue-next';
 import { chatService } from '@/services/chatService';
 import { useMapStore } from '@/stores/mapStore'
+import EventDetailsPanel from './EventDetailsPanel.vue'
 
 const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
-const EventDetailsPanel = defineAsyncComponent(() => import('./EventDetailsPanel.vue'))
 
 const emit = defineEmits(['open-login', 'toggle-wishlist'])
 
