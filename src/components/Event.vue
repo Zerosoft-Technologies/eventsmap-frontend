@@ -1,5 +1,5 @@
 <template>
-  <div class="tw:bg-white tw:rounded-2xl tw:shadow-md tw:overflow-hidden tw:border tw:border-gray-100 hover:tw:shadow-lg tw:transition-all tw:duration-200">
+  <div class="tw:flex tw:flex-col tw:w-[350px] tw:bg-white tw:rounded-2xl tw:shadow-md tw:overflow-hidden tw:border tw:border-gray-100 hover:tw:shadow-lg tw:transition-all tw:duration-200">
 
     <!-- ── Hero: cover only, or carousel when additional_images exist ── -->
     <div class="tw:relative tw:h-40 tw:overflow-hidden tw:rounded-t-2xl">
@@ -84,13 +84,13 @@
     </div>
 
     <!-- ── Card Body ── -->
-    <div class="tw:p-3 tw:space-y-2">
+    <div class="tw:p-3 tw:flex tw:flex-col tw:flex-1 tw:space-y-2">
 
       <!-- Title | Wishlist heart | Date badge (same row) -->
       <div
         class="event-card-title-row tw:grid tw:grid-cols-[minmax(0,1fr)_auto_auto] tw:items-center tw:gap-2"
       >
-        <h4 class="tw:min-w-0 tw:text-base tw:font-semibold tw:text-[var(--primary-color)] tw:leading-snug tw:truncate">
+        <h4 class="tw:min-w-0 tw:text-base tw:font-semibold tw:text-[var(--primary-color)] tw:leading-snug tw:line-clamp-2">
           {{ event.title }}
         </h4>
         <button
@@ -128,7 +128,7 @@
       </div>
 
       <!-- Detail rows -->
-      <div class="tw:space-y-1.5">
+      <div class="tw:space-y-1.5 tw:flex-1">
 
         <!-- Date / Time -->
         <div class="tw:flex tw:items-start tw:gap-2">
@@ -144,7 +144,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
-          <span class="tw:text-sm tw:text-[var(--primary-color)] tw:underline tw:cursor-pointer tw:leading-snug" style="width: 290px;">{{ event.address }}</span>
+          <span class="tw:text-sm tw:text-[var(--primary-color)] tw:underline tw:cursor-pointer tw:leading-snug tw:line-clamp-2">{{ event.address }}</span>
         </div>
 
         <!-- Category + Price (2-col) -->
@@ -179,7 +179,7 @@
       </div>
 
       <!-- Action buttons -->
-      <div class="tw:flex tw:gap-2 tw:pt-2 tw:border-t tw:border-gray-100">
+      <div class="tw:flex tw:gap-2 tw:pt-2 tw:mt-auto tw:border-t tw:border-gray-100">
         <button
           type="button"
           :disabled="!hasMapCoordinates"
