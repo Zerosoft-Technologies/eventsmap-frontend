@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Presence (chatSidebar → setOnline / setOffline)
+    match /user_presence/{userId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    // ── Global DM: conversations/global_{min}_{max}
+    match /conversations/{conversationId} {
+      allow read: if request.auth != null
+        && resource.data.participants != null
+        && resource.data.participants.hasAny([int(request.auth.uid)]);
+
+      allow create: if request.auth != null
+        && request.resource.data.participants != null
+        && request.resource.data.participants.hasAny([int(request.auth.uid)]);
+
+      allow update: if request.auth != null
+        && resource.data.participants != null
+        && resource.data.participants.hasAny([int(request.auth.uid)]);
+
+      match /messages/{messageId} {
+        allow read: if request.auth != null
+          && get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants != null
+          && get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+              .hasAny([int(request.auth.uid)]);
+
+        allow create: if request.auth != null
+          && get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants != null
+          && get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+              .hasAny([int(request.auth.uid)])
+          && request.resource.data.sender_id == int(request.auth.uid);
+
+        allow update, delete: if request.auth != null
+          && get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants != null
+          && get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+              .hasAny([int(request.auth.uid)]);
+      }
+    }
+
+    // ── Invitation notifications (backend writes; client reads)
+    match /invitation_notifications/{docId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.receiver_id
+        || int(request.auth.uid) == resource.data.receiver_id
+      );
+      allow create, update, delete: if false;
+    }
+
+    // Everything else: implicit deny
+  }
+}
