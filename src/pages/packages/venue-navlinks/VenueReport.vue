@@ -74,6 +74,7 @@ import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
 import EventSidebar from "../eventsidebar/Eventsidebar.vue"
+import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 
 const router = useRouter()
 const mobileSidebarOpen = ref(false)
@@ -93,6 +94,7 @@ const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-venue-free" },
   { id: "details", icon: FileText, label: "Details", route: "/create-venue-free" },
   { id: "analytics", icon: BarChart3, route: "/create-venue-free/report", label: "Analytics" },
+  eventInvitationsNavItem("/create-venue-free"),
   { id: "settings", icon: Settings, route: "/create-venue-free/settings", label: "Settings" },
   // { id: "calendar", icon: Calendar, label: "Calendar" }" },
 ]

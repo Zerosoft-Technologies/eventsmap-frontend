@@ -168,6 +168,7 @@ function isActive(item) {
             !currentPath.includes('/report') && 
             !currentPath.includes('/settings') &&
             !currentPath.includes('/gallery-images') &&
+            !currentPath.includes('/event-invitations') &&
             !currentPath.includes('/calendar'))
   }
   
@@ -180,7 +181,11 @@ function isActive(item) {
   if (item.id === 'analytics' || item.id === 'settings') {
     return currentPath === item.route || currentPath.startsWith(item.route + '/')
   }
-  
+
+  if (item.id === 'event-invitations' && item.route) {
+    return currentPath === item.route
+  }
+
   return false
 }
 

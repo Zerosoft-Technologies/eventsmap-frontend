@@ -286,6 +286,7 @@
     import { useRouter } from "vue-router"
     import { Home, FileText, BarChart3, Settings, Calendar, MessageSquareText, Images } from "lucide-vue-next"
     import EventSidebar from '../eventsidebar/Eventsidebar.vue'
+    import { eventInvitationsNavItem } from '@/utils/eventInvitationsNavItem'
     import PlanManagement from '@/components/PlanManagement.vue';
     import { useAuthStore } from '@/stores/auth';
     import { useChatStore } from '@/stores/chatStore';
@@ -303,6 +304,7 @@
         { id: "details", icon: FileText, label: "Details", route: "/create-talents-premium" },
         { id: "analytics", icon: BarChart3, route: "/create-talents-premium/report", label: "Analytics" },
         { id: "gallery", icon: Images, route: "/create-talents-premium/gallery-images", label: "Gallery" },
+        eventInvitationsNavItem("/create-talents-premium"),
         { id: "settings", icon: Settings, route: "/create-talents-premium/settings", label: "Settings" },
         // { id: "calendar", icon: Calendar, label: "Calendar" }" },
         { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },

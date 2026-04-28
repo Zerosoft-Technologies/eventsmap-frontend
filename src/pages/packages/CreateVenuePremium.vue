@@ -130,6 +130,7 @@
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:text-gray-700">Description <span class="tw:text-red-500">*</span></label>
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Venue..."
+                            style="resize: vertical;"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                         <p v-if="fieldErrors.description" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.description[0] }}</p>
                     </div>
@@ -424,46 +425,81 @@
                         <!-- Trigger -->
                         <div @click="toggleDescriptionDropdown"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:flex tw:justify-between tw:items-center tw:cursor-pointer">
-                            <span class="tw:text-gray-700">
-                                {{ selectedDescriptionItems?.length ? `${selectedDescriptionItems.length} selected` : 'Select Description Items' }}
+                            <span class="tw:text-gray-700 tw:text-left tw:text-sm">
+                                {{ descriptionDropdownLabel }}
                             </span>
-                            <ChevronDown :class="['tw:w-5 tw:h-5 tw:text-gray-400 tw:transition-transform', showDescriptionDropdown ? 'tw:rotate-180' : '']" />
+                            <ChevronDown :class="['tw:w-5 tw:h-5 tw:text-gray-400 tw:shrink-0 tw:transition-transform', showDescriptionDropdown ? 'tw:rotate-180' : '']" />
                         </div>
 
-                        <!-- Dropdown Box -->
+                        <!-- Dropdown: venue features + description items -->
                         <div v-if="showDescriptionDropdown"
-                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50 tw:max-h-80 tw:overflow-hidden">
+                            class="tw:absolute tw:mt-2 tw:w-full tw:bg-[#F6F1E7] tw:p-2 tw:rounded-xl tw:shadow-md tw:z-50 tw:max-h-[min(70vh,28rem)] tw:flex tw:flex-col">
 
-                            <!-- Inner white container -->
-                            <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:flex tw:flex-col tw:max-h-80">
+                            <div class="tw:bg-white tw:rounded-lg tw:p-3 tw:flex tw:flex-col tw:min-h-0 tw:max-h-[min(68vh,26rem)]">
 
-                                <!-- Close Button -->
-                                <div class="tw:flex tw:justify-end tw:mb-3">
-                                    <button @click="showDescriptionDropdown = false"
+                                <div class="tw:flex tw:justify-end tw:mb-2 tw:shrink-0">
+                                    <button type="button" @click="showDescriptionDropdown = false"
                                         class="tw:flex tw:items-center tw:gap-1 tw:text-sm tw:text-gray-500 hover:tw:text-gray-800 tw:border tw:border-gray-200 tw:rounded-lg tw:px-3 tw:py-1 tw:transition">
                                         <X class="tw:w-4 tw:h-4" /> Close
                                     </button>
                                 </div>
 
-                                <div class="tw:space-y-2 tw:overflow-y-auto tw:pr-1 tw:flex-1">
-                                    <label v-for="item in descriptionItems" :key="item"
-                                        class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-3 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer">
-                                        <span class="tw:text-gray-700">{{ item }}</span>
-                                        <input type="checkbox" :value="item" v-model="selectedDescriptionItems"
-                                            class="tw:w-5 tw:h-5 tw:cursor-pointer" />
-                                    </label>
-                                </div>
+                                <div class="tw:overflow-y-auto tw:pr-1 tw:space-y-4 tw:flex-1 tw:min-h-0">
+                                    <div>
+                                        <p class="tw:text-[11px] tw:font-semibold tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Venue features</p>
+                                        <div class="tw:space-y-2">
+                                            <BinarySegmentedField
+                                                v-model="wheelchairAccessible"
+                                                compact
+                                                label="Wheelchair accessible"
+                                                :error="venueFeatureFieldsTouched && wheelchairAccessible === null"
+                                            />
+                                            <BinarySegmentedField
+                                                v-model="accessibleParkingClose"
+                                                compact
+                                                label="Accessible parking near entrance"
+                                                :error="venueFeatureFieldsTouched && accessibleParkingClose === null"
+                                            />
+                                            <BinarySegmentedField
+                                                v-model="valetParking"
+                                                compact
+                                                label="Valet parking"
+                                                :error="venueFeatureFieldsTouched && valetParking === null"
+                                            />
+                                            <BinarySegmentedField
+                                                v-model="childrensPlayArea"
+                                                compact
+                                                label="Children's play area"
+                                                :error="venueFeatureFieldsTouched && childrensPlayArea === null"
+                                            />
+                                        </div>
+                                    </div>
 
+                                    <div class="tw:border-t tw:border-gray-100 tw:pt-3">
+                                        <p class="tw:text-[11px] tw:font-semibold tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Description items</p>
+                                        <div class="tw:space-y-1.5">
+                                            <label v-for="item in descriptionItems" :key="item"
+                                                class="tw:flex tw:items-center tw:justify-between tw:px-3 tw:py-2 tw:rounded-lg tw:border tw:border-gray-200 tw:cursor-pointer hover:tw:bg-gray-50/80">
+                                                <span class="tw:text-sm tw:text-gray-700">{{ item }}</span>
+                                                <input type="checkbox" :value="item" v-model="selectedDescriptionItems"
+                                                    class="tw:w-4 tw:h-4 tw:cursor-pointer tw:rounded tw:border-gray-300" />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Selected Tags -->
-                    <div v-if="selectedDescriptionItems.length > 0" class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-2">
-                        <span v-for="item in selectedDescriptionItems" :key="item"
+                    <!-- Selected tags: description + venue features -->
+                    <div
+                        v-if="selectedDescriptionItems.length > 0 || venueFeatureChips.length > 0"
+                        class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-3"
+                    >
+                        <span v-for="item in selectedDescriptionItems" :key="`d-${item}`"
                             class="tw:inline-flex tw:items-center tw:gap-1 tw:bg-[#dbeafe] tw:text-[#1d4ed8] tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-[#bfdbfe]">
                             {{ item }}
-                            <button @click="selectedDescriptionItems = selectedDescriptionItems.filter(i => i !== item)"
+                            <button type="button" @click="selectedDescriptionItems = selectedDescriptionItems.filter(i => i !== item)"
                                 class="tw:ml-1 tw:text-[#1d4ed8] tw:opacity-60 hover:tw:opacity-100 tw:transition">
                                 <svg class="tw:w-3.5 tw:h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd"
@@ -472,7 +508,21 @@
                                 </svg>
                             </button>
                         </span>
+                        <span v-for="chip in venueFeatureChips" :key="`f-${chip.key}`"
+                            class="tw:inline-flex tw:items-center tw:gap-1 tw:bg-emerald-50 tw:text-emerald-900 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-emerald-200/80">
+                            {{ chip.label }}: {{ chip.yes ? 'Yes' : 'No' }}
+                            <button type="button" @click="clearVenueFeatureChip(chip.key)"
+                                class="tw:ml-0.5 tw:text-emerald-800 tw:opacity-60 hover:tw:opacity-100 tw:transition"
+                                aria-label="Remove">
+                                <svg class="tw:w-3.5 tw:h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </span>
                     </div>
+                    <p v-if="fieldErrors.venue_features?.length" class="tw:text-red-500 tw:text-sm tw:mt-2">{{ fieldErrors.venue_features[0] }}</p>
                 </div>
 
                 <!-- ACCESSIBILITY SECTION -->
@@ -486,6 +536,7 @@
                         <label class="tw:block tw:text-sm tw:text-gray-700">Accessibility description</label>
                         <textarea v-model="accessibilityDescription" rows="4"
                             placeholder="Describe accessibility details (directions, parking, public transport, taxis, wheelchair access, etc.)"
+                            style="resize: vertical;"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
                 </div>
@@ -510,102 +561,6 @@
                         <option value="small-dogs">small dogs only, except for assistance dogs</option>
                         <option value="no-dogs-assistance">no dogs allowed, except for assistance dogs</option>
                         <option value="no-dogs-included">no dogs allowed, assistance dogs included</option>
-                        </select>
-                        <ChevronDown
-                        class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
-                    </div>
-                </div>
-
-                <!-- WHEELCHAIR ACCESSIBLE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Wheelchair accessible
-                        </h3>
-                        <!-- <button
-                        class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                        <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-
-                    <div class="tw:relative">
-                        <select v-model="wheelchairAccessible"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                        <option value="">Select option</option>
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                        </select>
-                        <ChevronDown
-                        class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
-                    </div>
-                </div>
-
-                <!-- ACCESSIBLE PARKING SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Accessible parking close to entrance
-                        </h3>
-                        <!-- <button
-                        class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                        <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-
-                    <div class="tw:relative">
-                        <select v-model="accessibleParking"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                        <option value="">Select option</option>
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                        </select>
-                        <ChevronDown
-                        class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
-                    </div>
-                </div>
-
-                <!-- VALET PARKING SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Valet-Parking
-                        </h3>
-                        <!-- <button
-                        class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                        <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-
-                    <div class="tw:relative">
-                        <select v-model="valetParking"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                        <option value="">Select option</option>
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                        </select>
-                        <ChevronDown
-                        class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
-                    </div>
-                </div>
-
-                <!-- CHILDREN'S PLAY AREA SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Children's play area
-                        </h3>
-                        <!-- <button
-                        class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                        <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-
-                    <div class="tw:relative">
-                        <select v-model="childrensPlayArea"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                        <option value="">Select option</option>
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
                         </select>
                         <ChevronDown
                         class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
@@ -724,15 +679,10 @@
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
                 </div>
 
-                <!-- OPENING HOURS VENUE SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Opening Hours Venue</h3>
-                    <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:text-gray-700">Opening hours</label>
-                        <textarea v-model="openingHoursText" rows="4"
-                            placeholder="e.g. Mon–Thu 10:00–22:00, Fri–Sat 10:00–02:00, Sun 10:00–20:00"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
-                    </div>
+                <!-- OPENING HOURS -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-5 tw:space-y-3 tw:border tw:border-gray-100">
+                    <h3 class="tw:text-lg tw:md:text-xl tw:font-bold tw:text-gray-900">Opening hours</h3>
+                    <OpeningHoursEditor v-model="openingHoursSchedule" :error-message="fieldErrors.opening_hours?.[0] || ''" />
                 </div>
 
                 <!-- CONTACT BOX DESIGN SECTION -->
@@ -798,20 +748,20 @@
                 </div> -->
 
                                 <!-- EVENT VISIBILITY SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-6">
+                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-6">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Venue Visibility
-                    </h3>
+                    </h3> -->
 
                     <!-- Show Upcoming Events -->
-                    <div class="tw:flex tw:flex-col tw:gap-2">
+                    <!-- <div class="tw:flex tw:flex-col tw:gap-2">
                         <p class="tw:text-sm tw:font-medium tw:text-gray-900">
                             Show Upcoming Venue Events (max 1 year)
-                        </p>
+                        </p> -->
                         <!-- <p class="tw:text-xs tw:text-gray-500">
                             If YES, upcoming events within the next year will be visible.
                         </p> -->
-                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                        <!-- <div class="tw:flex tw:gap-4 tw:mt-1">
                             <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
                                 <input
                                     type="radio"
@@ -833,17 +783,17 @@
                                 <span class="tw:text-sm tw:text-gray-700">No</span>
                             </label>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Show Past Events -->
-                    <div class="tw:flex tw:flex-col tw:gap-2">
+                    <!-- <div class="tw:flex tw:flex-col tw:gap-2">
                         <p class="tw:text-sm tw:font-medium tw:text-gray-900">
                             Show Past Venue Events (max 1 year)
-                        </p>
+                        </p> -->
                         <!-- <p class="tw:text-xs tw:text-gray-500">
                             If YES, past events within the last year will be visible.
                         </p> -->
-                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                        <!-- <div class="tw:flex tw:gap-4 tw:mt-1">
                             <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
                                 <input
                                     type="radio"
@@ -866,7 +816,7 @@
                             </label>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- SAVE Venue BUTTON -->
                 <div class="tw:w-full tw:pt-4">
@@ -930,14 +880,23 @@ import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
+import BinarySegmentedField from "@/components/premium/BinarySegmentedField.vue"
+import OpeningHoursEditor from "@/components/premium/OpeningHoursEditor.vue"
 import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
+import {
+    createDefaultVenueOpeningHours,
+    parseVenueOpeningHoursFromApi,
+    serializeVenueOpeningHoursForApi,
+    validateVenueOpeningHours,
+} from "@/utils/venueOpeningHours"
 
 const router = useRouter()
 const route = useRoute()
@@ -990,13 +949,16 @@ const resolvedAdditionalImages = computed(() => {
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
-const childrensPlayArea = ref("")
+/** null = not chosen yet (validate on submit) */
+const childrensPlayArea = ref(null)
 const facebookUrl = ref("")
 const instagramUrl = ref("")
 const tiktokUrl = ref("")
 
 const showUpcomingEvents = ref("")
 const showPastEvents = ref("")
+
+const venueFeatureFieldsTouched = ref(false)
 
 // ── Form Validation ─────────────────────
 const formData = reactive({
@@ -1116,7 +1078,7 @@ function validateGenre() {
     return selectedCategory.value && selectedSubcategories.value.length > 0
 }
 
-const openingHoursText = ref('')
+const openingHoursSchedule = ref(createDefaultVenueOpeningHours())
 
 // Event Location refs
 const searchAddress = ref("")
@@ -1131,9 +1093,9 @@ const mapLng = ref(null)
 
 // Accessibility fields
 const allowanceOfDogs = ref("")
-const wheelchairAccessible = ref("")
-const accessibleParking = ref("")
-const valetParking = ref("")
+const wheelchairAccessible = ref(null)
+const accessibleParkingClose = ref(null)
+const valetParking = ref(null)
 
 // Description of Venue dropdown
 const showDescriptionDropdown = ref(false)
@@ -1167,6 +1129,40 @@ const descriptionItems = [
 const selectedDescriptionItems = ref([])
 const accessibilityDescription = ref("")
 
+const descriptionDropdownLabel = computed(() => {
+    const n = selectedDescriptionItems.value.length
+    const answered = [
+        wheelchairAccessible.value,
+        accessibleParkingClose.value,
+        valetParking.value,
+        childrensPlayArea.value,
+    ].filter((v) => v !== null).length
+    if (n === 0 && answered === 0) return 'Select description & venue features'
+    const parts = []
+    if (n > 0) parts.push(`${n} description item${n === 1 ? '' : 's'}`)
+    if (answered > 0) parts.push(`${answered}/4 features set`)
+    return parts.join(' · ')
+})
+
+const venueFeatureChips = computed(() => {
+    const rows = [
+        { key: 'wheelchair', label: 'Wheelchair', v: wheelchairAccessible.value },
+        { key: 'parking', label: 'Near parking', v: accessibleParkingClose.value },
+        { key: 'valet', label: 'Valet', v: valetParking.value },
+        { key: 'play', label: 'Kids area', v: childrensPlayArea.value },
+    ]
+    return rows
+        .filter((r) => r.v !== null)
+        .map((r) => ({ key: r.key, label: r.label, yes: r.v === true }))
+})
+
+function clearVenueFeatureChip(key) {
+    if (key === 'wheelchair') wheelchairAccessible.value = null
+    else if (key === 'parking') accessibleParkingClose.value = null
+    else if (key === 'valet') valetParking.value = null
+    else if (key === 'play') childrensPlayArea.value = null
+}
+
 function toggleDescriptionDropdown() {
     showDescriptionDropdown.value = !showDescriptionDropdown.value
 }
@@ -1180,6 +1176,7 @@ const menuItems = [
     { id: "details", icon: FileText, label: "Details", route: "/create-venue-premium" },
     { id: "analytics", icon: BarChart3, route: "/create-venue-premium/report", label: "Analytics" },
     { id: "gallery", icon: Images, route: "/create-venue-premium/gallery-images", label: "Gallery" },
+    eventInvitationsNavItem("/create-venue-premium"),
     { id: "settings", icon: Settings, route: "/create-venue-premium/settings", label: "Settings" },
     // { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
@@ -1325,7 +1322,7 @@ function isActive(item) {
     if (item.route) {
         return route.path === item.route
     }
-    return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
+    return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings') && !route.path.includes('/event-invitations') && !route.path.includes('/gallery-images')
 }
 
 function syncFormData() {
@@ -1366,10 +1363,12 @@ function buildVenuePayload() {
         latitude: mapLat.value,
         longitude: mapLng.value,
         allowance_of_dogs: allowanceOfDogs.value || undefined,
-        wheelchair_accessible: wheelchairAccessible.value || undefined,
-        accessible_parking: accessibleParking.value || undefined,
-        valet_parking: valetParking.value || undefined,
-        childrens_play_area: childrensPlayArea.value || undefined,
+        wheelchair_accessible:
+            wheelchairAccessible.value === null ? undefined : wheelchairAccessible.value,
+        accessible_parking_close_to_entrance:
+            accessibleParkingClose.value === null ? undefined : accessibleParkingClose.value,
+        valet_parking: valetParking.value === null ? undefined : valetParking.value,
+        childrens_play_area: childrensPlayArea.value === null ? undefined : childrensPlayArea.value,
         accessibility_description: accessibilityDescription.value || undefined,
         description_items: selectedDescriptionItems.value.length
             ? [...selectedDescriptionItems.value]
@@ -1377,7 +1376,7 @@ function buildVenuePayload() {
         contact_phone: contactPhone.value || undefined,
         contact_email: contactEmail.value || undefined,
         contact_website: contactWebsite.value || undefined,
-        opening_hours: openingHoursText.value || undefined,
+        opening_hours: serializeVenueOpeningHoursForApi(openingHoursSchedule.value),
         facebook_url: facebookUrl.value || undefined,
         instagram_url: instagramUrl.value || undefined,
         tiktok_url: tiktokUrl.value || undefined,
@@ -1471,11 +1470,12 @@ async function updateVenue() {
     }
 }
 
-function apiBoolToYesNo(v) {
-    if (v === true || v === 1 || v === '1' || String(v).toLowerCase() === 'true') return 'yes'
-    if (v === false || v === 0 || v === '0' || String(v).toLowerCase() === 'false') return 'no'
-    if (v === 'yes' || v === 'no') return v
-    return ''
+function apiBoolToNullableBool(v) {
+    if (v === true || v === 1 || v === '1' || String(v).toLowerCase() === 'true') return true
+    if (v === false || v === 0 || v === '0' || String(v).toLowerCase() === 'false') return false
+    if (v === 'yes') return true
+    if (v === 'no') return false
+    return null
 }
 
 function mapAllowDogsFromApi(venue) {
@@ -1555,12 +1555,15 @@ async function loadVenue(id) {
 
         fieldErrors.value = {}
 
-        // Accessibility / amenities — v2 JSON field names + form values
         allowanceOfDogs.value = mapAllowDogsFromApi(venue)
-        wheelchairAccessible.value = apiBoolToYesNo(venue.wheelchair_accessible)
-        accessibleParking.value = apiBoolToYesNo(venue.accessible_parking ?? venue.parking)
-        valetParking.value = apiBoolToYesNo(venue.valet_parking ?? venue.valet)
-        childrensPlayArea.value = apiBoolToYesNo(venue.childrens_play_area ?? venue.play_area)
+
+        // Accessibility / amenities — booleans + structured opening hours
+        wheelchairAccessible.value = apiBoolToNullableBool(venue.wheelchair_accessible)
+        accessibleParkingClose.value = apiBoolToNullableBool(
+            venue.accessible_parking_close_to_entrance ?? venue.accessible_parking ?? venue.parking
+        )
+        valetParking.value = apiBoolToNullableBool(venue.valet_parking ?? venue.valet)
+        childrensPlayArea.value = apiBoolToNullableBool(venue.childrens_play_area ?? venue.play_area)
         accessibilityDescription.value = venue.accessibility_description || ''
 
         // Description items
@@ -1576,17 +1579,7 @@ async function loadVenue(id) {
         instagramUrl.value = venue.instagram_url || ''
         tiktokUrl.value = venue.tiktok_url || ''
 
-        // Opening hours (API returns string[]; avoid JSON.stringify in the textarea)
-        if (Array.isArray(venue.opening_hours)) {
-            openingHoursText.value = venue.opening_hours
-                .map((line) => (line == null ? '' : String(line).trim()))
-                .filter(Boolean)
-                .join('\n')
-        } else if (typeof venue.opening_hours === 'object' && venue.opening_hours !== null) {
-            openingHoursText.value = JSON.stringify(venue.opening_hours)
-        } else {
-            openingHoursText.value = venue.opening_hours || ''
-        }
+        openingHoursSchedule.value = parseVenueOpeningHoursFromApi(venue.opening_hours)
 
         // Visibility
         showUpcomingEvents.value = venue.show_upcoming_events === '1' || venue.show_upcoming_events === true
@@ -1640,13 +1633,14 @@ function resetForm() {
     instagramUrl.value = ''
     tiktokUrl.value = ''
     allowanceOfDogs.value = ''
-    wheelchairAccessible.value = ''
-    accessibleParking.value = ''
-    valetParking.value = ''
-    childrensPlayArea.value = ''
+    wheelchairAccessible.value = null
+    accessibleParkingClose.value = null
+    valetParking.value = null
+    childrensPlayArea.value = null
     accessibilityDescription.value = ''
     selectedDescriptionItems.value = []
-    openingHoursText.value = ''
+    openingHoursSchedule.value = createDefaultVenueOpeningHours()
+    venueFeatureFieldsTouched.value = false
     showUpcomingEvents.value = false
     showPastEvents.value = false
     categoryError.value = false
@@ -1689,6 +1683,25 @@ async function handleSubmit() {
     } else {
         delete extraErrors.image_path
     }
+
+    const featureRefs = [wheelchairAccessible, accessibleParkingClose, valetParking, childrensPlayArea]
+    if (featureRefs.some((r) => r.value === null)) {
+        venueFeatureFieldsTouched.value = true
+        extraErrors.venue_features = ['Please choose Yes or No for each venue feature.']
+        hasExtraErrors = true
+    } else {
+        venueFeatureFieldsTouched.value = false
+        delete extraErrors.venue_features
+    }
+
+    const openingMsg = validateVenueOpeningHours(openingHoursSchedule.value)
+    if (openingMsg) {
+        extraErrors.opening_hours = [openingMsg]
+        hasExtraErrors = true
+    } else {
+        delete extraErrors.opening_hours
+    }
+
     fieldErrors.value = extraErrors
 
     if (!isValid || !genreValid || hasExtraErrors) {

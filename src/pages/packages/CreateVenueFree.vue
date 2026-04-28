@@ -622,6 +622,7 @@ import eventService from "@/services/eventService"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import { useMyVenueStore } from "@/stores/myVenueStore"
 import { storeToRefs } from "pinia"
 import maplibregl from "maplibre-gl"
@@ -790,6 +791,7 @@ const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-venue-free" },
   { id: "details", icon: FileText, label: "Details", route: "/create-venue-free" },
   { id: "analytics", icon: BarChart3, route: "/create-venue-free/report", label: "Analytics" },
+  eventInvitationsNavItem("/create-venue-free"),
   { id: "settings", icon: Settings, route: "/create-venue-free/settings", label: "Settings" },
   // { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
@@ -853,7 +855,7 @@ function isActive(item) {
   if (item.route) {
     return route.path === item.route
   }
-  return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
+  return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings') && !route.path.includes('/event-invitations')
 }
 
 // Sync category/subcategory selections into formData for validation

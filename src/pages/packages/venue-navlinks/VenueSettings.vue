@@ -283,6 +283,7 @@ import { ref, reactive } from 'vue';
 import { useRouter } from "vue-router"
 import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
 import EventSidebar from '../eventsidebar/Eventsidebar.vue'
+import { eventInvitationsNavItem } from '@/utils/eventInvitationsNavItem'
 import UserSettings from '@/components/UserSettings.vue'
 import PlanManagement from '@/components/PlanManagement.vue';
 import { useAuthStore } from '@/stores/auth';
@@ -312,6 +313,7 @@ const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-venue-free" },
   { id: "details", icon: FileText, label: "Details", route: "/create-venue-free" },
   { id: "analytics", icon: BarChart3, route: "/create-venue-free/report", label: "Analytics" },
+  eventInvitationsNavItem("/create-venue-free"),
   { id: "settings", icon: Settings, route: "/create-venue-free/settings", label: "Settings" },
   // { id: "calendar", icon: Calendar, label: "Calendar" }" },
 ]

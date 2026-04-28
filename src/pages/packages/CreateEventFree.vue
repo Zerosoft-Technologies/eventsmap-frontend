@@ -379,7 +379,7 @@
                     inputmode="numeric"
                     maxlength="2"
                     v-model="startMM"
-                    placeholder="00"
+                    placeholder="mm"
                     @input="onTimeInput('startMM', $event)" @blur="onTimeBlur('startMM')"
                     class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
                     :class="startMM ? 'tw:text-black' : 'tw:text-gray-500'" />
@@ -407,7 +407,7 @@
                     inputmode="numeric"
                     maxlength="2"
                     v-model="endMM"
-                    placeholder="00"
+                    placeholder="mm"
                     @input="onTimeInput('endMM', $event)" @blur="onTimeBlur('endMM')"
                     class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
                     :class="endMM ? 'tw:text-black' : 'tw:text-gray-500'" />
@@ -933,11 +933,11 @@ const startTimeInput = ref(null)
 const endTimeInput = ref(null)
 
 const dateInput = ref(null)
-// ── Time split refs (defaults: 00:00–23:00 same day) ─────────────────
-const startHH = ref("00")
-const startMM = ref("00")
-const endHH = ref("23")
-const endMM = ref("00")
+// ── Time split refs (no defaults—user fills HH:mm) ─────────────────
+const startHH = ref("")
+const startMM = ref("")
+const endHH = ref("")
+const endMM = ref("")
 const startMMInput = ref(null)
 const endMMInput = ref(null)
 const datetimeRangeError = ref("")
@@ -1052,30 +1052,6 @@ function onTimeInput(field, event) {
   if (field === "startMM") { startMM.value = nextVal; hasStartError.value = false }
   if (field === "endHH") { endHH.value = nextVal; hasEndError.value = false }
   if (field === "endMM") { endMM.value = nextVal; hasEndError.value = false }
-
-  // When HH reaches 2 digits, auto-fill minutes with "00" and move focus.
-  const hourJustCompleted = isHourField && raw.length === 2
-  const hourJustCleared = isHourField && raw.length === 0
-
-  if (hourJustCompleted) {
-    if (field === "startHH") {
-      startMM.value = "00"
-      nextTick(() => {
-        startMMInput.value?.focus?.()
-        startMMInput.value?.select?.()
-      })
-    }
-    if (field === "endHH") {
-      endMM.value = "00"
-      nextTick(() => {
-        endMMInput.value?.focus?.()
-        endMMInput.value?.select?.()
-      })
-    }
-  } else if (hourJustCleared) {
-    if (field === "startHH") startMM.value = ""
-    if (field === "endHH") endMM.value = ""
-  }
 
   syncEndDateToEventDate()
   validateEndAfterStartDateTime()

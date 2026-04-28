@@ -134,6 +134,8 @@ export interface TalentV2Payload {
   fan_club_url?: string
   nationality?: string
   show_nationality?: string
+  /** ISO date YYYY-MM-DD */
+  date_of_birth?: string
   age?: string | number
   show_age?: string
   languages?: string[] | string
@@ -143,6 +145,13 @@ export interface TalentV2Payload {
 }
 
 /** JSON body for POST /v2/venues and PUT /v2/venues/{id} — gallery `image_id` UUIDs (same as events_v2) */
+export interface VenueOpeningHoursDayPayload {
+  day: string
+  is_open: boolean
+  open: string
+  close: string
+}
+
 export interface VenueV2Payload {
   title: string
   description?: string
@@ -156,16 +165,16 @@ export interface VenueV2Payload {
   latitude?: number | null
   longitude?: number | null
   allowance_of_dogs?: string
-  wheelchair_accessible?: string
-  accessible_parking?: string
-  valet_parking?: string
-  childrens_play_area?: string
+  wheelchair_accessible?: boolean
+  accessible_parking_close_to_entrance?: boolean
+  valet_parking?: boolean
+  childrens_play_area?: boolean
   accessibility_description?: string
   description_items?: string[]
   contact_phone?: string
   contact_email?: string
   contact_website?: string
-  opening_hours?: string | string[] | Record<string, string>
+  opening_hours?: VenueOpeningHoursDayPayload[] | string | string[] | Record<string, string>
   facebook_url?: string
   instagram_url?: string
   tiktok_url?: string

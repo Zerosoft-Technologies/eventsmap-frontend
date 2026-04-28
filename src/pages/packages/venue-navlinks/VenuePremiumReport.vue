@@ -76,8 +76,11 @@ import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { Home, FileText, BarChart3, Settings, Calendar, MessageSquareText, Images } from "lucide-vue-next"
 import EventSidebar from "../eventsidebar/Eventsidebar.vue"
+import { useChatStore } from "@/stores/chatStore"
+import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 
 const router = useRouter()
+const chatStore = useChatStore()
 const mobileSidebarOpen = ref(false)
 function toggleMobileSidebar() { mobileSidebarOpen.value = !mobileSidebarOpen.value }
 function closeMobileSidebar() { mobileSidebarOpen.value = false }
@@ -96,6 +99,7 @@ const menuItems = [
   { id: "details", icon: FileText, label: "Details", route: "/create-venue-premium" },
   { id: "analytics", icon: BarChart3, route: "/create-venue-premium/report", label: "Analytics" },
   { id: "gallery", icon: Images, route: "/create-venue-premium/gallery-images", label: "Gallery" },
+  eventInvitationsNavItem("/create-venue-premium"),
   { id: "settings", icon: Settings, route: "/create-venue-premium/settings", label: "Settings" },
   // { id: "calendar", icon: Calendar, label: "Calendar" }" },
   { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },

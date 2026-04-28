@@ -127,6 +127,7 @@
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:text-gray-700">Description <span class="tw:text-red-500">*</span></label>
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Organiser..."
+                            style="resize: vertical;"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                         <p v-if="fieldErrors.description" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.description[0] }}</p>
                     </div>
@@ -404,7 +405,7 @@
                         <!-- Subcategory Multi-Select -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories <span class="tw:text-red-500">*</span>
+                                Subcategories (Max 6) <span class="tw:text-red-500">*</span>
                             </label>
 
                             <!-- Multi-Select Input Field -->
@@ -696,20 +697,20 @@
                 </div> -->
 
                                 <!-- EVENT VISIBILITY SECTION -->
-                <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-6">
+                <!-- <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-6">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Organiser Visibility
-                    </h3>
+                    </h3> -->
 
                     <!-- Show Upcoming Events -->
-                    <div class="tw:flex tw:flex-col tw:gap-2">
+                    <!-- <div class="tw:flex tw:flex-col tw:gap-2">
                         <p class="tw:text-sm tw:font-medium tw:text-gray-900">
                             Show Upcoming Organiser Events (max 1 year)
-                        </p>
+                        </p> -->
                         <!-- <p class="tw:text-xs tw:text-gray-500">
                             If YES, upcoming events within the next year will be visible.
                         </p> -->
-                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                        <!-- <div class="tw:flex tw:gap-4 tw:mt-1">
                             <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
                                 <input
                                     type="radio"
@@ -731,17 +732,17 @@
                                 <span class="tw:text-sm tw:text-gray-700">No</span>
                             </label>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Show Past Events -->
-                    <div class="tw:flex tw:flex-col tw:gap-2">
+                    <!-- <div class="tw:flex tw:flex-col tw:gap-2">
                         <p class="tw:text-sm tw:font-medium tw:text-gray-900">
                             Show Past Organiser Events (max 1 year)
-                        </p>
+                        </p> -->
                         <!-- <p class="tw:text-xs tw:text-gray-500">
                             If YES, past events within the last year will be visible.
                         </p> -->
-                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                        <!-- <div class="tw:flex tw:gap-4 tw:mt-1">
                             <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
                                 <input
                                     type="radio"
@@ -762,9 +763,9 @@
                                 />
                                 <span class="tw:text-sm tw:text-gray-700">No</span>
                             </label>
-                        </div>
-                    </div>
-                </div>
+                        </div> -->
+                    <!-- </div>
+                </div> -->
 
                 <!-- SAVE Organiser BUTTON -->
                 <div class="tw:w-full tw:pt-4">
@@ -838,6 +839,7 @@ import eventService from "@/services/eventService"
 import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
 import maplibregl from "maplibre-gl"
@@ -1228,6 +1230,7 @@ const menuItems = [
     { id: "details", icon: FileText, label: "Details", route: "/create-organiser-premium" },
     { id: "analytics", icon: BarChart3, route: "/create-organiser-premium/report", label: "Analytics" },
     { id: 'gallery', label: 'Gallery', icon: Images, route: `/create-organiser-premium/gallery-images` },
+    eventInvitationsNavItem("/create-organiser-premium"),
     { id: "settings", icon: Settings, route: "/create-organiser-premium/settings", label: "Settings" },
     // { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
@@ -1246,7 +1249,7 @@ function isActive(item) {
     if (item.route) {
         return route.path === item.route
     }
-    return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
+    return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings') && !route.path.includes('/event-invitations') && !route.path.includes('/gallery-images')
 }
 
 function syncFormData() {

@@ -119,6 +119,7 @@ import ImageDetailsModal from '@/components/gallery/ImageDetailsModal.vue'
 import EditAltTextModal from '@/components/gallery/EditAltTextModal.vue'
 import EventSidebar from './packages/eventsidebar/Eventsidebar.vue'
 import OrganiserSidebar from './packages/eventsidebar/OrganiserSidebar.vue'
+import { eventInvitationsNavItem } from '@/utils/eventInvitationsNavItem'
 import { 
   Home, 
   Calendar, 
@@ -199,6 +200,7 @@ const menuItems = computed(() => {
       { id: 'details', label: 'Details', icon: Calendar, route: base },
       { id: 'analytics', label: 'Analytics', icon: BarChart3, route: `${base}/report` },
       { id: 'gallery', label: 'Gallery', icon: Images, route: `${base}/gallery-images` },
+      eventInvitationsNavItem(base),
       { id: 'settings', label: 'Settings', icon: Settings, route: `${base}/settings` },
       { id: 'calendar', label: 'Calendar', icon: Calendar },
       { id: 'chatbox', label: 'Chatbox', icon: MessageSquareText },
@@ -209,11 +211,15 @@ const menuItems = computed(() => {
     route.path.includes('create-event-free') ||
     route.path.includes('create-event-premium')
 
+  const isTalentOrVenueProfile =
+    route.path.includes('create-talents-') || route.path.includes('create-venue-')
+
   return [
     { id: 'home', label: 'Home', icon: Home, route: `/${baseRoute}` },
     { id: 'details', label: 'Details', icon: Calendar, route: `/${baseRoute}` },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, route: `/${baseRoute}/report` },
     { id: 'gallery', label: 'Gallery', icon: Images, route: `/${baseRoute}/gallery-images` },
+    ...(isTalentOrVenueProfile ? [eventInvitationsNavItem(`/${baseRoute}`)] : []),
     { id: 'settings', label: 'Settings', icon: Settings, route: `/${baseRoute}/settings` },
     ...(isEventOwnerRoute
       ? [

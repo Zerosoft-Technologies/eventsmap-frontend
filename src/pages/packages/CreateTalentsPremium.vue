@@ -128,6 +128,7 @@
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:text-gray-700">Description <span class="tw:text-red-500">*</span></label>
                         <textarea v-model="eventDescription" rows="4" placeholder="Describe Your Talent..."
+                            style="resize: vertical;"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                         <p v-if="fieldErrors.description" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.description[0] }}</p>
                     </div>
@@ -291,7 +292,7 @@
                         <!-- Subcategory Multi-Select -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories <span class="tw:text-red-500">*</span>
+                                Subcategories (Max 5) <span class="tw:text-red-500">*</span>
                             </label>
 
                             <!-- Multi-Select Input Field -->
@@ -630,17 +631,39 @@
                     </div>
                 </div>
 
-                <!-- Age OF TALENT SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
+                <!-- Date of birth & age -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5 tw:border tw:border-gray-100">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Age of Talent
+                        Date of birth &amp; age
                     </h3>
 
-                    <!-- Exact Age Input -->
-                    <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Enter Age</label>
-                        <input v-model="exactAge" type="text" placeholder="e.g., 21, 22, 23"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <div class="tw:grid tw:gap-5 tw:md:grid-cols-2">
+                        <div class="tw:space-y-2">
+                            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Date of birth</label>
+                            <div class="tw:relative">
+                                <input
+                                    v-model="dateOfBirth"
+                                    type="date"
+                                    :max="dobMaxIso"
+                                    :min="dobMinIso"
+                                    data-field="date_of_birth"
+                                    @input="clearDobFieldError"
+                                    :class="[
+                                        'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
+                                        (fieldErrors.date_of_birth && fieldErrors.date_of_birth.length) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                                    ]"
+                                />
+                            </div>
+                            <p v-if="fieldErrors.date_of_birth?.length" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.date_of_birth[0] }}</p>
+                            <p class="tw:text-xs tw:text-gray-500">Past dates only. Age is computed automatically.</p>
+                        </div>
+                        <div
+                            class="tw:rounded-2xl tw:border tw:border-gray-200 tw:bg-gradient-to-br tw:from-slate-50 tw:to-gray-50 tw:px-5 tw:py-4 tw:flex tw:flex-col tw:justify-center tw:gap-1"
+                        >
+                            <span class="tw:text-xs tw:font-semibold tw:text-gray-500 tw:uppercase tw:tracking-wide">Calculated age</span>
+                            <span v-if="calculatedAgeFromDob !== null" class="tw:text-3xl tw:font-bold tw:text-gray-900 tw:tabular-nums">{{ calculatedAgeFromDob }}</span>
+                            <span v-else class="tw:text-sm tw:text-gray-500">Select your date of birth to preview age.</span>
+                        </div>
                     </div>
 
                     <!-- Yes/No Selection -->
@@ -736,20 +759,20 @@
                 </div> -->
 
                                 <!-- EVENT VISIBILITY SECTION -->
-                <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-6">
+                <!-- <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-6">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                         Talent Visibility
-                    </h3>
+                    </h3> -->
 
                     <!-- Show Upcoming Events -->
-                    <div class="tw:flex tw:flex-col tw:gap-2">
+                    <!-- <div class="tw:flex tw:flex-col tw:gap-2">
                         <p class="tw:text-sm tw:font-medium tw:text-gray-900">
                             Show Upcoming Talent Events (max 1 year)
-                        </p>
+                        </p> -->
                         <!-- <p class="tw:text-xs tw:text-gray-500">
                             If YES, upcoming events within the next year will be visible.
                         </p> -->
-                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                        <!-- <div class="tw:flex tw:gap-4 tw:mt-1">
                             <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
                                 <input
                                     type="radio"
@@ -771,17 +794,17 @@
                                 <span class="tw:text-sm tw:text-gray-700">No</span>
                             </label>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Show Past Events -->
-                    <div class="tw:flex tw:flex-col tw:gap-2">
+                    <!-- <div class="tw:flex tw:flex-col tw:gap-2">
                         <p class="tw:text-sm tw:font-medium tw:text-gray-900">
                             Show Past Talent Events (max 1 year)
-                        </p>
+                        </p> -->
                         <!-- <p class="tw:text-xs tw:text-gray-500">
                             If YES, past events within the last year will be visible.
                         </p> -->
-                        <div class="tw:flex tw:gap-4 tw:mt-1">
+                        <!-- <div class="tw:flex tw:gap-4 tw:mt-1">
                             <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
                                 <input
                                     type="radio"
@@ -804,7 +827,7 @@
                             </label>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- SAVE Talent BUTTON -->
                 <div class="tw:w-full tw:pt-4">
@@ -874,11 +897,9 @@ import { useFormValidation } from "@/composables/useFormValidation"
 import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
 import { useToast } from "@/composables/useToast"
+import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
-
-import flatpickr from "flatpickr"
-import "flatpickr/dist/flatpickr.css"
 
 const router = useRouter()
 const route = useRoute()
@@ -952,7 +973,7 @@ const contactEmail = ref("")
 const contactWebsite = ref("")
 const talentNationality = ref('no')
 const exactNationality = ref('')
-const exactAge = ref('')
+const dateOfBirth = ref('')
 const showAge = ref('no')
 const languagesText = ref('')
 const talentHighlightsText = ref('')
@@ -1087,12 +1108,47 @@ function validateGenre() {
     return form.talent_category_id && form.talent_subcategory_ids.length > 0
 }
 
+const dobMaxIso = computed(() => new Date().toISOString().slice(0, 10))
+
+const dobMinIso = computed(() => {
+    const d = new Date()
+    d.setFullYear(d.getFullYear() - 120)
+    return d.toISOString().slice(0, 10)
+})
+
+function formatApiDateToInput(raw) {
+    if (raw == null || raw === '') return ''
+    const str = String(raw).trim()
+    if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10)
+    const d = new Date(str)
+    if (Number.isNaN(d.getTime())) return ''
+    return d.toISOString().slice(0, 10)
+}
+
+/** Whole years from DOB (local); null if no valid DOB */
+const calculatedAgeFromDob = computed(() => {
+    const raw = dateOfBirth.value?.trim()
+    if (!raw) return null
+    const parts = raw.split('-').map(Number)
+    if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return null
+    const [y, m, day] = parts
+    const birth = new Date(y, m - 1, day)
+    if (Number.isNaN(birth.getTime())) return null
+    const today = new Date()
+    if (birth > today) return null
+    let age = today.getFullYear() - birth.getFullYear()
+    const md = today.getMonth() - birth.getMonth()
+    if (md < 0 || (md === 0 && today.getDate() < birth.getDate())) age--
+    return age
+})
+
 // Menu items specific to CreateEventPremium
 const menuItems = [
     { id: "home", icon: Home, label: "Home", route: "/create-talents-premium" },
     { id: "details", icon: FileText, label: "Details", route: "/create-talents-premium" },
     { id: "analytics", icon: BarChart3, route: "/create-talents-premium/report", label: "Analytics" },
     { id: "gallery", icon: Images, route: "/create-talents-premium/gallery-images", label: "Gallery" },
+    eventInvitationsNavItem("/create-talents-premium"),
     { id: "settings", icon: Settings, route: "/create-talents-premium/settings", label: "Settings" },
     // { id: "calendar", icon: Calendar, label: "Calendar" },
     { id: "back", icon: SkipBackIcon, label: "Back" },
@@ -1252,10 +1308,8 @@ function buildTalentPayload() {
         ? langStr.split(',').map((s) => s.trim()).filter(Boolean)
         : []
 
-    let ageVal = exactAge.value || ''
-    if (typeof exactAge.value === 'string' && exactAge.value.trim() !== '' && !Number.isNaN(Number(exactAge.value))) {
-        ageVal = Number(exactAge.value)
-    }
+    const dobStr = dateOfBirth.value?.trim() || ''
+    const ageNum = calculatedAgeFromDob.value
 
     return {
         title: formData.talentTitle,
@@ -1280,7 +1334,8 @@ function buildTalentPayload() {
         fan_club_url: fanClubUrl.value || undefined,
         nationality: exactNationality.value || undefined,
         show_nationality: talentNationality.value || undefined,
-        age: ageVal === '' ? undefined : ageVal,
+        date_of_birth: dobStr || undefined,
+        age: dobStr && ageNum !== null && ageNum >= 0 ? ageNum : undefined,
         show_age: showAge.value || undefined,
         languages: languages.length ? languages : undefined,
         highlights: talentHighlightsText.value || undefined,
@@ -1433,8 +1488,9 @@ async function loadTalent(id) {
         // Nationality & age
         exactNationality.value = talent.nationality || ''
         talentNationality.value = talent.show_nationality || ''
-        exactAge.value = talent.age || ''
-        showAge.value = talent.show_age || 'show'
+        const dobApi = talent.date_of_birth ?? talent.dateOfBirth
+        dateOfBirth.value = formatApiDateToInput(dobApi)
+        showAge.value = talent.show_age || 'no'
 
         // Languages & highlights
         if (Array.isArray(talent.languages)) {
@@ -1496,7 +1552,7 @@ function resetForm() {
     fanClubUrl.value = ''
     exactNationality.value = ''
     talentNationality.value = 'no'
-    exactAge.value = ''
+    dateOfBirth.value = ''
     showAge.value = 'no'
     languagesText.value = ''
     talentHighlightsText.value = ''
@@ -1509,6 +1565,14 @@ function resetForm() {
     isEditMode.value = false
     editingTalentId.value = null
     resetErrors()
+}
+
+function clearDobFieldError() {
+    if (fieldErrors.value.date_of_birth) {
+        const next = { ...fieldErrors.value }
+        delete next.date_of_birth
+        fieldErrors.value = next
+    }
 }
 
 // ── Handle Submit ───────────────────────────────────────────────
@@ -1542,6 +1606,22 @@ async function handleSubmit() {
     } else {
         delete extraErrors.image_path
     }
+
+    delete extraErrors.date_of_birth
+    if (showAge.value === 'yes' && !dateOfBirth.value?.trim()) {
+        extraErrors.date_of_birth = ['Date of birth is required when you choose to share age on your profile.']
+        hasExtraErrors = true
+    } else if (dateOfBirth.value?.trim()) {
+        const a = calculatedAgeFromDob.value
+        if (a === null) {
+            extraErrors.date_of_birth = ['Please enter a valid date of birth.']
+            hasExtraErrors = true
+        } else if (a < 0 || a > 120) {
+            extraErrors.date_of_birth = ['Age must be between 0 and 120 years.']
+            hasExtraErrors = true
+        }
+    }
+
     fieldErrors.value = extraErrors
 
     if (!isValid || !genreValid || hasExtraErrors) {
@@ -1573,7 +1653,7 @@ function isActive(item) {
     if (item.route) {
         return route.path === item.route
     }
-    return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
+    return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings') && !route.path.includes('/event-invitations') && !route.path.includes('/gallery-images')
 }
 
 // Debounce function

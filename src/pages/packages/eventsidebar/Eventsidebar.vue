@@ -283,6 +283,7 @@ function isActive(item) {
             !currentPath.includes('/settings') &&
             !currentPath.includes('/gallery-images') &&
             !currentPath.includes('/invites') &&
+            !currentPath.includes('/event-invitations') &&
             !currentPath.includes('/calendar'))
   }
   
@@ -297,6 +298,10 @@ function isActive(item) {
   }
 
   if (item.id === 'invites' && item.route) {
+    return currentPath === item.route
+  }
+
+  if (item.id === 'event-invitations' && item.route) {
     return currentPath === item.route
   }
   

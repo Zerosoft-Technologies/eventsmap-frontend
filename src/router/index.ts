@@ -56,6 +56,7 @@ const PaymentCancel = () => import('../pages/payment/PaymentCancel.vue')
 const PaymentRequired     = () => import('../pages/payment/PaymentRequired.vue')
 const InvitationResponse  = () => import('../pages/InvitationResponse.vue')
 const GalleryImagesPage   = () => import('../pages/GalleryImagesPage.vue')
+const ReceivedEventInvitationsPage = () => import('../pages/packages/ReceivedEventInvitationsPage.vue')
 
 const routes: RouteRecordRaw[] = [
   // ── Public Routes ───────────────────────────────────────
@@ -94,29 +95,35 @@ const routes: RouteRecordRaw[] = [
   { path: '/create-organiser-free/report', name: 'EventOrganiserReport', component: EventOrganiserReport, meta: { requiresAuth: true } },
   { path: '/create-organiser-free/settings', name: 'EventOrganiserSettings', component: EventOrganiserSettings, meta: { requiresAuth: true } },
   { path: '/create-organiser-free/gallery-images', name: 'EventOrganiserFreeGallery', component: GalleryImagesPage, meta: { requiresAuth: true } },
+  { path: '/create-organiser-free/event-invitations', name: 'OrganiserFreeEventInvitations', component: ReceivedEventInvitationsPage, meta: { requiresAuth: true } },
 
   { path: '/create-organiser-premium', name: 'CreateEventOrganiserPremium', component: CreateEventOrganiserPremium, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-organiser-premium/report', name: 'EventOrganiserPremiumReport', component: EventOrganiserPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-organiser-premium/settings', name: 'EventOrganiserPremiumSettings', component: EventOrganiserPremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-organiser-premium/gallery-images', name: 'EventOrganiserPremiumGallery', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-organiser-premium/event-invitations', name: 'OrganiserPremiumEventInvitations', component: ReceivedEventInvitationsPage, meta: { requiresAuth: true, requiresPremium: true } },
 
   { path: '/create-talents-free', name: 'CreateTalentsFree', component: CreateTalentsFree, meta: { requiresAuth: true } },
   { path: '/create-talents-free/report', name: 'TalentsReport', component: TalentsReport, meta: { requiresAuth: true } },
   { path: '/create-talents-free/settings', name: 'TalentsSettings', component: TalentsSettings, meta: { requiresAuth: true } },
+  { path: '/create-talents-free/event-invitations', name: 'TalentsFreeEventInvitations', component: ReceivedEventInvitationsPage, meta: { requiresAuth: true } },
 
   { path: '/create-talents-premium', name: 'CreateTalentsPremium', component: CreateTalentsPremium, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-talents-premium/report', name: 'TalentsPremiumReport', component: TalentsPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-talents-premium/settings', name: 'TalentsPremiumSettings', component: TalentsPremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-talents-premium/gallery-images', name: 'TalentsPremiumGallery', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-talents-premium/event-invitations', name: 'TalentsPremiumEventInvitations', component: ReceivedEventInvitationsPage, meta: { requiresAuth: true, requiresPremium: true } },
 
   { path: '/create-venue-free', name: 'CreateVenueFree', component: CreateVenueFree, meta: { requiresAuth: true } },
   { path: '/create-venue-free/report', name: 'VenueReport', component: VenueReport, meta: { requiresAuth: true } },
   { path: '/create-venue-free/settings', name: 'VenueSettings', component: VenueSettings, meta: { requiresAuth: true } },
+  { path: '/create-venue-free/event-invitations', name: 'VenueFreeEventInvitations', component: ReceivedEventInvitationsPage, meta: { requiresAuth: true } },
 
   { path: '/create-venue-premium', name: 'CreateVenuePremium', component: CreateVenuePremium, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-venue-premium/report', name: 'VenuePremiumReport', component: VenuePremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-venue-premium/settings', name: 'VenuePremiumSettings', component: VenuePremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-venue-premium/gallery-images', name: 'VenuePremiumGallery', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-venue-premium/event-invitations', name: 'VenuePremiumEventInvitations', component: ReceivedEventInvitationsPage, meta: { requiresAuth: true, requiresPremium: true } },
 
   ]
 

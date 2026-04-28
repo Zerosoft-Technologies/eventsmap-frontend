@@ -331,6 +331,7 @@ import OrganiserSidebar from "./eventsidebar/OrganiserSidebar.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -529,6 +530,7 @@ const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-organiser-free" },
   { id: "details", icon: FileText, label: "Details", route: "/create-organiser-free" },
   { id: "analytics", icon: BarChart3, route: "/create-organiser-free/report", label: "Analytics" },
+  eventInvitationsNavItem("/create-organiser-free"),
   { id: "settings", icon: Settings, route: "/create-organiser-free/settings", label: "Settings" },
   // { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
@@ -572,7 +574,7 @@ function isActive(item) {
   if (item.route) {
     return route.path === item.route
   }
-  return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
+  return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings') && !route.path.includes('/event-invitations')
 }
 
 function syncFormData() {

@@ -407,7 +407,7 @@
         </div>
 
         <!-- CITY WHERE TALENT IS LIVING SECTION -->
-        <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
+        <!-- <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
             City where talent is living
           </h3>
@@ -417,7 +417,7 @@
             <input v-model="talentCity" type="text" placeholder="Enter city"
               class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-base tw:md:text-[16px] tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
           </div>
-        </div>
+        </div> -->
 
         <!-- OVERVIEW SECTION -->
         <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
@@ -558,6 +558,7 @@ import InviteSection from "@/components/invite/InviteSection.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
+import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -747,6 +748,7 @@ const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-talents-free" },
   { id: "details", icon: FileText, label: "Details", route: "/create-talents-free" },
   { id: "analytics", icon: BarChart3, route: "/create-talents-free/report", label: "Analytics" },
+  eventInvitationsNavItem("/create-talents-free"),
   { id: "settings", icon: Settings, route: "/create-talents-free/settings", label: "Settings" },
 ]
 
@@ -762,7 +764,7 @@ function isActive(item) {
   if (item.route) {
     return route.path === item.route
   }
-  return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings')
+  return activeTab.value === item.id && !route.path.includes('/report') && !route.path.includes('/settings') && !route.path.includes('/event-invitations')
 }
 
 async function handleEventSelected(eventId) {

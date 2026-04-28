@@ -301,6 +301,7 @@ import { ref, reactive } from 'vue';
 import { useRouter } from "vue-router"
 import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
 import EventSidebar from '../eventsidebar/Eventsidebar.vue'
+import { eventInvitationsNavItem } from '@/utils/eventInvitationsNavItem'
 import UserSettings from '@/components/UserSettings.vue'
 import PlanManagement from '@/components/PlanManagement.vue';
 import { useAuthStore } from '@/stores/auth';
@@ -332,6 +333,7 @@ const menuItems = [
   { id: "home", icon: Home, label: "Home", route: "/create-organiser-free" },
   { id: "details", icon: FileText, label: "Details", route: "/create-organiser-free" },
   { id: "analytics", icon: BarChart3, route: "/create-organiser-free/report", label: "Analytics" },
+  eventInvitationsNavItem("/create-organiser-free"),
   { id: "settings", icon: Settings, route: "/create-organiser-free/settings", label: "Settings" },
   // { id: "calendar", icon: Calendar, label: "Calendar" },
 ]
