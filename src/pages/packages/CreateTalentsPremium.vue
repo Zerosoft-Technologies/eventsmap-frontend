@@ -87,8 +87,7 @@
 
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:min-w-0 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
-
-                <!-- IMAGE UPLOAD SECTION -->
+                <ProfileDraftVisibilityBanner v-if="isEditMode && publicationStatus === 'draft'" />
                 <!-- <div
                     class="tw:relative tw:rounded-2xl tw:overflow-hidden tw:bg-gray-200 tw:h-96 tw:flex tw:items-center tw:justify-center">
                     <img src="/family-legal-advisor.jpg" alt="Event Background"
@@ -884,11 +883,12 @@ import {
     Images
 } from "lucide-vue-next"
 
-import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick } from "vue"
+import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
 import { storeToRefs } from "pinia"
 import { useMyTalentStore } from "@/stores/myTalentStore"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
 import { galleryApi } from "@/api/gallery"
@@ -918,6 +918,21 @@ const activeTab = ref("home")
 const isSubmitting = ref(false)
 const isEditMode = ref(false)
 const editingTalentId = ref(null)
+const publicationStatus = ref(null)
+
+watch(
+  [() => talents.value, editingTalentId],
+  () => {
+    const id = editingTalentId.value
+    if (id == null) {
+      publicationStatus.value = null
+      return
+    }
+    const row = talents.value.find((t) => Number(t.id) === Number(id))
+    if (row && row.status != null) publicationStatus.value = row.status
+  },
+  { deep: true }
+)
 const eventDescription = ref("")
 const fieldErrors = ref({})
 
@@ -1353,7 +1368,13 @@ async function createTalent() {
             toast.success('Talent created successfully.')
             await myTalentStore.fetchMyTalents()
             pendingFileMap.value = {}
-            resetForm()
+            const newId = response.data?.id
+            if (newId != null) {
+                myTalentStore.selectTalent(Number(newId))
+                await loadTalent(Number(newId))
+            } else {
+                resetForm()
+            }
         } else {
             if (response.errors) {
                 fieldErrors.value = response.errors
@@ -1505,6 +1526,8 @@ async function loadTalent(id) {
         showPastEvents.value = talent.show_past_events === '1' || talent.show_past_events === true
 
         fieldErrors.value = {}
+
+        publicationStatus.value = talent.status ?? 'draft'
 
         // Center map
         if (talent.latitude && talent.longitude && map.value) {

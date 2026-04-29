@@ -87,6 +87,7 @@
 
       <!-- ================= RIGHT CARD ================= -->
       <div class="tw:flex-1 tw:min-w-0 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
+        <ProfileDraftVisibilityBanner v-if="isEditMode && publicationStatus === 'draft'" />
         <!-- Venue TITLE SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
@@ -615,9 +616,10 @@ import {
   Clock,
 } from "lucide-vue-next"
 
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue"
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import eventService from "@/services/eventService"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import { useFormValidation } from "@/composables/useFormValidation"
@@ -642,6 +644,21 @@ const activeTab = ref("home")
 const isSubmitting = ref(false)
 const isEditMode = ref(false)
 const editingVenueId = ref(null)
+const publicationStatus = ref(null)
+
+watch(
+  [() => venues.value, editingVenueId],
+  () => {
+    const id = editingVenueId.value
+    if (id == null) {
+      publicationStatus.value = null
+      return
+    }
+    const row = venues.value.find((v) => Number(v.id) === Number(id))
+    if (row && row.status != null) publicationStatus.value = row.status
+  },
+  { deep: true }
+)
 const fieldErrors = ref({})
 
 const venueFileInput = ref(null)
@@ -943,10 +960,12 @@ async function createVenue() {
     if (response.success) {
       toast.success('Venue created successfully!')
       const newId = response.data?.id
-      resetForm()
       await refreshMyVenuesAfterSave()
       if (newId != null) {
         myVenueStore.selectVenue(Number(newId))
+        await loadVenue(Number(newId))
+      } else {
+        resetForm()
       }
     } else {
       if (response.errors) fieldErrors.value = response.errors
@@ -1068,6 +1087,8 @@ async function loadVenue(id) {
       venueFileInput.value.value = ''
     }
     fieldErrors.value = {}
+
+    publicationStatus.value = venue.status ?? 'draft'
 
     // Accessibility / amenities — v2 JSON uses allow_dogs, parking, valet, play_area; submits use *_of_dogs etc.
     allowanceOfDogs.value = mapAllowDogsFromApi(venue)

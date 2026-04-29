@@ -87,6 +87,7 @@
 
       <!-- ================= RIGHT CARD ================= -->
       <div class="tw:flex-1 tw:min-w-0 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
+        <ProfileDraftVisibilityBanner v-if="isEditMode && publicationStatus === 'draft'" />
         <!-- Talent TITLE SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
@@ -549,11 +550,12 @@ import {
   SkipBackIcon,
 } from "lucide-vue-next"
 
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from "vue"
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from "vue"
 import { storeToRefs } from "pinia"
 import { useMyTalentStore } from "@/stores/myTalentStore"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
@@ -576,6 +578,21 @@ const activeTab = ref("home")
 const isSubmitting = ref(false)
 const isEditMode = ref(false)
 const editingTalentId = ref(null)
+const publicationStatus = ref(null)
+
+watch(
+  [() => talents.value, editingTalentId],
+  () => {
+    const id = editingTalentId.value
+    if (id == null) {
+      publicationStatus.value = null
+      return
+    }
+    const row = talents.value.find((t) => Number(t.id) === Number(id))
+    if (row && row.status != null) publicationStatus.value = row.status
+  },
+  { deep: true }
+)
 const fieldErrors = ref({})
 
 const talentFileInput = ref(null)
@@ -892,7 +909,13 @@ async function createTalent() {
     if (response.success) {
       toast.success('Talent created successfully!')
       await myTalentStore.fetchMyTalents()
-      resetForm()
+      const newId = response.data?.id
+      if (newId != null) {
+        myTalentStore.selectTalent(Number(newId))
+        await loadTalent(Number(newId))
+      } else {
+        resetForm()
+      }
     } else {
       if (response.errors) fieldErrors.value = response.errors
       toast.error(response.message || 'Failed to create talent')
@@ -976,6 +999,8 @@ async function loadTalent(id) {
       talentFileInput.value.value = ''
     }
     fieldErrors.value = {}
+
+    publicationStatus.value = talent.status ?? 'draft'
 
     // Center map if coordinates exist
     if (talent.latitude && talent.longitude && map.value) {

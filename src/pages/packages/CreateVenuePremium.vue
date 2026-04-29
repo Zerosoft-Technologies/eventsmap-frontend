@@ -88,8 +88,7 @@
 
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:min-w-0 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-8 tw:space-y-4 tw:md:space-y-6">
-
-                <!-- IMAGE UPLOAD SECTION -->
+                <ProfileDraftVisibilityBanner v-if="isEditMode && publicationStatus === 'draft'" />
                 <!-- <div
                     class="tw:relative tw:rounded-2xl tw:overflow-hidden tw:bg-gray-200 tw:h-96 tw:flex tw:items-center tw:justify-center">
                     <img src="/family-legal-advisor.jpg" alt="Event Background"
@@ -873,11 +872,12 @@ import {
     Images
 } from "lucide-vue-next"
 
-import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick } from "vue"
+import { ref, reactive, onMounted, onBeforeUnmount, computed, nextTick, watch } from "vue"
 import { storeToRefs } from "pinia"
 import { useMyVenueStore } from "@/stores/myVenueStore"
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
+import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
 import BinarySegmentedField from "@/components/premium/BinarySegmentedField.vue"
@@ -924,6 +924,21 @@ const activeTab = ref("home")
 const isSubmitting = ref(false)
 const isEditMode = ref(false)
 const editingVenueId = ref(null)
+const publicationStatus = ref(null)
+
+watch(
+  [() => venues.value, editingVenueId],
+  () => {
+    const id = editingVenueId.value
+    if (id == null) {
+      publicationStatus.value = null
+      return
+    }
+    const row = venues.value.find((v) => Number(v.id) === Number(id))
+    if (row && row.status != null) publicationStatus.value = row.status
+  },
+  { deep: true }
+)
 const eventDescription = ref("")
 const fieldErrors = ref({})
 
@@ -1399,10 +1414,12 @@ async function createVenue() {
             toast.success('Venue created successfully!')
             pendingFileMap.value = {}
             const newId = response.data?.id
-            resetForm()
             await refreshMyVenuesAfterSave()
             if (newId != null) {
                 myVenueStore.selectVenue(Number(newId))
+                await loadVenue(Number(newId))
+            } else {
+                resetForm()
             }
         } else {
             if (response.errors) {
@@ -1554,6 +1571,8 @@ async function loadVenue(id) {
         setGalleryImagesFromVenue(venue)
 
         fieldErrors.value = {}
+
+        publicationStatus.value = venue.status ?? 'draft'
 
         allowanceOfDogs.value = mapAllowDogsFromApi(venue)
 

@@ -9,6 +9,7 @@ export const useMyOrganiserStore = defineStore('myOrganisers', () => {
   /** Set before navigating to the organiser form from a sub-route */
   const pendingEditorOrganiserId = ref(null)
   const loading = ref(false)
+  const error = ref(null)
 
   let fetchSeq = 0
   let abortController = null
@@ -33,6 +34,7 @@ export const useMyOrganiserStore = defineStore('myOrganisers', () => {
     const { signal } = abortController
 
     loading.value = true
+    error.value = null
     try {
       const response = await eventService.getMyOrganisers({ signal })
       if (seq !== fetchSeq) return
@@ -41,10 +43,11 @@ export const useMyOrganiserStore = defineStore('myOrganisers', () => {
       } else {
         organisers.value = []
       }
-    } catch (error) {
+    } catch (err) {
       if (seq !== fetchSeq) return
-      if (isCanceledError(error)) return
-      console.error('Failed to fetch my organisers:', error)
+      if (isCanceledError(err)) return
+      console.error('Failed to fetch my organisers:', err)
+      error.value = err?.response?.data?.message || err?.message || 'Failed to load organisers'
       organisers.value = []
     } finally {
       if (seq === fetchSeq) {
@@ -68,13 +71,22 @@ export const useMyOrganiserStore = defineStore('myOrganisers', () => {
     return id
   }
 
+  function mergeListItem(id, fields) {
+    const idx = organisers.value.findIndex((t) => Number(t.id) === Number(id))
+    if (idx === -1) return
+    const prev = organisers.value[idx]
+    organisers.value[idx] = { ...prev, ...fields }
+  }
+
   return {
     organisers,
     selectedOrganiserId,
     loading,
+    error,
     fetchMyOrganisers,
     selectOrganiser,
     setPendingEditorOrganiserId,
     takePendingEditorOrganiserId,
+    mergeListItem,
   }
 })

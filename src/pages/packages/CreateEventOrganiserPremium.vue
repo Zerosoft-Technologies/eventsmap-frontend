@@ -85,6 +85,7 @@
 
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:min-w-0 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
+                <ProfileDraftVisibilityBanner v-if="isEditMode && publicationStatus === 'draft'" />
 
                 <!-- IMAGE UPLOAD SECTION -->
                 <!-- <div
@@ -829,14 +830,16 @@ import {
     Images
 } from "lucide-vue-next"
 
-import { ref, reactive, onMounted, onBeforeUnmount, computed } from "vue"
+import { ref, reactive, onMounted, onBeforeUnmount, computed, watch } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import OrganiserSidebar from "./eventsidebar/OrganiserSidebar.vue"
+import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
 import eventService from "@/services/eventService"
 import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
+import { storeToRefs } from "pinia"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
@@ -851,6 +854,7 @@ import "flatpickr/dist/flatpickr.css"
 const router = useRouter()
 const route = useRoute()
 const myOrganiserStore = useMyOrganiserStore()
+const { organisers } = storeToRefs(myOrganiserStore)
 const toast = useToast()
 const authStore = useAuthStore()
 const chatStore = useChatStore()
@@ -1053,6 +1057,21 @@ function removeSubcategory(subcategoryIdToRemove) {
 // ── Edit mode state ────────────────────────────────────────────────────
 const isEditMode = ref(false)
 const editingOrganiserId = ref(null)
+const publicationStatus = ref(null)
+
+watch(
+  [() => organisers.value, editingOrganiserId],
+  () => {
+    const id = editingOrganiserId.value
+    if (id == null) {
+      publicationStatus.value = null
+      return
+    }
+    const row = organisers.value.find((o) => Number(o.id) === Number(id))
+    if (row && row.status != null) publicationStatus.value = row.status
+  },
+  { deep: true }
+)
 
 // ── Image state ────────────────────────────────────────────────────────
 const imagePreviewUrl = ref(null)
@@ -1335,11 +1354,14 @@ async function createOrganiser() {
         if (response.success) {
             toast.success('Organiser created successfully.')
             pendingFileMap.value = {}
-            resetForm()
-            // Refresh organiser list in sidebar
-            const { useMyOrganiserStore } = await import("@/stores/myOrganiserStore")
-            const myOrganiserStore = useMyOrganiserStore()
-            myOrganiserStore.fetchMyOrganisers()
+            await myOrganiserStore.fetchMyOrganisers()
+            const newId = response.data?.id
+            if (newId != null) {
+                myOrganiserStore.selectOrganiser(Number(newId))
+                await loadOrganiser(Number(newId))
+            } else {
+                resetForm()
+            }
         } else {
             if (response.errors) {
                 fieldErrors.value = response.errors
@@ -1384,10 +1406,7 @@ async function updateOrganiser() {
             isEditMode.value = false
             editingOrganiserId.value = null
             resetForm()
-            // Refresh organiser list in sidebar
-            const { useMyOrganiserStore } = await import("@/stores/myOrganiserStore")
-            const myOrganiserStore = useMyOrganiserStore()
-            myOrganiserStore.fetchMyOrganisers()
+            await myOrganiserStore.fetchMyOrganisers()
         } else {
             if (response.errors) {
                 fieldErrors.value = response.errors
@@ -1463,6 +1482,7 @@ async function loadOrganiser(id) {
         fieldErrors.value = {}
         isEditMode.value = true
         editingOrganiserId.value = d.id
+        publicationStatus.value = d.status ?? 'draft'
         return true
     } catch (error) {
         console.error('Error loading organiser:', error)

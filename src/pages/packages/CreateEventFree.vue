@@ -427,6 +427,19 @@
             Event Location <span class="tw:text-red-500">*</span>
           </h3>
 
+          <div class="tw:space-y-2 tw:mb-4">
+            <label class="tw:block tw:text-sm tw:text-gray-600" for="event-venue-name-free">
+              Venue name
+            </label>
+            <input
+              id="event-venue-name-free"
+              v-model="venueName"
+              type="text"
+              placeholder="e.g. name of the venue or location"
+              class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all"
+            />
+          </div>
+
           <!-- Address Search Input with Loading Spinner -->
           <div class="tw:relative tw:mb-4">
             <input v-model="searchAddress" @input="onSearchInput" type="text" placeholder="Search Address..."
@@ -1089,6 +1102,7 @@ function validatePastDate() {
 }
 
 // Event Location refs
+const venueName = ref('')
 const searchAddress = ref("")
 const selectedAddress = ref("")
 const map = ref(null)
@@ -1539,6 +1553,7 @@ function resetForm() {
   pastDateError.value = false
   latitude.value = null
   longitude.value = null
+  venueName.value = ''
   dressCode.value = ''
   dressCodeDescription.value = ''
   ageLimit.value = ''
@@ -1589,6 +1604,7 @@ async function createEvent() {
     formData.append('start_datetime', buildLocalIso(eventDate.value, startTime.value))
     formData.append('end_datetime', buildLocalIso(endDate.value, endTime.value))
     formData.append('address', selectedAddress.value)
+    formData.append('venue_name', venueName.value ?? '')
     formData.append('latitude', latitude.value)
     formData.append('longitude', longitude.value)
     formData.append('dress_code', dressCodePayloadValue())
@@ -1709,6 +1725,10 @@ async function fetchEventDetails(id) {
       // Location
       selectedAddress.value = data.address || ''
       searchAddress.value = data.address || ''
+      venueName.value =
+        data.venue_name != null && data.venue_name !== undefined
+          ? String(data.venue_name)
+          : (data.venueName != null ? String(data.venueName) : '')
       latitude.value = data.latitude ? parseFloat(data.latitude) : null
       longitude.value = data.longitude ? parseFloat(data.longitude) : null
 
@@ -1792,6 +1812,7 @@ async function updateEvent() {
     formData.append('start_datetime', buildLocalIso(eventDate.value, startTime.value))
     formData.append('end_datetime', buildLocalIso(endDate.value, endTime.value))
     formData.append('address', selectedAddress.value)
+    formData.append('venue_name', venueName.value ?? '')
     formData.append('latitude', latitude.value)
     formData.append('longitude', longitude.value)
     formData.append('dress_code', dressCodePayloadValue())

@@ -71,6 +71,13 @@ export const useMyVenueStore = defineStore('myVenues', () => {
     return id
   }
 
+  function mergeListItem(id, fields) {
+    const idx = venues.value.findIndex((t) => Number(t.id) === Number(id))
+    if (idx === -1) return
+    const prev = venues.value[idx]
+    venues.value[idx] = { ...prev, ...fields }
+  }
+
   return {
     venues,
     selectedVenueId,
@@ -80,5 +87,6 @@ export const useMyVenueStore = defineStore('myVenues', () => {
     selectVenue,
     setPendingEditorVenueId,
     takePendingEditorVenueId,
+    mergeListItem,
   }
 })

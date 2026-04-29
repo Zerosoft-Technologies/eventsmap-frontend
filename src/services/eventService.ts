@@ -10,6 +10,8 @@ export interface CreateEventPayload {
   start_time: string
   end_time: string
   address: string
+  /** Display name of the venue / location (optional). */
+  venue_name?: string
   latitude: number | null
   longitude: number | null
   dress_code: string
@@ -71,6 +73,7 @@ export interface EventDetailData {
   start_time: string
   end_time: string
   address: string
+  venue_name?: string
   description: string
   image_url?: string
   [key: string]: unknown
@@ -91,6 +94,7 @@ export interface UpdateEventPayload {
   start_time: string
   end_time: string
   address: string
+  venue_name?: string
   description: string
 }
 

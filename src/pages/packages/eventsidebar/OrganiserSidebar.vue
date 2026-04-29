@@ -50,6 +50,10 @@
           Loading organisers...
         </div>
 
+        <div v-else-if="myOrganiserStore.error" class="tw:text-center tw:py-4 tw:text-red-500 tw:text-sm">
+          {{ myOrganiserStore.error }}
+        </div>
+
         <!-- Organisers List -->
         <template v-else-if="myOrganiserStore.organisers.length > 0">
           <div
@@ -57,19 +61,39 @@
             :key="organiser.id"
             @click="handleOrganiserClick(organiser)"
             :class="[
-              'tw:bg-[#F6F1E7] tw:rounded-2xl tw:p-5 tw:space-y-4 tw:border tw:cursor-pointer tw:transition',
+              'tw:bg-[#F6F1E7] tw:rounded-2xl tw:p-5 tw:space-y-3 tw:border tw:cursor-pointer tw:transition',
               myOrganiserStore.selectedOrganiserId === organiser.id
                 ? 'tw:border-[#0061FF]'
                 : 'tw:border-gray-200 hover:tw:border-gray-300'
             ]"
           >
-            <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF]">
-              {{ organiser.name || 'Organiser Title' }}
-            </h2>
-
-            <div class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2">
-              <User class="tw:w-4 tw:h-4" />
-              <span>{{ organiser.account_type || 'Free' }} Account</span>
+            <div class="tw:flex tw:items-center tw:gap-3 tw:min-w-0">
+              <div
+                class="tw:w-10 tw:h-10 tw:rounded-full tw:overflow-hidden tw:bg-gray-200 tw:flex tw:items-center tw:justify-center tw:text-xs tw:font-semibold tw:text-gray-600 tw:shrink-0 tw:border tw:border-gray-200"
+              >
+                <img
+                  v-if="organiser.image_url"
+                  :src="organiser.image_url"
+                  alt=""
+                  class="tw:w-full tw:h-full tw:object-cover"
+                />
+                <span v-else aria-hidden="true">{{ organiserInitials(organiser) }}</span>
+              </div>
+              <div class="tw:flex-1 tw:min-w-0 tw:space-y-2">
+                <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF] tw:truncate">
+                  {{ organiser.name || 'Organiser Title' }}
+                </h2>
+                <div class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2">
+                  <User class="tw:w-4 tw:h-4" />
+                  <span>{{ organiser.account_type || 'Free' }} Account</span>
+                </div>
+              </div>
+              <div class="tw:shrink-0 tw:self-center" @click.stop>
+                <ProfileSidebarPublicationStatus
+                  resource-type="organisers"
+                  :item="organiser"
+                />
+              </div>
             </div>
           </div>
         </template>
@@ -102,8 +126,16 @@ import {
 import { useRouter, useRoute } from "vue-router"
 import { onMounted } from "vue"
 import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
+import ProfileSidebarPublicationStatus from "@/components/profile/ProfileSidebarPublicationStatus.vue"
+import { profileSidebarInitials } from "@/utils/profilePublicationStatusStyles"
+import { useProfilePublicationMeta } from "@/composables/useProfilePublicationMeta"
 
 const myOrganiserStore = useMyOrganiserStore()
+const { ensureLoaded: ensurePublicationMeta } = useProfilePublicationMeta()
+
+function organiserInitials(organiser) {
+  return profileSidebarInitials(organiser.name || organiser.title)
+}
 
 // Props
 const props = defineProps({
@@ -117,6 +149,7 @@ const props = defineProps({
 const emit = defineEmits(['back', 'organiser-selected', 'chatbox-click', 'menu-click'])
 
 onMounted(() => {
+  ensurePublicationMeta()
   myOrganiserStore.fetchMyOrganisers()
 })
 

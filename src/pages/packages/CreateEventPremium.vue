@@ -552,6 +552,19 @@
                         Event Location <span class="tw:text-red-500">*</span>
                     </h3>
 
+                    <div class="tw:space-y-2 tw:mb-4">
+                        <label class="tw:block tw:text-sm tw:text-gray-600" for="event-venue-name-premium">
+                            Venue name
+                        </label>
+                        <input
+                            id="event-venue-name-premium"
+                            v-model="venueName"
+                            type="text"
+                            placeholder="e.g. name of the venue or location"
+                            class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all"
+                        />
+                    </div>
+
                     <!-- Address Search Input with Loading Spinner -->
                     <div class="tw:relative tw:mb-4">
                         <input v-model="searchAddress" @input="onSearchInput" type="text"
@@ -1370,6 +1383,7 @@ function onTimeInput(field, event) {
 // Event Location refs
 const searchAddress = ref("")
 const selectedAddress = ref("")
+const venueName = ref('')
 const map = ref(null)
 const marker = ref(null)
 const suggestions = ref([])
@@ -1963,6 +1977,7 @@ async function createEvent() {
         formData.append('start_datetime', buildLocalIso(eventDate.value, startTime.value))
         formData.append('end_datetime', buildLocalIso(endDate.value, endTime.value))
         formData.append('address', selectedAddress.value)
+        formData.append('venue_name', venueName.value ?? '')
         formData.append('latitude', latitude.value)
         formData.append('longitude', longitude.value)
         formData.append('dress_code', dressCodePayloadValue())
@@ -2259,6 +2274,10 @@ async function loadEvent(id) {
         endDate.value = eventDate.value
         selectedAddress.value = d.address ?? ''
         searchAddress.value = d.address ?? ''
+        venueName.value =
+            d.venue_name != null && d.venue_name !== undefined
+                ? String(d.venue_name)
+                : (d.venueName != null ? String(d.venueName) : '')
         latitude.value = d.latitude ?? null
         longitude.value = d.longitude ?? null
 
@@ -2403,6 +2422,7 @@ function resetForm() {
     endMM.value = ''
     selectedAddress.value = ''
     searchAddress.value = ''
+    venueName.value = ''
     selectedCategory.value = ''
     selectedSubcategories.value = []
     eventType.value = 'premium'
@@ -2504,6 +2524,7 @@ async function updateEvent() {
         formData.append('start_datetime', buildLocalIso(eventDate.value, startTime.value))
         formData.append('end_datetime', buildLocalIso(endDate.value, endTime.value))
         formData.append('address', selectedAddress.value)
+        formData.append('venue_name', venueName.value ?? '')
         formData.append('description', eventDescription.value)
         
         formData.append('dress_code', dressCodePayloadValue())

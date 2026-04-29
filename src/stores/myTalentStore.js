@@ -70,6 +70,14 @@ export const useMyTalentStore = defineStore('myTalents', () => {
     return id
   }
 
+  /** Merge fields into a sidebar list row (e.g. after PATCH …/status). */
+  function mergeListItem(id, fields) {
+    const idx = talents.value.findIndex((t) => Number(t.id) === Number(id))
+    if (idx === -1) return
+    const prev = talents.value[idx]
+    talents.value[idx] = { ...prev, ...fields }
+  }
+
   return {
     talents,
     selectedTalentId,
@@ -79,5 +87,6 @@ export const useMyTalentStore = defineStore('myTalents', () => {
     selectTalent,
     setPendingEditorTalentId,
     takePendingEditorTalentId,
+    mergeListItem,
   }
 })

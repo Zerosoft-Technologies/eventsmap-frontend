@@ -68,6 +68,13 @@ export const useMyEventStore = defineStore('myEvents', () => {
     return id
   }
 
+  function mergeListItem(id, fields) {
+    const idx = events.value.findIndex((e) => Number(e.id) === Number(id))
+    if (idx === -1) return
+    const prev = events.value[idx]
+    events.value[idx] = { ...prev, ...fields }
+  }
+
   return {
     events,
     selectedEventId,
@@ -76,5 +83,6 @@ export const useMyEventStore = defineStore('myEvents', () => {
     selectEvent,
     setPendingEditorEventId,
     takePendingEditorEventId,
+    mergeListItem,
   }
 })

@@ -54,30 +54,84 @@
           {{ listError }}
         </div>
 
-        <!-- List (events / talents / venues) -->
+        <!-- List (events / talents / venues / organisers) -->
         <template v-else-if="listItems.length > 0">
           <div
             v-for="item in listItems"
             :key="item.id"
             @click="handleListItemClick(item)"
             :class="[
-              'tw:bg-[#F6F1E7] tw:rounded-2xl tw:p-5 tw:space-y-4 tw:border tw:cursor-pointer tw:transition',
+              'tw:bg-[#F6F1E7] tw:rounded-2xl tw:p-5 tw:border tw:cursor-pointer tw:transition',
+              isProfileSidebar ? 'tw:space-y-3' : 'tw:space-y-4',
               selectedListId === item.id
                 ? 'tw:border-[#0061FF]'
                 : 'tw:border-gray-200 hover:tw:border-gray-300'
             ]"
           >
-            <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF]">
-              {{ item.title || item.name || listTitleFallback }}
-            </h2>
+            <template v-if="isProfileSidebar">
+              <div class="tw:flex tw:items-center tw:gap-3 tw:min-w-0">
+                <div
+                  class="tw:w-10 tw:h-10 tw:rounded-full tw:overflow-hidden tw:bg-gray-200 tw:flex tw:items-center tw:justify-center tw:text-xs tw:font-semibold tw:text-gray-600 tw:shrink-0 tw:border tw:border-gray-200"
+                >
+                  <img
+                    v-if="profileListImage(item)"
+                    :src="profileListImage(item)"
+                    alt=""
+                    class="tw:w-full tw:h-full tw:object-cover"
+                  />
+                  <span v-else aria-hidden="true">{{ profileListInitials(item) }}</span>
+                </div>
+                <div class="tw:flex-1 tw:min-w-0">
+                  <h2 class="tw:text-xl tw:font-semibold tw:text-[#0061FF] tw:truncate">
+                    {{ item.title || item.name || listTitleFallback }}
+                  </h2>
+                </div>
+                <div class="tw:shrink-0 tw:self-center" @click.stop>
+                  <ProfileSidebarPublicationStatus
+                    :resource-type="sidebarKind"
+                    :item="item"
+                  />
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <div
+                :class="[
+                  'tw:flex tw:min-w-0 tw:gap-3',
+                  sidebarKind === 'events' ? 'tw:items-center' : 'tw:flex-col tw:items-stretch',
+                ]"
+              >
+                <div class="tw:flex-1 tw:min-w-0 tw:space-y-2">
+                  <h2
+                    :class="[
+                      'tw:text-xl tw:font-semibold tw:text-[#0061FF]',
+                      sidebarKind === 'events' ? 'tw:truncate' : '',
+                    ]"
+                  >
+                    {{ item.title || item.name || listTitleFallback }}
+                  </h2>
 
-            <div
-              v-if="sidebarKind === 'events' && item.event_date"
-              class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2"
-            >
-              <Calendar class="tw:w-4 tw:h-4" />
-              <span>{{ formatEventDateTime(item.event_date, item.start_time) }}</span>
-            </div>
+                  <div
+                    v-if="sidebarKind === 'events' && item.event_date"
+                    class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2"
+                  >
+                    <Calendar class="tw:w-4 tw:h-4" />
+                    <span>{{ formatEventDateTime(item.event_date, item.start_time) }}</span>
+                  </div>
+                </div>
+
+                <div
+                  v-if="sidebarKind === 'events'"
+                  class="tw:shrink-0 tw:self-center"
+                  @click.stop
+                >
+                  <ProfileSidebarPublicationStatus
+                    resource-type="events"
+                    :item="item"
+                  />
+                </div>
+              </div>
+            </template>
           </div>
         </template>
 
@@ -109,11 +163,15 @@ import { useMyEventStore } from "@/stores/myEventStore"
 import { useMyTalentStore } from "@/stores/myTalentStore"
 import { useMyVenueStore } from "@/stores/myVenueStore"
 import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
+import ProfileSidebarPublicationStatus from "@/components/profile/ProfileSidebarPublicationStatus.vue"
+import { profileSidebarInitials } from "@/utils/profilePublicationStatusStyles"
+import { useProfilePublicationMeta } from "@/composables/useProfilePublicationMeta"
 
 const myEventStore = useMyEventStore()
 const myTalentStore = useMyTalentStore()
 const myVenueStore = useMyVenueStore()
 const myOrganiserStore = useMyOrganiserStore()
+const { ensureLoaded: ensurePublicationMeta } = useProfilePublicationMeta()
 
 // Props
 const props = defineProps({
@@ -156,8 +214,21 @@ const selectedListId = computed(() => {
 const listError = computed(() => {
   if (props.sidebarKind === 'talents') return myTalentStore.error
   if (props.sidebarKind === 'venues') return myVenueStore.error
+  if (props.sidebarKind === 'organisers') return myOrganiserStore.error
   return null
 })
+
+const isProfileSidebar = computed(() =>
+  ['talents', 'venues', 'organisers'].includes(props.sidebarKind)
+)
+
+function profileListImage(item) {
+  return item.image_url || item.cover_image || item.main_image_url || ''
+}
+
+function profileListInitials(item) {
+  return profileSidebarInitials(item.title || item.name)
+}
 
 const backSectionTitle = computed(() => {
   if (props.sidebarKind === 'talents') return 'Back To Talents'
@@ -188,6 +259,9 @@ const listTitleFallback = computed(() => {
 })
 
 onMounted(() => {
+  if (['events', 'talents', 'venues', 'organisers'].includes(props.sidebarKind)) {
+    ensurePublicationMeta()
+  }
   if (props.sidebarKind === 'talents') myTalentStore.fetchMyTalents()
   else if (props.sidebarKind === 'venues') myVenueStore.fetchMyVenues()
   else if (props.sidebarKind === 'organisers') myOrganiserStore.fetchMyOrganisers()
