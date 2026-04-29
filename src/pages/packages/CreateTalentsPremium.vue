@@ -506,13 +506,16 @@
                     <div id="event-map" class="tw:w-full tw:h-[240px] tw:md:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4">
                     </div>
 
-                    <!-- Selected Address -->
+                    <!-- City (display only; full address is still saved) -->
                     <div class="tw:space-y-2">
                         <label class="tw:block tw:text-sm tw:text-gray-600">
-                            Selected Address
+                            City
                         </label>
-                        <input v-model="selectedAddress" type="text" readonly placeholder="Address Will Auto Fill Here"
-                            class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+                        <input :value="selectedLocationCityDisplay" type="text" readonly placeholder="City appears after you choose a location"
+                            :class="[
+                              'tw:w-full tw:h-12 tw:md:h-auto tw:bg-gray-50 tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed',
+                              fieldErrors.address ? 'tw:border-red-500' : 'tw:border-[#E8E1D5]'
+                            ]" />
                         <p v-if="fieldErrors.address" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.address[0] }}</p>
                     </div>
                 </div>
@@ -895,6 +898,7 @@ import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
+import { cityDisplayFromStoredFullAddress, locationCityDisplayFromNominatim } from "@/utils/nominatimCityDisplay"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -1000,7 +1004,10 @@ const fanClubUrl = ref("")
 
 // Event Location refs
 const searchAddress = ref("")
+/** Full address line sent to the API. */
 const selectedAddress = ref("")
+/** City label for readonly field only. */
+const selectedLocationCityDisplay = ref("")
 const map = ref(null)
 const marker = ref(null)
 const suggestions = ref([])
@@ -1453,8 +1460,10 @@ async function loadTalent(id) {
 
         formData.talentTitle = talent.title || ''
         eventDescription.value = talent.description || ''
-        selectedAddress.value = talent.address || ''
-        searchAddress.value = talent.address || ''
+        const addrFull = talent.address || ''
+        selectedAddress.value = addrFull
+        searchAddress.value = addrFull
+        selectedLocationCityDisplay.value = addrFull ? cityDisplayFromStoredFullAddress(addrFull) : ''
         talentCity.value = talent.city || ''
 
         if (talent.latitude) mapLat.value = talent.latitude
@@ -1560,6 +1569,7 @@ function resetForm() {
     selectedCategory.value = ''
     selectedSubcategories.value = []
     selectedAddress.value = ''
+    selectedLocationCityDisplay.value = ''
     searchAddress.value = ''
     talentCity.value = ''
     pendingFileMap.value = {}
@@ -1717,6 +1727,7 @@ function selectSuggestion(suggestion) {
     searchAddress.value = display_name
     suggestions.value = []
     selectedAddress.value = display_name
+    selectedLocationCityDisplay.value = locationCityDisplayFromNominatim(display_name, suggestion.address)
     mapLat.value = parseFloat(lat)
     mapLng.value = parseFloat(lon)
     if (map.value) {
@@ -1749,11 +1760,14 @@ async function reverseGeocode(lng, lat) {
         )
         if (response.ok) {
             const data = await response.json()
-            selectedAddress.value = data.display_name || "Address not found"
+            const full = data.display_name || "Address not found"
+            selectedAddress.value = full
+            selectedLocationCityDisplay.value = locationCityDisplayFromNominatim(full, data.address)
         }
     } catch (error) {
         console.error("Error reverse geocoding:", error)
         selectedAddress.value = "Error fetching address"
+        selectedLocationCityDisplay.value = "Error fetching address"
     } finally {
         isLoading.value = false
     }
