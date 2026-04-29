@@ -132,6 +132,7 @@ export interface TalentV2Payload {
   contact_phone?: string
   contact_email?: string
   contact_website?: string
+  contact_box_design_message?: string
   facebook_url?: string
   instagram_url?: string
   tiktok_url?: string
@@ -178,6 +179,7 @@ export interface VenueV2Payload {
   contact_phone?: string
   contact_email?: string
   contact_website?: string
+  contact_box_design_message?: string
   opening_hours?: VenueOpeningHoursDayPayload[] | string | string[] | Record<string, string>
   facebook_url?: string
   instagram_url?: string

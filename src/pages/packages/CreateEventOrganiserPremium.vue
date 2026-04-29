@@ -590,18 +590,15 @@
                     </div> -->
                 </div>
 
-                <!-- CONTACT BOX SECTION -->
-                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Contact Box
-                    </h3>
-
+                <!-- CONTACT BOX DESIGN SECTION -->
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box Design</h3>
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Contact Message</label>
-                        <textarea v-model="contactBoxMessage" rows="4" placeholder="Enter your contact message"
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Design Message</label>
+                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your design message"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
-                </div> -->
+                </div>
 
                 <!-- SOCIAL MEDIA LINKS SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
@@ -890,6 +887,7 @@ const ageLimit = ref("")
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
+const contactBoxDesignMessage = ref('')
 // const bookingInstructions = ref('');
 // const ticketUrl = ref('');
 // const eventOption = ref('');
@@ -900,7 +898,6 @@ const isCopyEvent = ref(false)
 const showUpcomingEvents = ref("")
 const showPastEvents = ref("")
 const showChatbox = ref(false)
-const contactBoxMessage = ref('')
 
 const notifications = ref({
     receiveEmail: false,
@@ -1305,6 +1302,7 @@ function buildFormData() {
     if (contactPhone.value) fd.append('contact_phone', contactPhone.value)
     if (contactEmail.value) fd.append('contact_email', contactEmail.value)
     if (contactWebsite.value) fd.append('contact_website', contactWebsite.value)
+    if (contactBoxDesignMessage.value) fd.append('contact_box_design_message', contactBoxDesignMessage.value)
 
     // Social
     if (facebookUrl.value) fd.append('facebook_url', facebookUrl.value)
@@ -1451,6 +1449,8 @@ async function loadOrganiser(id) {
         contactEmail.value = d.contact_email ?? ''
         contactWebsite.value = d.contact_website ?? ''
 
+        contactBoxDesignMessage.value = d.contact_box_design_message ?? ''
+
         facebookUrl.value = d.facebook_url ?? ''
         instagramUrl.value = d.instagram_url ?? ''
         tiktokUrl.value = d.tiktok_url ?? ''
@@ -1516,6 +1516,7 @@ function resetForm() {
     contactPhone.value = ''
     contactEmail.value = ''
     contactWebsite.value = ''
+    contactBoxDesignMessage.value = ''
     facebookUrl.value = ''
     instagramUrl.value = ''
     tiktokUrl.value = ''

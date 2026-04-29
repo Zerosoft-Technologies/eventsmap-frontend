@@ -685,14 +685,14 @@
                 </div>
 
                 <!-- CONTACT BOX DESIGN SECTION -->
-                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box Design</h3>
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Design Message</label>
                         <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your design message"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
-                </div> -->
+                </div>
 
                 <!-- SOCIAL MEDIA LINKS SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-5">
@@ -964,6 +964,7 @@ const resolvedAdditionalImages = computed(() => {
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
+const contactBoxDesignMessage = ref("")
 /** null = not chosen yet (validate on submit) */
 const childrensPlayArea = ref(null)
 const facebookUrl = ref("")
@@ -1391,6 +1392,7 @@ function buildVenuePayload() {
         contact_phone: contactPhone.value || undefined,
         contact_email: contactEmail.value || undefined,
         contact_website: contactWebsite.value || undefined,
+        contact_box_design_message: contactBoxDesignMessage.value || undefined,
         opening_hours: serializeVenueOpeningHoursForApi(openingHoursSchedule.value),
         facebook_url: facebookUrl.value || undefined,
         instagram_url: instagramUrl.value || undefined,
@@ -1594,6 +1596,7 @@ async function loadVenue(id) {
         contactPhone.value = venue.contact_phone || ''
         contactEmail.value = venue.contact_email || ''
         contactWebsite.value = venue.contact_website || ''
+        contactBoxDesignMessage.value = venue.contact_box_design_message || ''
         facebookUrl.value = venue.facebook_url || ''
         instagramUrl.value = venue.instagram_url || ''
         tiktokUrl.value = venue.tiktok_url || ''
@@ -1648,6 +1651,7 @@ function resetForm() {
     contactPhone.value = ''
     contactEmail.value = ''
     contactWebsite.value = ''
+    contactBoxDesignMessage.value = ''
     facebookUrl.value = ''
     instagramUrl.value = ''
     tiktokUrl.value = ''

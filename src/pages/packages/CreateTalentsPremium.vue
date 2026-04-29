@@ -553,17 +553,14 @@
                 </div>
 
                 <!-- CONTACT BOX DESIGN SECTION -->
-                <!-- <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Contact Box Design
-                    </h3>
-
+                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box Design</h3>
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Design Message</label>
                         <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your design message"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
-                </div> -->
+                </div>
 
                 <!-- SOCIAL MEDIA LINKS SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-5">
@@ -986,6 +983,7 @@ const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstErro
 const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
+const contactBoxDesignMessage = ref("")
 const talentNationality = ref('no')
 const exactNationality = ref('')
 const dateOfBirth = ref('')
@@ -1343,6 +1341,7 @@ function buildTalentPayload() {
         contact_phone: contactPhone.value || undefined,
         contact_email: contactEmail.value || undefined,
         contact_website: contactWebsite.value || undefined,
+        contact_box_design_message: contactBoxDesignMessage.value || undefined,
         facebook_url: facebookUrl.value || undefined,
         instagram_url: instagramUrl.value || undefined,
         tiktok_url: tiktokUrl.value || undefined,
@@ -1501,6 +1500,7 @@ async function loadTalent(id) {
         contactPhone.value = talent.contact_phone || ''
         contactEmail.value = talent.contact_email || ''
         contactWebsite.value = talent.contact_website || ''
+        contactBoxDesignMessage.value = talent.contact_box_design_message || ''
         facebookUrl.value = talent.facebook_url || ''
         instagramUrl.value = talent.instagram_url || ''
         tiktokUrl.value = talent.tiktok_url || ''
@@ -1569,6 +1569,7 @@ function resetForm() {
     contactPhone.value = ''
     contactEmail.value = ''
     contactWebsite.value = ''
+    contactBoxDesignMessage.value = ''
     facebookUrl.value = ''
     instagramUrl.value = ''
     tiktokUrl.value = ''
