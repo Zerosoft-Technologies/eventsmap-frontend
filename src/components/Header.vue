@@ -205,7 +205,13 @@
       <div>
         <!-- Authenticated: user menu -->
         <div v-if="authStore.isAuthenticated" class="tw:flex tw:items-center tw:gap-2">
-          <router-link :to="userCreatePath" style="height: 40px;" class="user-name-btn no-hover tw:bg-white tw:px-3.5 tw:py-2.5 tw:rounded-md tw:flex tw:items-center tw:gap-1.5">
+          <router-link :to="userCreatePath" style="height: 40px;" class="user-name-btn no-hover tw:bg-white tw:px-3.5 tw:py-2.5 tw:rounded-md tw:flex tw:items-center tw:gap-2">
+            <img
+              v-if="headerUserAvatarUrl"
+              :src="headerUserAvatarUrl"
+              alt=""
+              class="tw:w-8 tw:h-8 tw:rounded-full tw:object-cover tw:border tw:border-gray-200 tw:shrink-0"
+            />
             <span class="tw:text-sm tw:font-semibold" style="color: var(--primary-color)">{{ authStore.user?.name || 'Profile' }}</span>
           </router-link>
           <button @click="handleLogout" style="height: 40px;" class="header-btn no-hover tw:bg-white tw:px-3.5 tw:py-2.5 tw:rounded-md tw:flex tw:items-center tw:gap-1">
@@ -534,10 +540,16 @@
             type="button"
             @click="handleMobileEmailClick"
             :class="activeField === 'date' ? 'tw:pointer-events-none' : ''"
-            class="mobile-field-btn tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none tw:text-left tw:text-sm"
+            class="mobile-field-btn tw:rounded-lg tw:px-4 tw:py-3 tw:bg-white tw:w-full tw:relative tw:z-10 tw:outline-none tw:text-left tw:text-sm tw:flex tw:items-center tw:gap-3"
             aria-label="Go to profile"
           >
-            {{ authStore.user?.email || '' }}
+            <img
+              v-if="headerUserAvatarUrl"
+              :src="headerUserAvatarUrl"
+              alt=""
+              class="tw:w-10 tw:h-10 tw:rounded-full tw:object-cover tw:border tw:border-gray-200 tw:shrink-0"
+            />
+            <span class="tw:truncate">{{ authStore.user?.email || '' }}</span>
           </button>
 
           <!-- Gallery link (premium only, mobile) -->
@@ -630,6 +642,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { getCreateRoute } from '@/utils/routeResolver';
+import { getUserProfileImageUrl } from '@/utils/userProfileImage';
 import { Bell, Images, Loader2 } from 'lucide-vue-next';
 import { chatService } from '@/services/chatService';
 import { useMapStore } from '@/stores/mapStore'
@@ -649,6 +662,10 @@ const router = useRouter()
 
 const userCreatePath = computed(() =>
   getCreateRoute(authStore.user?.profile_type, authStore.user?.account_type)
+)
+
+const headerUserAvatarUrl = computed(() =>
+  getUserProfileImageUrl(authStore.user ?? undefined),
 )
 
 const galleryRoute = computed(() => {

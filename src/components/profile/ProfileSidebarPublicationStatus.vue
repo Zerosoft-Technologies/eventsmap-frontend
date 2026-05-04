@@ -50,7 +50,7 @@
         type="button"
         role="menuitemradio"
         class="tw:flex tw:w-full tw:items-center tw:px-3 tw:py-2 tw:text-left tw:text-sm tw:text-gray-800 hover:tw:bg-gray-50 focus:tw:outline-none focus:tw:bg-gray-50"
-        :aria-checked="opt === currentSlug"
+        :aria-checked="isOptionSelected(opt)"
         @click="selectStatus(opt)"
       >
         <span
@@ -130,53 +130,58 @@ const mergedLabels = computed(() => {
   return { ...fromMeta, ...itemLabels }
 })
 
-const pickerOptions = computed(() => {
-  const fromItem = props.item.sidebar_options
-  const itemList = Array.isArray(fromItem)
-    ? fromItem.map((s) => String(s))
-    : null
-  const fromMeta = meta.value?.sidebar_options ?? []
-  const raw =
-    itemList && itemList.length > 0
-      ? itemList
-      : fromMeta.length > 0
-        ? fromMeta
-        : ['upcoming', 'completed', 'suspended', 'cancelled']
-  return raw.filter((s) => String(s).toLowerCase() !== 'draft')
+/** API slug sent when the user chooses Publish (`PATCH …/publish-status`). */
+const PUBLISHED_STATUS_SLUG = 'published'
+
+const pickerOptions = computed(() => ['draft', PUBLISHED_STATUS_SLUG])
+
+const currentSlug = computed(() => {
+  const raw = props.item.publish_status ?? props.item.status ?? 'draft'
+  const s = String(raw).toLowerCase()
+  if (s === 'draft') return 'draft'
+  if (s === PUBLISHED_STATUS_SLUG) return PUBLISHED_STATUS_SLUG
+  const legacyPublished = ['upcoming', 'completed', 'suspended', 'cancelled']
+  if (legacyPublished.includes(s)) return PUBLISHED_STATUS_SLUG
+  return s
 })
 
-const currentSlug = computed(() =>
-  String(props.item.status ?? 'draft').toLowerCase(),
+const isDraftStatus = computed(() => currentSlug.value === 'draft')
+
+const displayLabel = computed(() =>
+  isDraftStatus.value ? 'Draft' : 'Publish',
 )
 
-const displayLabel = computed(() => {
-  const slug = currentSlug.value
-  if (typeof props.item.status_label === 'string' && props.item.status_label)
-    return props.item.status_label
-  const fromMap = mergedLabels.value[slug]
-  if (fromMap) return fromMap
-  return slug.replace(/_/g, ' ') || '—'
-})
-
-const pillClass = computed(() => publicationStatusPillClass(currentSlug.value))
+const pillClass = computed(() =>
+  publicationStatusPillClass(isDraftStatus.value ? 'draft' : PUBLISHED_STATUS_SLUG),
+)
 
 function labelForSlug(slug) {
+  const s = String(slug || '').toLowerCase()
+  if (s === 'draft') return 'Draft'
+  if (s === PUBLISHED_STATUS_SLUG) return 'Publish'
   return mergedLabels.value[slug] || slug.replace(/_/g, ' ')
 }
 
 function dotClass(slug) {
   const s = slug.toLowerCase()
-  if (s === 'upcoming') return 'tw:bg-sky-500'
-  if (s === 'completed') return 'tw:bg-emerald-500'
-  if (s === 'suspended') return 'tw:bg-amber-500'
-  if (s === 'cancelled') return 'tw:bg-gray-400'
+  if (s === 'draft') return 'tw:bg-slate-500'
+  if (s === PUBLISHED_STATUS_SLUG) return 'tw:bg-sky-500'
   return 'tw:bg-slate-400'
 }
 
-function applyStore(status, status_label) {
+function isOptionSelected(slug) {
+  const s = String(slug || '').toLowerCase()
+  if (s === 'draft') return isDraftStatus.value
+  return !isDraftStatus.value
+}
+
+function applyStore(publishStatus, status_label) {
   const id = Number(props.item.id)
   const patch = {}
-  if (status != null) patch.status = status
+  if (publishStatus != null) {
+    patch.publish_status = publishStatus
+    patch.status = publishStatus
+  }
   if (status_label != null) patch.status_label = status_label
   if (props.resourceType === 'events') myEventStore.mergeListItem(id, patch)
   else if (props.resourceType === 'talents') myTalentStore.mergeListItem(id, patch)
@@ -203,7 +208,9 @@ function toggleMenu() {
 async function selectStatus(slug) {
   if (loading.value) return
   closeMenu()
-  if (slug === currentSlug.value) return
+  const next = String(slug || '').toLowerCase()
+  if (next === 'draft' && isDraftStatus.value) return
+  if (next === PUBLISHED_STATUS_SLUG && !isDraftStatus.value) return
 
   loading.value = true
   try {
@@ -213,10 +220,15 @@ async function selectStatus(slug) {
       slug,
     )
     const payload = res?.data
-    const st = payload?.status ?? slug
-    const lbl = payload?.status_label ?? labelForSlug(st)
+    const st =
+      payload?.publish_status ??
+      payload?.status ??
+      slug
+    const userFacing =
+      String(st || '').toLowerCase() === 'draft' ? 'Draft' : 'Publish'
+    const lbl = payload?.status_label ?? userFacing
     applyStore(st, lbl)
-    announce(`Publication status changed to ${lbl}`)
+    announce(`Publication status changed to ${userFacing}`)
   } catch (err) {
     toast.error(
       err?.response?.data?.message ||

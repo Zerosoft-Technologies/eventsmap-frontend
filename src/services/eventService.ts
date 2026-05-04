@@ -150,11 +150,14 @@ export interface TalentV2Payload {
 }
 
 /** JSON body for POST /v2/venues and PUT /v2/venues/{id} — gallery `image_id` UUIDs (same as events_v2) */
+/** One row per calendar day when closed, or one row per time period when open (same `day` may repeat). */
 export interface VenueOpeningHoursDayPayload {
   day: string
   is_open: boolean
   open: string
   close: string
+  /** Optional nested periods when API uses a single object per weekday. */
+  slots?: Array<{ open: string; close: string }>
 }
 
 export interface VenueV2Payload {

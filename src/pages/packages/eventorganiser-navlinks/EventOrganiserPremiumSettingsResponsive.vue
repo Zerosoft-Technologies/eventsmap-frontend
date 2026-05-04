@@ -226,7 +226,7 @@
             <!-- Account Information Tab -->
             <div v-else-if="activeTab === 'account'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-4 sm:tw:p-6 lg:tw:p-8">
               <h2 class="tw-text-lg tw:font-semibold tw:text-gray-900 tw:mb-6">Account Information</h2>
-              
+              <AccountInformationHeader />
               <div v-if="authStore.user" class="tw-grid tw:grid-cols-1 sm:tw:grid-cols-2 tw:gap-4">
                 <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:border tw:border-gray-200">
                   <p class="tw-text-xs tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Name</p>
@@ -264,6 +264,7 @@ import { useRouter } from 'vue-router'
 import { ChevronDown, FileText, Download } from 'lucide-vue-next'
 import ResponsiveProfileLayout from '@/components/layout/ResponsiveProfileLayout.vue'
 import ResponsiveTabs from '@/components/ResponsiveTabs.vue'
+import AccountInformationHeader from '@/components/profile/AccountInformationHeader.vue'
 import EventSidebar from '../eventsidebar/Eventsidebar.vue'
 import UserSettings from '@/components/UserSettings.vue'
 import PlanManagement from '@/components/PlanManagement.vue'

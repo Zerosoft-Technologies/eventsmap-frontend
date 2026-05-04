@@ -178,6 +178,27 @@
         </div>
       </div>
 
+      <!-- Host / organizer -->
+      <div
+        v-if="organizerRowVisible"
+        class="tw:flex tw:items-center tw:gap-2 tw:pt-0.5"
+      >
+        <div
+          class="tw:w-8 tw:h-8 tw:shrink-0 tw:rounded-full tw:overflow-hidden tw:border tw:border-gray-200 tw:bg-gray-100 tw:flex tw:items-center tw:justify-center"
+        >
+          <img
+            v-if="organizerImageSrc"
+            :src="organizerImageSrc"
+            alt=""
+            class="tw:w-full tw:h-full tw:object-cover"
+          />
+          <UserIcon v-else class="tw:w-4 tw:h-4 tw:text-gray-400" aria-hidden="true" />
+        </div>
+        <span class="tw:text-xs tw:text-[var(--primary-color)] tw:font-medium tw:truncate tw:min-w-0">{{
+          organizerDisplayName
+        }}</span>
+      </div>
+
       <!-- Action buttons -->
       <div class="tw:flex tw:gap-2 tw:pt-2 tw:mt-auto tw:border-t tw:border-gray-100">
         <button
@@ -248,13 +269,14 @@ onBeforeUnmount(() => clearInterval(interval))
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next'
+import { ChevronLeftIcon, ChevronRightIcon, User as UserIcon } from 'lucide-vue-next'
 import router from '@/router'
 import DetailRow from './DetailedRow.vue'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useAuthStore } from '@/stores/auth'
 import { requestEventMapFocus } from '@/utils/mapEventFocus'
 import { buildEventGalleryImageUrls } from '@/utils/eventGalleryImages'
+import { getUserProfileImageUrl } from '@/utils/userProfileImage'
 
 const { t } = useI18n()
 const wishlistStore = useWishlistStore()
@@ -355,6 +377,29 @@ async function handleWishlistToggle() {
     }
     await wishlistStore.toggleWishlist(props.event)
 }
+
+const organizerDisplayName = computed(() => {
+  const n = props.event?.organizer_name
+  return n && String(n).trim() ? String(n).trim() : ''
+})
+
+const organizerImageSrc = computed(() => {
+  const e = props.event
+  if (!e) return ''
+  const fromApi = e.organizer_profile_image_url
+  if (fromApi && String(fromApi).trim()) return String(fromApi).trim()
+  const uid = authStore.user?.id
+  if (uid == null) return ''
+  if (e.organizer_id != null && Number(e.organizer_id) === Number(uid))
+    return getUserProfileImageUrl(authStore.user ?? undefined)
+  if (e.user_id != null && Number(e.user_id) === Number(uid))
+    return getUserProfileImageUrl(authStore.user ?? undefined)
+  return ''
+})
+
+const organizerRowVisible = computed(
+  () => !!(organizerDisplayName.value || organizerImageSrc.value),
+)
 
 const formatLabel = (value) => {
   if (!value) return ''

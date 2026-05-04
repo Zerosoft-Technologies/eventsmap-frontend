@@ -2,6 +2,7 @@
 export function publicationStatusPillClass(slug: string | undefined): string {
   const s = String(slug || '').toLowerCase()
   switch (s) {
+    case 'published':
     case 'upcoming':
       return 'tw:bg-sky-100 tw:text-sky-800 tw:border-sky-200/80'
     case 'completed':

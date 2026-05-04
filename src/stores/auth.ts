@@ -7,6 +7,12 @@ export interface User {
   id: number
   name: string
   email: string
+  /** Account profile photo (API may send one or more of these keys) */
+  avatar_url?: string | null
+  profile_image_url?: string | null
+  profile_image_path?: string | null
+  profile_photo_url?: string | null
+  full_name?: string | null
   role?: string
   is_active?: boolean
   email_verified?: boolean
@@ -14,11 +20,13 @@ export interface User {
   account_type: 'free' | 'premium'
   profile_type: string
   status: 'active' | 'pending_payment' | 'suspended'
-  billing_type?: 'individual' | 'business' | null
+  billing_type?: 'individual' | 'business' | 'private' | string | null
   company_name?: string | null
   vat_number?: string | null
   vat_validated?: boolean
   address?: string | null
+  postal_code?: string | null
+  city?: string | null
   country?: string | null
   created_at: string
   updated_at?: string
@@ -31,6 +39,15 @@ interface ApiErrorResponse {
     message?: string
     code?: string
   }
+}
+
+export function normalizeUserPayload(raw: Record<string, unknown>): User {
+  const u = raw as unknown as User & { profileType?: string; accountType?: string }
+  return {
+    ...raw,
+    profile_type: u.profile_type ?? u.profileType ?? '',
+    account_type: u.account_type ?? u.accountType ?? 'free',
+  } as unknown as User
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -155,15 +172,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function normalizeUserPayload(raw: Record<string, unknown>): User {
-    const u = raw as unknown as User & { profileType?: string; accountType?: string }
-    return {
-      ...raw,
-      profile_type: u.profile_type ?? u.profileType ?? '',
-      account_type: u.account_type ?? u.accountType ?? 'free',
-    } as unknown as User
-  }
-
   async function fetchUser() {
     if (!token.value) return
     loading.value = true
@@ -179,6 +187,22 @@ export const useAuthStore = defineStore('auth', () => {
       setToken(null)
     } finally {
       loading.value = false
+    }
+  }
+
+  /** Refresh current user from API without toggling global `loading` (e.g. after profile save). */
+  async function syncUserFromServer(): Promise<boolean> {
+    if (!token.value) return false
+    try {
+      const { data } = await api.get('/auth/me')
+      const raw = data.data || data.user || data
+      if (raw && typeof raw === 'object' && 'id' in raw) {
+        user.value = normalizeUserPayload(raw as Record<string, unknown>)
+        return true
+      }
+      return false
+    } catch {
+      return false
     }
   }
 
@@ -278,6 +302,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     fetchUser,
+    syncUserFromServer,
     setUser,
     setToken,
     resendVerification,

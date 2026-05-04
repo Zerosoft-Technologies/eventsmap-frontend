@@ -3,11 +3,19 @@
     <!-- Dashboard Header -->
     <div class="tw:bg-white tw:border-b tw:border-gray-200">
       <div class="tw:max-w-6xl tw:mx-auto tw:px-4 tw:py-4 tw:flex tw:items-center tw:justify-between">
-        <div>
-          <h1 class="tw:text-xl tw:font-bold" style="color: var(--primary-color)">Dashboard</h1>
-          <p class="tw:text-sm tw:text-gray-500" v-if="authStore.user">
-            Welcome back, {{ authStore.user.name }}
-          </p>
+        <div class="tw:flex tw:items-center tw:gap-3 tw:min-w-0">
+          <img
+            v-if="dashboardAvatarUrl"
+            :src="dashboardAvatarUrl"
+            alt=""
+            class="tw:w-11 tw:h-11 tw:shrink-0 tw:rounded-full tw:object-cover tw:border tw:border-gray-200"
+          />
+          <div class="tw:min-w-0">
+            <h1 class="tw:text-xl tw:font-bold" style="color: var(--primary-color)">Dashboard</h1>
+            <p class="tw:text-sm tw:text-gray-500" v-if="authStore.user">
+              Welcome back, {{ authStore.user.name }}
+            </p>
+          </div>
         </div>
         <!-- <button
           @click="handleLogout"
@@ -24,6 +32,7 @@
       <!-- User Info Card -->
       <div v-if="authStore.user" class="tw:bg-white tw:rounded-2xl tw:shadow tw:p-6 tw:mb-6">
         <h2 class="tw:text-lg tw:font-semibold tw:mb-4" style="color: var(--primary-color)">Account Information</h2>
+        <AccountInformationHeader />
         <div class="tw:grid tw:grid-cols-1 md:tw:grid-cols-2 tw:gap-4">
           <div>
             <p class="tw:text-xs tw:text-gray-500 tw:uppercase tw:tracking-wide">Name</p>
@@ -88,10 +97,14 @@
 
 <script setup lang="ts">
 // import { useRouter } from 'vue-router'
+import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { getUserProfileImageUrl } from '@/utils/userProfileImage'
+import AccountInformationHeader from '@/components/profile/AccountInformationHeader.vue'
 
 // const router = useRouter()
 const authStore = useAuthStore()
+const dashboardAvatarUrl = computed(() => getUserProfileImageUrl(authStore.user ?? undefined))
 
 // async function handleLogout() {
 //   await authStore.logout()

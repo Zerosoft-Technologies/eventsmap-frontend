@@ -8,13 +8,15 @@ export type ProfilePublicationMeta = {
 
 const DEFAULT_LABELS: Record<string, string> = {
   draft: 'Draft',
+  published: 'Publish',
   upcoming: 'Upcoming',
   completed: 'Completed',
   suspended: 'Suspended',
   cancelled: 'Cancelled',
 }
 
-const DEFAULT_SIDEBAR_OPTIONS = ['upcoming', 'completed', 'suspended', 'cancelled']
+/** Sidebar picker is fixed to Draft + Publish (Publish → API slug `published`). */
+const DEFAULT_SIDEBAR_OPTIONS = ['draft', 'published']
 
 const meta = shallowRef<ProfilePublicationMeta | null>(null)
 
@@ -37,12 +39,7 @@ export function useProfilePublicationMeta() {
           rawLabels && typeof rawLabels === 'object'
             ? { ...DEFAULT_LABELS, ...(rawLabels as Record<string, string>) }
             : { ...DEFAULT_LABELS }
-        let sidebarOptions = DEFAULT_SIDEBAR_OPTIONS
-        if (Array.isArray(obj.sidebar_options) && obj.sidebar_options.length > 0) {
-          sidebarOptions = obj.sidebar_options.map((s) => String(s))
-        }
-        sidebarOptions = sidebarOptions.filter((s) => String(s).toLowerCase() !== 'draft')
-        meta.value = { labels, sidebar_options: sidebarOptions }
+        meta.value = { labels, sidebar_options: [...DEFAULT_SIDEBAR_OPTIONS] }
       } catch {
         meta.value = {
           labels: { ...DEFAULT_LABELS },

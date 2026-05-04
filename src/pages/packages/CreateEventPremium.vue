@@ -482,10 +482,10 @@
                                         inputmode="numeric"
                                         maxlength="2"
                                         v-model="startHH"
-                                        placeholder="HH"
+                                        placeholder="00"
                                         @input="onTimeInput('startHH', $event)"
                                         @blur="onTimeBlur('startHH')"
-                                        class="tw:w-10 tw:text-center tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
+                                        class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
                                         :class="startHH ? 'tw:text-black' : 'tw:text-gray-700'"
                                     />
                                     <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
@@ -495,7 +495,7 @@
                                         inputmode="numeric"
                                         maxlength="2"
                                         v-model="startMM"
-                                        placeholder="mm"
+                                        placeholder="00"
                                         @input="onTimeInput('startMM', $event)"
                                         @blur="onTimeBlur('startMM')"
                                         class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
@@ -518,10 +518,10 @@
                                         inputmode="numeric"
                                         maxlength="2"
                                         v-model="endHH"
-                                        placeholder="HH"
+                                        placeholder="23"
                                         @input="onTimeInput('endHH', $event)"
                                         @blur="onTimeBlur('endHH')"
-                                        class="tw:w-10 tw:text-center tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
+                                        class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
                                         :class="endHH ? 'tw:text-black' : 'tw:text-gray-700'"
                                     />
                                     <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
@@ -531,7 +531,7 @@
                                         inputmode="numeric"
                                         maxlength="2"
                                         v-model="endMM"
-                                        placeholder="mm"
+                                        placeholder="00"
                                         @input="onTimeInput('endMM', $event)"
                                         @blur="onTimeBlur('endMM')"
                                         class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"

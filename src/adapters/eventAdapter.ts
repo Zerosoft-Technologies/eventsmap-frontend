@@ -162,6 +162,29 @@ function pickStr(...vals: unknown[]): string | undefined {
   return undefined
 }
 
+function pickOrganizerProfileImageUrl(ev: EventV2Raw): string | undefined {
+  const e = ev as Record<string, unknown>
+  const top = pickStr(
+    e.organizer_profile_image_url,
+    e.organizer_image_url,
+    e.organizer_avatar_url,
+    e.host_image_url,
+  )
+  if (top) return top
+  const org = e.organizer
+  if (!org || typeof org !== 'object' || Array.isArray(org)) return undefined
+  const o = org as Record<string, unknown>
+  return pickStr(o.profile_image_url, o.avatar_url, o.image_url, o.profile_photo_url)
+}
+
+function pickUserId(ev: EventV2Raw): number | null | undefined {
+  const e = ev as Record<string, unknown>
+  const v = e.user_id ?? e.created_by ?? e.owner_id
+  if (v == null || v === '') return undefined
+  const n = Number(v)
+  return Number.isFinite(n) ? n : undefined
+}
+
 function pickContactInfo(raw: unknown): ContactInfo | undefined {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
   const o = raw as Record<string, unknown>
@@ -338,6 +361,8 @@ export function mapEventV2ToUI(event: EventV2Raw): Event {
     // Organizer
     organizer_name: event.organizer_name,
     organizer_id: event.organizer_id,
+    organizer_profile_image_url: pickOrganizerProfileImageUrl(event),
+    user_id: pickUserId(event),
     contact_phone: pickStr((event as Record<string, unknown>).contact_phone),
     contact_email: pickStr((event as Record<string, unknown>).contact_email),
     contact_website: pickStr((event as Record<string, unknown>).contact_website),

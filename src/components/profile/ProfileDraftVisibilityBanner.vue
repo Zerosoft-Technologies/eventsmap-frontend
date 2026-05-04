@@ -23,7 +23,7 @@ withDefaults(
   }>(),
   {
     message:
-      'This profile is still a draft. Set its publication status from the account sidebar (next to your profile in the list) when you are ready for it to appear as upcoming, completed, suspended, or cancelled.',
+      'This profile is still a draft. Set its publication status from the account sidebar (next to your profile in the list) to Publish when you are ready for it to go live.',
   },
 )
 </script>

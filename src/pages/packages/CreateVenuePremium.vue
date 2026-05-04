@@ -679,8 +679,8 @@
                 </div>
 
                 <!-- OPENING HOURS -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-5 tw:space-y-3 tw:border tw:border-gray-100">
-                    <h3 class="tw:text-lg tw:md:text-xl tw:font-bold tw:text-gray-900">Opening hours</h3>
+                <div class="tw:bg-white tw:rounded-xl tw:shadow-sm tw:p-4 tw:md:p-5 tw:space-y-3 tw:border tw:border-gray-100">
+                    <h3 class="tw:text-lg tw:font-bold tw:text-gray-900 md:tw:text-xl">Opening hours</h3>
                     <OpeningHoursEditor v-model="openingHoursSchedule" :error-message="fieldErrors.opening_hours?.[0] || ''" />
                 </div>
 

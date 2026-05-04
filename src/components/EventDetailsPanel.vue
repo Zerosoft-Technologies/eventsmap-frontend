@@ -274,9 +274,15 @@
               >
                 <div class="tw:flex tw:gap-3">
                   <div
-                    class="tw:w-12 tw:h-12 tw:rounded-full tw:bg-gray-200 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0 tw:text-sm tw:font-semibold tw:text-gray-600"
+                    class="tw:w-12 tw:h-12 tw:rounded-full tw:overflow-hidden tw:border tw:border-gray-200 tw:bg-gray-100 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0 tw:text-sm tw:font-semibold tw:text-gray-600"
                   >
-                    {{ initialsFromName(talent.name) }}
+                    <img
+                      v-if="invitedProfileImageUrl(talent)"
+                      :src="invitedProfileImageUrl(talent)"
+                      alt=""
+                      class="tw:w-full tw:h-full tw:object-cover"
+                    />
+                    <template v-else>{{ initialsFromName(talent.name) }}</template>
                   </div>
                   <div class="tw:flex-1 tw:min-w-0">
                     <p class="tw:font-semibold tw:text-gray-900 tw:truncate">{{ talent.name || '—' }}</p>
@@ -313,9 +319,21 @@
               >
                 <div class="tw:flex tw:gap-3">
                   <div
-                    class="tw:w-12 tw:h-12 tw:rounded-full tw:bg-indigo-50 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0"
+                    class="tw:w-12 tw:h-12 tw:rounded-full tw:overflow-hidden tw:border tw:border-gray-200 tw:bg-indigo-50 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0"
                   >
-                    <svg class="tw:w-6 tw:h-6 tw:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <img
+                      v-if="invitedProfileImageUrl(org)"
+                      :src="invitedProfileImageUrl(org)"
+                      alt=""
+                      class="tw:w-full tw:h-full tw:object-cover"
+                    />
+                    <svg
+                      v-else
+                      class="tw:w-6 tw:h-6 tw:text-indigo-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
@@ -441,6 +459,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import { buildEventGalleryImageUrls } from '@/utils/eventGalleryImages'
 import { parseSocialMediaUrlEntries } from '@/utils/socialMediaUrls'
+import { getUserProfileImageUrl } from '@/utils/userProfileImage'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -676,6 +695,10 @@ function initialsFromName(name) {
   const parts = name.trim().split(/\s+/)
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+function invitedProfileImageUrl(item) {
+  return getUserProfileImageUrl(item)
 }
 
 function syncActiveTabWithTabs() {

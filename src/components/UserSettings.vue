@@ -7,6 +7,55 @@
             <div class="tw:mb-6">
                 <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-4">Profile</h2>
 
+                <!-- Profile photo -->
+                <div
+                    class="tw:mb-6 tw:flex tw:flex-col tw:sm:flex-row tw:gap-4 tw:items-start tw:p-4 tw:bg-white tw:rounded-lg tw:border tw:border-gray-200"
+                >
+                    <div
+                        class="tw:relative tw:w-24 tw:h-24 tw:shrink-0 tw:rounded-full tw:overflow-hidden tw:border tw:border-gray-200 tw:bg-gray-100 tw:flex tw:items-center tw:justify-center"
+                    >
+                        <img
+                            v-if="avatarDisplayUrl"
+                            :src="avatarDisplayUrl"
+                            alt=""
+                            class="tw:w-full tw:h-full tw:object-cover"
+                        />
+                        <UserIcon v-else class="tw:w-10 tw:h-10 tw:text-gray-400" aria-hidden="true" />
+                    </div>
+                    <div class="tw:flex tw:flex-col tw:gap-2 tw:min-w-0">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-900">Profile photo</label>
+                        <div class="tw:flex tw:flex-wrap tw:items-center tw:gap-2">
+                            <input
+                                ref="avatarInputRef"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                class="tw:sr-only"
+                                @change="onAvatarSelected"
+                            />
+                            <button
+                                type="button"
+                                class="tw:inline-flex tw:items-center tw:justify-center tw:px-4 tw:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:border tw:border-gray-300 tw:bg-white tw:text-gray-800 hover:tw:bg-gray-50 tw:transition"
+                                :disabled="avatarUploading"
+                                @click="openAvatarPicker"
+                            >
+                                {{ avatarFile ? 'Change image' : 'Upload image' }}
+                            </button>
+                            <button
+                                v-if="avatarFile"
+                                type="button"
+                                class="tw:text-sm tw:text-gray-600 hover:tw:text-gray-900 tw:underline tw:disabled:opacity-50"
+                                :disabled="avatarUploading"
+                                @click="clearAvatarFile"
+                            >
+                                Cancel selection
+                            </button>
+                        </div>
+                        <p class="tw:text-xs tw:text-gray-500">
+                            JPG, PNG, WebP or GIF. Up to 3&nbsp;MB. Save changes to apply a new photo.
+                        </p>
+                    </div>
+                </div>
+
                 <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-x-6 tw:gap-y-4">
                     <!-- Name (editable) -->
                     <div class="tw:flex tw:flex-col tw:gap-2">
@@ -151,9 +200,9 @@
                 {{ errorMsg }}
             </div>
 
-            <!-- ── Save Button ─────────────────────────────────── -->
+            <!-- ── Save (profile + optional new photo) ───────── -->
             <button
-                :disabled="saving"
+                :disabled="saving || avatarUploading"
                 :class="[
                     'tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:border tw:transition',
                     saving
@@ -162,17 +211,24 @@
                 ]"
                 @click="saveProfile"
             >
-                {{ saving ? 'Saving…' : 'Save Changes' }}
+                {{ saving || avatarUploading ? 'Saving…' : 'Save Changes' }}
             </button>
         </template>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { Eye, EyeOff } from 'lucide-vue-next'
-import { useAuthStore } from '@/stores/auth'
-import api from '@/services/api'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { Eye, EyeOff, User as UserIcon } from 'lucide-vue-next'
+import { useAuthStore, normalizeUserPayload } from '@/stores/auth'
+import {
+  USER_PROFILE_AVATAR_MAX_BYTES,
+  buildUserProfileFormData,
+  extractUserFromProfileUpdateResponse,
+  putUserProfileJson,
+  putUserProfileMultipart,
+} from '@/services/userProfileService'
+import { getUserProfileImageUrl } from '@/utils/userProfileImage'
 
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
@@ -182,8 +238,13 @@ const isBusiness = computed(() => form.billing_type === 'business')
 
 const showPassword = ref(false)
 const saving = ref(false)
+const avatarUploading = ref(false)
 const successMsg = ref('')
 const errorMsg = ref('')
+
+const avatarInputRef = ref<HTMLInputElement | null>(null)
+const avatarFile = ref<File | null>(null)
+const avatarObjectUrl = ref<string | null>(null)
 
 const form = reactive({
     name: '',
@@ -193,6 +254,62 @@ const form = reactive({
     vat_number: '',
     address: '',
     country: '',
+})
+
+function avatarUrlFromUser(u: typeof user.value): string {
+    return getUserProfileImageUrl(u ?? undefined)
+}
+
+const avatarDisplayUrl = computed(() => {
+    if (avatarObjectUrl.value) return avatarObjectUrl.value
+    return avatarUrlFromUser(user.value)
+})
+
+function releaseAvatarPreview() {
+    if (avatarObjectUrl.value) {
+        URL.revokeObjectURL(avatarObjectUrl.value)
+        avatarObjectUrl.value = null
+    }
+}
+
+function openAvatarPicker() {
+    avatarInputRef.value?.click()
+}
+
+function clearAvatarFile() {
+    avatarFile.value = null
+    releaseAvatarPreview()
+    if (avatarInputRef.value) avatarInputRef.value.value = ''
+}
+
+function onAvatarSelected(ev: Event) {
+    errorMsg.value = ''
+    const input = ev.target as HTMLInputElement
+    const file = input.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+        errorMsg.value = 'Please choose an image file (JPG, PNG, WebP, or GIF).'
+        input.value = ''
+        return
+    }
+    if (file.size > USER_PROFILE_AVATAR_MAX_BYTES) {
+        errorMsg.value = 'Image is too large. Maximum size is 3 MB.'
+        input.value = ''
+        return
+    }
+    releaseAvatarPreview()
+    avatarFile.value = file
+    avatarObjectUrl.value = URL.createObjectURL(file)
+}
+
+watch(user, (u) => {
+    if (!u) return
+    form.name = u.name ?? ''
+    form.billing_type = (u.billing_type ?? '') as 'individual' | 'business' | ''
+    form.company_name = u.company_name ?? ''
+    form.vat_number = u.vat_number ?? ''
+    form.address = u.address ?? ''
+    form.country = u.country ?? ''
 })
 
 onMounted(() => {
@@ -206,6 +323,21 @@ onMounted(() => {
     }
 })
 
+onBeforeUnmount(() => {
+    releaseAvatarPreview()
+})
+
+function mergePayloadIntoAuth(raw: unknown): boolean {
+    const updated = extractUserFromProfileUpdateResponse(raw)
+    if (!updated?.id) return false
+    const merged = {
+        ...(user.value as Record<string, unknown>),
+        ...updated,
+    }
+    authStore.setUser(normalizeUserPayload(merged))
+    return true
+}
+
 async function saveProfile() {
     successMsg.value = ''
     errorMsg.value = ''
@@ -216,31 +348,51 @@ async function saveProfile() {
     }
 
     saving.value = true
+    avatarUploading.value = !!avatarFile.value
     try {
-        const payload: Record<string, unknown> = { name: form.name }
+        if (avatarFile.value) {
+            const fd = buildUserProfileFormData({
+                name: form.name,
+                password: form.password || undefined,
+                password_confirmation: form.password || undefined,
+                billing_type: isPremium.value ? form.billing_type || undefined : undefined,
+                address: isPremium.value ? form.address : undefined,
+                country: isPremium.value ? form.country : undefined,
+                company_name: isPremium.value && isBusiness.value ? form.company_name : undefined,
+                vat_number:
+                    isPremium.value && isBusiness.value && !user.value?.vat_validated
+                        ? form.vat_number
+                        : undefined,
+                avatarFile: avatarFile.value,
+            })
+            await putUserProfileMultipart(fd)
+            await authStore.syncUserFromServer()
+            clearAvatarFile()
+        } else {
+            const payload: Record<string, unknown> = { name: form.name }
 
-        if (form.password) {
-            payload.password = form.password
-        }
+            if (form.password) {
+                payload.password = form.password
+                payload.password_confirmation = form.password
+            }
 
-        if (isPremium.value) {
-            payload.billing_type = form.billing_type
-            payload.address = form.address
-            payload.country = form.country
+            if (isPremium.value) {
+                payload.billing_type = form.billing_type
+                payload.address = form.address
+                payload.country = form.country
 
-            if (isBusiness.value) {
-                payload.company_name = form.company_name
-                if (!user.value?.vat_validated) {
-                    payload.vat_number = form.vat_number
+                if (isBusiness.value) {
+                    payload.company_name = form.company_name
+                    if (!user.value?.vat_validated) {
+                        payload.vat_number = form.vat_number
+                    }
                 }
             }
-        }
 
-        const { data } = await api.put('user/profile', payload)
-        const updated = data.data ?? data.user ?? data
-
-        if (updated?.id) {
-            authStore.setUser(updated)
+            const data = await putUserProfileJson(payload)
+            if (!mergePayloadIntoAuth(data)) {
+                await authStore.syncUserFromServer()
+            }
         }
 
         form.password = ''
@@ -250,6 +402,7 @@ async function saveProfile() {
         errorMsg.value = e.response?.data?.message ?? 'Failed to save changes. Please try again.'
     } finally {
         saving.value = false
+        avatarUploading.value = false
     }
 }
 </script>

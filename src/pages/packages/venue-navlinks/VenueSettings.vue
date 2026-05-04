@@ -203,7 +203,7 @@
                         <!-- Account Information Tab -->
                         <div v-if="activeTab === 'account'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-4 tw:md:p-8">
                             <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-6">Account Information</h2>
-
+                            <AccountInformationHeader />
                             <template v-if="authStore.user">
                             <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-6">
                                 <div class="tw:bg-white tw:rounded-lg tw:p-4 tw:border tw:border-gray-200">
@@ -284,6 +284,7 @@ import { useRouter } from "vue-router"
 import { Home, FileText, BarChart3, Settings, Calendar } from "lucide-vue-next"
 import EventSidebar from '../eventsidebar/Eventsidebar.vue'
 import { eventInvitationsNavItem } from '@/utils/eventInvitationsNavItem'
+import AccountInformationHeader from '@/components/profile/AccountInformationHeader.vue'
 import UserSettings from '@/components/UserSettings.vue'
 import PlanManagement from '@/components/PlanManagement.vue';
 import { useAuthStore } from '@/stores/auth';

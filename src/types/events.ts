@@ -211,6 +211,11 @@ export interface InvitedEventProfile {
   email?: string
   role?: string
   is_active?: boolean
+  profile_image_url?: string | null
+  profile_image_path?: string | null
+  avatar_url?: string | null
+  image_url?: string | null
+  image?: string | null
 }
 
 export interface InvitedVenueObject {
@@ -263,6 +268,9 @@ export interface Event {
   address: string | null
   organizer_name?: string
   organizer_id?: number | null
+  /** Host profile photo when API provides it (or inferred for current user in UI) */
+  organizer_profile_image_url?: string | null
+  user_id?: number | null
   /** Backend may send these at the root; UI merges them into contact display */
   contact_phone?: string
   contact_email?: string
