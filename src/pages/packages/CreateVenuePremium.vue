@@ -1392,7 +1392,7 @@ function buildVenuePayload() {
         contact_phone: contactPhone.value || undefined,
         contact_email: contactEmail.value || undefined,
         contact_website: contactWebsite.value || undefined,
-        contact_box_design_message: contactBoxDesignMessage.value || undefined,
+        contact_box_design_message: contactBoxDesignMessage.value.trim(),
         opening_hours: serializeVenueOpeningHoursForApi(openingHoursSchedule.value),
         facebook_url: facebookUrl.value || undefined,
         instagram_url: instagramUrl.value || undefined,

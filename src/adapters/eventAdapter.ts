@@ -199,7 +199,12 @@ function pickContactInfo(raw: unknown): ContactInfo | undefined {
 }
 
 function buildContactInfoFromEvent(event: EventV2Raw): ContactInfo | undefined {
-  const nested = pickContactInfo(event.contact_info)
+  const nestedRaw = event.contact_info
+  const nested = pickContactInfo(nestedRaw)
+  const nestedRec =
+    nestedRaw && typeof nestedRaw === 'object' && !Array.isArray(nestedRaw)
+      ? (nestedRaw as Record<string, unknown>)
+      : undefined
   const e = event as Record<string, unknown>
   // Root-level contact_* from API takes precedence; nested contact_info fills gaps
   const phone = pickStr(e.contact_phone, nested?.phone, e.phone, e.telephone)
@@ -211,10 +216,19 @@ function buildContactInfoFromEvent(event: EventV2Raw): ContactInfo | undefined {
     e.event_website,
     e.external_url
   )
+  const designMessage = pickStr(
+    e.contact_box_design_message,
+    nestedRec?.contact_box_design_message,
+    nestedRec?.design_message,
+  )
+  const boxMessage = pickStr(e.contact_box_message, nestedRec?.contact_box_message)
+
   const out: ContactInfo = {}
   if (phone) out.phone = phone
   if (email) out.email = email
   if (website) out.website = website
+  if (designMessage) out.design_message = designMessage
+  if (boxMessage) out.box_message = boxMessage
   return Object.keys(out).length ? out : undefined
 }
 
@@ -366,6 +380,8 @@ export function mapEventV2ToUI(event: EventV2Raw): Event {
     contact_phone: pickStr((event as Record<string, unknown>).contact_phone),
     contact_email: pickStr((event as Record<string, unknown>).contact_email),
     contact_website: pickStr((event as Record<string, unknown>).contact_website),
+    contact_box_message: pickStr((event as Record<string, unknown>).contact_box_message),
+    contact_box_design_message: pickStr((event as Record<string, unknown>).contact_box_design_message),
 
     // Images
     cover_image: getImageUrl(),

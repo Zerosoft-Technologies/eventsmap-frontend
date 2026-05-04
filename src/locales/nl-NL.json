@@ -176,7 +176,11 @@
       "requiredNote": "* Verplichte velden",
       "sendButton": "Bericht versturen",
       "formRequired": "Vul je volledige naam en bericht in.",
-      "formSuccess": "Bedankt — je bericht is ontvangen. We nemen snel contact op."
+      "formSuccess": "Bedankt — je bericht is ontvangen. We nemen snel contact op.",
+      "designMessageTitle": "Bericht van de organisator",
+      "fromOrganiser": "Organisator",
+      "fromTalent": "Talent",
+      "fromVenue": "Locatie"
     },
     "tabs": {
       "overview": "Overzicht",

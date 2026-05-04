@@ -28,6 +28,10 @@ export interface ContactInfo {
   email?: string
   phone?: string
   website?: string
+  /** Profile “contact box design” / instructions (API may nest under contact_info) */
+  design_message?: string
+  /** Event form contact instructions (contact_box_message) */
+  box_message?: string
 }
 
 /**
@@ -216,6 +220,7 @@ export interface InvitedEventProfile {
   avatar_url?: string | null
   image_url?: string | null
   image?: string | null
+  contact_box_design_message?: string | null
 }
 
 export interface InvitedVenueObject {
@@ -224,6 +229,7 @@ export interface InvitedVenueObject {
   address?: string
   slug?: string
   user_id?: number | null
+  contact_box_design_message?: string | null
 }
 
 /** Gallery item from API (event additional_images) */
@@ -275,6 +281,10 @@ export interface Event {
   contact_phone?: string
   contact_email?: string
   contact_website?: string
+  /** Event listing: host instructions (Create Event premium: contact_box_message) */
+  contact_box_message?: string | null
+  /** Denormalised or host “contact box design” copy from organiser/venue/talent profiles */
+  contact_box_design_message?: string | null
   contact_info?: ContactInfo
   images?: string[]
   event_images?: EventImage[]

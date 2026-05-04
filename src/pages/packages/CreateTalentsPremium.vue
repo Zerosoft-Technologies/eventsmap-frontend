@@ -1348,7 +1348,7 @@ function buildTalentPayload() {
         contact_phone: contactPhone.value || undefined,
         contact_email: contactEmail.value || undefined,
         contact_website: contactWebsite.value || undefined,
-        contact_box_design_message: contactBoxDesignMessage.value || undefined,
+        contact_box_design_message: contactBoxDesignMessage.value.trim(),
         facebook_url: facebookUrl.value || undefined,
         instagram_url: instagramUrl.value || undefined,
         tiktok_url: tiktokUrl.value || undefined,

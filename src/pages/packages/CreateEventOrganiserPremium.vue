@@ -1306,7 +1306,7 @@ function buildFormData() {
     if (contactPhone.value) fd.append('contact_phone', contactPhone.value)
     if (contactEmail.value) fd.append('contact_email', contactEmail.value)
     if (contactWebsite.value) fd.append('contact_website', contactWebsite.value)
-    if (contactBoxDesignMessage.value) fd.append('contact_box_design_message', contactBoxDesignMessage.value)
+    fd.append('contact_box_design_message', contactBoxDesignMessage.value ?? '')
 
     // Social
     if (facebookUrl.value) fd.append('facebook_url', facebookUrl.value)

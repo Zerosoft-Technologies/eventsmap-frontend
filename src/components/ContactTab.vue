@@ -92,6 +92,28 @@
       </div>
     </div>
 
+    <!-- Contact box copy from host / invited profiles (saved on organiser, venue, talent, or event) -->
+    <div
+      v-if="contactDesignBlocks.length > 0"
+      class="tw:space-y-3 tw:rounded-2xl tw:border tw:border-orange-100 tw:bg-orange-50/60 tw:p-4"
+    >
+      <div
+        v-for="(block, idx) in contactDesignBlocks"
+        :key="`design-${idx}-${block.text.slice(0, 32)}`"
+      >
+        <p class="tw:text-sm tw:font-semibold tw:text-gray-900">
+          <template v-if="block.kind === 'event'">{{ $t('eventDetails.contact.designMessageTitle') }}</template>
+          <template v-else>
+            {{ block.entityLabel }}
+            <span v-if="block.entityName" class="tw:font-normal tw:text-gray-600"> — {{ block.entityName }}</span>
+          </template>
+        </p>
+        <p class="tw:mt-1.5 tw:text-sm tw:leading-relaxed tw:text-gray-800 tw:whitespace-pre-wrap">
+          {{ block.text }}
+        </p>
+      </div>
+    </div>
+
     <h3 class="tw:pt-2 tw:text-lg tw:font-semibold tw:text-gray-900">
       {{ $t('eventDetails.contact.sendMessageTitle') }}
     </h3>
@@ -234,6 +256,59 @@ const websiteLabel = computed(() => {
   if (!w) return ''
   return w.replace(/^https?:\/\//i, '').replace(/\/$/, '')
 })
+
+/**
+ * Event-level contact copy (API may denormalise on the event), else per invited profile.
+ */
+const contactDesignBlocks = computed(() => {
+  const ev = props.event
+  if (!ev) return []
+
+  const eventLevel = trimTxt(
+    firstNonEmptyString(
+      ev.contact_box_design_message,
+      ev.contact_info?.design_message,
+      ev.contact_box_message,
+      ev.contact_info?.box_message,
+    ),
+  )
+  if (eventLevel) {
+    return [{ kind: 'event', entityLabel: '', entityName: '', text: eventLevel }]
+  }
+
+  const blocks = []
+  const seen = new Set()
+
+  function addBlock(kind, labelKey, name, textRaw) {
+    const text = trimTxt(textRaw)
+    if (!text) return
+    const key = text.toLowerCase()
+    if (seen.has(key)) return
+    seen.add(key)
+    blocks.push({
+      kind,
+      entityLabel: t(labelKey),
+      entityName: trimTxt(name),
+      text,
+    })
+  }
+
+  for (const o of ev.invited_organisers_objects || []) {
+    addBlock('organiser', 'eventDetails.contact.fromOrganiser', o?.name, o?.contact_box_design_message)
+  }
+  for (const o of ev.invited_talents_objects || []) {
+    addBlock('talent', 'eventDetails.contact.fromTalent', o?.name, o?.contact_box_design_message)
+  }
+  for (const o of ev.invited_venues_objects || []) {
+    addBlock('venue', 'eventDetails.contact.fromVenue', o?.name, o?.contact_box_design_message)
+  }
+
+  return blocks
+})
+
+function trimTxt(s) {
+  return typeof s === 'string' ? s.trim() : ''
+}
 
 const formName = ref('')
 const formPhone = ref('')

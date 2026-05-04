@@ -221,7 +221,11 @@
       "requiredNote": "* Required fields",
       "sendButton": "Send message",
       "formRequired": "Please fill in your full name and message.",
-      "formSuccess": "Thanks — your message has been recorded. We'll be in touch soon."
+      "formSuccess": "Thanks — your message has been recorded. We'll be in touch soon.",
+      "designMessageTitle": "A note from the host",
+      "fromOrganiser": "Organiser",
+      "fromTalent": "Talent",
+      "fromVenue": "Venue"
     },
     "tabs": {
       "overview": "Overview",

@@ -176,7 +176,11 @@
       "requiredNote": "* Champs obligatoires",
       "sendButton": "Envoyer le message",
       "formRequired": "Veuillez renseigner votre nom complet et votre message.",
-      "formSuccess": "Merci — votre message a bien été enregistré. Nous vous contacterons bientôt."
+      "formSuccess": "Merci — votre message a bien été enregistré. Nous vous contacterons bientôt.",
+      "designMessageTitle": "Message de l’organisateur",
+      "fromOrganiser": "Organisateur",
+      "fromTalent": "Talent",
+      "fromVenue": "Lieu"
     },
     "tabs": {
       "overview": "Aperçu",
