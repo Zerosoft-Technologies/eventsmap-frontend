@@ -252,13 +252,16 @@
           <!-- Map Container -->
           <div id="event-map" class="tw:w-full tw:h-[240px] tw:md:h-[300px] tw:rounded-lg tw:overflow-hidden tw:mb-4"></div>
 
-          <!-- City (display only; full address is still saved) -->
+          <!-- Full address (display only; same value is submitted) -->
           <div class="tw:space-y-2">
-            <label class="tw:block tw:text-sm tw:text-gray-600">
-              City
-            </label>
-            <input :value="selectedLocationCityDisplay" type="text" readonly placeholder="City appears after you choose a location"
-              class="tw:w-full tw:h-12 tw:md:h-auto tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed" />
+            <label class="tw:block tw:text-sm tw:text-gray-600">Full address</label>
+            <textarea
+              :value="selectedAddress"
+              readonly
+              rows="3"
+              placeholder="Full address appears after you choose a location"
+              class="tw:w-full tw:min-h-[5.5rem] tw:resize-y tw:bg-gray-50 tw:border tw:border-[#E8E1D5] tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 placeholder:tw:text-gray-400 tw:cursor-not-allowed"
+            />
             <p v-if="fieldErrors.address" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.address[0] }}</p>
           </div>
         </div>
@@ -334,7 +337,6 @@ import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
-import { cityDisplayFromStoredFullAddress, locationCityDisplayFromNominatim } from "@/utils/nominatimCityDisplay"
 import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
 import { storeToRefs } from "pinia"
 import maplibregl from "maplibre-gl"
@@ -443,8 +445,6 @@ function validateGenre() {
 const searchAddress = ref("")
 /** Full address sent to the API */
 const selectedAddress = ref("")
-/** City label for readonly field only */
-const selectedLocationCityDisplay = ref("")
 const map = ref(null)
 const marker = ref(null)
 const suggestions = ref([])
@@ -493,7 +493,6 @@ function selectSuggestion(suggestion) {
   searchAddress.value = display_name
   suggestions.value = []
   selectedAddress.value = display_name
-  selectedLocationCityDisplay.value = locationCityDisplayFromNominatim(display_name, suggestion.address)
 
   latitude.value = parseFloat(lat)
   longitude.value = parseFloat(lon)
@@ -534,13 +533,11 @@ async function reverseGeocode(lng, lat) {
       const full = data.display_name || "Address not found"
       selectedAddress.value = full
       searchAddress.value = full
-      selectedLocationCityDisplay.value = locationCityDisplayFromNominatim(full, data.address)
     }
   } catch (error) {
     console.error("Error reverse geocoding:", error)
     selectedAddress.value = "Error fetching address"
     searchAddress.value = "Error fetching address"
-    selectedLocationCityDisplay.value = "Error fetching address"
   } finally {
     isLoading.value = false
   }
@@ -654,7 +651,6 @@ async function loadOrganiser(id) {
     const addrFull = d.address || ''
     selectedAddress.value = addrFull
     searchAddress.value = addrFull
-    selectedLocationCityDisplay.value = addrFull ? cityDisplayFromStoredFullAddress(addrFull) : ''
 
     if (d.latitude) latitude.value = d.latitude
     if (d.longitude) longitude.value = d.longitude
@@ -691,7 +687,6 @@ function resetForm() {
   formData.category = ''
   form.organiser_category_id = ''
   selectedAddress.value = ''
-  selectedLocationCityDisplay.value = ''
   searchAddress.value = ''
   latitude.value = null
   longitude.value = null

@@ -65,39 +65,79 @@
 
           <!-- Filters -->
           <div
-            class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-4 tw:border tw:border-gray-100/80 tw:flex tw:flex-col tw:md:flex-row tw:md:flex-wrap tw:md:items-end tw:gap-3"
+            class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-4 tw:border tw:border-gray-100/80 tw:flex tw:flex-col tw:gap-2"
           >
-            <div class="tw:min-w-[160px] tw:flex-1">
-              <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1.5" for="inv-status">
-                Status
-              </label>
-              <select
-                id="inv-status"
-                v-model="statusFilter"
-                class="tw:w-full tw:h-11 tw:rounded-xl tw:border tw:border-gray-200 tw:px-3 tw:text-sm tw:text-gray-900 tw:bg-white focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500"
-              >
-                <option value="pending">Pending</option>
-                <option value="all">All</option>
-                <option value="accepted">Accepted</option>
-                <option value="rejected">Rejected</option>
-              </select>
+            <div
+              class="tw:flex tw:flex-col tw:md:flex-row tw:md:flex-wrap tw:md:items-end tw:gap-3"
+            >
+              <div class="tw:min-w-0 tw:w-full tw:md:flex-1 tw:md:min-w-[200px]">
+                <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1.5" for="inv-search">
+                  Search events
+                </label>
+                <div class="tw:relative">
+                  <Search
+                    class="tw:pointer-events-none tw:absolute tw:left-3 tw:top-1/2 tw:h-4 tw:w-4 tw:-translate-y-1/2 tw:text-gray-400"
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="inv-search"
+                    v-model="searchQuery"
+                    type="search"
+                    autocomplete="off"
+                    placeholder="Title, venue, address, organiser…"
+                    class="tw:w-full tw:h-11 tw:rounded-xl tw:border tw:border-gray-200 tw:py-2 tw:pl-10 tw:pr-10 tw:text-sm tw:text-gray-900 tw:bg-white placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500"
+                  />
+                  <button
+                    v-if="searchQuery.trim()"
+                    type="button"
+                    class="tw:absolute tw:right-2 tw:top-1/2 tw:-translate-y-1/2 tw:flex tw:h-8 tw:w-8 tw:items-center tw:justify-center tw:rounded-lg tw:text-sm tw:text-gray-500 hover:tw:bg-gray-100 hover:tw:text-gray-800"
+                    aria-label="Clear search"
+                    @click="searchQuery = ''"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+              <div class="tw:min-w-[160px] tw:w-full tw:md:w-[min(100%,11rem)] tw:md:flex-none">
+                <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1.5" for="inv-status">
+                  Status
+                </label>
+                <select
+                  id="inv-status"
+                  v-model="statusFilter"
+                  class="tw:w-full tw:h-11 tw:rounded-xl tw:border tw:border-gray-200 tw:px-3 tw:text-sm tw:text-gray-900 tw:bg-white focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="all">All</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+              <div class="tw:min-w-[160px] tw:w-full tw:md:w-[min(100%,11rem)] tw:md:flex-none">
+                <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1.5" for="inv-timing">
+                  Event timing
+                </label>
+                <select
+                  id="inv-timing"
+                  v-model="timingFilter"
+                  class="tw:w-full tw:h-11 tw:rounded-xl tw:border tw:border-gray-200 tw:px-3 tw:text-sm tw:text-gray-900 tw:bg-white focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500"
+                >
+                  <option value="all">All events</option>
+                  <option value="upcoming">Upcoming</option>
+                  <option value="past">Past</option>
+                </select>
+              </div>
+              <p class="tw:w-full tw:text-xs tw:text-gray-500 tw:md:ml-auto tw:md:w-auto tw:md:self-center tw:md:shrink-0">
+                <template v-if="pagination">
+                  <template v-if="searchQuery.trim() && invitations.length">
+                    {{ filteredInvitations.length }} match{{ filteredInvitations.length === 1 ? '' : 'es' }} ·
+                  </template>
+                  {{ pagination.total }} total
+                </template>
+              </p>
             </div>
-            <div class="tw:min-w-[160px] tw:flex-1">
-              <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1.5" for="inv-timing">
-                Event timing
-              </label>
-              <select
-                id="inv-timing"
-                v-model="timingFilter"
-                class="tw:w-full tw:h-11 tw:rounded-xl tw:border tw:border-gray-200 tw:px-3 tw:text-sm tw:text-gray-900 tw:bg-white focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500"
-              >
-                <option value="all">All events</option>
-                <option value="upcoming">Upcoming</option>
-                <option value="past">Past</option>
-              </select>
-            </div>
-            <p v-if="pagination" class="tw:text-xs tw:text-gray-500 tw:md:ml-auto tw:md:self-center">
-              {{ pagination.total }} total
+            <p class="tw:text-[11px] tw:text-gray-400">
+              Narrows the list below using your current page of results.
             </p>
           </div>
 
@@ -124,9 +164,9 @@
           </ul>
 
           <!-- List -->
-          <ul v-else class="tw:space-y-4 tw:list-none">
+          <ul v-else-if="filteredInvitations.length > 0" class="tw:space-y-4 tw:list-none">
             <li
-              v-for="(item, idx) in invitations"
+              v-for="(item, idx) in filteredInvitations"
               :key="invitationKey(item) || `inv-row-${idx}`"
               class="tw:rounded-2xl tw:border tw:border-gray-100/90 tw:bg-white tw:shadow-sm tw:overflow-hidden tw:transition-shadow hover:tw:shadow-md"
             >
@@ -214,7 +254,7 @@
 
           <!-- Empty -->
           <div
-            v-if="!initialLoading && !loadError && invitations.length === 0"
+            v-else-if="!initialLoading && !loadError && filteredInvitations.length === 0"
             class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:rounded-2xl tw:border tw:border-dashed tw:border-gray-200 tw:bg-white tw:px-6 tw:py-16 tw:text-center"
           >
             <Inbox class="tw:w-14 tw:h-14 tw:text-gray-300 tw:mb-4" aria-hidden="true" />
@@ -271,6 +311,7 @@ import {
   SkipBackIcon,
   Inbox,
   CalendarRange,
+  Search,
 } from 'lucide-vue-next'
 import EventSidebar from '@/pages/packages/eventsidebar/Eventsidebar.vue'
 import { useChatStore } from '@/stores/chatStore'
@@ -303,6 +344,7 @@ const statusFilter = ref<'all' | 'pending' | 'accepted' | 'rejected'>('pending')
 const timingFilter = ref<'all' | 'upcoming' | 'past'>('all')
 const page = ref(1)
 const perPage = 15
+const searchQuery = ref('')
 
 const profileBasePath = computed(() => route.path.replace(/\/event-invitations\/?$/, ''))
 
@@ -465,6 +507,29 @@ function formatEventSchedule(ev: InvitedEventPayload | null | undefined) {
   return 'Date TBC'
 }
 
+/** Lowercased haystack for client-side search on the current results page */
+function invitationSearchHaystack(item: EventInvitationListItem): string {
+  const parts: string[] = []
+  const ev = item.event
+  if (ev?.title) parts.push(String(ev.title))
+  if (ev?.address) parts.push(String(ev.address))
+  if (ev?.slug) parts.push(String(ev.slug))
+  const ven = venueSnippet(ev)
+  if (ven) parts.push(ven)
+  const cat = ev?.category
+  if (typeof cat === 'string') parts.push(cat)
+  if (item.sender?.name) parts.push(item.sender.name)
+  if (item.sender?.email) parts.push(item.sender.email)
+  parts.push(formatEventSchedule(ev))
+  return parts.join(' \u2003 ').toLowerCase()
+}
+
+const filteredInvitations = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return invitations.value
+  return invitations.value.filter((item) => invitationSearchHaystack(item).includes(q))
+})
+
 function formatShortDate(iso: string) {
   try {
     const d = new Date(iso)
@@ -498,6 +563,13 @@ function isPending(item: EventInvitationListItem) {
 }
 
 const emptyTitle = computed(() => {
+  if (
+    invitations.value.length > 0 &&
+    searchQuery.value.trim() &&
+    filteredInvitations.value.length === 0
+  ) {
+    return 'No matching invitations'
+  }
   if (statusFilter.value === 'pending') return 'No pending invitations'
   if (statusFilter.value === 'accepted') return 'No accepted invitations'
   if (statusFilter.value === 'rejected') return 'No declined invitations'
@@ -505,6 +577,13 @@ const emptyTitle = computed(() => {
 })
 
 const emptySubtitle = computed(() => {
+  if (
+    invitations.value.length > 0 &&
+    searchQuery.value.trim() &&
+    filteredInvitations.value.length === 0
+  ) {
+    return 'Try another search term or clear the search box to see all invitations on this page.'
+  }
   if (timingFilter.value === 'upcoming') return 'Try changing filters — nothing upcoming matches this view.'
   if (timingFilter.value === 'past') return 'Try changing filters — nothing in the past matches this view.'
   return 'When an organiser invites you to an event, it will show up here.'

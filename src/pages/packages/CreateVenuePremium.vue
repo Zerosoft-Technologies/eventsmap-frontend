@@ -445,6 +445,25 @@
 
                                 <div class="tw:overflow-y-auto tw:pr-1 tw:space-y-4 tw:flex-1 tw:min-h-0">
                                     <div>
+                                        <p class="tw:text-[11px] tw:font-semibold tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Allowance of dogs</p>
+                                        <div class="tw:relative">
+                                            <select
+                                                v-model="allowanceOfDogs"
+                                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-sm tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer"
+                                            >
+                                                <option value="">Select dog policy</option>
+                                                <option value="all-dogs">all dogs allowed</option>
+                                                <option value="small-dogs">small dogs only, except for assistance dogs</option>
+                                                <option value="no-dogs-assistance">no dogs allowed, except for assistance dogs</option>
+                                                <option value="no-dogs-included">no dogs allowed, assistance dogs included</option>
+                                            </select>
+                                            <ChevronDown
+                                                class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
                                         <p class="tw:text-[11px] tw:font-semibold tw:text-gray-500 tw:uppercase tw:tracking-wide tw:mb-2">Venue features</p>
                                         <div class="tw:space-y-2">
                                             <BinarySegmentedField
@@ -490,9 +509,9 @@
                         </div>
                     </div>
 
-                    <!-- Selected tags: description + venue features -->
+                    <!-- Selected tags: description + venue features + dog policy -->
                     <div
-                        v-if="selectedDescriptionItems.length > 0 || venueFeatureChips.length > 0"
+                        v-if="selectedDescriptionItems.length > 0 || venueFeatureChips.length > 0 || allowanceOfDogs"
                         class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-3"
                     >
                         <span v-for="item in selectedDescriptionItems" :key="`d-${item}`"
@@ -520,6 +539,26 @@
                                 </svg>
                             </button>
                         </span>
+                        <span
+                            v-if="allowanceOfDogs"
+                            class="tw:inline-flex tw:items-center tw:gap-1 tw:bg-amber-50 tw:text-amber-950 tw:text-sm tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-amber-200/90"
+                        >
+                            Dogs: {{ allowanceOfDogsChipLabel }}
+                            <button
+                                type="button"
+                                class="tw:ml-0.5 tw:text-amber-900 tw:opacity-60 hover:tw:opacity-100 tw:transition"
+                                aria-label="Clear dog policy"
+                                @click="allowanceOfDogs = ''"
+                            >
+                                <svg class="tw:w-3.5 tw:h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"
+                                    />
+                                </svg>
+                            </button>
+                        </span>
                     </div>
                     <p v-if="fieldErrors.venue_features?.length" class="tw:text-red-500 tw:text-sm tw:mt-2">{{ fieldErrors.venue_features[0] }}</p>
                 </div>
@@ -537,32 +576,6 @@
                             placeholder="Describe accessibility details (directions, parking, public transport, taxis, wheelchair access, etc.)"
                             style="resize: vertical;"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
-                    </div>
-                </div>
-
-                <!-- ALLOWANCE OF DOGS SECTION -->
-                <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Allowance of dogs
-                        </h3>
-                        <!-- <button
-                        class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
-                        <Plus class="tw:w-5 tw:h-5" />
-                        </button> -->
-                    </div>
-
-                    <div class="tw:relative">
-                        <select v-model="allowanceOfDogs"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                        <option value="">Select dog policy</option>
-                        <option value="all-dogs">all dogs allowed</option>
-                        <option value="small-dogs">small dogs only, except for assistance dogs</option>
-                        <option value="no-dogs-assistance">no dogs allowed, except for assistance dogs</option>
-                        <option value="no-dogs-included">no dogs allowed, assistance dogs included</option>
-                        </select>
-                        <ChevronDown
-                        class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
                     </div>
                 </div>
 
@@ -1145,6 +1158,18 @@ const descriptionItems = [
 const selectedDescriptionItems = ref([])
 const accessibilityDescription = ref("")
 
+const allowanceOfDogsChipLabel = computed(() => {
+    const v = allowanceOfDogs.value
+    if (!v) return ''
+    const labels = {
+        'all-dogs': 'all dogs allowed',
+        'small-dogs': 'small dogs only, except for assistance dogs',
+        'no-dogs-assistance': 'no dogs allowed, except for assistance dogs',
+        'no-dogs-included': 'no dogs allowed, assistance dogs included',
+    }
+    return labels[v] ?? v
+})
+
 const descriptionDropdownLabel = computed(() => {
     const n = selectedDescriptionItems.value.length
     const answered = [
@@ -1153,8 +1178,10 @@ const descriptionDropdownLabel = computed(() => {
         valetParking.value,
         childrensPlayArea.value,
     ].filter((v) => v !== null).length
-    if (n === 0 && answered === 0) return 'Select description & venue features'
+    const hasDogs = Boolean(allowanceOfDogs.value)
+    if (n === 0 && answered === 0 && !hasDogs) return 'Select description & venue features'
     const parts = []
+    if (hasDogs) parts.push(allowanceOfDogsChipLabel.value)
     if (n > 0) parts.push(`${n} description item${n === 1 ? '' : 's'}`)
     if (answered > 0) parts.push(`${answered}/4 features set`)
     return parts.join(' · ')
