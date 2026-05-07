@@ -526,9 +526,9 @@ function handleChatboxClick() {
   chatStore.open()
 }
 
-function goInviteNew() {
-  router.push(createBase.value)
-}
+// function goInviteNew() {
+//   router.push(createBase.value)
+// }
 
 async function load() {
   loading.value = true
