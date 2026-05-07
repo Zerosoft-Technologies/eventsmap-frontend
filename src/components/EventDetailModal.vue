@@ -250,7 +250,7 @@
                       <div class="tw:flex-1 tw:min-w-0">
                         <p class="tw:font-semibold tw:text-gray-900">{{ venue.name || '—' }}</p>
                         <p v-if="venue.address" class="tw:text-sm tw:text-gray-600 tw:mt-1">{{ venue.address }}</p>
-                        <p v-if="venue.slug" class="tw:text-xs tw:text-gray-400 tw:mt-1 tw:font-mono">/{{ venue.slug }}</p>
+                        <!-- <p v-if="venue.slug" class="tw:text-xs tw:text-gray-400 tw:mt-1 tw:font-mono">/{{ venue.slug }}</p> -->
                       </div>
                     </div>
                   </div>

@@ -17,15 +17,15 @@
       v-if="visible"
       :class="[
         isMinimized
-          ? 'tw:w-16 tw:h-16 tw:rounded-2xl tw:shadow-lg tw:cursor-pointer tw:flex tw:items-center tw:justify-center'
-          : 'tw:w-full tw:md:w-[380px] tw:max-h-[85vh] tw:md:max-h-[80vh] tw:rounded-t-2xl tw:md:rounded-2xl tw:shadow-xl tw:flex tw:flex-col',
-        'tw:fixed tw:bottom-0 tw:md:bottom-2 tw:left-0 tw:md:left-7 tw:bg-white tw:z-50 tw:lg:z-10 tw:transition-all tw:duration-300 tw:overflow-visible'
+          ? 'tw:w-16 tw:h-16 tw:rounded-2xl tw:shadow-lg tw:cursor-pointer tw:flex tw:items-center tw:justify-center tw:bg-[#FF7700]'
+          : 'tw:w-full tw:md:w-[380px] tw:max-h-[85vh] tw:md:max-h-[80vh] tw:rounded-t-2xl tw:md:rounded-2xl tw:shadow-xl tw:flex tw:flex-col tw:bg-white',
+        'tw:fixed tw:bottom-0 tw:md:bottom-2 tw:left-0 tw:md:left-7 tw:z-50 tw:lg:z-10 tw:transition-all tw:duration-300 tw:overflow-visible'
       ]"
       @click="isMinimized && expand()"
     >
       <!-- Minimized State -->
       <template v-if="isMinimized">
-        <span class="tw:text-sm tw:font-semibold tw:text-gray-700">Events</span>
+        <span class="tw:text-sm tw:font-semibold tw:text-white">Events</span>
       </template>
 
       <!-- Expanded State -->

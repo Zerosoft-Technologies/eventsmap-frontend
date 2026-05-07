@@ -625,6 +625,7 @@ import InviteSection from "@/components/invite/InviteSection.vue"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
+import { firstOwnedProfileId } from "@/utils/profileSingleton"
 import { useMyVenueStore } from "@/stores/myVenueStore"
 import { storeToRefs } from "pinia"
 import maplibregl from "maplibre-gl"
@@ -950,6 +951,13 @@ async function refreshMyVenuesAfterSave() {
 async function createVenue() {
   try {
     fieldErrors.value = {}
+    await myVenueStore.fetchMyVenues()
+    const existingId = firstOwnedProfileId(myVenueStore.venues)
+    if (existingId != null) {
+      toast.info('You already have a venue profile. Loaded for editing.')
+      await loadVenue(existingId)
+      return
+    }
     if (!selectedImageFile.value) {
       fieldErrors.value = { ...fieldErrors.value, image_path: ['Main image is required'] }
       toast.error('Please upload a venue image.')
@@ -991,10 +999,10 @@ async function updateVenue() {
     if (response.success) {
       toast.success('Venue updated successfully!')
       const id = editingVenueId.value
-      resetForm()
       await refreshMyVenuesAfterSave()
       if (id != null) {
         myVenueStore.selectVenue(Number(id))
+        await loadVenue(id)
       }
     } else {
       if (response.errors) fieldErrors.value = response.errors
@@ -1115,10 +1123,13 @@ async function loadVenue(id) {
 }
 
 // ── Cancel Edit ─────────────────────────────────────────────────
-function cancelEdit() {
+async function cancelEdit() {
   resetForm()
   isEditMode.value = false
   editingVenueId.value = null
+  await myVenueStore.fetchMyVenues()
+  const id = firstOwnedProfileId(myVenueStore.venues)
+  if (id != null) await loadVenue(id)
 }
 
 // ── Reset Form ──────────────────────────────────────────────────
@@ -1301,6 +1312,10 @@ onMounted(async () => {
         router.replace({ path: route.path })
       }
     }
+  } else {
+    await myVenueStore.fetchMyVenues()
+    const id = firstOwnedProfileId(myVenueStore.venues)
+    if (id != null) await loadVenue(id)
   }
 })
 

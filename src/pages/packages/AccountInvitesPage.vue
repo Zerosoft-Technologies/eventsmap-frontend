@@ -72,14 +72,14 @@
                 Manage all invited talents, venues, and organisers across your events.
               </p>
             </div>
-            <button
+            <!-- <button
               type="button"
               class="tw:shrink-0 tw:inline-flex tw:items-center tw:justify-center tw:gap-2 tw:px-4 tw:py-2.5 tw:rounded-xl tw:text-sm tw:font-medium tw:text-white tw:bg-[#0061FF] hover:tw:bg-blue-700 tw:transition-colors"
               @click="goInviteNew"
             >
               <UserPlus class="tw:w-4 tw:h-4" />
               Invite New
-            </button>
+            </button> -->
           </div>
 
           <!-- Summary cards -->

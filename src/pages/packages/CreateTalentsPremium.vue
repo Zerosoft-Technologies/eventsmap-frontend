@@ -898,6 +898,7 @@ import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
+import { firstOwnedProfileId } from "@/utils/profileSingleton"
 import { cityDisplayFromStoredFullAddress, locationCityDisplayFromNominatim } from "@/utils/nominatimCityDisplay"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -1367,6 +1368,13 @@ function buildTalentPayload() {
 
 async function createTalent() {
     try {
+        await myTalentStore.fetchMyTalents()
+        const existingId = firstOwnedProfileId(myTalentStore.talents)
+        if (existingId != null) {
+            toast.info('You already have a talent profile. Loaded for editing.')
+            await loadTalent(existingId)
+            return
+        }
         fieldErrors.value = {}
         const payload = buildTalentPayload()
         const response = await eventService.createTalent(payload)
@@ -1414,9 +1422,9 @@ async function updateTalent() {
         if (response.success) {
             toast.success('Talent updated successfully.')
             pendingFileMap.value = {}
-            isEditMode.value = false
-            editingTalentId.value = null
-            resetForm()
+            const id = editingTalentId.value
+            await myTalentStore.fetchMyTalents()
+            if (id != null) await loadTalent(id)
         } else {
             if (response.errors) {
                 fieldErrors.value = response.errors
@@ -1441,10 +1449,13 @@ async function updateTalent() {
     }
 }
 
-function cancelEdit() {
+async function cancelEdit() {
     isEditMode.value = false
     editingTalentId.value = null
     resetForm()
+    await myTalentStore.fetchMyTalents()
+    const id = firstOwnedProfileId(myTalentStore.talents)
+    if (id != null) await loadTalent(id)
 }
 
 // ── Load Talent for editing ─────────────────────────────────────
@@ -1818,6 +1829,10 @@ onMounted(async () => {
                 router.replace({ path: route.path })
             }
         }
+    } else {
+        await myTalentStore.fetchMyTalents()
+        const id = firstOwnedProfileId(myTalentStore.talents)
+        if (id != null) await loadTalent(id)
     }
 })
 </script>

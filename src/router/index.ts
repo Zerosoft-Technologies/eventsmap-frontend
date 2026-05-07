@@ -185,12 +185,24 @@ router.beforeEach(async (to, _from, next) => {
       return next({ name: 'Home' })
     }
 
-    // Restrict create pages: user may only access their own create page (profile_type + account_type)
+    // Create routes: account tier must match. Event users may open organiser/talent/venue create flows;
+    // other profile types only match their own create paths (events remain unlimited for event users only).
     const pathProfile = getProfileAndAccountFromPath(to.path)
     if (pathProfile) {
+      if (pathProfile.accountType !== authStore.user.account_type) {
+        return next(getCreateRoute(authStore.user.profile_type, authStore.user.account_type))
+      }
       const userProfile = authStore.user.profile_type === 'organizer' ? 'organiser' : authStore.user.profile_type
       const userProfileNorm = userProfile === 'talent' ? 'talents' : userProfile
-      if (pathProfile.profileType !== userProfileNorm || pathProfile.accountType !== authStore.user.account_type) {
+      const pathType = pathProfile.profileType
+      const isEventUser = userProfileNorm === 'event'
+      const secondaryPaths = new Set(['organiser', 'talents', 'venue'])
+
+      if (pathType === 'event') {
+        if (userProfileNorm !== 'event') {
+          return next(getCreateRoute(authStore.user.profile_type, authStore.user.account_type))
+        }
+      } else if (!(userProfileNorm === pathType || (isEventUser && secondaryPaths.has(pathType)))) {
         return next(getCreateRoute(authStore.user.profile_type, authStore.user.account_type))
       }
     }

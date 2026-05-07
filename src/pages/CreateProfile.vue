@@ -7,7 +7,7 @@
           Select profile type
         </h1>
         <p class="tw:text-gray-500 tw:text-base tw:sm:text-lg tw:max-w-xl tw:mx-auto">
-          To continue, select the type of profile you want to create. You can add more profiles later.
+          Create unlimited event profiles. You can add one organiser, one talent, and one venue per account; opening those again loads your existing profile to edit.
         </p>
       </div>
 

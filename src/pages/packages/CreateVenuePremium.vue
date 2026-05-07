@@ -900,6 +900,7 @@ import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
+import { firstOwnedProfileId } from "@/utils/profileSingleton"
 import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
 import maplibregl from "maplibre-gl"
@@ -1437,6 +1438,13 @@ async function refreshMyVenuesAfterSave() {
 async function createVenue() {
     try {
         fieldErrors.value = {}
+        await myVenueStore.fetchMyVenues()
+        const existingId = firstOwnedProfileId(myVenueStore.venues)
+        if (existingId != null) {
+            toast.info('You already have a venue profile. Loaded for editing.')
+            await loadVenue(existingId)
+            return
+        }
         const payload = buildVenuePayload()
         const response = await eventService.createVenue(payload)
         if (response.success) {
@@ -1485,12 +1493,10 @@ async function updateVenue() {
             toast.success('Venue updated successfully!')
             pendingFileMap.value = {}
             const id = editingVenueId.value
-            isEditMode.value = false
-            editingVenueId.value = null
-            resetForm()
             await refreshMyVenuesAfterSave()
             if (id != null) {
                 myVenueStore.selectVenue(Number(id))
+                await loadVenue(id)
             }
         } else {
             if (response.errors) {
@@ -1652,10 +1658,13 @@ async function loadVenue(id) {
 }
 
 // ── Cancel Edit ─────────────────────────────────────────────────
-function cancelEdit() {
+async function cancelEdit() {
     resetForm()
     isEditMode.value = false
     editingVenueId.value = null
+    await myVenueStore.fetchMyVenues()
+    const id = firstOwnedProfileId(myVenueStore.venues)
+    if (id != null) await loadVenue(id)
 }
 
 // ── Reset Form ──────────────────────────────────────────────────
@@ -1882,6 +1891,10 @@ onMounted(async () => {
                 router.replace({ path: route.path })
             }
         }
+    } else {
+        await myVenueStore.fetchMyVenues()
+        const id = firstOwnedProfileId(myVenueStore.venues)
+        if (id != null) await loadVenue(id)
     }
 })
 </script>

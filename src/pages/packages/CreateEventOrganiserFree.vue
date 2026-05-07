@@ -337,6 +337,7 @@ import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
+import { firstOwnedProfileId } from "@/utils/profileSingleton"
 import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
 import { storeToRefs } from "pinia"
 import maplibregl from "maplibre-gl"
@@ -699,10 +700,13 @@ function resetForm() {
   resetErrors()
 }
 
-function cancelEdit() {
+async function cancelEdit() {
   isEditMode.value = false
   editingOrganiserId.value = null
   resetForm()
+  await myOrganiserStore.fetchMyOrganisers()
+  const id = firstOwnedProfileId(myOrganiserStore.organisers)
+  if (id != null) await loadOrganiser(id)
 }
 
 function handleChatboxClick() {}
@@ -710,6 +714,13 @@ function handleChatboxClick() {}
 async function createOrganiser() {
   try {
     fieldErrors.value = {}
+    await myOrganiserStore.fetchMyOrganisers()
+    const existingId = firstOwnedProfileId(myOrganiserStore.organisers)
+    if (existingId != null) {
+      toast.info('You already have an organiser profile. Loaded for editing.')
+      await loadOrganiser(existingId)
+      return
+    }
     const fd = buildFormData()
     const response = await eventService.createOrganiser(fd)
 
@@ -753,12 +764,9 @@ async function updateOrganiser() {
 
     if (response.success) {
       toast.success('Organiser updated successfully.')
-      isEditMode.value = false
-      editingOrganiserId.value = null
-      resetForm()
-      const { useMyOrganiserStore } = await import("@/stores/myOrganiserStore")
-      const myOrganiserStore = useMyOrganiserStore()
-      myOrganiserStore.fetchMyOrganisers()
+      const id = editingOrganiserId.value
+      await myOrganiserStore.fetchMyOrganisers()
+      if (id != null) await loadOrganiser(id)
     } else {
       if (response.errors) {
         fieldErrors.value = response.errors
@@ -854,6 +862,10 @@ onMounted(async () => {
         router.replace({ path: route.path })
       }
     }
+  } else {
+    await myOrganiserStore.fetchMyOrganisers()
+    const id = firstOwnedProfileId(myOrganiserStore.organisers)
+    if (id != null) await loadOrganiser(id)
   }
 })
 

@@ -368,8 +368,15 @@
                 <div
                   class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
                   :class="hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'">
-                  <input type="text" inputmode="numeric" maxlength="2" v-model="startHH" placeholder="00"
-                    @input="onTimeInput('startHH', $event)" @blur="onTimeBlur('startHH')"
+                  <input
+                    ref="startHHInput"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="2"
+                    v-model="startHH"
+                    placeholder="00"
+                    @input="onTimeInput('startHH', $event)"
+                    @blur="onTimeBlur('startHH')"
                     class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
                     :class="startHH ? 'tw:text-black' : 'tw:text-gray-700'" />
                   <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
@@ -396,8 +403,15 @@
                 <div
                   class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
                   :class="(hasEndError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'">
-                  <input type="text" inputmode="numeric" maxlength="2" v-model="endHH" placeholder="23"
-                    @input="onTimeInput('endHH', $event)" @blur="onTimeBlur('endHH')"
+                  <input
+                    ref="endHHInput"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="2"
+                    v-model="endHH"
+                    placeholder="23"
+                    @input="onTimeInput('endHH', $event)"
+                    @blur="onTimeBlur('endHH')"
                     class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
                     :class="endHH ? 'tw:text-black' : 'tw:text-gray-700'" />
                   <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
@@ -951,7 +965,9 @@ const startHH = ref("")
 const startMM = ref("")
 const endHH = ref("")
 const endMM = ref("")
+const startHHInput = ref(null)
 const startMMInput = ref(null)
+const endHHInput = ref(null)
 const endMMInput = ref(null)
 const datetimeRangeError = ref("")
 const hasStartError = ref(false)
@@ -1048,18 +1064,30 @@ function validateEndAfterStartDateTime() {
   }
 }
 
+function maybeAdvanceTimeField(field, nextVal) {
+  if (nextVal.length !== 2) return
+  nextTick(() => {
+    if (field === "startHH") startMMInput.value?.focus()
+    else if (field === "startMM") endHHInput.value?.focus()
+    else if (field === "endHH") endMMInput.value?.focus()
+  })
+}
+
 // Enforce max 2 digits + valid range, then validate end > start (full datetime)
 function onTimeInput(field, event) {
   // Strip non-digits and limit to 2 characters
   let raw = event.target.value.replace(/\D/g, "").slice(0, 2)
-  event.target.value = raw
-
   const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
   const isEmpty = raw === ""
   const asNumber = isEmpty ? null : Number(raw)
   const isHourField = field === "startHH" || field === "endHH"
   const max = isHourField ? 23 : 59
   const nextVal = isEmpty ? "" : String(clamp(isNaN(asNumber) ? 0 : asNumber, 0, max))
+  if (!isEmpty && nextVal !== raw) {
+    event.target.value = nextVal
+  } else {
+    event.target.value = raw
+  }
 
   if (field === "startHH") { startHH.value = nextVal; hasStartError.value = false }
   if (field === "startMM") { startMM.value = nextVal; hasStartError.value = false }
@@ -1068,6 +1096,7 @@ function onTimeInput(field, event) {
 
   syncEndDateToEventDate()
   validateEndAfterStartDateTime()
+  maybeAdvanceTimeField(field, nextVal)
 }
 
 // const {
