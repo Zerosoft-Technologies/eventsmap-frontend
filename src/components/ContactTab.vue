@@ -113,7 +113,7 @@
         </p>
       </div>
     </div>
-
+<!-- 
     <h3 class="tw:pt-2 tw:text-lg tw:font-semibold tw:text-gray-900">
       {{ $t('eventDetails.contact.sendMessageTitle') }}
     </h3>
@@ -199,7 +199,7 @@
           </button>
         </div>
       </form>
-    </div>
+    </div> -->
   </div>
 </template>
 

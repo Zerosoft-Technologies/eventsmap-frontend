@@ -178,8 +178,8 @@
         © MapTiler © OpenStreetMap contributors
       </p> -->
 
-      <div class="tw:grid tw:grid-cols-2 tw:gap-3 tw:mt-4">
-        <button
+      <div class="tw:grid tw:grid-cols-1 tw:gap-3 tw:mt-4">
+        <!-- <button
           type="button"
           class="tw:flex tw:w-full tw:items-center tw:justify-center tw:gap-2 tw:py-2.5 tw:px-3 tw:rounded-lg tw:border-2 tw:border-[#1a73e8] tw:bg-white tw:text-[#1a73e8] tw:font-medium tw:text-sm hover:tw:bg-blue-50 tw:transition-colors"
           @click="openMoreInfo"
@@ -188,7 +188,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           {{ t('dateLocation.moreInfo') }}
-        </button>
+        </button> -->
         <button
           type="button"
           class="tw:flex tw:w-full tw:items-center tw:justify-center tw:gap-2 tw:py-2.5 tw:px-3 tw:rounded-lg tw:bg-[#FF7700] tw:text-white tw:font-medium tw:text-sm hover:tw:bg-[#1557b8] tw:transition-colors disabled:tw:opacity-50 disabled:tw:cursor-not-allowed"

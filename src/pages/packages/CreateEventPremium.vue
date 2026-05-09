@@ -445,6 +445,37 @@
                     </h3>
 
                     <div class="tw:space-y-4">
+                        <div
+                            v-if="showOvernightEventCallout"
+                            class="tw:rounded-xl tw:border tw:border-indigo-200/90 tw:bg-gradient-to-br tw:from-indigo-50 tw:to-violet-50/80 tw:px-3 tw:py-3 tw:shadow-sm"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            <div class="tw:flex tw:gap-3 tw:items-start">
+                                <div
+                                    class="tw:flex tw:h-9 tw:w-9 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-lg tw:bg-indigo-100 tw:text-indigo-700"
+                                    aria-hidden="true"
+                                >
+                                    <Moon class="tw:h-5 tw:w-5" :stroke-width="2" />
+                                </div>
+                                <div class="tw:min-w-0 tw:space-y-1.5">
+                                    <p class="tw:text-sm tw:font-semibold tw:text-indigo-950 tw:tracking-tight">
+                                        Overnight event
+                                    </p>
+                                    <p class="tw:text-sm tw:text-gray-700 tw:leading-snug">
+                                        Times cross midnight, so this runs into the
+                                        <span class="tw:font-medium tw:text-gray-900">next calendar day</span>.
+                                        It starts
+                                        <span class="tw:whitespace-nowrap tw:font-medium tw:text-gray-900">{{ eventDate }} · {{ startTime }}</span>
+                                        and ends
+                                        <span class="tw:whitespace-nowrap tw:font-medium tw:text-gray-900">{{ endDate }} · {{ endTime }}</span>.
+                                    </p>
+                                    <p class="tw:text-xs tw:font-medium tw:text-indigo-900/80">
+                                        Maximum duration: 24 hours (inclusive).
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                         <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-3 tw:gap-4">
                             <div class="tw:space-y-2">
                                 <label class="tw:block tw:text-sm tw:text-gray-600">
@@ -542,7 +573,11 @@
                                 </div>
                                 <p v-if="hasEndError" class="tw:text-red-500 tw:text-sm">End time is required</p>
                                 <p v-if="datetimeRangeError" class="tw:text-red-500 tw:text-sm">{{ datetimeRangeError }}</p>
-                                <p class="tw:text-xs tw:text-gray-500">Format: HH:mm (24-hour).</p>
+                                <p class="tw:text-xs tw:text-gray-500">
+                                    <!-- <template v-if="showOvernightEventCallout">Format: HH:mm (24-hour).</template> -->
+                                    Format: HH:mm (24-hour). If the end clock time is earlier than the start time, the end is counted as the
+                                    <span class="tw:font-medium tw:text-gray-600">next day</span> (max. 24 hours total).
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -991,6 +1026,7 @@ import {
     X,
     Images,
     UserPlus,
+    Moon,
 } from "lucide-vue-next"
 
 import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch, reactive } from "vue"
@@ -1040,10 +1076,16 @@ function handleChatboxClick() {
     chatStore.open()
 }
 
+function todayYmdLocal() {
+    const d = new Date()
+    const pad2 = (n) => String(n).padStart(2, "0")
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+}
+
 // Event data
 const eventTitle = ref("")
-const eventDate = ref("")
-const endDate = ref("")
+const eventDate = ref(todayYmdLocal())
+const endDate = ref(todayYmdLocal())
 const eventStatus = ref("Draft")
 
 const activeTab = ref("home")
@@ -1254,22 +1296,14 @@ const startMMInput = ref(null)
 const endHHInput = ref(null)
 const endMMInput = ref(null)
 const datetimeRangeError = ref("")
+const showOvernightEventCallout = ref(false)
 const hasStartError = ref(false)
 const hasEndError = ref(false)
 const startDateFormatError = ref("")
 
-function syncEndDateToEventDate() {
-    if (eventDate.value) {
-        endDate.value = eventDate.value
-    } else {
-        endDate.value = ""
-    }
-}
-
 function onPremiumEventDateInput() {
     clearFieldError('eventDate')
     startDateFormatError.value = ''
-    syncEndDateToEventDate()
     validatePastDate()
     validateEndAfterStartDateTime()
 }
@@ -1305,6 +1339,16 @@ function parseTimeToMinutes(timeStr) {
     return Number(m[1]) * 60 + Number(m[2])
 }
 
+const MAX_EVENT_DURATION_MS = 24 * 60 * 60 * 1000
+
+function addDaysYmd(dateStr, dayDelta) {
+    const base = parseYmd(dateStr)
+    if (!base) return ""
+    const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + dayDelta)
+    const pad2 = (n) => String(n).padStart(2, "0")
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+}
+
 function buildDateTime(dateStr, timeStr) {
     const date = parseYmd(dateStr)
     const mins = parseTimeToMinutes(timeStr)
@@ -1327,27 +1371,69 @@ function onTimeBlur(field) {
     if (field === "startMM") startMM.value = pad2(startMM.value)
     if (field === "endHH") endHH.value = pad2(endHH.value)
     if (field === "endMM") endMM.value = pad2(endMM.value)
+    validateEndAfterStartDateTime()
 }
 
 function validateEndAfterStartDateTime() {
     datetimeRangeError.value = ""
     startDateFormatError.value = ""
+    showOvernightEventCallout.value = false
 
-    syncEndDateToEventDate()
-    if (!eventDate.value || !endDate.value || !startTime.value || !endTime.value) return
+    if (!eventDate.value) {
+        endDate.value = ""
+        return
+    }
+    if (!startTime.value || !endTime.value) {
+        endDate.value = eventDate.value
+        return
+    }
 
     const startDt = buildDateTime(eventDate.value, startTime.value)
-    const endDt = buildDateTime(endDate.value, endTime.value)
     if (!startDt) {
         startDateFormatError.value = "Use YYYY-MM-DD (e.g., 2026-03-17)"
-        return
-    }
-    if (!endDt) {
+        endDate.value = eventDate.value
         return
     }
 
-    if (endDt.getTime() <= startDt.getTime()) {
+    const endOnStartDay = buildDateTime(eventDate.value, endTime.value)
+    if (!endOnStartDay) {
+        endDate.value = eventDate.value
+        return
+    }
+
+    let resolvedEndDate = eventDate.value
+    let endDt
+    if (endOnStartDay.getTime() > startDt.getTime()) {
+        endDt = endOnStartDay
+        resolvedEndDate = eventDate.value
+    } else {
+        const nextDay = addDaysYmd(eventDate.value, 1)
+        if (!nextDay) {
+            endDate.value = eventDate.value
+            return
+        }
+        resolvedEndDate = nextDay
+        endDt = buildDateTime(resolvedEndDate, endTime.value)
+        if (!endDt) {
+            endDate.value = eventDate.value
+            return
+        }
+    }
+
+    endDate.value = resolvedEndDate
+
+    const duration = endDt.getTime() - startDt.getTime()
+    if (duration <= 0) {
         datetimeRangeError.value = "End date & time must be after start date & time"
+        return
+    }
+    if (duration > MAX_EVENT_DURATION_MS) {
+        datetimeRangeError.value = "Event cannot last longer than 24 hours"
+        return
+    }
+
+    if (resolvedEndDate !== eventDate.value) {
+        showOvernightEventCallout.value = true
     }
 }
 
@@ -1381,7 +1467,6 @@ function onTimeInput(field, event) {
     if (field === "endHH") { endHH.value = nextVal; hasEndError.value = false }
     if (field === "endMM") { endMM.value = nextVal; hasEndError.value = false }
 
-    syncEndDateToEventDate()
     validateEndAfterStartDateTime()
     maybeAdvanceTimeField(field, nextVal)
 }
@@ -1791,7 +1876,6 @@ function setGalleryImagesFromEvent(d) {
 }
 
 watch(eventDate, () => {
-    syncEndDateToEventDate()
     validatePastDate()
     validateEndAfterStartDateTime()
 })
@@ -1900,7 +1984,6 @@ function validateForm() {
     errors.value.subcategories = selectedSubcategories.value.length === 0
     errors.value.eventDate = !eventDate.value
     errors.value.address = !selectedAddress.value
-    syncEndDateToEventDate()
     
     errors.value.dressCode =
         !dressCode.value ||
@@ -2242,10 +2325,10 @@ onMounted(async () => {
     flatpickr(dateInput.value, {
         dateFormat: "Y-m-d",
         minDate: "today",
+        defaultDate: eventDate.value,
         allowInput: false,
         onChange: (selectedDates, dateStr) => {
             eventDate.value = dateStr
-            syncEndDateToEventDate()
             clearFieldError('eventDate')
             validatePastDate()
             validateEndAfterStartDateTime()
@@ -2288,7 +2371,6 @@ async function loadEvent(id) {
         eventType.value = d.event_type ?? 'premium'
         eventDescription.value = d.description ?? ''
         eventDate.value = d.start_date ?? ''
-        endDate.value = eventDate.value
         selectedAddress.value = d.address ?? ''
         searchAddress.value = d.address ?? ''
         venueName.value =
@@ -2347,7 +2429,10 @@ async function loadEvent(id) {
         }
 
         if (endFrom && endFrom.includes('T')) {
-            const [, et] = endFrom.split('T')
+            const [ed, et] = endFrom.split('T')
+            if (ed && DATE_YMD_REGEX.test(ed)) {
+                endDate.value = ed
+            }
             const parts = (et ?? '').split(':')
             const eh = parts[0] ?? ''
             const em = parts[1] ?? ''
@@ -2359,12 +2444,15 @@ async function loadEvent(id) {
             const em = parts[1] ?? ''
             endHH.value = String(eh).padStart(2, '0').slice(0, 2)
             endMM.value = String(em).padStart(2, '0').slice(0, 2)
+            const rawEnd = d.end_date != null ? String(d.end_date) : ''
+            if (rawEnd && DATE_YMD_REGEX.test(rawEnd)) {
+                endDate.value = rawEnd
+            }
         } else {
             endHH.value = ''
             endMM.value = ''
         }
 
-        endDate.value = eventDate.value
         validateEndAfterStartDateTime()
 
         if (categories.value.length && d.category_id) {
@@ -2431,8 +2519,8 @@ function cancelEdit() {
 function resetForm() {
     eventTitle.value = ''
     eventDescription.value = ''
-    eventDate.value = ''
-    endDate.value = ''
+    eventDate.value = todayYmdLocal()
+    endDate.value = todayYmdLocal()
     startHH.value = ''
     startMM.value = ''
     endHH.value = ''
@@ -2467,6 +2555,7 @@ function resetForm() {
     hasEndError.value = false
     startDateFormatError.value = ''
     datetimeRangeError.value = ''
+    showOvernightEventCallout.value = false
     categoryError.value = false
     subcategoryError.value = false
     subcategoryValidationError.value = false

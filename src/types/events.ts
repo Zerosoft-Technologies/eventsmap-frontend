@@ -209,18 +209,55 @@ export interface EventImage {
 /**
  * API v2 embedded profiles on event responses (invited_talents_objects, etc.)
  */
+/** Nested talent/organiser v2 profile from event invited objects */
+export interface InvitedProfileV2 {
+  id?: number
+  title?: string
+  slug?: string
+  profile_image?: string | null
+  cover_image?: string | null
+  image_path?: string | null
+  city?: string | null
+  address?: string | null
+  description?: string | null
+  category?: { id: number; name: string; slug?: string } | null
+  subcategories?: Array<{ id: number; name: string; slug?: string }>
+  talent_category?: { id: number; name: string; slug?: string } | null
+  talent_subcategories?: Array<{ id: number; name: string; slug?: string }>
+  organiser_category?: { id: number; name: string; slug?: string } | null
+  [key: string]: unknown
+}
+
+/** Nested venue v2 profile from event invited_venues_objects */
+export interface InvitedVenueV2 extends InvitedProfileV2 {
+  opening_hours?: Array<{
+    day: string
+    is_open: boolean
+    open: string | null
+    close: string | null
+  }>
+  capacity?: number | null
+  wheelchair_accessible?: boolean | null
+  allow_dogs?: boolean | null
+}
+
 export interface InvitedEventProfile {
   id?: number
   name?: string
   email?: string
   role?: string
   is_active?: boolean
+  profile_image?: string | null
   profile_image_url?: string | null
   profile_image_path?: string | null
   avatar_url?: string | null
   image_url?: string | null
   image?: string | null
   contact_box_design_message?: string | null
+  /** Rich v2 profile nested by API (talent) */
+  talent_v2?: InvitedProfileV2 | null
+  /** Rich v2 profile nested by API (organiser) */
+  organiser_v2?: InvitedProfileV2 | null
 }
 
 export interface InvitedVenueObject {
@@ -230,6 +267,9 @@ export interface InvitedVenueObject {
   slug?: string
   user_id?: number | null
   contact_box_design_message?: string | null
+  description?: string | null
+  /** Rich v2 profile nested by API */
+  venue_v2?: InvitedVenueV2 | null
 }
 
 /** Gallery item from API (event additional_images) */
@@ -336,6 +376,10 @@ export interface Event {
   computed_status?: string
   is_approved?: boolean
   entrance_status?: string
+  /** API: `free` | `premium` (controls Contact tab visibility, etc.) */
+  event_type?: string
+  /** Premium create form / API: host booking copy */
+  booking_instructions?: string | null
   venue?: unknown
   organisers?: Array<unknown>
   is_free_package?: boolean

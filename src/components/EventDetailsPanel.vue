@@ -192,6 +192,67 @@
           <div v-if="activeTab === 'overview'" class="tw:px-4 tw:py-4">
             <!-- Event details: label above value; checkmarks on first three rows only -->
             <div class="tw:space-y-6">
+              <!-- Event title -->
+              <div>
+                <p class="tw:text-base tw:font-semibold tw:text-gray-900">
+                  {{ $t('eventDetails.overviewEventTitle') }}
+                </p>
+                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
+                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewTitleDisplay }}</span>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div>
+                <p class="tw:text-base tw:font-semibold tw:text-gray-900">
+                  {{ $t('eventDetails.eventDescription') }}
+                </p>
+                <div class="tw:mt-2 tw:flex tw:items-start tw:gap-2">
+                  <svg class="tw:w-5 tw:h-5 tw:mt-0.5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8] tw:whitespace-pre-line tw:leading-relaxed">{{ overviewDescriptionDisplay }}</span>
+                </div>
+              </div>
+
+              <!-- Category -->
+              <div>
+                <p class="tw:text-base tw:font-semibold tw:text-gray-900">
+                  {{ $t('eventDetails.overviewCategory') }}
+                </p>
+                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
+                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewCategoryDisplay }}</span>
+                </div>
+              </div>
+
+              <!-- Subcategories -->
+              <div>
+                <p class="tw:text-base tw:font-semibold tw:text-gray-900">
+                  {{ $t('eventDetails.overviewSubcategories') }}
+                </p>
+                <div v-if="overviewSubcategoryLabels.length" class="tw:mt-2 tw:flex tw:flex-wrap tw:gap-2">
+                  <span
+                    v-for="(name, idx) in overviewSubcategoryLabels"
+                    :key="`${name}-${idx}`"
+                    class="tw:inline-flex tw:items-center tw:rounded-full tw:border tw:border-[#1a73e8]/25 tw:bg-[#1a73e8]/5 tw:px-3 tw:py-1 tw:text-sm tw:font-medium tw:text-[#1a73e8]"
+                  >
+                    {{ name }}
+                  </span>
+                </div>
+                <div v-else class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
+                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ $t('eventDetails.notSpecified') }}</span>
+                </div>
+              </div>
+
               <!-- Dress code -->
               <div>
                 <p class="tw:text-base tw:font-semibold tw:text-gray-900">
@@ -267,95 +328,143 @@
           <!-- Talents Tab (invited API objects and/or legacy talents) -->
           <div v-else-if="activeTab === 'talents'" class="tw:p-3">
             <div v-if="invitedTalentsObjects.length" class="tw:space-y-3">
-              <div
-                v-for="(talent, index) in invitedTalentsObjects"
-                :key="talent.id ?? `talent-${index}`"
-                class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-[#FAFBFF] tw:p-4"
+              <ul
+                class="tw:grid tw:grid-cols-2 tw:gap-2.5 tw:list-none tw:m-0 tw:p-0"
+                role="list"
               >
-                <div class="tw:flex tw:gap-3">
-                  <div
-                    class="tw:w-12 tw:h-12 tw:rounded-full tw:overflow-hidden tw:border tw:border-gray-200 tw:bg-gray-100 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0 tw:text-sm tw:font-semibold tw:text-gray-600"
+                <li
+                  v-for="(talent, index) in visibleTalents"
+                  :key="talent.id ?? `talent-${index}`"
+                  class="tw:min-w-0"
+                >
+                  <article
+                    class="tw:group tw:flex tw:h-full tw:min-h-0 tw:flex-col tw:overflow-hidden tw:rounded-2xl tw:bg-white tw:shadow-[0_1px_3px_rgba(0,0,0,0.06)] tw:ring-1 tw:ring-gray-200/90 tw:transition-all tw:duration-200 hover:tw:-translate-y-0.5 hover:tw:shadow-[0_10px_28px_rgba(0,0,0,0.09)] hover:tw:ring-[#FF7700]/35"
                   >
-                    <img
-                      v-if="invitedProfileImageUrl(talent)"
-                      :src="invitedProfileImageUrl(talent)"
-                      alt=""
-                      class="tw:w-full tw:h-full tw:object-cover"
-                    />
-                    <template v-else>{{ initialsFromName(talent.name) }}</template>
-                  </div>
-                  <div class="tw:flex-1 tw:min-w-0">
-                    <p class="tw:font-semibold tw:text-gray-900 tw:truncate">{{ talent.name || '—' }}</p>
-                    <p v-if="talent.email" class="tw:text-sm tw:text-gray-600 tw:truncate">{{ talent.email }}</p>
-                    <div class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-2">
-                      <span
-                        v-if="talent.role"
-                        class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full tw:bg-gray-100 tw:text-gray-700"
+                    <div
+                      class="tw:relative tw:aspect-[3/4] tw:w-full tw:overflow-hidden tw:bg-gradient-to-br tw:from-slate-100 tw:to-slate-200/90"
+                    >
+                      <img
+                        v-if="talentImageUrl(talent)"
+                        :src="talentImageUrl(talent)"
+                        :alt="talentTitle(talent)"
+                        class="tw:h-full tw:w-full tw:object-cover tw:transition-transform tw:duration-300 tw:ease-out group-hover:tw:scale-[1.04]"
+                        loading="lazy"
+                      />
+                      <div
+                        v-else
+                        class="tw:flex tw:h-full tw:w-full tw:items-center tw:justify-center"
                       >
-                        {{ talent.role }}
-                      </span>
-                      <span
-                        v-if="talent.is_active !== undefined"
-                        class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full"
-                        :class="talent.is_active ? 'tw:bg-green-50 tw:text-green-800' : 'tw:bg-gray-100 tw:text-gray-600'"
-                      >
-                        {{ talent.is_active ? 'Active' : 'Inactive' }}
-                      </span>
+                        <span class="tw:text-xl tw:font-bold tw:tracking-tight tw:text-slate-400">{{
+                          initialsFromName(talentTitle(talent))
+                        }}</span>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
+                    <div class="tw:flex tw:flex-1 tw:flex-col tw:gap-1 tw:p-2.5">
+                      <h3
+                        class="tw:m-0 tw:line-clamp-2 tw:text-xs tw:font-semibold tw:leading-snug tw:text-gray-900 tw:tracking-tight sm:tw:text-[13px]"
+                      >
+                        {{ talentTitle(talent) }}
+                      </h3>
+                      <div class="tw:mt-0.5 tw:flex tw:flex-col tw:gap-1">
+                        <span
+                          v-if="talentGenre(talent)"
+                          class="tw:inline-flex tw:w-fit tw:max-w-full tw:items-center tw:truncate tw:rounded-md tw:bg-[#1a73e8]/10 tw:px-1.5 tw:py-px tw:text-[10px] tw:font-semibold tw:uppercase tw:tracking-wide tw:text-[#1557b0] sm:tw:text-[11px] sm:tw:normal-case sm:tw:tracking-normal"
+                        >
+                          {{ talentGenre(talent) }}
+                        </span>
+                        <span
+                          v-if="talentCity(talent)"
+                          class="tw:inline-flex tw:max-w-full tw:items-center tw:gap-0.5 tw:truncate tw:text-[10px] tw:text-gray-500 sm:tw:text-[11px]"
+                        >
+                          <svg
+                            class="tw:h-3 tw:w-3 tw:flex-shrink-0 tw:text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            />
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                          {{ talentCity(talent) }}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                </li>
+              </ul>
+              <button
+                v-if="invitedTalentsObjects.length > TALENTS_LIMIT && !showAllTalents"
+                type="button"
+                class="tw:flex tw:w-full tw:items-center tw:justify-center tw:gap-2 tw:rounded-xl tw:border tw:border-dashed tw:border-gray-300 tw:bg-gray-50/80 tw:py-2.5 tw:text-xs tw:font-semibold tw:text-gray-700 tw:transition-colors hover:tw:border-[#FF7700]/50 hover:tw:bg-[#FFFAF5] hover:tw:text-[#1a73e8] sm:tw:text-sm"
+                @click="showAllTalents = true"
+              >
+                <span>Show all</span>
+                <span class="tw:rounded-full tw:bg-gray-200/80 tw:px-2 tw:py-0.5 tw:text-[10px] tw:font-medium tw:text-gray-600">
+                  +{{ invitedTalentsObjects.length - TALENTS_LIMIT }}
+                </span>
+              </button>
             </div>
             <TalentsTab v-else :talents="event?.talents || []" />
           </div>
 
           <!-- Organisers Tab (invited API objects) -->
           <div v-else-if="activeTab === 'organisers'" class="tw:p-3">
-            <div class="tw:space-y-3">
+            <div class="tw:space-y-5">
               <div
                 v-for="(org, index) in invitedOrganisersObjects"
                 :key="org.id ?? `org-${index}`"
-                class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-[#FAFBFF] tw:p-4"
+                class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:overflow-hidden tw:shadow-sm"
               >
-                <div class="tw:flex tw:gap-3">
+                <div class="tw:w-full tw:h-40 tw:bg-gray-100 tw:relative tw:overflow-hidden">
+                  <img
+                    v-if="organiserImageUrl(org)"
+                    :src="organiserImageUrl(org)"
+                    :alt="organiserDisplayName(org)"
+                    class="tw:w-full tw:h-full tw:object-cover"
+                  />
                   <div
-                    class="tw:w-12 tw:h-12 tw:rounded-full tw:overflow-hidden tw:border tw:border-gray-200 tw:bg-indigo-50 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0"
+                    v-else
+                    class="tw:w-full tw:h-full tw:flex tw:items-center tw:justify-center tw:bg-gradient-to-br tw:from-indigo-50 tw:to-indigo-100"
                   >
-                    <img
-                      v-if="invitedProfileImageUrl(org)"
-                      :src="invitedProfileImageUrl(org)"
-                      alt=""
-                      class="tw:w-full tw:h-full tw:object-cover"
-                    />
-                    <svg
-                      v-else
-                      class="tw:w-6 tw:h-6 tw:text-indigo-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <svg class="tw:w-12 tw:h-12 tw:text-indigo-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
-                  <div class="tw:flex-1 tw:min-w-0">
-                    <p class="tw:font-semibold tw:text-gray-900 tw:truncate">{{ org.name || '—' }}</p>
-                    <p v-if="org.email" class="tw:text-sm tw:text-gray-600 tw:truncate">{{ org.email }}</p>
-                    <div class="tw:flex tw:flex-wrap tw:gap-2 tw:mt-2">
-                      <span
-                        v-if="org.role"
-                        class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full tw:bg-gray-100 tw:text-gray-700"
-                      >
-                        {{ org.role }}
-                      </span>
-                      <span
-                        v-if="org.is_active !== undefined"
-                        class="tw:inline-flex tw:items-center tw:text-xs tw:font-medium tw:px-2 tw:py-0.5 tw:rounded-full"
-                        :class="org.is_active ? 'tw:bg-green-50 tw:text-green-800' : 'tw:bg-gray-100 tw:text-gray-600'"
-                      >
-                        {{ org.is_active ? 'Active' : 'Inactive' }}
-                      </span>
-                    </div>
+                </div>
+
+                <div class="tw:p-4 tw:space-y-4">
+                  <div>
+                    <p class="tw:font-semibold tw:text-gray-900 tw:text-base">{{ organiserDisplayName(org) }}</p>
                   </div>
+
+                  <div v-if="organiserDescription(org)">
+                    <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">About</p>
+                    <p class="tw:text-sm tw:text-gray-700 tw:leading-relaxed tw:line-clamp-4">{{ organiserDescription(org) }}</p>
+                  </div>
+
+                  <a
+                    v-if="organiserProfileSlug(org)"
+                    :href="`/organisers/${organiserProfileSlug(org)}`"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="tw:inline-flex tw:items-center tw:gap-1.5 tw:text-sm tw:font-medium tw:text-[#1a73e8] hover:tw:underline tw:underline-offset-2"
+                  >
+                    <svg class="tw:w-4 tw:h-4 tw:flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    Click Here to see full Organiser Profile
+                  </a>
                 </div>
               </div>
             </div>
@@ -363,23 +472,77 @@
 
           <!-- Invited Venues Tab -->
           <div v-else-if="activeTab === 'venues'" class="tw:p-3">
-            <div class="tw:space-y-3">
+            <div class="tw:space-y-5">
               <div
                 v-for="(venue, index) in invitedVenuesObjects"
                 :key="venue.id ?? `venue-${index}`"
-                class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-[#FAFBFF] tw:p-4"
+                class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:overflow-hidden tw:shadow-sm"
               >
-                <div class="tw:flex tw:gap-3">
-                  <div class="tw:w-10 tw:h-10 tw:rounded-lg tw:bg-orange-50 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0">
-                    <svg class="tw:w-5 tw:h-5 tw:text-[#FF7700]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                <!-- Header image -->
+                <div class="tw:w-full tw:h-40 tw:bg-gray-100 tw:relative tw:overflow-hidden">
+                  <img
+                    v-if="venueImageUrl(venue)"
+                    :src="venueImageUrl(venue)"
+                    :alt="venue.name"
+                    class="tw:w-full tw:h-full tw:object-cover"
+                  />
+                  <div v-else class="tw:w-full tw:h-full tw:flex tw:items-center tw:justify-center tw:bg-gradient-to-br tw:from-orange-50 tw:to-orange-100">
+                    <svg class="tw:w-12 tw:h-12 tw:text-[#FF7700]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   </div>
-                  <div class="tw:flex-1 tw:min-w-0">
-                    <p class="tw:font-semibold tw:text-gray-900">{{ venue.name || '—' }}</p>
-                    <p v-if="venue.address" class="tw:text-sm tw:text-gray-600 tw:mt-1">{{ venue.address }}</p>
-                    <!-- <p v-if="venue.slug" class="tw:text-xs tw:text-gray-400 tw:mt-1 tw:font-mono">/{{ venue.slug }}</p> -->
+                </div>
+
+                <div class="tw:p-4 tw:space-y-4">
+                  <!-- Name + address -->
+                  <div>
+                    <p class="tw:font-semibold tw:text-gray-900 tw:text-base">{{ venue.name || '—' }}</p>
+                    <p v-if="venue.address" class="tw:text-sm tw:text-gray-500 tw:mt-0.5 tw:flex tw:items-start tw:gap-1">
+                      <svg class="tw:w-3.5 tw:h-3.5 tw:mt-0.5 tw:flex-shrink-0 tw:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {{ venue.address }}
+                    </p>
                   </div>
+
+                  <!-- Description -->
+                  <div v-if="venueDescription(venue)">
+                    <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">About</p>
+                    <p class="tw:text-sm tw:text-gray-700 tw:leading-relaxed tw:line-clamp-4">{{ venueDescription(venue) }}</p>
+                  </div>
+
+                  <!-- Opening hours -->
+                  <div v-if="venueOpeningHours(venue).length">
+                    <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-2">Opening hours</p>
+                    <div class="tw:space-y-1">
+                      <div
+                        v-for="slot in venueOpeningHours(venue)"
+                        :key="slot.day"
+                        class="tw:flex tw:items-center tw:justify-between tw:text-sm"
+                      >
+                        <span class="tw:w-24 tw:text-gray-700 tw:font-medium">{{ slot.day }}</span>
+                        <span
+                          v-if="slot.is_open && slot.open && slot.close"
+                          class="tw:text-gray-600"
+                        >{{ slot.open }} – {{ slot.close }}</span>
+                        <span v-else class="tw:text-gray-400 tw:italic">Closed</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Read more link -->
+                  <a
+                    v-if="venueProfileSlug(venue)"
+                    :href="`/venues/${venueProfileSlug(venue)}`"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="tw:inline-flex tw:items-center tw:gap-1.5 tw:text-sm tw:font-medium tw:text-[#1a73e8] hover:tw:underline tw:underline-offset-2"
+                  >
+                    <svg class="tw:w-4 tw:h-4 tw:flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    Click here to see full Venue profile
+                  </a>
                 </div>
               </div>
             </div>
@@ -393,7 +556,23 @@
             <SocialsTab :links="socialMediaLinks" />
           </div>
 
-          <!-- Contact Tab -->
+          <!-- Booking info Tab -->
+          <div
+            v-else-if="activeTab === 'bookingInfo'"
+            class="tw:px-4 tw:py-4 tw:bg-gradient-to-b tw:from-[#FAFBFF] tw:to-white tw:min-h-[120px]"
+          >
+            <p
+              v-if="bookingInstructionsDisplay"
+              class="tw:text-base tw:text-gray-800 tw:whitespace-pre-line tw:leading-relaxed"
+            >
+              {{ bookingInstructionsDisplay }}
+            </p>
+            <p v-else class="tw:text-base tw:text-gray-500">
+              {{ $t('eventDetails.bookingInfoEmpty') }}
+            </p>
+          </div>
+
+          <!-- Contact Tab (premium events only) -->
           <div
             v-else-if="activeTab === 'contact'"
             class="tw:px-4 tw:py-4 tw:bg-gradient-to-b tw:from-[#FAFBFF] tw:to-white tw:min-h-[120px]"
@@ -622,6 +801,22 @@ const socialMediaLinks = computed(() =>
 
 const showSocialsTab = computed(() => socialMediaLinks.value.length > 0)
 
+const isPremiumEvent = computed(() => {
+  const ev = props.event
+  if (!ev || typeof ev !== 'object') return false
+  const et = ev.event_type ?? ev.eventType
+  if (et == null || et === '') return false
+  return String(et).trim().toLowerCase() === 'premium'
+})
+
+const bookingInstructionsDisplay = computed(() => {
+  const ev = props.event
+  if (!ev || typeof ev !== 'object') return ''
+  const raw = ev.booking_instructions ?? ev.bookingInstructions
+  if (raw == null || String(raw).trim() === '') return ''
+  return String(raw)
+})
+
 const tabs = computed(() => {
   const list = [
     { id: 'overview', labelKey: 'eventDetails.tabs.overview' },
@@ -645,7 +840,10 @@ const tabs = computed(() => {
           : 'eventDetails.tabs.venue'
     })
   }
-  list.push({ id: 'contact', labelKey: 'eventDetails.tabs.contact' })
+  list.push({ id: 'bookingInfo', labelKey: 'eventDetails.tabs.bookingInfo' })
+  if (isPremiumEvent.value) {
+    list.push({ id: 'contact', labelKey: 'eventDetails.tabs.contact' })
+  }
   return list
 })
 
@@ -690,6 +888,48 @@ const overviewEntranceFeeDisplay = computed(() => {
   return t('eventDetails.notSpecified')
 })
 
+const overviewTitleDisplay = computed(() => {
+  const raw = props.event?.title
+  if (raw == null || String(raw).trim() === '') return t('eventDetails.untitled')
+  return String(raw).trim()
+})
+
+const overviewDescriptionDisplay = computed(() => {
+  const raw = props.event?.description
+  if (raw == null || String(raw).trim() === '') return t('eventDetails.noDescription')
+  return String(raw)
+})
+
+const overviewCategoryDisplay = computed(() => {
+  const ev = props.event
+  const c = ev?.category
+  if (c && typeof c === 'object' && c.name != null && String(c.name).trim() !== '') {
+    return String(c.name).trim()
+  }
+  if (typeof c === 'string' && c.trim() !== '') return c.trim()
+  if (ev?.category_name != null && String(ev.category_name).trim() !== '') {
+    return String(ev.category_name).trim()
+  }
+  return t('eventDetails.notSpecified')
+})
+
+const overviewSubcategoryLabels = computed(() => {
+  const ev = props.event
+  const list = ev?.subcategories
+  if (Array.isArray(list) && list.length > 0) {
+    const names = list
+      .map((s) => (s && typeof s === 'object' ? s.name : s))
+      .filter((n) => n != null && String(n).trim() !== '')
+      .map((n) => String(n).trim())
+    return [...new Set(names)]
+  }
+  const sc = ev?.sub_category
+  if (sc && typeof sc === 'object' && sc.name != null && String(sc.name).trim() !== '') {
+    return [String(sc.name).trim()]
+  }
+  return []
+})
+
 function initialsFromName(name) {
   if (!name || typeof name !== 'string') return '?'
   const parts = name.trim().split(/\s+/)
@@ -697,8 +937,77 @@ function initialsFromName(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-function invitedProfileImageUrl(item) {
-  return getUserProfileImageUrl(item)
+// ── Talent tab helpers ────────────────────────────────────────────────────────
+const TALENTS_LIMIT = 10
+const showAllTalents = ref(false)
+
+const visibleTalents = computed(() =>
+  showAllTalents.value
+    ? invitedTalentsObjects.value
+    : invitedTalentsObjects.value.slice(0, TALENTS_LIMIT)
+)
+
+function talentTitle(talent) {
+  return talent?.talent_v2?.title || talent?.name || '—'
+}
+
+function talentImageUrl(talent) {
+  const v2 = talent?.talent_v2
+  return v2?.profile_image || v2?.cover_image || v2?.image_path ||
+    talent?.profile_image || getUserProfileImageUrl(talent) || null
+}
+
+function talentGenre(talent) {
+  const v2 = talent?.talent_v2
+  if (!v2) return null
+  return v2.talent_category?.name || v2.category?.name || null
+}
+
+function talentCity(talent) {
+  return talent?.talent_v2?.city || null
+}
+
+// ── Venue tab helpers ─────────────────────────────────────────────────────────
+function venueImageUrl(venue) {
+  const v2 = venue?.venue_v2
+  return v2?.cover_image || v2?.profile_image || v2?.image_path || null
+}
+
+function venueDescription(venue) {
+  return venue?.venue_v2?.description || venue?.description || null
+}
+
+function venueOpeningHours(venue) {
+  return venue?.venue_v2?.opening_hours || []
+}
+
+function venueProfileSlug(venue) {
+  return venue?.venue_v2?.slug || venue?.slug || null
+}
+
+// ── Organiser tab helpers ─────────────────────────────────────────────────────
+function organiserImageUrl(org) {
+  const v2 = org?.organiser_v2
+  return (
+    v2?.cover_image ||
+    v2?.profile_image ||
+    v2?.image_path ||
+    org?.profile_image ||
+    getUserProfileImageUrl(org) ||
+    null
+  )
+}
+
+function organiserDisplayName(org) {
+  return org?.organiser_v2?.title || org?.name || '—'
+}
+
+function organiserDescription(org) {
+  return org?.organiser_v2?.description || null
+}
+
+function organiserProfileSlug(org) {
+  return org?.organiser_v2?.slug || null
 }
 
 function syncActiveTabWithTabs() {
@@ -764,6 +1073,7 @@ const mockCommunity = [
 watch(() => props.event, () => {
   currentImageIndex.value = 0
   activeTab.value = 'overview'
+  showAllTalents.value = false
 })
 
 // Computed: cover only, or cover + additional_images as carousel slides

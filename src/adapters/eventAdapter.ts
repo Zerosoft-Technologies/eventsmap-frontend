@@ -408,6 +408,15 @@ export function mapEventV2ToUI(event: EventV2Raw): Event {
     
     // Additional fields from API v2
     entrance_status: event.entrance_status,
+    event_type: pickStr(
+      (event as Record<string, unknown>).event_type,
+      (event as Record<string, unknown>).eventType
+    ),
+    booking_instructions:
+      pickStr(
+        (event as Record<string, unknown>).booking_instructions,
+        (event as Record<string, unknown>).bookingInstructions
+      ) ?? null,
     social_media_urls: pickSocialMediaUrls(event.social_media_urls),
     contact_info: buildContactInfoFromEvent(event),
     venue: event.venue,

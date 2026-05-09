@@ -67,6 +67,7 @@ export interface EventDetailData {
   id: number
   title: string
   event_type: string
+  booking_instructions?: string
   category_id: number
   subcategory_ids: number[]
   event_date: string
