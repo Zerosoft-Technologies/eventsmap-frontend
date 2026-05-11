@@ -149,22 +149,23 @@ body.hover-enabled [data-clickable]:not(.no-hover):hover {
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f3f4f6;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #B3BDD7;
+  background-color: var(--secondary-color, #ff7700);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #9FAAC8;
+  background-color: #e66800;
 }
 
-/* Firefox */
+/* Firefox: scrollable elements */
 * {
-  scrollbar-width: inherit;
-  scrollbar-color: #B3BDD7 transparent;
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary-color, #ff7700) #e5e7eb;
 }
 
 details.maplibregl-ctrl.maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-compact-show {

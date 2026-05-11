@@ -41,25 +41,38 @@
     <div
       v-show="openMenu === 'sub'"
       ref="subPanelRef"
-      class="map-filter-dropdown tw:fixed tw:min-w-[220px] tw:max-w-[min(100vw-2rem,280px)] tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:shadow-xl tw:py-2"
+      class="map-filter-dropdown tw:fixed tw:min-w-[220px] tw:max-w-[min(100vw-2rem,280px)] tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:shadow-xl tw:py-0 tw:overflow-hidden tw:flex tw:flex-col"
       :style="subPanelStyle"
-      role="listbox"
+      role="dialog"
       aria-label="Subcategories"
     >
+      <div
+        class="tw:flex tw:items-center tw:justify-between tw:gap-2 tw:px-3 tw:py-2.5 tw:border-b tw:border-gray-100 tw:bg-gray-50/80"
+      >
+        <span class="tw:text-sm tw:font-semibold tw:text-gray-900">All Subcategories</span>
+        <button
+          type="button"
+          class="no-hover tw:flex tw:h-8 tw:w-8 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-lg tw:text-gray-500 tw:transition-colors hover:tw:bg-gray-200/80 hover:tw:text-gray-800 focus:tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[var(--secondary-color)]/40"
+          aria-label="Close subcategories menu"
+          @click="closeSubMenu"
+        >
+          <X class="tw:h-4 tw:w-4" aria-hidden="true" stroke-width="2" />
+        </button>
+      </div>
       <button
         type="button"
-        class="tw:w-full tw:px-3 tw:py-2 tw:text-left tw:text-sm tw:text-gray-800 hover:tw:bg-gray-50"
+        class="no-hover tw:w-full tw:px-3 tw:py-2 tw:text-left tw:text-sm tw:font-medium tw:text-[var(--secondary-color)] hover:tw:bg-orange-50/60 tw:border-b tw:border-gray-100"
         @click="onClearSubcategories"
       >
-        All Subcategories
+        Reset to all subcategories
       </button>
       <div
         v-if="!availableSubcategories.length"
-        class="tw:px-3 tw:py-2 tw:text-xs tw:text-gray-500 tw:border-t tw:border-gray-100"
+        class="tw:px-3 tw:py-2 tw:text-xs tw:text-gray-500"
       >
         {{ disabledSubcategories ? 'Select a category in the header first.' : 'No subcategories for this category.' }}
       </div>
-      <div v-else class="tw:max-h-48 tw:overflow-y-auto tw:border-t tw:border-gray-100">
+      <div v-else class="tw:max-h-48 tw:overflow-y-auto tw:min-h-0">
         <label
           v-for="sub in availableSubcategories"
           :key="sub.id"
@@ -117,7 +130,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { ChevronDown } from 'lucide-vue-next'
+import { ChevronDown, X } from 'lucide-vue-next'
 import type { Subcategory } from '@/api/categories'
 
 const props = withDefaults(
@@ -197,6 +210,10 @@ function openSubMenu() {
 
 function openTimeMenu() {
   openMenu.value = openMenu.value === 'time' ? null : 'time'
+}
+
+function closeSubMenu() {
+  openMenu.value = null
 }
 
 watch(openMenu, () => {
