@@ -54,6 +54,55 @@
               <img src="../assets/arrow-right.png" alt="Left" class="tw:w-4 tw:h-4 tw:rotate-180" />
             </button>
 
+            <!-- Profile type (events / organisers / talents / venues) → loads matching category tree -->
+            <div
+              v-click-outside="closeProfileTypeMenu"
+              class="tw:relative tw:shrink-0 tw:z-[20]"
+            >
+              <button
+                type="button"
+                class="profile-type-trigger no-hover tw:inline-flex tw:items-center tw:gap-1.5 tw:rounded-md tw:border tw:border-gray-200 tw:bg-white tw:px-2.5 tw:py-2 tw:text-sm tw:font-medium tw:text-[var(--primary-color)] tw:shadow-sm tw:transition-colors hover:tw:border-gray-300 hover:tw:bg-gray-50"
+                :aria-expanded="showProfileTypeMenu"
+                aria-haspopup="listbox"
+                :aria-label="$t('header.profileType.ariaLabel')"
+                @click.stop="toggleProfileTypeMenu"
+              >
+                <span class="tw:truncate tw:max-w-[5.5rem] tw:md:max-w-[7.5rem]">{{ discoveryProfileLabel }}</span>
+                <ChevronDown
+                  class="tw:h-3.5 tw:w-3.5 tw:shrink-0 tw:opacity-70 tw:transition-transform"
+                  :class="showProfileTypeMenu ? 'tw:rotate-180' : ''"
+                  aria-hidden="true"
+                  :stroke-width="2"
+                />
+              </button>
+              <transition name="fade">
+                <div
+                  v-if="showProfileTypeMenu"
+                  class="profile-type-menu tw:absolute tw:left-0 tw:top-[calc(100%+6px)] tw:min-w-[11rem] tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:py-1 tw:shadow-lg tw:overflow-hidden tw:z-10"
+                  role="listbox"
+                  :aria-label="$t('header.profileType.menuLabel')"
+                  @click.stop
+                >
+                  <button
+                    v-for="opt in profileTypeOptions"
+                    :key="opt.value"
+                    type="button"
+                    role="option"
+                    :aria-selected="discoveryProfileType === opt.value"
+                    class="no-hover tw:flex tw:w-full tw:items-center tw:gap-2 tw:px-3 tw:py-2.5 tw:text-left tw:text-sm tw:text-gray-800 tw:transition-colors hover:tw:bg-gray-50"
+                    :class="
+                      discoveryProfileType === opt.value
+                        ? 'tw:bg-blue-50 tw:font-semibold tw:text-[var(--primary-color)]'
+                        : ''
+                    "
+                    @click="selectDiscoveryProfile(opt.value)"
+                  >
+                    {{ opt.label }}
+                  </button>
+                </div>
+              </transition>
+            </div>
+
             <!-- Categories loading skeleton -->
             <div v-if="categoriesLoading" class="tw:flex tw:items-center tw:gap-2 tw:flex-1 tw:py-1">
               <div v-for="i in 5" :key="i" class="tw:inline-flex tw:shrink-0 tw:animate-pulse">
@@ -606,6 +655,7 @@
     <AllEvents
       :events="events"
       :loading="eventsLoading"
+      :profile-type="discoveryProfileType"
       :selected-category="selectedCategory"
       :available-subcategories="availableSubcategories"
       :selected-subcategory-slugs="selectedSubcategorySlugs"
@@ -614,6 +664,7 @@
       @closeResults="handleClose"
       @resetSearch="handleReset"
       @viewEvent="handleViewEvent"
+      @viewProfile="handleViewProfile"
       @toggleSubcategory="toggleSubcategory"
       @clearSubcategories="clearSubcategories"
       @update:startTime="startTime = $event"
@@ -626,6 +677,15 @@
     :visible="showEventDetailsPanel" 
     :event="selectedEvent"
     @close="closeEventDetailsPanel"
+  />
+
+  <!-- Discovery Profile Details Panel -->
+  <DiscoveryProfileDetailsPanel
+    :visible="showProfileDetailsPanel"
+    :profile="selectedProfile"
+    :profile-type="discoveryProfileType"
+    @close="closeProfileDetailsPanel"
+    @viewEvent="handleViewEvent"
   />
 </template>
 
@@ -643,10 +703,11 @@ import { useWishlistStore } from '@/stores/wishlistStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { getCreateRoute } from '@/utils/routeResolver';
 import { getUserProfileImageUrl } from '@/utils/userProfileImage';
-import { Bell, Images, Loader2 } from 'lucide-vue-next';
+import { Bell, Images, Loader2, ChevronDown } from 'lucide-vue-next';
 import { chatService } from '@/services/chatService';
 import { useMapStore } from '@/stores/mapStore'
 import EventDetailsPanel from './EventDetailsPanel.vue'
+import DiscoveryProfileDetailsPanel from './DiscoveryProfileDetailsPanel.vue'
 
 const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
 
@@ -794,6 +855,53 @@ const searchResults = ref([])
 const categories = ref([])
 const categoriesLoading = ref(false)
 const selectedCategory = ref(null)
+
+/** Header “browse as” profile: picks /categories vs /categories-talents|organisers|venue */
+const discoveryProfileType = ref('events')
+const showProfileTypeMenu = ref(false)
+
+const profileTypeOptions = computed(() => [
+  { value: 'events', label: t('header.profileType.events') },
+  { value: 'organisers', label: t('header.profileType.organisers') },
+  { value: 'talents', label: t('header.profileType.talents') },
+  { value: 'venues', label: t('header.profileType.venues') },
+])
+
+const discoveryProfileLabel = computed(() => {
+  const cur = discoveryProfileType.value
+  const hit = profileTypeOptions.value.find((x) => x.value === cur)
+  return hit?.label ?? t('header.profileType.events')
+})
+
+function toggleProfileTypeMenu() {
+  showProfileTypeMenu.value = !showProfileTypeMenu.value
+}
+
+function closeProfileTypeMenu() {
+  showProfileTypeMenu.value = false
+}
+
+function selectDiscoveryProfile(type) {
+  if (discoveryProfileType.value === type) {
+    closeProfileTypeMenu()
+    return
+  }
+  discoveryProfileType.value = type
+  selectedCategory.value = null
+  selectedSubcategorySlugs.value = []
+  closeProfileTypeMenu()
+  loadCategories()
+  showResults.value = true
+  void loadListingFromApi(searchTerm.value.trim())
+}
+
+/** Maps header profile picker → GET /v2/events?category_scope=… (omit for events) */
+const DISCOVERY_TO_CATEGORY_SCOPE = {
+  events: null,
+  talents: 'talent',
+  organisers: 'organiser',
+  venues: 'venue',
+}
 const selectedSubcategorySlugs = ref([])
 const startTime = ref(null)
 const endTime = ref(null)
@@ -819,6 +927,9 @@ const selectedLocation = ref({ lat: 52.3676, lng: 4.9041, name: "Amsterdam" })
 
 const showEventDetailsPanel = ref(false)
 const selectedEvent = ref(null)
+
+const showProfileDetailsPanel = ref(false)
+const selectedProfile = ref(null)
 
 const { permissionStatus: locationPermissionStatus, coords: locationCoords, error: locationError, isLoading: locationLoading, getLocation: getCurrentLocation, showManualEnablePrompt } = useLocationPermission()
 
@@ -877,8 +988,8 @@ function stopCatDrag() {
 async function loadCategories() {
   categoriesLoading.value = true
   try {
-    const { fetchCategories } = await import('../api/categories')
-    categories.value = await fetchCategories()
+    const { fetchCategoriesForProfile } = await import('../api/categories')
+    categories.value = await fetchCategoriesForProfile(discoveryProfileType.value)
   } catch (e) {
     console.error('Failed to load categories:', e)
     categories.value = []
@@ -926,12 +1037,12 @@ onBeforeUnmount(() => {
 
 function filterBy(action) {
   if (action == 'search') {
-    loadEventsFromApi(searchTerm.value.trim())
+    loadListingFromApi(searchTerm.value.trim())
     showResults.value = true
     searchInput.value.blur()
     mapStore.setAppliedLocation({ lat: selectedLocation.value.lat, lng: selectedLocation.value.lng, name: selectedLocation.value.name })
   } else {
-    loadEventsFromApi()
+    loadListingFromApi()
     showResults.value = true
   }
 }
@@ -960,6 +1071,11 @@ function handleReset() {
   endTime.value = null
   selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" }
   sessionFilter.value = { morning: false, afternoon: false, evening: false, night: false }
+  discoveryProfileType.value = 'events'
+  closeProfileTypeMenu()
+  void loadCategories()
+  mapStore.clearSearchHighlightEventIds()
+  mapStore.clearMapProfiles()
 }
 
 async function getLocation() {
@@ -1004,36 +1120,71 @@ function debounce(fn, delay = 450) {
 }
 
 const debouncedFilterEvents = debounce(() => {
-  loadEventsFromApi(searchTerm.value.trim())
+  loadListingFromApi(searchTerm.value.trim())
   showResults.value = true
 }, 300)
 
-async function loadEventsFromApi(searchQuery = '') {
+async function loadListingFromApi(searchQuery = '') {
   eventsLoading.value = true
   try {
-    const { fetchEvents } = await import('../api/events')
-    const params = { lat: selectedLocation.value.lat, lng: selectedLocation.value.lng, radius: 100, per_page: 20 }
-    if (searchQuery) params.search = searchQuery
-    if (selectedCategory.value) params.category = selectedCategory.value.slug
-    if (selectedSubcategorySlugs.value.length > 0) params.subcategory = selectedSubcategorySlugs.value.join(',')
-    if (startTime.value) params.start_time = startTime.value
-    if (endTime.value) params.end_time = endTime.value
-    if (dateRange.value[0]) params.from_date = formatDateToApi(dateRange.value[0])
-    if (dateRange.value[1]) params.to_date = formatDateToApi(dateRange.value[1])
-    const activeSessions = Object.entries(JSON.parse(localStorage.getItem('datepicker-session') || '{}')).filter(([, v]) => v).map(([k]) => k)
-    if (activeSessions.length > 0) activeSessions.forEach(s => { params[s] = true })
-    const result = await fetchEvents(params)
-    events.value = result.data
+    const profileType = discoveryProfileType.value
+    if (profileType === 'events') {
+      await loadEventsFromApi(searchQuery)
+    } else {
+      await loadProfilesFromApi(profileType, searchQuery)
+    }
   } catch (e) {
-    console.error('Failed to load events:', e)
+    console.error('Failed to load listing:', e)
     events.value = []
+    mapStore.clearSearchHighlightEventIds()
+    mapStore.clearMapProfiles()
   } finally {
     eventsLoading.value = false
   }
 }
 
+async function loadEventsFromApi(searchQuery = '') {
+  const { fetchEvents } = await import('../api/events')
+  const params = { lat: selectedLocation.value.lat, lng: selectedLocation.value.lng, radius: 100, per_page: 20 }
+  if (searchQuery) params.search = searchQuery
+  if (selectedCategory.value) params.category = selectedCategory.value.slug
+  if (selectedSubcategorySlugs.value.length > 0) params.subcategory = selectedSubcategorySlugs.value.join(',')
+  if (startTime.value) params.start_time = startTime.value
+  if (endTime.value) params.end_time = endTime.value
+  if (dateRange.value[0]) params.from_date = formatDateToApi(dateRange.value[0])
+  if (dateRange.value[1]) params.to_date = formatDateToApi(dateRange.value[1])
+  const activeSessions = Object.entries(JSON.parse(localStorage.getItem('datepicker-session') || '{}')).filter(([, v]) => v).map(([k]) => k)
+  if (activeSessions.length > 0) activeSessions.forEach(s => { params[s] = true })
+  const result = await fetchEvents(params)
+  events.value = result.data
+  const rows = Array.isArray(result.data) ? result.data : []
+  mapStore.setSearchHighlightEventIds(rows.map((ev) => ev?.id))
+  mapStore.clearMapProfiles()
+}
+
+async function loadProfilesFromApi(profileType, searchQuery = '') {
+  const { fetchProfiles, pickProfileLatLng } = await import('../api/discoveryProfiles')
+  const params = { per_page: 20 }
+  if (searchQuery) params.search = searchQuery
+  if (selectedCategory.value) params.category = selectedCategory.value.slug
+  if (selectedSubcategorySlugs.value.length > 0) params.subcategory = selectedSubcategorySlugs.value.join(',')
+  const result = await fetchProfiles(profileType, params)
+  events.value = result.data
+  mapStore.clearSearchHighlightEventIds()
+  // Push profile locations to the map (normalize lat/lng vs latitude/longitude, strings, organiser field names)
+  mapStore.setMapProfiles(
+    result.data
+      .map((p) => {
+        const ll = pickProfileLatLng(p)
+        if (!ll) return null
+        return { ...p, ...ll, profileType }
+      })
+      .filter(Boolean),
+  )
+}
+
 const debouncedReloadEvents = debounce(() => {
-  loadEventsFromApi(searchTerm.value.trim())
+  loadListingFromApi(searchTerm.value.trim())
   showResults.value = true
 }, 500)
 
@@ -1080,6 +1231,16 @@ function handleViewEvent(event) {
 function closeEventDetailsPanel() {
   showEventDetailsPanel.value = false
   selectedEvent.value = null
+}
+
+function handleViewProfile(profile) {
+  selectedProfile.value = profile ?? null
+  showProfileDetailsPanel.value = true
+}
+
+function closeProfileDetailsPanel() {
+  showProfileDetailsPanel.value = false
+  selectedProfile.value = null
 }
 </script>
 

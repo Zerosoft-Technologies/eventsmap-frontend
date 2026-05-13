@@ -6,7 +6,7 @@
       @click="expand"
       class="tw:fixed tw:top-1/2 tw:-translate-y-1/2 tw:left-0 tw:z-50 tw:bg-white tw:px-4 tw:py-3 tw:rounded-r-xl tw:shadow-lg tw:border tw:border-gray-200 tw:flex tw:items-center tw:gap-2 tw:transition-all hover:tw:translate-x-1"
     >
-      <span class="tw:text-sm tw:font-semibold tw:text-gray-700">Events</span>
+      <span class="tw:text-sm tw:font-semibold tw:text-gray-700">{{ panelLabel }}</span>
       <img src="../assets/arrow-right.png" alt="Expand" class="tw:w-4 tw:h-4">
     </button>
   </transition>
@@ -25,7 +25,7 @@
     >
       <!-- Minimized State -->
       <template v-if="isMinimized">
-        <span class="tw:text-sm tw:font-semibold tw:text-white">Events</span>
+        <span class="tw:text-sm tw:font-semibold tw:text-white">{{ panelLabel }}</span>
       </template>
 
       <!-- Expanded State -->
@@ -42,6 +42,7 @@
           :start-time="startTime"
           :end-time="endTime"
           :disabled-subcategories="!selectedCategory"
+          :show-time-range="profileType !== 'organisers'"
           @toggle-subcategory="(slug) => $emit('toggleSubcategory', slug)"
           @clear-subcategories="$emit('clearSubcategories')"
           @update:start-time="$emit('update:startTime', $event)"
@@ -50,7 +51,7 @@
 
         <!-- Section header -->
         <div class="tw:flex tw:justify-between tw:items-center tw:px-4 tw:pb-3 tw:border-b tw:border-gray-100 tw:flex-shrink-0">
-          <h3 class="tw:text-sm tw:font-bold tw:text-gray-600 tw:tracking-[0.1em] tw:uppercase">{{ $t('allEvents.title') }}</h3>
+          <h3 class="tw:text-sm tw:font-bold tw:text-gray-600 tw:tracking-[0.1em] tw:uppercase">{{ panelLabel }}</h3>
           <div class="tw:flex tw:items-center tw:gap-3">
             <img
               class="tw:cursor-pointer tw:opacity-60 hover:tw:opacity-100 tw:transition-opacity"
@@ -106,8 +107,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
             </div>
-            <h4 class="tw:text-lg tw:font-semibold tw:text-gray-800 tw:mb-2 tw:text-center">{{ $t('allEvents.noEventsFound') }}</h4>
-            <p class="tw:text-sm tw:text-gray-500 tw:text-center tw:mb-6 tw:max-w-xs">{{ $t('allEvents.noEventsMessage') }}</p>
+            <h4 class="tw:text-lg tw:font-semibold tw:text-gray-800 tw:mb-2 tw:text-center">{{ emptyTitle }}</h4>
+            <p class="tw:text-sm tw:text-gray-500 tw:text-center tw:mb-6 tw:max-w-xs">{{ emptyMessage }}</p>
             <button
               @click="reset"
               class="tw:bg-orange-500 tw:text-white tw:px-6 tw:py-2.5 tw:rounded-lg tw:text-sm tw:font-medium tw:transition-all hover:tw:bg-orange-600"
@@ -117,9 +118,20 @@
           </div>
 
           <!-- Events list -->
-          <transition-group v-else name="panel-fade" tag="div" class="tw:p-4 tw:space-y-4">
+          <transition-group v-else-if="isEventsMode" name="panel-fade" tag="div" class="tw:p-4 tw:space-y-4">
             <div v-for="event in computedEvents" :key="event.id">
               <Event :event="event" @viewEvent="handleViewEvent"></Event>
+            </div>
+          </transition-group>
+
+          <!-- Profiles list (organisers / talents / venues) -->
+          <transition-group v-else name="panel-fade" tag="div" class="tw:p-4 tw:space-y-4">
+            <div v-for="item in computedEvents" :key="item.id">
+              <DiscoveryProfileCard
+                :profile="item"
+                :profile-type="profileType"
+                @viewProfile="emit('viewProfile', $event)"
+              />
             </div>
           </transition-group>
 
@@ -144,8 +156,8 @@ import { useI18n } from 'vue-i18n'
 import { defineAsyncComponent, ref, computed } from 'vue'
 import MapEventsFilterPills from '@/components/events/MapEventsFilterPills.vue'
 
-// Lazy load Event to avoid circular import issue
 const Event = defineAsyncComponent(() => import('./Event.vue'))
+const DiscoveryProfileCard = defineAsyncComponent(() => import('./DiscoveryProfileCard.vue'))
 
 const { t } = useI18n()
 
@@ -158,12 +170,14 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  /** Header-selected category (for subcategory list + disabled state) */
+  profileType: {
+    type: String,
+    default: 'events'
+  },
   selectedCategory: {
     type: Object,
     default: null
   },
-  /** `category.subcategories` for the selected header category */
   availableSubcategories: {
     type: Array,
     default: () => []
@@ -182,10 +196,23 @@ const props = defineProps({
   }
 });
 
+const isEventsMode = computed(() => props.profileType === 'events')
+
+const PROFILE_LABELS = { events: 'Events', organisers: 'Organisers', talents: 'Talents', venues: 'Venues' }
+const panelLabel = computed(() => PROFILE_LABELS[props.profileType] ?? 'Results')
+
+const emptyTitle = computed(() =>
+  isEventsMode.value ? t('allEvents.noEventsFound') : t('allEvents.noProfilesFound')
+)
+const emptyMessage = computed(() =>
+  isEventsMode.value ? t('allEvents.noEventsMessage') : t('allEvents.noProfilesMessage')
+)
+
 const emit = defineEmits([
   'closeResults',
   'resetSearch',
   'viewEvent',
+  'viewProfile',
   'toggleSubcategory',
   'clearSubcategories',
   'update:startTime',

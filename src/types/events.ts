@@ -485,6 +485,12 @@ export interface EventFilters {
   // Subcategory filter (use slug from categories API)
   subcategory?: string | null
 
+  /**
+   * When filtering events, indicates which taxonomy `category` / `subcategory` slugs belong to.
+   * Backend may use this to match invited talent/organiser/venue categories. Omit or `event` = default.
+   */
+  category_scope?: 'event' | 'talent' | 'organiser' | 'venue' | null
+
   /** Event start-time window (HH:MM or HH:MM:SS), e.g. filter sessions starting after this time */
   start_time?: string | null
   /** Event end-time window (HH:MM or HH:MM:SS) */

@@ -39,18 +39,37 @@ class ApiError extends Error {
 }
 
 /**
- * Fetch all categories with subcategories
+ * Which profile taxonomy to load categories from (header discovery / map search).
  */
-export async function fetchCategories(): Promise<Category[]> {
-  const url = getApiUrl('/categories')
+export type ProfileCategorySource = 'events' | 'talents' | 'organisers' | 'venues'
+
+const PROFILE_CATEGORY_PATHS: Record<ProfileCategorySource, string> = {
+  events: '/categories',
+  talents: '/categories-talents',
+  organisers: '/categories-organisers',
+  venues: '/categories-venue',
+}
+
+/**
+ * Fetch categories for a profile type (events, talents, organisers, venues).
+ */
+export async function fetchCategoriesForProfile(
+  source: ProfileCategorySource
+): Promise<Category[]> {
+  const path = PROFILE_CATEGORY_PATHS[source]
+  return fetchCategoriesFromPath(path)
+}
+
+async function fetchCategoriesFromPath(path: string): Promise<Category[]> {
+  const url = getApiUrl(path)
 
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
     })
 
     if (!response.ok) {
@@ -63,7 +82,7 @@ export async function fetchCategories(): Promise<Category[]> {
     }
 
     const result: CategoriesResponse = await response.json()
-    
+
     if (!result.success) {
       throw new ApiError('API returned success: false', 400, result)
     }
@@ -73,12 +92,19 @@ export async function fetchCategories(): Promise<Category[]> {
     if (error instanceof ApiError) {
       throw error
     }
-    
+
     throw new ApiError(
       error instanceof Error ? error.message : 'Network error',
       0
     )
   }
+}
+
+/**
+ * Fetch all event categories with subcategories (same as talents/venues taxonomies, events endpoint).
+ */
+export async function fetchCategories(): Promise<Category[]> {
+  return fetchCategoriesForProfile('events')
 }
 
 /**

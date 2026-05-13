@@ -7,6 +7,7 @@ import maplibregl from 'maplibre-gl'
 import { createApp } from 'vue'
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { fetchEvents } from '../api/events'
+import { pickProfileLatLng } from '@/api/discoveryProfiles'
 import { useMapStore } from '@/stores/mapStore'
 import { eventMapFocusPulse } from '@/utils/mapEventFocus'
 import i18n from '../i18n'
@@ -17,6 +18,7 @@ const events = ref([])
 let map
 const mapStore = useMapStore()
 const markerPool = new Map()
+const profileMarkerPool = new Map()
 
 const style = {
   version: 8,
@@ -119,6 +121,92 @@ function syncMarkers() {
   }
 }
 
+// ── Profile Markers ──────────────────────────────────────────────
+
+const PROFILE_MARKER_COLORS = {
+  organisers: '#6366f1',
+  talents: '#10b981',
+  venues: '#0ea5e9',
+}
+
+function createProfileMarkerEl(profileType) {
+  const color = PROFILE_MARKER_COLORS[profileType] ?? '#6b7280'
+  const el = document.createElement('div')
+  el.style.width = '44px'
+  el.style.height = '44px'
+  el.style.cursor = 'pointer'
+  el.style.transition = 'transform 0.2s ease, filter 0.2s ease'
+  el.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 52" fill="none" style="width:100%;height:100%">
+      <ellipse cx="22" cy="49" rx="9" ry="3" fill="rgba(0,0,0,0.18)"/>
+      <path d="M22 2C14.268 2 8 8.268 8 16c0 10.5 14 32 14 32S36 26.5 36 16C36 8.268 29.732 2 22 2z"
+        fill="${color}" stroke="white" stroke-width="2.5"/>
+      <circle cx="22" cy="16" r="7" fill="white"/>
+    </svg>`
+  return el
+}
+
+function syncProfileMarkers() {
+  if (!map?.loaded()) return
+  const list = mapStore.mapProfileItems
+    .map((p) => {
+      const ll = pickProfileLatLng(p)
+      if (!ll) return null
+      return { ...p, latitude: ll.latitude, longitude: ll.longitude }
+    })
+    .filter(Boolean)
+
+  const nextIds = new Set(list.map((p) => Number(p.id)))
+
+  for (const [key, { marker }] of profileMarkerPool.entries()) {
+    if (!nextIds.has(Number(key.replace('p-', '')))) {
+      marker.remove()
+      profileMarkerPool.delete(key)
+    }
+  }
+
+  for (const p of list) {
+    const key = `p-${Number(p.id)}`
+    if (profileMarkerPool.has(key)) continue
+
+    const el = createProfileMarkerEl(p.profileType)
+    const popupEl = document.createElement('div')
+    popupEl.classList.add('tw:relative', 'tw:bg-white', 'tw:rounded-2xl', 'tw:p-4')
+
+    import('../components/DiscoveryProfileCard.vue').then(({ default: DiscoveryProfileCard }) => {
+      createApp(DiscoveryProfileCard, { profile: p, profileType: p.profileType }).use(i18n).mount(popupEl)
+    })
+
+    const popup = new maplibregl.Popup({
+      closeButton: false,
+      maxWidth: 'none',
+      anchor: 'bottom',
+      offset: [0, -40],
+    }).setDOMContent(popupEl)
+
+    const marker = new maplibregl.Marker({ element: el })
+      .setLngLat([p.longitude, p.latitude])
+      .setPopup(popup)
+      .addTo(map)
+
+    el.addEventListener('click', () => {
+      map.easeTo({
+        center: [p.longitude, p.latitude],
+        zoom: Math.max(map.getZoom(), 12),
+        offset: [0, 250],
+        duration: 600,
+      })
+    })
+
+    profileMarkerPool.set(key, { marker, el })
+  }
+}
+
+function clearProfileMarkers() {
+  for (const { marker } of profileMarkerPool.values()) marker.remove()
+  profileMarkerPool.clear()
+}
+
 onMounted(() => {
   map = new maplibregl.Map({
     container: mapContainer.value,
@@ -133,6 +221,7 @@ onMounted(() => {
 onUnmounted(() => {
   markerPool.forEach(({ marker }) => marker.remove())
   markerPool.clear()
+  clearProfileMarkers()
   map?.remove()
   map = null
 })
@@ -167,6 +256,24 @@ watch(
       essential: true,
     })
   },
+)
+
+watch(
+  () => mapStore.mapProfileItems,
+  (items) => {
+    if (!map) return
+    if (items.length === 0) {
+      clearProfileMarkers()
+      return
+    }
+    if (map.loaded()) {
+      syncProfileMarkers()
+    } else {
+      map.once('load', syncProfileMarkers)
+    }
+    // Do not change zoom/center when discovery profiles load — keep event map framing.
+  },
+  { deep: true },
 )
 </script>
 

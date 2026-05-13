@@ -12,7 +12,15 @@
     "currentLocation": "Huidige locatie",
     "defaultLocation": "Amsterdam",
     "language": "Taal",
-    "link": "Link"
+    "link": "Link",
+    "profileType": {
+      "events": "Evenementen",
+      "organisers": "Organisatoren",
+      "talents": "Talenten",
+      "venues": "Locaties",
+      "ariaLabel": "Bladeren op profieltype",
+      "menuLabel": "Profieltypes"
+    }
   },
   "eventCard": {
     "liveNow": "Live Nu",
@@ -256,6 +264,30 @@
     "noTalents": "Nog geen talents toegevoegd voor dit evenement.",
     "more": "meer",
     "close": "Sluiten"
+  },
+  "discoveryCard": {
+    "viewProfile": "Profiel bekijken",
+    "viewDetails": "Details"
+  },
+  "discoveryProfile": {
+    "tabs": {
+      "overview": "Overzicht",
+      "location": "Locatie",
+      "gallery": "Galerij",
+      "openingHours": "Openingstijden",
+      "amenities": "Voorzieningen",
+      "contact": "Contact",
+      "upcomingEvents": "Aankomende evenementen"
+    },
+    "upcomingEventsEmpty": "Geen aankomende evenementen voor dit profiel.",
+    "profileLocation": {
+      "organiser": "Locatie van de organisator",
+      "talent": "Locatie van het talent",
+      "venue": "Locatie van de venue",
+      "default": "Locatie"
+    },
+    "mapLoading": "Kaart laden...",
+    "mapNoCoordinates": "Er zijn geen kaartcoördinaten voor dit profiel. Je kunt wel routebeschrijving openen op basis van het adres, indien beschikbaar."
   },
   "wishlist": {
     "title": "Mijn Verlanglijstje",

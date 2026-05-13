@@ -12,7 +12,15 @@
     "currentLocation": "Localisation actuelle",
     "defaultLocation": "Amsterdam",
     "language": "Langue",
-    "link": "Lien"
+    "link": "Lien",
+    "profileType": {
+      "events": "Événements",
+      "organisers": "Organisateurs",
+      "talents": "Talents",
+      "venues": "Lieux",
+      "ariaLabel": "Parcourir par type de profil",
+      "menuLabel": "Types de profil"
+    }
   },
   "eventCard": {
     "liveNow": "En Direct",
@@ -256,6 +264,30 @@
     "noTalents": "Aucun talent ajouté à cet événement pour le moment.",
     "more": "plus",
     "close": "Fermer"
+  },
+  "discoveryCard": {
+    "viewProfile": "Voir le profil",
+    "viewDetails": "Détails"
+  },
+  "discoveryProfile": {
+    "tabs": {
+      "overview": "Aperçu",
+      "location": "Lieu",
+      "gallery": "Galerie",
+      "openingHours": "Horaires",
+      "amenities": "Équipements",
+      "contact": "Contact",
+      "upcomingEvents": "Événements à venir"
+    },
+    "upcomingEventsEmpty": "Aucun événement à venir pour ce profil.",
+    "profileLocation": {
+      "organiser": "Lieu de l'organisateur",
+      "talent": "Lieu du talent",
+      "venue": "Localisation du lieu",
+      "default": "Lieu"
+    },
+    "mapLoading": "Chargement de la carte...",
+    "mapNoCoordinates": "Les coordonnées cartographiques ne sont pas disponibles pour ce profil. Vous pouvez ouvrir l’itinéraire à partir de l’adresse si elle est renseignée."
   },
   "wishlist": {
     "title": "Ma Liste de Souhaits",

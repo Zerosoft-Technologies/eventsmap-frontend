@@ -22,8 +22,8 @@
       </button>
     </div>
 
-    <!-- Time range -->
-    <div class="tw:relative tw:flex-shrink-0">
+    <!-- Time range (events only — hidden e.g. for Organisers discovery list) -->
+    <div v-if="showTimeRange" class="tw:relative tw:flex-shrink-0">
       <button
         ref="timeBtnRef"
         type="button"
@@ -90,7 +90,7 @@
     </div>
 
     <div
-      v-show="openMenu === 'time'"
+      v-show="showTimeRange && openMenu === 'time'"
       ref="timePanelRef"
       class="map-filter-dropdown tw:fixed tw:w-[248px] tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:shadow-xl tw:p-3"
       :style="timePanelStyle"
@@ -140,9 +140,12 @@ const props = withDefaults(
     startTime: string | null
     endTime: string | null
     disabledSubcategories?: boolean
+    /** When false, hide the time window pill (profile discovery lists that are not time-filtered). */
+    showTimeRange?: boolean
   }>(),
   {
-    disabledSubcategories: false
+    disabledSubcategories: false,
+    showTimeRange: true,
   }
 )
 
@@ -219,6 +222,13 @@ function closeSubMenu() {
 watch(openMenu, () => {
   nextTick(() => updatePositions())
 })
+
+watch(
+  () => props.showTimeRange,
+  (show) => {
+    if (!show && openMenu.value === 'time') openMenu.value = null
+  },
+)
 
 onMounted(() => {
   window.addEventListener('scroll', updatePositions, true)

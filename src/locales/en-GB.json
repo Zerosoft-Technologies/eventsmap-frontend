@@ -16,7 +16,15 @@
     "link": "Link",
     "notifications": "Notifications",
     "invitationNotifications": "Invitation notifications",
-    "noPendingInvitations": "No pending invitations."
+    "noPendingInvitations": "No pending invitations.",
+    "profileType": {
+      "events": "Events",
+      "organisers": "Organisers",
+      "talents": "Talents",
+      "venues": "Venues",
+      "ariaLabel": "Browse by profile type",
+      "menuLabel": "Profile types"
+    }
   },
   "eventCard": {
     "finished": "Event is Finished",
@@ -97,7 +105,33 @@
   "allEvents": {
     "title": "All Events",
     "noEventsFound": "No Events Found",
-    "noEventsMessage": "We couldn't find any events matching your search criteria. Try adjusting your filters or location."
+    "noEventsMessage": "We couldn't find any events matching your search criteria. Try adjusting your filters or location.",
+    "noProfilesFound": "No profiles found",
+    "noProfilesMessage": "We couldn't find any matching profiles. Try adjusting your filters or search."
+  },
+  "discoveryCard": {
+    "viewProfile": "View Profile",
+    "viewDetails": "Details"
+  },
+  "discoveryProfile": {
+    "tabs": {
+      "overview": "Overview",
+      "location": "Location",
+      "gallery": "Gallery",
+      "openingHours": "Opening Hours",
+      "amenities": "Amenities",
+      "contact": "Contact",
+      "upcomingEvents": "Upcoming Events"
+    },
+    "upcomingEventsEmpty": "No upcoming events listed for this profile.",
+    "profileLocation": {
+      "organiser": "Organiser Location",
+      "talent": "Talent Location",
+      "venue": "Venue Location",
+      "default": "Location"
+    },
+    "mapLoading": "Loading map...",
+    "mapNoCoordinates": "Map coordinates are not available for this profile. You can still open directions using the address when available."
   },
   "auth": {
     "loginTitle": "Login to your account",
