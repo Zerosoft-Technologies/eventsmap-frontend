@@ -289,6 +289,13 @@
     "mapLoading": "Kaart laden...",
     "mapNoCoordinates": "Er zijn geen kaartcoördinaten voor dit profiel. Je kunt wel routebeschrijving openen op basis van het adres, indien beschikbaar."
   },
+  "mapListingFilter": {
+    "timeRange": "Tijdsvenster",
+    "venueHours": "Openingstijden",
+    "venueOpensAt": "Opening",
+    "venueClosesAt": "Sluiting",
+    "clearTimes": "Tijden wissen"
+  },
   "wishlist": {
     "title": "Mijn Verlanglijstje",
     "empty": "Geen opgeslagen evenementen",

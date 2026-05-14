@@ -1,5 +1,5 @@
 <template>
-  <header :class="fixedMenu ? 'tw:fixed tw:top-0 tw:left-0 z-50': ''" class="tw:w-full tw:bg-transparent tw:py-2 tw:px-4 tw:md:py-3 tw:md:px-8 tw:flex tw:items-center tw:justify-between header-root">
+  <header :class="fixedMenu ? 'tw:fixed tw:top-0 tw:left-0 z-50': ''" class="tw:w-full tw:bg-transparent tw:py-2 tw:px-4 tw:md:py-3 tw:md:px-8 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-y-2 header-root">
     <h1 class="tw:font-bold tw:leading-[1.4] tw:tracking-[-0.5px] tw:text-lg">
       <RouterLink to="/">
         <img src="../assets/logo.png" alt="Logo" style="width: 80px;" />
@@ -43,8 +43,8 @@
         </span></button>
       </div>      
       <transition name="fade">
-        <div v-if="showSuggestion" @mousedown.prevent class="suggestion-panel tw:absolute tw:left-0 tw:top-full tw:rounded-2xl tw:p-3 tw:z-10 tw:w-[35vw]">
-          <div class="tw:flex tw:items-center tw:gap-2">
+        <div v-if="showSuggestion" @mousedown.prevent class="suggestion-panel tw:absolute tw:left-0 tw:top-full tw:rounded-2xl tw:p-3 tw:z-10 tw:w-max tw:max-w-[min(920px,calc(100vw-2rem))]">
+          <div class="tw:flex tw:items-center tw:gap-2 tw:min-w-0">
             <button
               type="button"
               @click="scrollCategories('left')"
@@ -104,7 +104,7 @@
             </div>
 
             <!-- Categories loading skeleton -->
-            <div v-if="categoriesLoading" class="tw:flex tw:items-center tw:gap-2 tw:flex-1 tw:py-1">
+            <div v-if="categoriesLoading" class="tw:flex tw:items-center tw:gap-2 tw:py-1 tw:min-w-0 tw:max-w-[min(560px,calc(100vw-16rem))] tw:overflow-hidden">
               <div v-for="i in 5" :key="i" class="tw:inline-flex tw:shrink-0 tw:animate-pulse">
                 <div class="tw:h-9 tw:bg-gray-200 tw:rounded-md" :style="{ width: `${80 + Math.random() * 40}px` }"></div>
               </div>
@@ -114,7 +114,7 @@
             <div
               v-else
               ref="categoriesScrollEl"
-              class="cat-scroll tw:flex tw:items-center tw:gap-2 tw:overflow-x-auto tw:whitespace-nowrap tw:flex-1 tw:py-1"
+              class="cat-scroll tw:flex tw:items-center tw:gap-2 tw:overflow-x-auto tw:whitespace-nowrap tw:py-1 tw:min-w-0 tw:max-w-[min(560px,calc(100vw-16rem))]"
               :class="catIsDragging ? 'tw:cursor-grabbing' : 'tw:cursor-grab'"
               @mousedown="onCatMouseDown"
               @mousemove="onCatMouseMove"
@@ -158,8 +158,7 @@
         </div>
       </transition>
     </div>
-    <button class="tw:lg:hidden tw:text-2xl" type="button" @click="toggleMobileMenu" aria-label="Open menu">☰</button>
-    <!-- <button class="mobile-menu-btn tw:lg:hidden tw:text-2xl" type="button" @click="toggleMobileMenu" aria-label="Open menu">☰</button> -->
+    <button class="tw:shrink-0 tw:lg:hidden tw:text-2xl" type="button" @click="toggleMobileMenu" aria-label="Open menu">☰</button>
 
     <div class="tw:hidden tw:lg:flex tw:items-center tw:gap-3">
       <div>
@@ -581,6 +580,86 @@
               </div>
             </div>
           </div>
+
+          <!-- Browse-as + category filters (mobile menu only — not on the home header strip) -->
+          <div
+            v-if="!isProfilePage"
+            class="tw:w-full tw:rounded-xl tw:border tw:border-gray-200 tw:bg-gray-50/90 tw:p-3 tw:flex tw:flex-col tw:gap-3"
+          >
+            <span class="tw:text-xs tw:font-semibold tw:text-gray-500 tw:uppercase tw:tracking-wide">
+              {{ $t('header.profileType.ariaLabel') }}
+            </span>
+            <select
+              class="header-profile-type-select tw:w-full tw:rounded-lg tw:border tw:border-gray-200 tw:bg-white tw:py-2.5 tw:pl-3 tw:pr-8 tw:text-sm tw:font-medium tw:text-[var(--primary-color)]"
+              :aria-label="$t('header.profileType.ariaLabel')"
+              :value="discoveryProfileType"
+              @change="onMobileProfileTypeChange"
+            >
+              <option v-for="opt in profileTypeOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+
+            <div v-if="categoriesLoading" class="tw:flex tw:items-center tw:gap-2 tw:py-1 tw:overflow-hidden">
+              <div v-for="i in 4" :key="i" class="tw:inline-flex tw:shrink-0 tw:animate-pulse">
+                <div class="tw:h-9 tw:w-16 tw:bg-gray-200 tw:rounded-md" />
+              </div>
+            </div>
+
+            <div v-else class="tw:flex tw:items-center tw:gap-2 tw:min-w-0">
+              <button
+                type="button"
+                @click="scrollCategories('left')"
+                class="scroll-btn tw:bg-white tw:rounded-md tw:p-2 tw:flex tw:items-center tw:justify-center tw:shrink-0 tw:border tw:border-gray-200"
+                aria-label="Scroll categories left"
+              >
+                <img src="../assets/arrow-right.png" alt="" class="tw:w-4 tw:h-4 tw:rotate-180" />
+              </button>
+
+              <div
+                ref="categoriesScrollElMobile"
+                class="cat-scroll tw:flex tw:items-center tw:gap-2 tw:overflow-x-auto tw:whitespace-nowrap tw:py-1 tw:min-w-0 tw:flex-1 tw:[-webkit-overflow-scrolling:touch]"
+                :class="catIsDragging ? 'tw:cursor-grabbing' : 'tw:cursor-grab'"
+                @mousedown="onCatMouseDown"
+                @mousemove="onCatMouseMove"
+                @mouseup="stopCatDrag"
+                @mouseleave="stopCatDrag"
+              >
+                <button
+                  v-for="category in categories.filter(c => c.name.toLowerCase() != 'sports')"
+                  :key="category.id"
+                  type="button"
+                  @click="selectCategoryFromMobileMenu(category)"
+                  :class="[
+                    'category-pill tw:inline-flex tw:shrink-0 tw:text-sm tw:py-2 tw:px-3 tw:rounded-md tw:transition-all',
+                    selectedCategory?.id === category.id
+                      ? 'category-pill--active'
+                      : 'category-pill--default'
+                  ]"
+                >
+                  {{ category.name }}
+                </button>
+
+                <button
+                  v-if="selectedCategory"
+                  type="button"
+                  @click="clearCategoryFilterFromMobileMenu"
+                  class="tw:inline-flex tw:shrink-0 tw:text-sm tw:py-2 tw:px-2 tw:text-gray-400 hover:tw:text-gray-600 tw:transition-colors clear-btn"
+                >
+                  {{ $t('common.clear') }}
+                </button>
+              </div>
+
+              <button
+                type="button"
+                @click="scrollCategories('right')"
+                class="scroll-btn tw:bg-white tw:rounded-md tw:p-2 tw:flex tw:items-center tw:justify-center tw:shrink-0 tw:border tw:border-gray-200"
+                aria-label="Scroll categories right"
+              >
+                <img src="../assets/arrow-right.png" alt="" class="tw:w-4 tw:h-4" />
+              </button>
+            </div>
+          </div>
         </template>
 
         <!-- Email Box -->
@@ -661,6 +740,8 @@
       :selected-subcategory-slugs="selectedSubcategorySlugs"
       :start-time="startTime"
       :end-time="endTime"
+      :venue-open-time="venueOpenTime"
+      :venue-close-time="venueCloseTime"
       @closeResults="handleClose"
       @resetSearch="handleReset"
       @viewEvent="handleViewEvent"
@@ -669,6 +750,10 @@
       @clearSubcategories="clearSubcategories"
       @update:startTime="startTime = $event"
       @update:endTime="endTime = $event"
+      @update:venueOpenTime="venueOpenTime = $event"
+      @update:venueCloseTime="venueCloseTime = $event"
+      @panelMinimized="handleListingPanelMinimized"
+      @listingDockLayout="homeListingDockLayout = $event"
     />
   </div>
   
@@ -676,6 +761,7 @@
   <EventDetailsPanel 
     :visible="showEventDetailsPanel" 
     :event="selectedEvent"
+    :map-listing-expanded="detailPanelBesideExpandedListing"
     @close="closeEventDetailsPanel"
   />
 
@@ -683,7 +769,8 @@
   <DiscoveryProfileDetailsPanel
     :visible="showProfileDetailsPanel"
     :profile="selectedProfile"
-    :profile-type="discoveryProfileType"
+    :profile-type="profileDetailsPanelType"
+    :map-listing-expanded="detailPanelBesideExpandedListing"
     @close="closeProfileDetailsPanel"
     @viewEvent="handleViewEvent"
   />
@@ -699,13 +786,14 @@ import LocationPermissionPrompt from './LocationPermissionPrompt.vue';
 import { useLocationPermission } from '../composables/useLocationPermission';
 import { useLanguageSwitch } from '../composables/useLanguageSwitch';
 import { useAuthStore } from '@/stores/auth';
+import { useMapStore } from '@/stores/mapStore';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { getCreateRoute } from '@/utils/routeResolver';
 import { getUserProfileImageUrl } from '@/utils/userProfileImage';
 import { Bell, Images, Loader2, ChevronDown } from 'lucide-vue-next';
 import { chatService } from '@/services/chatService';
-import { useMapStore } from '@/stores/mapStore'
+import { MAP_OPEN_EVENT_DETAIL, MAP_OPEN_PROFILE_DETAIL } from '@/utils/mapPopupBridge'
 import EventDetailsPanel from './EventDetailsPanel.vue'
 import DiscoveryProfileDetailsPanel from './DiscoveryProfileDetailsPanel.vue'
 
@@ -889,10 +977,17 @@ function selectDiscoveryProfile(type) {
   discoveryProfileType.value = type
   selectedCategory.value = null
   selectedSubcategorySlugs.value = []
+  venueOpenTime.value = null
+  venueCloseTime.value = null
   closeProfileTypeMenu()
   loadCategories()
   showResults.value = true
   void loadListingFromApi(searchTerm.value.trim())
+}
+
+function onMobileProfileTypeChange(e) {
+  const v = e.target && 'value' in e.target ? e.target.value : null
+  if (v) selectDiscoveryProfile(v)
 }
 
 /** Maps header profile picker → GET /v2/events?category_scope=… (omit for events) */
@@ -905,7 +1000,10 @@ const DISCOVERY_TO_CATEGORY_SCOPE = {
 const selectedSubcategorySlugs = ref([])
 const startTime = ref(null)
 const endTime = ref(null)
+const venueOpenTime = ref(null)
+const venueCloseTime = ref(null)
 const categoriesScrollEl = ref(null)
+const categoriesScrollElMobile = ref(null)
 
 const availableSubcategories = computed(() => {
   const c = selectedCategory.value
@@ -917,6 +1015,8 @@ const catIsDragging = ref(false)
 const catDidDrag = ref(false)
 let catDragStartX = 0
 let catDragStartScrollLeft = 0
+/** Scroll container receiving drag (desktop or mobile category row) */
+let catDragScrollEl = null
 const dateRange = ref([null, null])
 const sessionFilter = ref({ morning: false, afternoon: false, evening: false, night: false })
 const mobileInitialDateRange = computed(() => {
@@ -930,6 +1030,28 @@ const selectedEvent = ref(null)
 
 const showProfileDetailsPanel = ref(false)
 const selectedProfile = ref(null)
+
+/** Discovery detail panel badge/tabs: pin + list carry `profileType`; fallback = header browse mode (not `events`) */
+const profileDetailsPanelType = computed(() => {
+  const p = selectedProfile.value
+  const pt = p?.profileType
+  if (pt === 'organisers' || pt === 'talents' || pt === 'venues') return pt
+  const d = discoveryProfileType.value
+  if (d === 'organisers' || d === 'talents' || d === 'venues') return d
+  return 'organisers'
+})
+
+/** Listing dock on Home: aligns EventDetailsPanel / DiscoveryProfileDetailsPanel with AllEvents (`md:left-7` + 380px vs gutter only). */
+const homeListingDockLayout = ref('hidden')
+/** When true, desktop detail panels use historical `left: 430px` beside expanded dock; when false, `left: 1.75rem` (dock gutter only). */
+const detailPanelBesideExpandedListing = computed(() => {
+  if (route.name !== 'Home') return true
+  return showResults.value && homeListingDockLayout.value === 'expanded'
+})
+
+watch(showResults, (s) => {
+  if (!s) homeListingDockLayout.value = 'hidden'
+})
 
 const { permissionStatus: locationPermissionStatus, coords: locationCoords, error: locationError, isLoading: locationLoading, getLocation: getCurrentLocation, showManualEnablePrompt } = useLocationPermission()
 
@@ -956,14 +1078,17 @@ function openSearchSuggestions() {
 }
 
 function scrollCategories(direction) {
-  const el = categoriesScrollEl.value
-  if (!el) return
-  el.scrollBy({ left: direction === 'left' ? -240 : 240, behavior: 'smooth' })
+  const delta = direction === 'left' ? -240 : 240
+  const els = [categoriesScrollEl.value, categoriesScrollElMobile.value].filter(Boolean)
+  for (const el of els) {
+    el.scrollBy({ left: delta, behavior: 'smooth' })
+  }
 }
 
 function onCatMouseDown(e) {
-  const el = categoriesScrollEl.value
-  if (!el) return
+  const el = e.currentTarget
+  if (!el || typeof el.scrollLeft !== 'number') return
+  catDragScrollEl = el
   catIsDragging.value = true
   catDidDrag.value = false
   catDragStartX = e.clientX
@@ -971,7 +1096,7 @@ function onCatMouseDown(e) {
 }
 
 function onCatMouseMove(e) {
-  const el = categoriesScrollEl.value
+  const el = catDragScrollEl
   if (!el || !catIsDragging.value) return
   e.preventDefault()
   const dx = e.clientX - catDragStartX
@@ -982,6 +1107,7 @@ function onCatMouseMove(e) {
 function stopCatDrag() {
   if (!catIsDragging.value) return
   catIsDragging.value = false
+  catDragScrollEl = null
   if (catDidDrag.value) setTimeout(() => { catDidDrag.value = false }, 0)
 }
 
@@ -1012,6 +1138,16 @@ function clearCategoryFilter() {
   showResults.value = true
 }
 
+function selectCategoryFromMobileMenu(category) {
+  selectCategory(category)
+  closeMobileHeader()
+}
+
+function clearCategoryFilterFromMobileMenu() {
+  clearCategoryFilter()
+  closeMobileHeader()
+}
+
 function toggleSubcategory(slug) {
   const arr = selectedSubcategorySlugs.value
   const i = arr.indexOf(slug)
@@ -1028,10 +1164,14 @@ onMounted(() => {
   getLocation()
   loadCategories()
   window.addEventListener('keydown', handleMobileMenuKeydown)
+  window.addEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetailFromHome)
+  window.addEventListener(MAP_OPEN_PROFILE_DETAIL, onMapOpenProfileDetailFromHome)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleMobileMenuKeydown)
+  window.removeEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetailFromHome)
+  window.removeEventListener(MAP_OPEN_PROFILE_DETAIL, onMapOpenProfileDetailFromHome)
   document.body.style.overflow = ''
 })
 
@@ -1069,6 +1209,8 @@ function handleReset() {
   selectedSubcategorySlugs.value = []
   startTime.value = null
   endTime.value = null
+  venueOpenTime.value = null
+  venueCloseTime.value = null
   selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" }
   sessionFilter.value = { morning: false, afternoon: false, evening: false, night: false }
   discoveryProfileType.value = 'events'
@@ -1164,16 +1306,26 @@ async function loadEventsFromApi(searchQuery = '') {
 
 async function loadProfilesFromApi(profileType, searchQuery = '') {
   const { fetchProfiles, pickProfileLatLng } = await import('../api/discoveryProfiles')
+  const { discoveryVenueMatchesHoursFilter } = await import('../utils/venueOpeningHours')
   const params = { per_page: 20 }
   if (searchQuery) params.search = searchQuery
   if (selectedCategory.value) params.category = selectedCategory.value.slug
   if (selectedSubcategorySlugs.value.length > 0) params.subcategory = selectedSubcategorySlugs.value.join(',')
   const result = await fetchProfiles(profileType, params)
-  events.value = result.data
+  let rows = result.data
+  if (
+    profileType === 'venues' &&
+    (venueOpenTime.value?.trim() || venueCloseTime.value?.trim())
+  ) {
+    rows = rows.filter((p) =>
+      discoveryVenueMatchesHoursFilter(p.opening_hours, venueOpenTime.value, venueCloseTime.value),
+    )
+  }
+  events.value = rows
   mapStore.clearSearchHighlightEventIds()
   // Push profile locations to the map (normalize lat/lng vs latitude/longitude, strings, organiser field names)
   mapStore.setMapProfiles(
-    result.data
+    rows
       .map((p) => {
         const ll = pickProfileLatLng(p)
         if (!ll) return null
@@ -1190,7 +1342,7 @@ const debouncedReloadEvents = debounce(() => {
 
 watch(dateRange, () => { debouncedReloadEvents() }, { deep: true })
 watch(sessionFilter, () => { debouncedReloadEvents() }, { deep: true })
-watch(() => [selectedCategory.value?.id ?? null, [...selectedSubcategorySlugs.value].sort().join(','), startTime.value, endTime.value], () => { debouncedFilterEvents() })
+watch(() => [selectedCategory.value?.id ?? null, [...selectedSubcategorySlugs.value].sort().join(','), startTime.value, endTime.value, venueOpenTime.value, venueCloseTime.value], () => { debouncedFilterEvents() })
 
 const searchCity = async () => {
   if (!searchLocation.value?.trim()) { searchResults.value = []; return }
@@ -1220,6 +1372,8 @@ const handleOutsideClick = (e) => {
 }
 
 function handleViewEvent(event) {
+  showProfileDetailsPanel.value = false
+  selectedProfile.value = null
   if (event) {
     selectedEvent.value = { ...event, latitude: event.latitude !== undefined ? Number(event.latitude) : null, longitude: event.longitude !== undefined ? Number(event.longitude) : null }
   } else {
@@ -1234,13 +1388,32 @@ function closeEventDetailsPanel() {
 }
 
 function handleViewProfile(profile) {
+  showEventDetailsPanel.value = false
+  selectedEvent.value = null
   selectedProfile.value = profile ?? null
   showProfileDetailsPanel.value = true
+}
+
+function onMapOpenEventDetailFromHome(e) {
+  const d = e?.detail
+  if (d) handleViewEvent(d)
+}
+
+function onMapOpenProfileDetailFromHome(e) {
+  const { profile, profileType } = e?.detail ?? {}
+  if (!profile) return
+  handleViewProfile({ ...profile, profileType: profileType ?? profile.profileType })
 }
 
 function closeProfileDetailsPanel() {
   showProfileDetailsPanel.value = false
   selectedProfile.value = null
+}
+
+/** Collapse/minimize listing dock — hide event & profile detail widgets (all browse modes) */
+function handleListingPanelMinimized() {
+  closeEventDetailsPanel()
+  closeProfileDetailsPanel()
 }
 </script>
 
@@ -1253,6 +1426,13 @@ export default {
 </script>
 
 <style scoped>
+.header-profile-type-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  cursor: pointer;
+}
 
 /* ─── Search bar ─── */
 .search-bar {

@@ -22,7 +22,7 @@
       </button>
     </div>
 
-    <!-- Time range (events only — hidden e.g. for Organisers discovery list) -->
+    <!-- Time range (events list only) -->
     <div v-if="showTimeRange" class="tw:relative tw:flex-shrink-0">
       <button
         ref="timeBtnRef"
@@ -31,6 +31,19 @@
         class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:max-w-[min(220px,52vw)]"
       >
         <span class="tw:truncate">{{ timeRangeLabel }}</span>
+        <ChevronDown class="tw:w-3.5 tw:h-3.5 tw:text-gray-400 tw:flex-shrink-0" aria-hidden="true" />
+      </button>
+    </div>
+
+    <!-- Venue opening hours window (venues discovery list) -->
+    <div v-if="showVenueHoursFilter" class="tw:relative tw:flex-shrink-0">
+      <button
+        ref="hoursBtnRef"
+        type="button"
+        @click.stop="openVenueHoursMenu"
+        class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:max-w-[min(220px,52vw)]"
+      >
+        <span class="tw:truncate">{{ venueHoursLabel }}</span>
         <ChevronDown class="tw:w-3.5 tw:h-3.5 tw:text-gray-400 tw:flex-shrink-0" aria-hidden="true" />
       </button>
     </div>
@@ -97,7 +110,7 @@
     >
       <div class="tw:space-y-2">
         <div>
-          <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1">Start time</label>
+          <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1">{{ t('dateLocation.startTime') }}</label>
           <input
             type="time"
             :value="startTime || ''"
@@ -107,7 +120,7 @@
           />
         </div>
         <div>
-          <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1">End time</label>
+          <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1">{{ t('dateLocation.endTime') }}</label>
           <input
             type="time"
             :value="endTime || ''"
@@ -121,7 +134,44 @@
           class="tw:w-full tw:mt-1 tw:py-1.5 tw:text-xs tw:text-gray-500 hover:tw:text-gray-800 tw:rounded-md hover:tw:bg-gray-50"
           @click="onClearTimes"
         >
-          Clear times
+          {{ t('mapListingFilter.clearTimes') }}
+        </button>
+      </div>
+    </div>
+
+    <div
+      v-show="showVenueHoursFilter && openMenu === 'hours'"
+      ref="hoursPanelRef"
+      class="map-filter-dropdown tw:fixed tw:w-[248px] tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:shadow-xl tw:p-3"
+      :style="hoursPanelStyle"
+    >
+      <div class="tw:space-y-2">
+        <div>
+          <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1">{{ t('mapListingFilter.venueOpensAt') }}</label>
+          <input
+            type="time"
+            :value="venueOpenTime || ''"
+            step="60"
+            class="tw:w-full tw:rounded-lg tw:border tw:border-gray-200 tw:px-2 tw:py-1.5 tw:text-sm tw:outline-none focus:tw:ring-2 focus:tw:ring-[var(--primary-color)]/30"
+            @input="onVenueOpenInput($event)"
+          />
+        </div>
+        <div>
+          <label class="tw:block tw:text-xs tw:font-medium tw:text-gray-500 tw:mb-1">{{ t('mapListingFilter.venueClosesAt') }}</label>
+          <input
+            type="time"
+            :value="venueCloseTime || ''"
+            step="60"
+            class="tw:w-full tw:rounded-lg tw:border tw:border-gray-200 tw:px-2 tw:py-1.5 tw:text-sm tw:outline-none focus:tw:ring-2 focus:tw:ring-[var(--primary-color)]/30"
+            @input="onVenueCloseInput($event)"
+          />
+        </div>
+        <button
+          type="button"
+          class="tw:w-full tw:mt-1 tw:py-1.5 tw:text-xs tw:text-gray-500 hover:tw:text-gray-800 tw:rounded-md hover:tw:bg-gray-50"
+          @click="onClearVenueHours"
+        >
+          {{ t('mapListingFilter.clearTimes') }}
         </button>
       </div>
     </div>
@@ -130,8 +180,11 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ChevronDown, X } from 'lucide-vue-next'
 import type { Subcategory } from '@/api/categories'
+
+const { t } = useI18n()
 
 const props = withDefaults(
   defineProps<{
@@ -140,12 +193,19 @@ const props = withDefaults(
     startTime: string | null
     endTime: string | null
     disabledSubcategories?: boolean
-    /** When false, hide the time window pill (profile discovery lists that are not time-filtered). */
+    /** When false, hide the event time window pill. */
     showTimeRange?: boolean
+    /** When true, show venue opening-hours filter (venues discovery). */
+    showVenueHoursFilter?: boolean
+    venueOpenTime?: string | null
+    venueCloseTime?: string | null
   }>(),
   {
     disabledSubcategories: false,
     showTimeRange: true,
+    showVenueHoursFilter: false,
+    venueOpenTime: null,
+    venueCloseTime: null,
   }
 )
 
@@ -154,17 +214,22 @@ const emit = defineEmits<{
   (e: 'clear-subcategories'): void
   (e: 'update:startTime', value: string | null): void
   (e: 'update:endTime', value: string | null): void
+  (e: 'update:venueOpenTime', value: string | null): void
+  (e: 'update:venueCloseTime', value: string | null): void
 }>()
 
-const openMenu = ref<'sub' | 'time' | null>(null)
+const openMenu = ref<'sub' | 'time' | 'hours' | null>(null)
 const rootRef = ref<HTMLElement | null>(null)
 const subBtnRef = ref<HTMLButtonElement | null>(null)
 const timeBtnRef = ref<HTMLButtonElement | null>(null)
+const hoursBtnRef = ref<HTMLButtonElement | null>(null)
 const subPanelRef = ref<HTMLElement | null>(null)
 const timePanelRef = ref<HTMLElement | null>(null)
+const hoursPanelRef = ref<HTMLElement | null>(null)
 
 const subPanelStyle = ref<Record<string, string>>({})
 const timePanelStyle = ref<Record<string, string>>({})
+const hoursPanelStyle = ref<Record<string, string>>({})
 
 const DROPDOWN_Z = 2147483000
 
@@ -203,6 +268,8 @@ function updatePositions() {
     positionFixedBelowTrigger(subBtnRef.value, subPanelStyle, { maxListHeight: 320 })
   } else if (openMenu.value === 'time') {
     positionFixedBelowTrigger(timeBtnRef.value, timePanelStyle, { panelWidth: 248, maxListHeight: 400 })
+  } else if (openMenu.value === 'hours') {
+    positionFixedBelowTrigger(hoursBtnRef.value, hoursPanelStyle, { panelWidth: 248, maxListHeight: 400 })
   }
 }
 
@@ -213,6 +280,10 @@ function openSubMenu() {
 
 function openTimeMenu() {
   openMenu.value = openMenu.value === 'time' ? null : 'time'
+}
+
+function openVenueHoursMenu() {
+  openMenu.value = openMenu.value === 'hours' ? null : 'hours'
 }
 
 function closeSubMenu() {
@@ -230,6 +301,13 @@ watch(
   },
 )
 
+watch(
+  () => props.showVenueHoursFilter,
+  (show) => {
+    if (!show && openMenu.value === 'hours') openMenu.value = null
+  },
+)
+
 onMounted(() => {
   window.addEventListener('scroll', updatePositions, true)
   window.addEventListener('resize', updatePositions)
@@ -243,11 +321,12 @@ onBeforeUnmount(() => {
 })
 
 function onDocPointerDown(e: MouseEvent) {
-  const t = e.target as Node
-  const insideRoot = rootRef.value?.contains(t)
-  const insideSub = subPanelRef.value?.contains(t)
-  const insideTime = timePanelRef.value?.contains(t)
-  if (insideRoot || insideSub || insideTime) return
+  const target = e.target as Node
+  const insideRoot = rootRef.value?.contains(target)
+  const insideSub = subPanelRef.value?.contains(target)
+  const insideTime = timePanelRef.value?.contains(target)
+  const insideHours = hoursPanelRef.value?.contains(target)
+  if (insideRoot || insideSub || insideTime || insideHours) return
   openMenu.value = null
 }
 
@@ -274,7 +353,16 @@ const timeRangeLabel = computed(() => {
   if (a && b) return `${formatTimeDisplay(a)} – ${formatTimeDisplay(b)}`
   if (a) return `${formatTimeDisplay(a)} – …`
   if (b) return `… – ${formatTimeDisplay(b)}`
-  return 'Time range'
+  return t('mapListingFilter.timeRange')
+})
+
+const venueHoursLabel = computed(() => {
+  const a = props.venueOpenTime?.trim()
+  const b = props.venueCloseTime?.trim()
+  if (a && b) return `${formatTimeDisplay(a)} – ${formatTimeDisplay(b)}`
+  if (a) return `${formatTimeDisplay(a)} – …`
+  if (b) return `… – ${formatTimeDisplay(b)}`
+  return t('mapListingFilter.venueHours')
 })
 
 function formatTimeDisplay(t: string) {
@@ -298,6 +386,21 @@ function onStartInput(e: Event) {
 function onEndInput(e: Event) {
   const v = (e.target as HTMLInputElement).value
   emit('update:endTime', v || null)
+}
+
+function onClearVenueHours() {
+  emit('update:venueOpenTime', null)
+  emit('update:venueCloseTime', null)
+}
+
+function onVenueOpenInput(e: Event) {
+  const v = (e.target as HTMLInputElement).value
+  emit('update:venueOpenTime', v || null)
+}
+
+function onVenueCloseInput(e: Event) {
+  const v = (e.target as HTMLInputElement).value
+  emit('update:venueCloseTime', v || null)
 }
 </script>
 

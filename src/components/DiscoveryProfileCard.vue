@@ -80,12 +80,12 @@
         </div>
 
         <!-- Location -->
-        <div v-if="profile.address" class="tw:flex tw:items-start tw:gap-2">
+        <div v-if="showLocationRow" class="tw:flex tw:items-start tw:gap-2">
           <svg class="tw:w-4 tw:h-4 tw:shrink-0 tw:mt-0.5 tw:text-[var(--primary-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
-          <span class="tw:text-sm tw:text-[var(--primary-color)] tw:leading-snug tw:line-clamp-2">{{ profile.address }}</span>
+          <span class="tw:text-sm tw:text-[var(--primary-color)] tw:leading-snug tw:line-clamp-2">{{ displayLocationLine }}</span>
         </div>
 
         <!-- Subcategories chips -->
@@ -196,6 +196,23 @@ const subcategoryLabels = computed(() => {
   else subs = p.subcategories ?? []
   return subs.slice(0, 4).map(s => s.name)
 })
+
+/** Talent cards: city only. Prefer `city`, else second-to-last comma segment of address (often city before country). */
+function talentCityLine(p) {
+  if (p.city?.trim()) return p.city.trim()
+  const addr = typeof p.address === 'string' ? p.address.trim() : ''
+  if (!addr) return ''
+  const parts = addr.split(',').map((x) => x.trim()).filter(Boolean)
+  if (parts.length >= 2) return parts[parts.length - 2]
+  return parts[parts.length - 1] || ''
+}
+
+const displayLocationLine = computed(() => {
+  if (props.profileType === 'talents') return talentCityLine(props.profile)
+  return props.profile.address?.trim() || ''
+})
+
+const showLocationRow = computed(() => displayLocationLine.value.length > 0)
 
 // ── Profile URL ──────────────────────────────────────────────────
 const profileUrl = computed(() => {

@@ -255,3 +255,57 @@ export function validateVenueOpeningHours(schedule: VenueOpeningDayRow[]): strin
   }
   return ''
 }
+
+function timeStrToMinutes(t: string): number | null {
+  const n = normalizeTimeForInput(t)
+  if (!n) return null
+  const parts = n.split(':')
+  const hStr = parts[0]
+  const mStr = parts[1]
+  if (hStr === undefined || mStr === undefined) return null
+  const h = parseInt(hStr, 10)
+  const m = parseInt(mStr, 10)
+  if (Number.isNaN(h) || Number.isNaN(m)) return null
+  return h * 60 + m
+}
+
+/**
+ * Discovery map list: venue rows use `opening_hours` items shaped like
+ * `{ day, is_open, open, close }`. Returns true if the venue overlaps the optional
+ * filter window on at least one day (same-day intervals only; overnight spans skipped).
+ */
+export function discoveryVenueMatchesHoursFilter(
+  openingHours: unknown,
+  filterOpen: string | null | undefined,
+  filterClose: string | null | undefined,
+): boolean {
+  const foRaw = filterOpen?.trim()
+  const fcRaw = filterClose?.trim()
+  if (!foRaw && !fcRaw) return true
+  const fo = foRaw ? timeStrToMinutes(foRaw) : null
+  const fc = fcRaw ? timeStrToMinutes(fcRaw) : null
+
+  if (!Array.isArray(openingHours) || openingHours.length === 0) return false
+
+  for (const item of openingHours) {
+    if (!item || typeof item !== 'object') continue
+    const rec = item as Record<string, unknown>
+    if (!rec.is_open) continue
+    const open = normalizeTimeForInput(rec.open)
+    const close = normalizeTimeForInput(rec.close)
+    if (!open || !close) continue
+    const vo = timeStrToMinutes(open)
+    const vc = timeStrToMinutes(close)
+    if (vo === null || vc === null) continue
+    if (vc <= vo) continue
+
+    if (fo !== null && fc !== null) {
+      if (vo < fc && vc > fo) return true
+    } else if (fo !== null) {
+      if (fo >= vo && fo < vc) return true
+    } else if (fc !== null) {
+      if (fc > vo && fc <= vc) return true
+    }
+  }
+  return false
+}

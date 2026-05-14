@@ -289,6 +289,13 @@
     "mapLoading": "Chargement de la carte...",
     "mapNoCoordinates": "Les coordonnées cartographiques ne sont pas disponibles pour ce profil. Vous pouvez ouvrir l’itinéraire à partir de l’adresse si elle est renseignée."
   },
+  "mapListingFilter": {
+    "timeRange": "Plage horaire",
+    "venueHours": "Heures d'ouverture",
+    "venueOpensAt": "Ouverture",
+    "venueClosesAt": "Fermeture",
+    "clearTimes": "Effacer les heures"
+  },
   "wishlist": {
     "title": "Ma Liste de Souhaits",
     "empty": "Aucun événement sauvegardé",

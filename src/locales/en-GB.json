@@ -133,6 +133,13 @@
     "mapLoading": "Loading map...",
     "mapNoCoordinates": "Map coordinates are not available for this profile. You can still open directions using the address when available."
   },
+  "mapListingFilter": {
+    "timeRange": "Time range",
+    "venueHours": "Opening hours",
+    "venueOpensAt": "Opens at",
+    "venueClosesAt": "Closes at",
+    "clearTimes": "Clear times"
+  },
   "auth": {
     "loginTitle": "Login to your account",
     "registerTitle": "Create a new account",

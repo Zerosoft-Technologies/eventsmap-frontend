@@ -1,12 +1,29 @@
 <template>
-  <!-- Panel -->
-  <transition name="slide">
-    <div v-if="visible"
-      class="tw:fixed tw:p-0 tw:bg-white tw:rounded-2xl tw:top-32 tw:bottom-4 tw:z-40 tw:w-[420px] tw:max-w-[calc(100vw-2rem)] tw:shadow-xl tw:flex tw:flex-col tw:overflow-hidden"
-      style="left: 430px;">
-      
+  <transition name="backdrop-fade">
+    <div
+      v-if="visible"
+      class="tw:fixed tw:inset-0 tw:z-[59] tw:bg-black/40 tw:md:hidden"
+      @click="close"
+    />
+  </transition>
+
+  <transition :name="isMobile ? 'slide-up' : 'slide'">
+    <div
+      v-if="visible"
+      :class="[
+        'tw:fixed tw:p-0 tw:bg-white tw:flex tw:flex-col tw:overflow-hidden',
+        'tw:inset-x-0 tw:bottom-0 tw:rounded-t-3xl tw:shadow-2xl tw:max-h-[92dvh] tw:z-[60]',
+        'tw:md:inset-x-auto tw:md:bottom-4 tw:md:rounded-2xl tw:md:top-32 tw:md:w-[420px] tw:md:max-w-[calc(100vw-2rem)] tw:md:shadow-xl tw:md:z-40',
+      ]"
+      :style="desktopPanelOuterStyle"
+    >
+      <!-- Mobile bottom-sheet handle -->
+      <div class="tw:flex tw:justify-center tw:pt-3 tw:pb-1 tw:flex-shrink-0 tw:md:hidden">
+        <div class="tw:w-10 tw:h-1.5 tw:rounded-full tw:bg-gray-300" />
+      </div>
+
       <!-- Gallery Slider - AT THE VERY TOP -->
-      <div class="tw:relative tw:h-56 tw:md:h-64 tw:overflow-hidden tw:flex-shrink-0">
+      <div class="tw:relative tw:h-52 tw:md:h-64 tw:overflow-hidden tw:flex-shrink-0">
         <div class="tw:flex tw:transition-transform tw:duration-300 tw:ease-in-out tw:h-full"
           :style="{ transform: `translateX(-${currentImageIndex * 100}%)` }">
           <div v-for="(image, index) in images" :key="index" class="tw:w-full tw:flex-shrink-0 tw:h-full">
@@ -596,11 +613,13 @@
           <!-- <CommunityTab v-else-if="activeTab === 'community'" :community="event?.community || mockCommunity" /> -->
         </div>
       </div>
-      <!-- Close button -->
-      <button @click="close"
-        class="tw:absolute tw:z-[60] tw:top-1/2 tw:-translate-y-1/2 tw:-right-3 tw:w-7 tw:h-12 tw:bg-white tw:shadow-md tw:flex tw:items-center tw:justify-center hover:tw:shadow-lg tw:transition-all hover:tw:-right-4"
-        style="border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; right: -28px;">
-        <img src="../assets/chevron-bold-left.png" class="tw:w-3 tw:h-3" />
+      <!-- Close button (desktop edge handle) -->
+      <button
+        @click="close"
+        class="tw:hidden tw:md:flex tw:absolute tw:z-[60] tw:top-1/2 tw:-translate-y-1/2 tw:w-7 tw:h-12 tw:bg-white tw:shadow-md tw:items-center tw:justify-center hover:tw:shadow-lg tw:transition-all"
+        style="border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; right: -28px;"
+      >
+        <img src="../assets/chevron-bold-left.png" class="tw:w-3 tw:h-3" alt="" />
       </button>
     </div>
 
@@ -608,7 +627,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   XIcon,
@@ -645,6 +664,16 @@ const router = useRouter()
 const wishlistStore = useWishlistStore()
 const authStore = useAuthStore()
 
+/** Below md breakpoint: bottom sheet + backdrop; desktop keeps side panel */
+const isMobile = ref(false)
+function updateIsMobile() {
+  isMobile.value = typeof window !== 'undefined' && window.innerWidth < 768
+}
+onMounted(() => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+})
+
 // Props
 const props = defineProps({
   /**
@@ -661,7 +690,21 @@ const props = defineProps({
   event: {
     type: Object,
     default: null
-  }
+  },
+  /**
+   * When true (default): desktop panel sits to the right of the expanded Home listing dock (`left: 430px`).
+   * When false: panel aligns with the dock gutter only (`left: 1.75rem`) — minimized/hidden dock or no results list.
+   */
+  mapListingExpanded: {
+    type: Boolean,
+    default: true,
+  },
+})
+
+const desktopPanelOuterStyle = computed(() => {
+  if (isMobile.value) return {}
+  const left = props.mapListingExpanded ? '430px' : '1.75rem'
+  return { left }
 })
 
 // Emits
@@ -760,12 +803,18 @@ watch(
 onBeforeUnmount(() => {
   tabsResizeObserver?.disconnect()
   tabsResizeObserver = null
+  document.body.style.overflow = ''
+  window.removeEventListener('resize', updateIsMobile)
 })
 
 watch(
   () => props.visible,
   async (v) => {
-    if (!v) return
+    if (!v) {
+      if (isMobile.value) document.body.style.overflow = ''
+      return
+    }
+    if (isMobile.value) document.body.style.overflow = 'hidden'
     await nextTick()
     updateTabsScrollArrows()
     requestAnimationFrame(() => updateTabsScrollArrows())
@@ -1239,7 +1288,7 @@ function handleShare() {
 </script>
 
 <style scoped>
-/* Panel slide-in animation */
+/* Desktop: slide in from the right (unchanged behaviour) */
 .slide-enter-active,
 .slide-leave-active {
   transition: transform 0.3s ease, opacity 0.3s ease;
@@ -1251,11 +1300,26 @@ function handleShare() {
   opacity: 0;
 }
 
-@media (max-width: 768px) {
-  .slide-enter-from,
-  .slide-leave-to {
-    transform: translateX(-100%);
-  }
+/* Mobile bottom sheet */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.backdrop-fade-enter-active,
+.backdrop-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.backdrop-fade-enter-from,
+.backdrop-fade-leave-to {
+  opacity: 0;
 }
 
 /* Hide scrollbar for tabs and filter chips */

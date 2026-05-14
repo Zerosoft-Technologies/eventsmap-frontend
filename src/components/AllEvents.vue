@@ -41,12 +41,17 @@
           :selected-slugs="selectedSubcategorySlugs"
           :start-time="startTime"
           :end-time="endTime"
+          :venue-open-time="venueOpenTime"
+          :venue-close-time="venueCloseTime"
           :disabled-subcategories="!selectedCategory"
-          :show-time-range="profileType !== 'organisers'"
+          :show-time-range="profileType === 'events'"
+          :show-venue-hours-filter="profileType === 'venues'"
           @toggle-subcategory="(slug) => $emit('toggleSubcategory', slug)"
           @clear-subcategories="$emit('clearSubcategories')"
           @update:start-time="$emit('update:startTime', $event)"
           @update:end-time="$emit('update:endTime', $event)"
+          @update:venue-open-time="$emit('update:venueOpenTime', $event)"
+          @update:venue-close-time="$emit('update:venueCloseTime', $event)"
         />
 
         <!-- Section header -->
@@ -60,14 +65,14 @@
               alt="Minimize"
               style="width:13px;height:15px;"
             >
-            <button
+            <!-- <button
               @click.stop="close"
               class="tw:w-6 tw:h-6 tw:flex tw:items-center tw:justify-center tw:text-gray-400 hover:tw:text-gray-700 tw:rounded-full hover:tw:bg-gray-100 tw:transition-colors"
             >
               <svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
-            </button>
+            </button> -->
           </div>
         </div>
 
@@ -153,7 +158,7 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n'
-import { defineAsyncComponent, ref, computed } from 'vue'
+import { defineAsyncComponent, ref, computed, watch } from 'vue'
 import MapEventsFilterPills from '@/components/events/MapEventsFilterPills.vue'
 
 const Event = defineAsyncComponent(() => import('./Event.vue'))
@@ -193,6 +198,14 @@ const props = defineProps({
   endTime: {
     type: String,
     default: null
+  },
+  venueOpenTime: {
+    type: String,
+    default: null
+  },
+  venueCloseTime: {
+    type: String,
+    default: null
   }
 });
 
@@ -216,7 +229,13 @@ const emit = defineEmits([
   'toggleSubcategory',
   'clearSubcategories',
   'update:startTime',
-  'update:endTime'
+  'update:endTime',
+  'update:venueOpenTime',
+  'update:venueCloseTime',
+  /** Listing dock collapsed (chevron) — parent should hide event/profile detail overlays */
+  'panelMinimized',
+  /** Home map: `'expanded' | 'compact' | 'hidden'` — positions event/profile detail panels beside vs over the dock */
+  'listingDockLayout',
 ]);
 
 // Computed: events list
@@ -229,6 +248,16 @@ const isLoading = computed(() => props.loading)
 const visible = ref(true);
 const isMinimized = ref(false);
 
+function emitListingDockLayout() {
+  let mode = 'hidden'
+  if (visible.value && !isMinimized.value) mode = 'expanded'
+  else if (visible.value && isMinimized.value) mode = 'compact'
+  else mode = 'hidden'
+  emit('listingDockLayout', mode)
+}
+
+watch([visible, isMinimized], emitListingDockLayout, { immediate: true })
+
 function reset (){
   emit('resetSearch')
 }
@@ -239,7 +268,8 @@ function close(){
 }
 
 function minimize() {
-  isMinimized.value = true;
+  isMinimized.value = true
+  emit('panelMinimized')
 }
 
 function expand() {

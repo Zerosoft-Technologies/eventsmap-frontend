@@ -4,8 +4,11 @@
 
 <script setup>
 import maplibregl from 'maplibre-gl'
-import { createApp } from 'vue'
+import { createApp, h } from 'vue'
 import { ref, onMounted, onUnmounted, watch } from 'vue'
+import Event from '../components/Event.vue'
+import DiscoveryProfileCard from '../components/DiscoveryProfileCard.vue'
+import { MAP_OPEN_EVENT_DETAIL, MAP_OPEN_PROFILE_DETAIL } from '@/utils/mapPopupBridge'
 import { fetchEvents } from '../api/events'
 import { pickProfileLatLng } from '@/api/discoveryProfiles'
 import { useMapStore } from '@/stores/mapStore'
@@ -116,9 +119,17 @@ function syncMarkers() {
     const el = createMarkerEl()
     const popupEl = document.createElement('div')
     popupEl.classList.add('tw:relative', 'tw:bg-white', 'tw:rounded-2xl', 'tw:p-4')
-    import('../components/Event.vue').then(({ default: Event }) => {
-      createApp(Event, { event: ev }).use(i18n).mount(popupEl)
+    createApp({
+      render: () =>
+        h(Event, {
+          event: ev,
+          onViewEvent: (payload) => {
+            window.dispatchEvent(new CustomEvent(MAP_OPEN_EVENT_DETAIL, { detail: payload }))
+          },
+        }),
     })
+      .use(i18n)
+      .mount(popupEl)
     const triangleDiv = document.createElement('div')
     triangleDiv.className =
       'tw:absolute tw:left-1/2 tw:-translate-x-1/2 tw:-bottom-2 tw:w-0 tw:h-0 tw:border-l-10 tw:border-l-transparent tw:border-r-10 tw:border-r-transparent tw:border-t-12 tw:border-t-white tw:shadow-md'
@@ -178,9 +189,23 @@ function syncProfileMarkers() {
     const popupEl = document.createElement('div')
     popupEl.classList.add('tw:relative', 'tw:bg-white', 'tw:rounded-2xl', 'tw:p-4')
 
-    import('../components/DiscoveryProfileCard.vue').then(({ default: DiscoveryProfileCard }) => {
-      createApp(DiscoveryProfileCard, { profile: p, profileType: p.profileType }).use(i18n).mount(popupEl)
+    const pt = p.profileType
+    createApp({
+      render: () =>
+        h(DiscoveryProfileCard, {
+          profile: p,
+          profileType: pt,
+          onViewProfile: (prof) => {
+            window.dispatchEvent(
+              new CustomEvent(MAP_OPEN_PROFILE_DETAIL, {
+                detail: { profile: prof, profileType: pt },
+              }),
+            )
+          },
+        }),
     })
+      .use(i18n)
+      .mount(popupEl)
 
     const popup = new maplibregl.Popup({
       closeButton: false,

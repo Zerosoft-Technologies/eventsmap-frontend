@@ -1,12 +1,32 @@
 <template>
-  <transition name="slide">
+  <!-- Mobile backdrop -->
+  <transition name="backdrop-fade">
     <div
       v-if="visible"
-      class="tw:fixed tw:p-0 tw:bg-white tw:rounded-2xl tw:top-32 tw:bottom-4 tw:z-40 tw:w-[420px] tw:max-w-[calc(100vw-2rem)] tw:shadow-xl tw:flex tw:flex-col tw:overflow-hidden"
-      style="left: 430px;"
+      class="tw:fixed tw:inset-0 tw:z-[39] tw:bg-black/40 tw:md:hidden"
+      @click="emit('close')"
+    />
+  </transition>
+
+  <transition :name="isMobile ? 'slide-up' : 'slide'">
+    <div
+      v-if="visible"
+      :class="[
+        'tw:fixed tw:z-40 tw:bg-white tw:flex tw:flex-col tw:overflow-hidden',
+        /* ── Mobile: full-width bottom sheet ── */
+        'tw:inset-x-0 tw:bottom-0 tw:rounded-t-3xl tw:shadow-2xl tw:max-h-[92dvh]',
+        /* ── Desktop: side panel unchanged ── */
+        'tw:md:inset-x-auto tw:md:bottom-4 tw:md:rounded-2xl tw:md:top-32 tw:md:w-[420px] tw:md:max-w-[calc(100vw-2rem)] tw:md:shadow-xl',
+      ]"
+      :style="profilePanelOuterStyle"
     >
+      <!-- Mobile drag handle -->
+      <div class="tw:flex tw:justify-center tw:pt-3 tw:pb-1 tw:flex-shrink-0 tw:md:hidden">
+        <div class="tw:w-10 tw:h-1.5 tw:rounded-full tw:bg-gray-300" />
+      </div>
+
       <!-- Gallery slider -->
-      <div class="tw:relative tw:h-56 tw:md:h-64 tw:overflow-hidden tw:flex-shrink-0">
+      <div class="tw:relative tw:h-52 tw:md:h-64 tw:overflow-hidden tw:flex-shrink-0">
         <div
           class="tw:flex tw:transition-transform tw:duration-300 tw:ease-in-out tw:h-full"
           :style="{ transform: `translateX(-${currentImageIndex * 100}%)` }"
@@ -176,7 +196,7 @@
           </template>
 
           <!-- View full profile link -->
-          <a
+          <!-- <a
             :href="profileUrl"
             target="_blank"
             rel="noopener noreferrer"
@@ -186,7 +206,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
             </svg>
             View full profile
-          </a>
+          </a> -->
         </div>
 
         <!-- Location tab (matches DateLocationTab location card + map) -->
@@ -424,10 +444,10 @@
 
       </div>
 
-      <!-- Close handle on right edge (matches EventDetailsPanel) -->
+      <!-- Close handle on right edge — desktop only -->
       <button
         @click="emit('close')"
-        class="tw:absolute tw:z-[60] tw:top-1/2 tw:-translate-y-1/2 tw:-right-3 tw:w-7 tw:h-12 tw:bg-white tw:shadow-md tw:flex tw:items-center tw:justify-center hover:tw:shadow-lg tw:transition-all hover:tw:-right-4"
+        class="tw:hidden tw:md:flex tw:absolute tw:z-[60] tw:top-1/2 tw:-translate-y-1/2 tw:w-7 tw:h-12 tw:bg-white tw:shadow-md tw:items-center tw:justify-center hover:tw:shadow-lg tw:transition-all"
         style="border-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; right: -28px;"
       >
         <img src="../assets/chevron-bold-left.png" class="tw:w-3 tw:h-3" />
@@ -445,7 +465,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onBeforeUnmount, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount, onMounted, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -457,10 +477,27 @@ const EventCard = defineAsyncComponent(() => import('./Event.vue'))
 
 const { t } = useI18n()
 
+// ── Mobile detection (< md breakpoint = 768px) ─────────────────
+const isMobile = ref(false)
+function updateIsMobile() { isMobile.value = window.innerWidth < 768 }
+onMounted(() => {
+  updateIsMobile()
+  window.addEventListener('resize', updateIsMobile)
+})
+onBeforeUnmount(() => window.removeEventListener('resize', updateIsMobile))
+
 const props = defineProps({
   visible: { type: Boolean, default: false },
   profile: { type: Object, default: null },
   profileType: { type: String, default: 'organisers' },
+  /** Same as EventDetailsPanel: align desktop `left` with expanded vs collapsed Home listing dock. */
+  mapListingExpanded: { type: Boolean, default: true },
+})
+
+const profilePanelOuterStyle = computed(() => {
+  if (isMobile.value) return { zIndex: 100 }
+  const left = props.mapListingExpanded ? '430px' : '1.75rem'
+  return { left, zIndex: 100 }
 })
 
 const emit = defineEmits(['close', 'viewEvent'])
@@ -910,14 +947,17 @@ watch(tabsScrollEl, (el, prev) => {
 onBeforeUnmount(() => {
   tabsResizeObserver?.disconnect()
   destroyLocationMap()
+  document.body.style.overflow = ''
 })
 
 watch(() => props.visible, async (v) => {
   if (!v) {
     showDirectionsPanel.value = false
     destroyLocationMap()
+    if (isMobile.value) document.body.style.overflow = ''
     return
   }
+  if (isMobile.value) document.body.style.overflow = 'hidden'
   await nextTick()
   updateTabsScrollArrows()
   scheduleLocationMapInit()
@@ -925,6 +965,7 @@ watch(() => props.visible, async (v) => {
 </script>
 
 <style scoped>
+/* Desktop: slide in from the left */
 .slide-enter-active,
 .slide-leave-active {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
@@ -935,6 +976,28 @@ watch(() => props.visible, async (v) => {
   opacity: 0;
 }
 
+/* Mobile: slide up from the bottom */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+/* Backdrop fade */
+.backdrop-fade-enter-active,
+.backdrop-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.backdrop-fade-enter-from,
+.backdrop-fade-leave-to {
+  opacity: 0;
+}
+
+/* Internal content fades */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
