@@ -17,7 +17,7 @@
       v-if="visible"
       :class="[
         isMinimized
-          ? 'tw:w-16 tw:h-16 tw:rounded-2xl tw:shadow-lg tw:cursor-pointer tw:flex tw:items-center tw:justify-center tw:bg-[#FF7700]'
+          ? 'tw:max-w-[min(11rem,calc(100vw-1.5rem))] tw:min-h-14 tw:px-3 tw:py-2.5 tw:rounded-2xl tw:shadow-lg tw:cursor-pointer tw:flex tw:items-center tw:justify-center tw:bg-[#FF7700] tw:box-border'
           : 'tw:w-full tw:md:w-[380px] tw:max-h-[85vh] tw:md:max-h-[80vh] tw:rounded-t-2xl tw:md:rounded-2xl tw:shadow-xl tw:flex tw:flex-col tw:bg-white',
         'tw:fixed tw:bottom-0 tw:md:bottom-2 tw:left-0 tw:md:left-7 tw:z-50 tw:lg:z-10 tw:transition-all tw:duration-300 tw:overflow-visible'
       ]"
@@ -25,7 +25,7 @@
     >
       <!-- Minimized State -->
       <template v-if="isMinimized">
-        <span class="tw:text-sm tw:font-semibold tw:text-white">{{ panelLabel }}</span>
+        <span class="tw:text-xs tw:sm:text-sm tw:font-semibold tw:text-white tw:text-center tw:leading-snug tw:break-words tw:max-w-full tw:px-0.5">{{ panelLabel }}</span>
       </template>
 
       <!-- Expanded State -->

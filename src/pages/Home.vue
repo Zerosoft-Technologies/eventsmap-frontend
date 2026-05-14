@@ -53,7 +53,8 @@ async function loadEvents() {
   }
 }
 
-function createMarkerEl() {
+/** Event listing pins — branded image */
+function createMapPinMarkerEl() {
   const el = document.createElement('div')
   el.style.backgroundImage = `url(http://185.133.88.194:3001/marker.png)`
   el.style.width = '60px'
@@ -62,6 +63,33 @@ function createMarkerEl() {
   el.style.backgroundRepeat = 'no-repeat'
   el.style.cursor = 'pointer'
   return el
+}
+
+/** Discovery profile pins — distinct colour per type. No CSS transition (MapLibre uses transform while panning). */
+const PROFILE_MARKER_COLORS = {
+  organisers: '#6366f1',
+  talents: '#10b981',
+  venues: '#0ea5e9',
+}
+
+function createProfileMarkerEl(profileType) {
+  const color = PROFILE_MARKER_COLORS[profileType] ?? '#6b7280'
+  const el = document.createElement('div')
+  el.style.width = '52px'
+  el.style.height = '62px'
+  el.style.cursor = 'pointer'
+  el.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 52" fill="none" style="width:100%;height:100%;display:block">
+      <ellipse cx="22" cy="49" rx="9" ry="3" fill="rgba(0,0,0,0.18)"/>
+      <path d="M22 2C14.268 2 8 8.268 8 16c0 10.5 14 32 14 32S36 26.5 36 16C36 8.268 29.732 2 22 2z"
+        fill="${color}" stroke="white" stroke-width="2.5"/>
+      <circle cx="22" cy="16" r="7" fill="white"/>
+    </svg>`
+  return el
+}
+
+function createMarkerEl() {
+  return createMapPinMarkerEl()
 }
 
 function syncMarkers() {
@@ -121,30 +149,7 @@ function syncMarkers() {
   }
 }
 
-// ── Profile Markers ──────────────────────────────────────────────
-
-const PROFILE_MARKER_COLORS = {
-  organisers: '#6366f1',
-  talents: '#10b981',
-  venues: '#0ea5e9',
-}
-
-function createProfileMarkerEl(profileType) {
-  const color = PROFILE_MARKER_COLORS[profileType] ?? '#6b7280'
-  const el = document.createElement('div')
-  el.style.width = '44px'
-  el.style.height = '44px'
-  el.style.cursor = 'pointer'
-  el.style.transition = 'transform 0.2s ease, filter 0.2s ease'
-  el.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 52" fill="none" style="width:100%;height:100%">
-      <ellipse cx="22" cy="49" rx="9" ry="3" fill="rgba(0,0,0,0.18)"/>
-      <path d="M22 2C14.268 2 8 8.268 8 16c0 10.5 14 32 14 32S36 26.5 36 16C36 8.268 29.732 2 22 2z"
-        fill="${color}" stroke="white" stroke-width="2.5"/>
-      <circle cx="22" cy="16" r="7" fill="white"/>
-    </svg>`
-  return el
-}
+// ── Profile Markers (colour-coded teardrops; no transform transition) ──
 
 function syncProfileMarkers() {
   if (!map?.loaded()) return
@@ -181,7 +186,7 @@ function syncProfileMarkers() {
       closeButton: false,
       maxWidth: 'none',
       anchor: 'bottom',
-      offset: [0, -40],
+      offset: [0, -42],
     }).setDOMContent(popupEl)
 
     const marker = new maplibregl.Marker({ element: el })
