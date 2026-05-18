@@ -294,16 +294,16 @@ function eventCoords(): { lat: number; lng: number } | null {
   return { lat, lng }
 }
 
-const extLinks = computed(() => {
-  const c = eventCoords()
-  const lat = c?.lat ?? 0
-  const lng = c?.lng ?? 0
-  return {
-    google: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
-    apple: `https://maps.apple.com/?daddr=${lat},${lng}`,
-    osm: `https://www.openstreetmap.org/directions?to=${lat},${lng}`,
-  }
-})
+// const extLinks = computed(() => {
+//   const c = eventCoords()
+//   const lat = c?.lat ?? 0
+//   const lng = c?.lng ?? 0
+//   return {
+//     google: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+//     apple: `https://maps.apple.com/?daddr=${lat},${lng}`,
+//     osm: `https://www.openstreetmap.org/directions?to=${lat},${lng}`,
+//   }
+// })
 
 function teardownRouteMap() {
   mapResizeObs?.disconnect()
