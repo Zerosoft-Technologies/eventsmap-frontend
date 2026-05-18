@@ -163,14 +163,14 @@
             </ol>
           </div>
 
-          <footer class="dp-ext">
+          <!-- <footer class="dp-ext">
             <p class="dp-ext-label">Open in another app</p>
             <div class="dp-ext-btns">
               <a :href="extLinks.google" target="_blank" rel="noopener noreferrer" class="dp-ext-btn">Google Maps</a>
               <a :href="extLinks.apple" target="_blank" rel="noopener noreferrer" class="dp-ext-btn">Apple Maps</a>
               <a :href="extLinks.osm" target="_blank" rel="noopener noreferrer" class="dp-ext-btn">OpenStreetMap</a>
             </div>
-          </footer>
+          </footer> -->
         </div>
       </div>
     </transition>
