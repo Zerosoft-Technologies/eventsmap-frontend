@@ -231,7 +231,7 @@ function profileListInitials(item) {
 }
 
 const backSectionTitle = computed(() => {
-  if (props.sidebarKind === 'talents') return 'Back To Talents'
+  if (props.sidebarKind === 'talents') return 'Back To Talent'
   if (props.sidebarKind === 'venues') return 'Back To Venues'
   if (props.sidebarKind === 'organisers') return 'Back To Organisers'
   return 'Back To Events'
@@ -245,7 +245,7 @@ const loadingLabel = computed(() => {
 })
 
 const emptyLabel = computed(() => {
-  if (props.sidebarKind === 'talents') return 'No talents found'
+  if (props.sidebarKind === 'talents') return 'No talent found'
   if (props.sidebarKind === 'venues') return 'No venues found'
   if (props.sidebarKind === 'organisers') return 'No organisers found'
   return 'No events found'
@@ -253,7 +253,7 @@ const emptyLabel = computed(() => {
 
 const listTitleFallback = computed(() => {
   if (props.sidebarKind === 'talents') return 'Talent Title'
-  if (props.sidebarKind === 'venues') return 'Venue Title'
+  if (props.sidebarKind === 'venues') return 'Venue Name'
   if (props.sidebarKind === 'organisers') return 'Organiser Title'
   return 'Event Title'
 })

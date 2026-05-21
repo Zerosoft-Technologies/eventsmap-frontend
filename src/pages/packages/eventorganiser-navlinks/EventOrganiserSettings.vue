@@ -32,7 +32,7 @@
                     <h1 class="tw:text-2xl tw:md:text-3xl tw:font-bold tw:text-[#2563eb] tw:mb-4 tw:md:mb-6">Organiser Settings</h1>
 
                     <!-- Tab Navigation (Desktop only) -->
-                    <div class="tw:hidden tw:md:flex tw:gap-4 tw:md:gap-8 tw:border-b tw:border-gray-200 tw:mb-6 tw:overflow-x-auto tw:whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:tw:hidden">
+                    <div class="tw:hidden tw:md:flex tw:flex-nowrap tw:items-end tw:gap-4 tw:md:gap-8 tw:border-b tw:border-gray-200 tw:mb-6 tw:overflow-x-visible tw:overflow-y-visible scrollbar-hide">
                         <button v-for="tab in tabs" :key="tab.id" :class="[
                             'tw:shrink-0 tw:pb-3 tw:text-base tw:md:text-sm tw:font-normal tw:transition-colors tw:relative',
                             activeTab === tab.id
@@ -130,93 +130,7 @@
                         <!-- Plan Management Tab -->
                         <div v-if="activeTab === 'plan'" class="tw:rounded-lg tw:p-4 tw:md:p-8">
                             <PlanManagement />
-
-                            <!-- Billing History Section -->
-                            <div class="tw:mt-8">
-                                <div class="tw:flex tw:gap-4 tw:md:gap-8 tw:border-b tw:border-gray-200 tw:mb-6 tw:overflow-x-auto tw:whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:tw:hidden">
-                                    <button :class="[
-                                        'tw:shrink-0 tw:pb-3 tw:text-base tw:md:text-sm tw:font-normal tw:transition-colors tw:relative',
-                                        billingTab === 'history'
-                                            ? 'tw:text-[#2563eb]'
-                                            : 'tw:text-gray-600 hover:tw:text-[#2563eb]'
-                                    ]" @click="billingTab = 'history'">
-                                        Billing History
-                                        <span v-if="billingTab === 'history'"
-                                            class="tw:absolute tw:bottom-0 tw:left-0 tw:right-0 tw:h-0.5 tw:bg-[#2563eb] tw:-mb-px"></span>
-                                    </button>
-                                    <button :class="[
-                                        'tw:shrink-0 tw:pb-3 tw:text-base tw:md:text-sm tw:font-normal tw:transition-colors tw:relative',
-                                        billingTab === 'invoices'
-                                            ? 'tw:text-[#2563eb]'
-                                            : 'tw:text-gray-600 hover:tw:text-[#2563eb]'
-                                    ]" @click="billingTab = 'invoices'">
-                                        Invoices
-                                        <span v-if="billingTab === 'invoices'"
-                                            class="tw:absolute tw:bottom-0 tw:left-0 tw:right-0 tw:h-0.5 tw:bg-[#2563eb] tw:-mb-px"></span>
-                                    </button>
-                                </div>
-
-                                <div v-if="billingTab === 'history'"
-                                    class="tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:p-6">
-                                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:justify-between tw:md:items-center tw:gap-4">
-                                        <div class="tw:flex tw:gap-3 tw:items-center">
-                                            <svg class="tw:w-10 tw:h-10 tw:text-gray-400 tw:flex-shrink-0"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                            <div>
-                                                <h4 class="tw:text-sm tw:font-semibold tw:text-gray-900 tw:mb-0.5">
-                                                    Download Your Billing History</h4>
-                                                <p class="tw:text-xs tw:text-gray-500">View all recent charges for fees
-                                                    and
-                                                    subscriptions</p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            class="tw:flex tw:items-center tw:gap-2 tw:bg-white tw:text-[#2563eb] tw:border tw:border-orange-500 tw:px-4 tw:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:transition hover:tw:bg-blue-50 tw:whitespace-nowrap"
-                                            @click="downloadBillingHistory">
-                                            <svg class="tw:w-4 tw:h-4" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                            </svg>
-                                            Download
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div v-if="billingTab === 'invoices'"
-                                    class="tw:bg-white tw:border tw:border-gray-200 tw:rounded-lg tw:p-6">
-                                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:justify-between tw:md:items-center tw:gap-4">
-                                        <div class="tw:flex tw:gap-3 tw:items-center">
-                                            <svg class="tw:w-10 tw:h-10 tw:text-gray-400 tw:flex-shrink-0"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                            <div>
-                                                <h4 class="tw:text-sm tw:font-semibold tw:text-gray-900 tw:mb-0.5">
-                                                    Download Your Invoices</h4>
-                                                <p class="tw:text-xs tw:text-gray-500">View And Download All Your
-                                                    Previous
-                                                    Invoices</p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            class="tw:flex tw:items-center tw:gap-2 tw:bg-white tw:text-[#2563eb] tw:border tw:border-orange-500 tw:px-4 tw:py-2 tw:rounded-md tw:text-sm tw:font-medium tw:transition hover:tw:bg-blue-50 tw:whitespace-nowrap"
-                                            @click="downloadBillingHistory">
-                                            <svg class="tw:w-4 tw:h-4" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                            </svg>
-                                            Download
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+</div>
 
                         <!-- Account Information Tab -->
                         <div v-if="activeTab === 'account'" class="tw:bg-[#F6F1E7] tw:rounded-lg tw:p-4 tw:md:p-8">
@@ -320,8 +234,6 @@ function closeMobileSidebar() {
 }
 
 const activeTab = ref('profile');
-const billingTab = ref('history');
-
 const tabs = [
     { id: 'profile', label: 'Organiser profile' },
     { id: 'notification', label: 'Notification' },
@@ -362,10 +274,5 @@ const comparePlans = () => {
 const upgradePlan = () => {
     console.log('Upgrading plan...');
     alert('Redirecting to upgrade page...');
-};
-
-const downloadBillingHistory = () => {
-    console.log('Downloading billing history...');
-    alert('Downloading billing history...');
 };
 </script>

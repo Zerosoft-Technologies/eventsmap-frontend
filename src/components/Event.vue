@@ -86,9 +86,9 @@
     <!-- ── Card Body ── -->
     <div class="tw:p-3 tw:flex tw:flex-col tw:flex-1 tw:space-y-2">
 
-      <!-- Title | Wishlist heart | Date badge (same row) -->
+      <!-- Title | Wishlist (right; replaces previous date badge column) -->
       <div
-        class="event-card-title-row tw:grid tw:grid-cols-[minmax(0,1fr)_auto_auto] tw:items-center tw:gap-2"
+        class="event-card-title-row tw:grid tw:grid-cols-[minmax(0,1fr)_auto] tw:items-center tw:gap-2"
       >
         <h4 class="tw:min-w-0 tw:text-base tw:font-semibold tw:text-[var(--primary-color)] tw:leading-snug tw:line-clamp-2">
           {{ event.title }}
@@ -117,14 +117,6 @@
             />
           </svg>
         </button>
-        <div class="tw:flex-shrink-0 tw:rounded-lg tw:overflow-hidden tw:text-center tw:min-w-[42px]">
-          <p class="tw:text-[9px] tw:font-bold tw:uppercase tw:tracking-wide tw:bg-orange-500 tw:text-white tw:py-1 tw:px-1 tw:leading-none">
-            {{ new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' }) }}
-          </p>
-          <p class="tw:text-sm tw:font-bold tw:bg-orange-50 tw:text-orange-500 tw:py-0.5 tw:px-1 tw:leading-tight">
-            {{ new Date(event.event_date).getDate() }}
-          </p>
-        </div>
       </div>
 
       <!-- Detail rows -->
@@ -135,7 +127,7 @@
           <svg class="tw:w-4 tw:h-4 tw:shrink-0 tw:mt-0.5 tw:text-[var(--primary-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
-          <span class="tw:text-sm tw:text-[var(--primary-color)] tw:leading-snug">{{ formatDateTime(event.end_datetime) }}</span>
+          <span class="tw:text-sm tw:text-[var(--primary-color)] tw:leading-snug">{{ formattedEventSchedule }}</span>
         </div>
 
         <!-- Location -->
@@ -225,6 +217,12 @@
       </div>
 
     </div>
+
+    <DirectionsPanel
+      :visible="showDirectionsPanel"
+      :event="directionsPanelEvent"
+      @close="showDirectionsPanel = false"
+    />
   </div>
 </template>
 
@@ -274,9 +272,9 @@ import router from '@/router'
 import DetailRow from './DetailedRow.vue'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useAuthStore } from '@/stores/auth'
-import { requestEventMapFocus } from '@/utils/mapEventFocus'
 import { buildEventGalleryImageUrls } from '@/utils/eventGalleryImages'
 import { getUserProfileImageUrl } from '@/utils/userProfileImage'
+import DirectionsPanel from './DirectionsPanel.vue'
 
 const { t } = useI18n()
 const wishlistStore = useWishlistStore()
@@ -290,6 +288,19 @@ const props = defineProps({
   }
 })
 const emit = defineEmits(['viewEvent'])
+
+const showDirectionsPanel = ref(false)
+
+const directionsPanelEvent = computed(() => {
+  const e = props.event
+  if (!e) return null
+  const addr =
+    (e.address && String(e.address).trim()) ||
+    (e.selected_address && String(e.selected_address).trim()) ||
+    (e.venue_name && String(e.venue_name).trim()) ||
+    ''
+  return { ...e, address: addr || e.address }
+})
 
 const heroImageIndex = ref(0)
 const heroImages = computed(() => {
@@ -328,10 +339,52 @@ function getEventCoordinates(ev) {
 
 const hasMapCoordinates = computed(() => getEventCoordinates(props.event) != null)
 
+function parseEndInstantMsForDisplay(ev) {
+  if (!ev) return NaN
+  let e = parseEventInstantMs(ev, 'end')
+  if (!isNaN(e)) return e
+  const datePart = normalizeEventDatePart(ev?.event_date)
+  const et = ev?.end_time
+  if (datePart && et != null && String(et).trim() !== '') {
+    const t = new Date(`${datePart}T${String(et).trim()}`)
+    if (!isNaN(t.getTime())) return t.getTime()
+  }
+  return NaN
+}
+
+const formattedEventSchedule = computed(() => {
+  const ev = props.event
+  if (!ev) return ''
+  const opt = {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }
+  const sMs = parseEventInstantMs(ev, 'start')
+  let eMs = parseEndInstantMsForDisplay(ev)
+  if (!isNaN(sMs) && !isNaN(eMs) && eMs <= sMs) {
+    eMs += 24 * 60 * 60 * 1000
+  }
+  const fmt = (ms) => {
+    if (isNaN(ms)) return ''
+    const d = new Date(ms)
+    if (isNaN(d.getTime())) return ''
+    return d.toLocaleString(undefined, opt)
+  }
+  const startLabel = fmt(sMs)
+  const endLabel = fmt(eMs)
+  if (startLabel && endLabel) return `${startLabel} – ${endLabel}`
+  if (startLabel) return startLabel
+  if (ev.start_datetime) return formatDateTime(ev.start_datetime)
+  return formatDateTime(ev.end_datetime)
+})
+
 function handleRouteClick() {
     const c = getEventCoordinates(props.event)
     if (!c) return
-    requestEventMapFocus(c.lat, c.lng)
+    showDirectionsPanel.value = true
 }
 
 function formatDateTime(dateStr) {

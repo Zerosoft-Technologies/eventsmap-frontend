@@ -38,7 +38,7 @@
         </transition>         
       </div>
       <div>
-        <button class="header-btn tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:rounded-lg" style="height: 40px;"><img src="../assets/calendar.png" alt="Calendar Icon"/><span class="tw:text-sm">
+        <button class="header-btn header-date-field tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:rounded-lg" style="height: 40px;"><img src="../assets/calendar.png" alt="Calendar Icon"/><span class="tw:text-sm">
           <DatePicker @update:dateRange="dateRange = $event" />
         </span></button>
       </div>      
@@ -258,7 +258,7 @@
               v-if="headerUserAvatarUrl"
               :src="headerUserAvatarUrl"
               alt=""
-              class="tw:w-8 tw:h-8 tw:rounded-full tw:object-cover tw:border tw:border-gray-200 tw:shrink-0"
+              class="header-user-avatar tw:w-8 tw:h-8 tw:rounded-full tw:object-cover tw:shrink-0"
             />
             <span class="tw:text-sm tw:font-semibold" style="color: var(--primary-color)">{{ authStore.user?.name || 'Profile' }}</span>
           </router-link>
@@ -1436,17 +1436,18 @@ export default {
 
 /* ─── Search bar ─── */
 .search-bar {
-  border: 1.5px solid rgba(0, 0, 0, 0.10);
+  border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 42%, rgba(0, 0, 0, 0.08));
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.04),
-    0 4px 12px rgba(0, 0, 0, 0.04);
+    0 4px 12px rgba(255, 119, 0, 0.06);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .search-bar:focus-within {
-  border-color: var(--primary-color, #f97316);
+  border-color: var(--secondary-color, #FF7700);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.04),
-    0 4px 16px rgba(249, 115, 22, 0.12);
+    0 0 0 3px color-mix(in srgb, var(--secondary-color, #FF7700) 12%, transparent),
+    0 4px 16px rgba(255, 119, 0, 0.14);
 }
 
 .search-input::placeholder {
@@ -1463,11 +1464,16 @@ export default {
   opacity: 0.85;
 }
 
-/* ─── Vertical divider ─── */
+/* ─── Vertical divider (inside search cluster; tint matches orange chrome) ─── */
 .divider-v {
   width: 1px;
   height: 20px;
-  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.12), transparent);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--secondary-color, #FF7700) 35%, rgba(0, 0, 0, 0.12)),
+    transparent
+  );
   flex-shrink: 0;
 }
 
@@ -1488,45 +1494,99 @@ export default {
 }
 .location-pill:hover .chevron-icon { opacity: 0.8; }
 
-/* ─── Header buttons (calendar, login, etc.) ─── */
+/* ─── Header text buttons: Register, Login, Logout (orange chrome, not gray) ─── */
 .header-btn {
-  border: 1.5px solid rgba(0, 0, 0, 0.10);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 42%, rgba(0, 0, 0, 0.08));
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(255, 119, 0, 0.06);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
 }
 .header-btn:hover {
-  border-color: rgba(0, 0, 0, 0.18);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  background-color: #fafafa;
+  border-color: var(--secondary-color, #FF7700);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 0 0 2px color-mix(in srgb, var(--secondary-color, #FF7700) 10%, transparent);
+  background-color: #fff;
   transform: translateY(-1px);
+}
+.header-btn:focus-visible {
+  outline: none;
+  border-color: var(--secondary-color, #FF7700);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--secondary-color, #FF7700) 12%, transparent);
 }
 .header-btn:active { transform: translateY(0); }
 
+/* Date range (desktop): same chrome; wins over .header-btn where both apply */
+.header-date-field {
+  border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 42%, rgba(0, 0, 0, 0.08));
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(255, 119, 0, 0.06);
+}
+.header-date-field:hover {
+  border-color: var(--secondary-color, #FF7700);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 0 0 2px color-mix(in srgb, var(--secondary-color, #FF7700) 10%, transparent);
+  background-color: #fff;
+}
+.header-date-field:focus-visible {
+  outline: none;
+  border-color: var(--secondary-color, #FF7700);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--secondary-color, #FF7700) 12%, transparent);
+}
+
 /* ─── Icon buttons (wishlist, notifications, language) ─── */
 .icon-btn {
-  border: 1.5px solid rgba(0, 0, 0, 0.10);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 42%, rgba(0, 0, 0, 0.08));
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(255, 119, 0, 0.06);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
 }
 .icon-btn:hover {
-  border-color: rgba(0,0,0,0.18);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  background-color: #fafafa;
+  border-color: var(--secondary-color, #FF7700);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 0 0 2px color-mix(in srgb, var(--secondary-color, #FF7700) 10%, transparent);
+  background-color: #fff;
   transform: translateY(-1px);
+}
+.icon-btn:focus-visible {
+  outline: none;
+  border-color: var(--secondary-color, #FF7700);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--secondary-color, #FF7700) 12%, transparent);
 }
 .icon-btn:active { transform: translateY(0); }
 
 /* ─── User name button ─── */
 .user-name-btn {
-  border: 1.5px solid rgba(var(--primary-color-rgb, 249 115 22) / 0.25);
-  border-color: color-mix(in srgb, var(--primary-color, #f97316) 30%, transparent);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 42%, rgba(0, 0, 0, 0.08));
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(255, 119, 0, 0.06);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 .user-name-btn:hover {
-  border-color: var(--primary-color, #f97316);
-  box-shadow: 0 2px 10px rgba(249,115,22,0.15);
+  border-color: var(--secondary-color, #FF7700);
+  box-shadow:
+    0 2px 10px rgba(255, 119, 0, 0.15),
+    0 0 0 2px color-mix(in srgb, var(--secondary-color, #FF7700) 10%, transparent);
   transform: translateY(-1px);
+}
+.user-name-btn:focus-visible {
+  outline: none;
+  border-color: var(--secondary-color, #FF7700);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--secondary-color, #FF7700) 12%, transparent);
+}
+
+.header-user-avatar {
+  border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 45%, #e5e7eb);
 }
 
 /* ─── Badges ─── */
@@ -1567,8 +1627,8 @@ export default {
 }
 .dropdown-input-row:hover,
 .dropdown-input-row:focus-within {
-  border-color: var(--primary-color, #f97316);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color, #f97316) 12%, transparent);
+  border-color: var(--secondary-color, #ff7700);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--secondary-color, #ff7700) 12%, transparent);
 }
 
 .search-result-item {
@@ -1577,7 +1637,7 @@ export default {
 }
 .search-result-item:last-child { border-bottom: none; }
 .search-result-item:hover {
-  background-color: rgba(249,115,22,0.04);
+  background-color: rgba(255, 119, 0, 0.04);
   padding-left: 6px;
 }
 
@@ -1622,10 +1682,10 @@ export default {
   box-shadow: 0 2px 6px rgba(0,0,0,0.07);
 }
 .category-pill--active {
-  background: var(--primary-color, #f97316);
-  border: 1.5px solid var(--primary-color, #f97316);
+  background: var(--secondary-color, #ff7700);
+  border: 1.5px solid var(--secondary-color, #ff7700);
   color: #fff;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-color, #f97316) 35%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--secondary-color, #ff7700) 35%, transparent);
 }
 
 .clear-btn {
@@ -1681,9 +1741,9 @@ export default {
 
 /* ─── Mobile ─── */
 .mobile-close-btn {
-  border: 1.5px solid #f97316;
-  border-color: var(--primary-color, #f97316);
-  color: var(--primary-color, #f97316);
+  border: 1.5px solid var(--secondary-color, #ff7700);
+  border-color: var(--secondary-color, #ff7700);
+  color: var(--primary-color);
   font-weight: 600;
   font-size: 0.85rem;
   transition: background-color 0.15s;
@@ -1692,7 +1752,7 @@ export default {
 
 .mobile-menu-btn {
   background: rgba(255,255,255,0.85);
-  border: 1.5px solid rgba(0,0,0,0.10);
+  border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 42%, rgba(0, 0, 0, 0.08));
   border-radius: 8px;
   width: 38px;
   height: 38px;
@@ -1700,25 +1760,27 @@ export default {
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  transition: background-color 0.15s, transform 0.12s;
+  box-shadow:
+    0 1px 4px rgba(0,0,0,0.06),
+    0 2px 8px rgba(255, 119, 0, 0.08);
+  transition: background-color 0.15s, transform 0.12s, border-color 0.15s, box-shadow 0.15s;
   backdrop-filter: blur(6px);
 }
 .mobile-menu-btn:hover {
   background-color: #fff;
+  border-color: var(--secondary-color, #FF7700);
   transform: scale(1.04);
 }
 
 .mobile-field-input,
 .mobile-field-btn {
-  border: 1.5px solid rgba(249,115,22,0.35);
-  border-color: color-mix(in srgb, var(--primary-color, #f97316) 30%, rgba(0,0,0,0.08));
+  border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 42%, rgba(0, 0, 0, 0.08));
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .mobile-field-input:focus,
 .mobile-field-btn:hover {
-  border-color: var(--primary-color, #f97316);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color, #f97316) 10%, transparent);
+  border-color: var(--secondary-color, #FF7700);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--secondary-color, #FF7700) 10%, transparent);
 }
 
 .mobile-dropdown-card {
@@ -1774,10 +1836,10 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid #f97316;
+  border: 1.5px solid var(--secondary-color, #ff7700);
   border-radius: 9999px;
   background-color: #ffffff;
-  color: #f97316;
+  color: var(--secondary-color, #ff7700);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }

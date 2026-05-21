@@ -577,7 +577,7 @@ const tabs = computed(() => {
     { id: 'dateLocation', label: 'Date & Location' }
   ]
   if (invitedTalentsObjects.value.length > 0) {
-    list.push({ id: 'talents', label: 'Talents' })
+    list.push({ id: 'talents', label: 'Talent' })
   }
   if (invitedOrganisersObjects.value.length > 0) {
     list.push({ id: 'organisers', label: 'Organisers' })

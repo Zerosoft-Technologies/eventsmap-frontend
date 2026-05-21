@@ -615,19 +615,6 @@
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
                     </div>
 
-                    <!-- Yes/No Selection -->
-                    <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Share info profile (Yes / No)</label>
-                        <div class="tw:relative">
-                            <select v-model="talentNationality"
-                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                <option value="yes">Yes</option>
-                                <option value="no">No</option>
-                            </select>
-                            <ChevronDown
-                                class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Date of birth & age -->
@@ -665,19 +652,6 @@
                         </div>
                     </div>
 
-                    <!-- Yes/No Selection -->
-                    <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Share info profile (Yes / No)</label>
-                        <div class="tw:relative">
-                            <select v-model="showAge"
-                                class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer">
-                                <option value="yes">Yes</option>
-                                <option value="no">No</option>
-                            </select>
-                            <ChevronDown
-                                class="tw:absolute tw:right-3 tw:top-1/2 tw:-translate-y-1/2 tw:w-4 tw:h-4 tw:text-gray-400 tw:pointer-events-none" />
-                        </div>
-                    </div>
                 </div>
 
                 <!-- LANGUAGES SECTION -->

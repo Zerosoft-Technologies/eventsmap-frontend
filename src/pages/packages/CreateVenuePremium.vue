@@ -117,7 +117,7 @@
                         </button> -->
                     </div>
 
-                    <input v-model="formData.venueTitle" type="text" placeholder="Enter Venue Title"
+                    <input v-model="formData.venueTitle" type="text" placeholder="Enter Venue Name"
                         data-field="venueTitle"
                         @input="formErrors.venueTitle && clearError('venueTitle')"
                         :class="[
@@ -1001,7 +1001,7 @@ const formData = reactive({
 })
 
 const venueSchema = {
-    venueTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Venue Title' },
+    venueTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Venue Name' },
     category: { type: 'select', required: true, label: 'Category' },
     subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
 }

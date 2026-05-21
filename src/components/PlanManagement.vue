@@ -20,97 +20,139 @@
       </div>
     </div>
 
-    <!-- ── Premium Member Card ──────────────────────────────── -->
+    <!-- ── Premium: tabbed billing (no long scroll) ─────────── -->
     <div v-else-if="isPremium" class="plan-fade-in">
-      <div class="premium-card tw:rounded-2xl tw:p-5 tw:md:p-10 tw:text-center tw:relative tw:overflow-hidden tw:group">
-        <!-- Subtle background shimmer -->
-        <div class="premium-shimmer"></div>
-        
-        <!-- Golden pulse border animation -->
-        <div class="premium-pulse-border"></div>
+      <nav class="plan-subnav" aria-label="Premium billing sections">
+        <button
+          v-for="tab in premiumBillingTabs"
+          :key="tab.id"
+          type="button"
+          :class="['no-hover plan-subnav__tab', premiumBillingTab === tab.id && 'plan-subnav__tab--active']"
+          @click="premiumBillingTab = tab.id"
+        >
+          {{ tab.label }}
+        </button>
+      </nav>
 
-        <!-- Animated Crown Icon -->
-        <div class="tw:flex tw:justify-center tw:mb-5 tw:relative tw:z-10">
-          <div class="premium-crown-container tw:w-24 tw:h-24 tw:rounded-full tw:flex tw:items-center tw:justify-center premium-icon-bg">
-            <svg class="tw:w-12 tw:h-12 crown-icon" viewBox="0 0 24 24" fill="currentColor" style="color: #b45309">
-              <path d="M2.5 7l2.5 8h14l2.5-8-4.5 3-3-5-3 5L6.5 7z"/>
-              <rect x="5.5" y="16" width="13" height="2" rx="1"/>
-            </svg>
-            <!-- Sparkle decorations -->
-            <div class="sparkle sparkle-1"></div>
-            <div class="sparkle sparkle-2"></div>
-            <div class="sparkle sparkle-3"></div>
-          </div>
-        </div>
+      <!-- Overview -->
+      <div v-show="premiumBillingTab === 'overview'" class="overview-panel">
+        <section class="overview-hero">
+          <div class="overview-hero__glow" aria-hidden="true" />
+          <div class="overview-hero__inner">
+            <div class="overview-hero__main">
+              <div class="overview-hero__meta">
+                <span class="overview-hero__badge">
+                  <Sparkles class="tw:w-3.5 tw:h-3.5" />
+                  Premium
+                </span>
+                <span v-if="authStore.user?.created_at" class="overview-hero__since">
+                  Since {{ formatDate(authStore.user.created_at) }}
+                </span>
+              </div>
+              <h2 class="overview-hero__title">Premium plan</h2>
+              <p class="overview-hero__subtitle">
+                Everything you need to grow your events profile — analytics, visibility, and priority support.
+              </p>
 
-        <!-- Badge -->
-        <div class="tw:flex tw:justify-center tw:mb-4 tw:relative tw:z-10">
-          <span class="tw:inline-flex tw:items-center tw:gap-2 tw:px-5 tw:py-2 tw:rounded-full tw:text-sm tw:font-bold premium-badge">
-            <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-            </svg>
-            Premium Member
-          </span>
-        </div>
-
-        <!-- Title -->
-        <h2 class="tw:text-2xl tw:md:text-3xl tw:font-bold tw:text-gray-800 tw:mb-2 tw:relative tw:z-10">
-          You're on the Premium Plan
-        </h2>
-        
-        <!-- Thank You Message -->
-        <div class="tw:bg-gradient-to-r tw:from-amber-50 tw:to-yellow-50 tw:border tw:border-amber-200 tw:rounded-xl tw:px-4 tw:py-3 tw:mb-6 tw:relative tw:z-10">
-          <p class="tw:text-sm tw:text-amber-800 tw:font-medium tw:flex tw:items-center tw:justify-center tw:gap-2">
-            <svg class="tw:w-5 tw:h-5 tw:text-amber-500" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
-            </svg>
-            Thank you for being a premium member!
-          </p>
-        </div>
-
-        <!-- Benefits Grid -->
-        <div class="tw:grid tw:grid-cols-1 tw:md:grid-cols-2 tw:gap-3 tw:mb-8 tw:relative tw:z-10">
-          <div v-for="benefit in premiumBenefits" :key="benefit"
-            class="tw:flex tw:items-center tw:gap-2.5 tw:bg-white/70 tw:backdrop-blur-sm tw:rounded-xl tw:px-4 tw:py-3 tw:text-left tw:border tw:border-white/50 tw:shadow-sm hover:tw:shadow-md tw:transition-all">
-            <div class="tw:w-5 tw:h-5 tw:rounded-full tw:bg-gradient-to-br tw:from-amber-400 tw:to-amber-600 tw:flex tw:items-center tw:justify-center tw:flex-shrink-0">
-              <svg class="tw:w-3 tw:h-3 tw:text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-              </svg>
+              <dl v-if="overviewSnapshot" class="overview-hero__stats">
+                <div class="overview-stat">
+                  <dt>Plan</dt>
+                  <dd>{{ overviewPlanLabel }}</dd>
+                </div>
+                <div v-if="overviewPriceLabel" class="overview-stat">
+                  <dt>Price</dt>
+                  <dd>{{ overviewPriceLabel }}</dd>
+                </div>
+                <div class="overview-stat">
+                  <dt>Status</dt>
+                  <dd>
+                    <span class="overview-stat__pill overview-stat__pill--active">Active</span>
+                  </dd>
+                </div>
+              </dl>
+              <div v-else-if="overviewSnapshotLoading" class="overview-hero__stats-skeleton">
+                <span v-for="i in 3" :key="i" />
+              </div>
             </div>
-            <span class="tw:text-sm tw:text-gray-700 tw:font-medium">{{ benefit }}</span>
+
+            <div class="overview-hero__emblem" aria-hidden="true">
+              <div class="overview-hero__emblem-ring">
+                <Crown class="tw:w-9 tw:h-9 tw:text-amber-600" stroke-width="1.5" />
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Action Buttons -->
-        <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-3 tw:mb-6 tw:relative tw:z-10">
-          <button
-            @click="manageSubscription"
-            class="no-hover tw:flex-1 tw:bg-gradient-to-r tw:from-amber-500 tw:to-amber-600 tw:text-white tw:font-semibold tw:py-3 tw:px-4 tw:rounded-xl tw:transition-all tw:shadow-md hover:tw:shadow-lg hover:tw:scale-[1.02] tw:flex tw:items-center tw:justify-center tw:gap-2">
-            <svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            Manage Subscription
-          </button>
-          <button
-            @click="downloadInvoice"
-            class="no-hover tw:flex-1 tw:bg-white tw:text-amber-700 tw:font-semibold tw:py-3 tw:px-4 tw:rounded-xl tw:border-2 tw:border-amber-200 tw:transition-all hover:tw:border-amber-300 hover:tw:bg-amber-50 tw:flex tw:items-center tw:justify-center tw:gap-2">
-            <svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            Download Invoice
-          </button>
-        </div>
+        <section class="overview-benefits">
+          <div class="overview-section-head">
+            <h3 class="overview-section-head__title">Included in your plan</h3>
+            <p class="overview-section-head__desc">Premium tools unlocked on your profile</p>
+          </div>
+          <ul class="overview-benefits__grid">
+            <li
+              v-for="item in premiumBenefitItems"
+              :key="item.label"
+              class="overview-benefit"
+            >
+              <span class="overview-benefit__icon">
+                <component :is="item.icon" class="tw:w-4 tw:h-4" stroke-width="1.75" />
+              </span>
+              <span class="overview-benefit__label">{{ item.label }}</span>
+            </li>
+          </ul>
+        </section>
 
-        <!-- Member Since -->
-        <div class="tw:flex tw:items-center tw:justify-center tw:gap-2 tw:text-xs tw:text-gray-400 tw:relative tw:z-10">
-          <svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
-          <span v-if="authStore.user?.created_at">
-            Premium member since {{ formatDate(authStore.user.created_at) }}
-          </span>
-        </div>
+        <section class="overview-actions-section">
+          <div class="overview-section-head">
+            <h3 class="overview-section-head__title">Quick access</h3>
+            <p class="overview-section-head__desc">Manage billing details and receipts</p>
+          </div>
+          <div class="overview-actions">
+            <button type="button" class="no-hover overview-action" @click="openBillingTab('subscription')">
+              <span class="overview-action__icon overview-action__icon--blue">
+                <Settings class="tw:w-5 tw:h-5" />
+              </span>
+              <span class="overview-action__content">
+                <span class="overview-action__title">Subscription &amp; billing</span>
+                <span class="overview-action__desc">Plan details, card &amp; billing address</span>
+              </span>
+              <span class="overview-action__arrow">
+                <ArrowRight class="tw:w-4 tw:h-4" />
+              </span>
+            </button>
+            <button type="button" class="no-hover overview-action" @click="openBillingTab('invoices')">
+              <span class="overview-action__icon overview-action__icon--slate">
+                <FileText class="tw:w-5 tw:h-5" />
+              </span>
+              <span class="overview-action__content">
+                <span class="overview-action__title">Invoices</span>
+                <span class="overview-action__desc">Receipts and payment history</span>
+              </span>
+              <span class="overview-action__arrow">
+                <ArrowRight class="tw:w-4 tw:h-4" />
+              </span>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Subscription & billing (separate panel — not a new route) -->
+      <div v-show="premiumBillingTab === 'subscription'">
+        <ManageSubscriptionSection
+          ref="manageSubscriptionRef"
+          embedded
+          :active="premiumBillingTab === 'subscription'"
+          @view-invoices="openBillingTab('invoices')"
+        />
+      </div>
+
+      <!-- Invoices -->
+      <div v-show="premiumBillingTab === 'invoices'">
+        <BillingInvoicesSection
+          ref="billingInvoicesRef"
+          embedded
+          :active="premiumBillingTab === 'invoices'"
+        />
       </div>
     </div>
 
@@ -423,10 +465,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, watch, type Component } from 'vue'
+import {
+  ArrowRight,
+  BarChart3,
+  Crown,
+  FileText,
+  Headphones,
+  Palette,
+  Settings,
+  Sparkles,
+  Star,
+  Users,
+  BadgeCheck,
+} from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useUpgradePlan } from '@/composables/useUpgradePlan'
 import PaymentLoadingOverlay from '@/components/ui/PaymentLoadingOverlay.vue'
+import BillingInvoicesSection from '@/components/settings/BillingInvoicesSection.vue'
+import ManageSubscriptionSection from '@/components/settings/ManageSubscriptionSection.vue'
+import {
+  fetchSubscription,
+  formatSubscriptionAmount,
+  subscriptionPlanName,
+  subscriptionAmount,
+  subscriptionCurrency,
+  type SubscriptionOverview,
+} from '@/api/subscription'
 
 const authStore = useAuthStore()
 
@@ -451,6 +516,16 @@ const {
 
 const loadingUser = ref(false)
 const upgradeStep = ref<'idle' | 'select-type' | 'billing-details'>('idle')
+const billingInvoicesRef = ref<InstanceType<typeof BillingInvoicesSection> | null>(null)
+const manageSubscriptionRef = ref<InstanceType<typeof ManageSubscriptionSection> | null>(null)
+
+type PremiumBillingTab = 'overview' | 'subscription' | 'invoices'
+const premiumBillingTab = ref<PremiumBillingTab>('overview')
+const premiumBillingTabs: { id: PremiumBillingTab; label: string }[] = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'subscription', label: 'Subscription & billing' },
+  { id: 'invoices', label: 'Invoices' },
+]
 
 const isPremium = computed(() =>
   authStore.user?.account_type == 'premium' && authStore.user?.status == 'active'
@@ -471,14 +546,49 @@ const premiumFeatures = [
   'Featured listings',
 ]
 
-const premiumBenefits = [
-  'Advanced analytics',
-  'Priority support',
-  'Unlimited attendees',
-  'Custom branding',
-  'Featured listings',
-  'Premium badge',
+const premiumBenefitItems: { label: string; icon: Component }[] = [
+  { label: 'Advanced analytics', icon: BarChart3 },
+  { label: 'Priority support', icon: Headphones },
+  { label: 'Unlimited attendees', icon: Users },
+  { label: 'Custom branding', icon: Palette },
+  { label: 'Featured listings', icon: Star },
+  { label: 'Premium badge', icon: BadgeCheck },
 ]
+
+const overviewSnapshot = ref<SubscriptionOverview | null>(null)
+const overviewSnapshotLoading = ref(false)
+
+const overviewPlanLabel = computed(() =>
+  overviewSnapshot.value
+    ? subscriptionPlanName(overviewSnapshot.value.subscription)
+    : 'Premium'
+)
+
+const overviewPriceLabel = computed(() => {
+  const sub = overviewSnapshot.value?.subscription
+  if (!sub || subscriptionAmount(sub) <= 0) return null
+  return formatSubscriptionAmount(subscriptionAmount(sub), subscriptionCurrency(sub))
+})
+
+async function loadOverviewSnapshot() {
+  if (overviewSnapshot.value || overviewSnapshotLoading.value) return
+  overviewSnapshotLoading.value = true
+  try {
+    overviewSnapshot.value = await fetchSubscription()
+  } catch {
+    overviewSnapshot.value = null
+  } finally {
+    overviewSnapshotLoading.value = false
+  }
+}
+
+watch(
+  () => premiumBillingTab.value,
+  (tab) => {
+    if (tab === 'overview') loadOverviewSnapshot()
+  },
+  { immediate: true }
+)
 
 onMounted(async () => {
   if (!authStore.user) {
@@ -510,153 +620,359 @@ function formatDate(dateStr: string): string {
   })
 }
 
-function manageSubscription() {
-  console.log('Opening subscription management...')
-  alert('Subscription management coming soon!')
+async function openBillingTab(tab: PremiumBillingTab) {
+  premiumBillingTab.value = tab
+  await nextTick()
+  if (tab === 'subscription') {
+    manageSubscriptionRef.value?.refresh()
+  } else if (tab === 'invoices') {
+    billingInvoicesRef.value?.refresh()
+  }
 }
 
-function downloadInvoice() {
-  console.log('Downloading invoice...')
-  alert('Invoice download coming soon!')
-}
 </script>
 
 <style scoped>
-/* ── Premium Card ─────────────────────────────────────── */
-.premium-card {
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 50%, #fde68a 100%);
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  box-shadow:
-    0 0 0 2px #f59e0b,
-    0 4px 24px rgba(245, 158, 11, 0.15),
-    0 1px 3px rgba(0, 0, 0, 0.05);
+/* Sub-navigation */
+.plan-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 0;
+  border-bottom: 1px solid rgb(229 231 235);
 }
-
-.premium-shimmer {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 60%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s ease-in-out infinite;
-  border-radius: inherit;
-}
-
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* ── Golden Pulse Border ─────────────────────────────── */
-.premium-pulse-border {
-  position: absolute;
-  inset: -3px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706, #fbbf24);
-  background-size: 300% 300%;
-  opacity: 0.4;
-  animation: pulseBorder 4s ease-in-out infinite;
-  z-index: 0;
-  filter: blur(8px);
-}
-
-@keyframes pulseBorder {
-  0%, 100% { 
-    background-position: 0% 50%;
-    opacity: 0.3;
-  }
-  50% { 
-    background-position: 100% 50%;
-    opacity: 0.6;
-  }
-}
-
-/* ── Crown Animation ─────────────────────────────────── */
-.premium-crown-container {
+.plan-subnav__tab {
   position: relative;
+  padding: 0.625rem 1rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(107 114 128);
+  transition: color 0.2s;
+  margin-bottom: -1px;
 }
-
-.crown-icon {
-  animation: crownFloat 3s ease-in-out infinite;
-  transform-origin: center;
+.plan-subnav__tab:hover {
+  color: rgb(55 65 81);
 }
-
-@keyframes crownFloat {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  25% { transform: translateY(-4px) rotate(-2deg); }
-  75% { transform: translateY(-4px) rotate(2deg); }
+.plan-subnav__tab--active {
+  color: var(--primary-color, #0061ff);
 }
-
-/* ── Sparkles ────────────────────────────────────────── */
-.sparkle {
+.plan-subnav__tab--active::after {
+  content: '';
   position: absolute;
-  width: 6px;
-  height: 6px;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  border-radius: 50%;
-  opacity: 0;
-  animation: sparkleAnimation 2s ease-in-out infinite;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--primary-color, #0061ff);
 }
 
-.sparkle-1 {
-  top: 10%;
-  right: 15%;
-  animation-delay: 0s;
+/* Overview */
+.overview-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
 }
 
-.sparkle-2 {
-  top: 20%;
-  left: 10%;
-  animation-delay: 0.6s;
+.overview-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid rgb(229 231 235 / 0.9);
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.04);
 }
-
-.sparkle-3 {
-  bottom: 15%;
-  right: 10%;
-  animation-delay: 1.2s;
+.overview-hero__glow {
+  pointer-events: none;
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 55%;
+  height: 140%;
+  background: radial-gradient(
+    ellipse at center,
+    rgb(251 191 36 / 0.12) 0%,
+    transparent 70%
+  );
 }
-
-@keyframes sparkleAnimation {
-  0%, 100% { 
-    opacity: 0;
-    transform: scale(0) rotate(0deg);
+.overview-hero__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.75rem 1.5rem;
+}
+@media (min-width: 768px) {
+  .overview-hero__inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 2rem 2rem 2.25rem;
   }
-  50% { 
-    opacity: 1;
-    transform: scale(1.5) rotate(180deg);
+}
+.overview-hero__main {
+  flex: 1;
+  min-width: 0;
+}
+.overview-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.75rem;
+}
+.overview-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(146 64 14);
+  background: linear-gradient(135deg, rgb(254 243 199), rgb(253 230 138 / 0.6));
+  border: 1px solid rgb(251 191 36 / 0.35);
+}
+.overview-hero__since {
+  font-size: 0.75rem;
+  color: rgb(156 163 175);
+}
+.overview-hero__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: rgb(17 24 39);
+  line-height: 1.15;
+}
+@media (min-width: 768px) {
+  .overview-hero__title {
+    font-size: 2rem;
+  }
+}
+.overview-hero__subtitle {
+  margin-top: 0.5rem;
+  max-width: 32rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: rgb(107 114 128);
+}
+.overview-hero__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(243 244 246);
+}
+.overview-stat dt {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(156 163 175);
+  margin-bottom: 0.25rem;
+}
+.overview-stat dd {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgb(17 24 39);
+}
+.overview-stat__pill {
+  display: inline-flex;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.overview-stat__pill--active {
+  color: rgb(4 120 87);
+  background: rgb(236 253 245);
+  box-shadow: inset 0 0 0 1px rgb(167 243 208);
+}
+.overview-hero__stats-skeleton {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(243 244 246);
+}
+.overview-hero__stats-skeleton span {
+  height: 2rem;
+  width: 5.5rem;
+  border-radius: 0.5rem;
+  background: rgb(243 244 246);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.overview-hero__emblem {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.overview-hero__emblem-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(145deg, rgb(255 251 235), rgb(254 243 199 / 0.5));
+  border: 1px solid rgb(251 191 36 / 0.25);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8);
+}
+@media (min-width: 768px) {
+  .overview-hero__emblem-ring {
+    width: 6.5rem;
+    height: 6.5rem;
+    border-radius: 1.5rem;
   }
 }
 
-.premium-icon-bg {
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
-  box-shadow: 
-    0 0 30px rgba(245, 158, 11, 0.4),
-    0 0 60px rgba(245, 158, 11, 0.2);
-  transition: all 0.3s ease;
+.overview-section-head {
+  margin-bottom: 1rem;
+}
+.overview-section-head__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgb(17 24 39);
+  letter-spacing: -0.01em;
+}
+.overview-section-head__desc {
+  font-size: 0.8125rem;
+  color: rgb(156 163 175);
+  margin-top: 0.125rem;
 }
 
-.premium-card:hover .premium-icon-bg {
-  box-shadow: 
-    0 0 40px rgba(245, 158, 11, 0.5),
-    0 0 80px rgba(245, 158, 11, 0.3);
-  transform: scale(1.05);
+.overview-benefits__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+@media (min-width: 640px) {
+  .overview-benefits__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+}
+.overview-benefit {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.75rem;
+  background: #fff;
+  border: 1px solid rgb(243 244 246);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.overview-benefit:hover {
+  border-color: rgb(229 231 235);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.03);
+}
+.overview-benefit__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+  color: rgb(217 119 6);
+  background: rgb(255 251 235);
+}
+.overview-benefit__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgb(55 65 81);
+  line-height: 1.3;
 }
 
-.premium-badge {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: white;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-  animation: badgePulse 3s ease-in-out infinite;
+.overview-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+@media (min-width: 640px) {
+  .overview-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+.overview-action {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  text-align: left;
+  padding: 1.125rem 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(229 231 235 / 0.9);
+  background: #fff;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.overview-action:hover {
+  border-color: rgb(209 213 219);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.06);
+  transform: translateY(-1px);
+}
+.overview-action__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+}
+.overview-action__icon--blue {
+  color: var(--primary-color, #0061ff);
+  background: rgb(239 246 255);
+}
+.overview-action__icon--slate {
+  color: rgb(71 85 105);
+  background: rgb(248 250 252);
+}
+.overview-action__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.overview-action__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgb(17 24 39);
+}
+.overview-action__desc {
+  font-size: 0.75rem;
+  color: rgb(107 114 128);
+  line-height: 1.4;
+}
+.overview-action__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  color: rgb(156 163 175);
+  background: rgb(249 250 251);
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s;
+}
+.overview-action:hover .overview-action__arrow {
+  color: var(--primary-color, #0061ff);
+  background: rgb(239 246 255);
 }
 
-@keyframes badgePulse {
-  0%, 100% { box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); }
-  50% { box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 /* ── Slide-down Transition ────────────────────────────── */

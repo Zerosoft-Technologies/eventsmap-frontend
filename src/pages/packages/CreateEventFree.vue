@@ -395,76 +395,39 @@
                 <label class="tw:block tw:text-sm tw:text-gray-600">
                   Event Start Time <span class="tw:text-red-500">*</span>
                 </label>
-                <div
-                  class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
-                  :class="hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'">
-                  <input
-                    ref="startHHInput"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="2"
-                    v-model="startHH"
-                    placeholder="00"
-                    @input="onTimeInput('startHH', $event)"
-                    @blur="onTimeBlur('startHH')"
-                    class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
-                    :class="startHH ? 'tw:text-black' : 'tw:text-gray-700'" />
-                  <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
-                  <input
-                    ref="startMMInput"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="2"
-                    v-model="startMM"
-                    placeholder="00"
-                    @input="onTimeInput('startMM', $event)" @blur="onTimeBlur('startMM')"
-                    class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
-                    :class="startMM ? 'tw:text-black' : 'tw:text-gray-500'" />
-                  <!-- <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" /> -->
-                </div>
+                <input
+                  v-model="startTimePicker"
+                  type="time"
+                  step="60"
+                  :class="[
+                    'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                    hasStartError ? 'tw:border-red-500' : 'tw:border-gray-200'
+                  ]"
+                />
                 <p v-if="hasStartError" class="tw:text-red-500 tw:text-sm">Start time is required</p>
-                <p class="tw:text-xs tw:text-gray-500">Format: HH:mm (24-hour). “00:00” represents midnight.</p>
               </div>
 
               <div class="tw:space-y-2">
                 <label class="tw:block tw:text-sm tw:text-gray-600">
                   Event End Time <span class="tw:text-red-500">*</span>
                 </label>
-                <div
-                  class="tw:flex tw:items-center tw:border tw:rounded-lg tw:bg-white tw:overflow-hidden tw:px-3 tw:py-2.5"
-                  :class="(hasEndError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'">
-                  <input
-                    ref="endHHInput"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="2"
-                    v-model="endHH"
-                    placeholder="23"
-                    @input="onTimeInput('endHH', $event)"
-                    @blur="onTimeBlur('endHH')"
-                    class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
-                    :class="endHH ? 'tw:text-black' : 'tw:text-gray-700'" />
-                  <span class="tw:text-gray-400 tw:font-bold tw:mx-1">:</span>
-                  <input
-                    ref="endMMInput"
-                    type="text"
-                    inputmode="numeric"
-                    maxlength="2"
-                    v-model="endMM"
-                    placeholder="00"
-                    @input="onTimeInput('endMM', $event)" @blur="onTimeBlur('endMM')"
-                    class="tw:w-10 tw:text-center placeholder:tw:text-gray-300 tw:border-none focus:tw:outline-none focus:tw:ring-0 tw:bg-transparent tw:tabular-nums"
-                    :class="endMM ? 'tw:text-black' : 'tw:text-gray-500'" />
-                  <!-- <Clock class="tw:ml-auto tw:w-4 tw:h-4 tw:text-[#787878] tw:pointer-events-none" /> -->
-                </div>
+                <input
+                  v-model="endTimePicker"
+                  type="time"
+                  step="60"
+                  :class="[
+                    'tw:w-full tw:h-12 tw:md:h-auto tw:bg-white tw:border tw:rounded-lg tw:px-4 tw:py-2.5 tw:text-base tw:md:text-[16px] tw:text-gray-700 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500',
+                    (hasEndError || datetimeRangeError) ? 'tw:border-red-500' : 'tw:border-gray-200'
+                  ]"
+                />
                 <p v-if="hasEndError" class="tw:text-red-500 tw:text-sm">End time is required</p>
                 <p v-if="datetimeRangeError" class="tw:text-red-500 tw:text-sm">{{ datetimeRangeError }}</p>
                 <p class="tw:text-xs tw:text-gray-500">
                   <!-- <template v-if="showOvernightEventCallout">Format: HH:mm (24-hour).</template> -->
-                  <template>
+                  <!-- <template>
                     Format: HH:mm (24-hour). If the end clock time is earlier than the start time, the end is counted as the
                     <span class="tw:font-medium tw:text-gray-600">next day</span> (max. 24 hours total).
-                  </template>
+                  </template> -->
                 </p>
               </div>
             </div>
@@ -1034,6 +997,61 @@ const startTime = computed(() => {
 const endTime = computed(() => {
   if (endHH.value === "" || endMM.value === "") return ""
   return `${String(endHH.value).padStart(2, "0")}:${String(endMM.value).padStart(2, "0")}`
+})
+
+/** Native time inputs ↔ HH / MM refs (same API payload). */
+const startTimePicker = computed({
+  get() {
+    if (startHH.value === "" || startMM.value === "") return ""
+    return `${String(startHH.value).padStart(2, "0")}:${String(startMM.value).padStart(2, "0")}`
+  },
+  set(v) {
+    if (!v) {
+      startHH.value = ""
+      startMM.value = ""
+      validateEndAfterStartDateTime()
+      return
+    }
+    const [h, m] = String(v).split(":")
+    const hour = h != null && h !== "" ? Math.min(23, Math.max(0, parseInt(h, 10))) : NaN
+    const min = m != null && m !== "" ? Math.min(59, Math.max(0, parseInt(m, 10))) : NaN
+    if (!Number.isFinite(hour) || !Number.isFinite(min)) {
+      startHH.value = ""
+      startMM.value = ""
+    } else {
+      startHH.value = String(hour).padStart(2, "0")
+      startMM.value = String(min).padStart(2, "0")
+    }
+    hasStartError.value = false
+    validateEndAfterStartDateTime()
+  },
+})
+
+const endTimePicker = computed({
+  get() {
+    if (endHH.value === "" || endMM.value === "") return ""
+    return `${String(endHH.value).padStart(2, "0")}:${String(endMM.value).padStart(2, "0")}`
+  },
+  set(v) {
+    if (!v) {
+      endHH.value = ""
+      endMM.value = ""
+      validateEndAfterStartDateTime()
+      return
+    }
+    const [h, m] = String(v).split(":")
+    const hour = h != null && h !== "" ? Math.min(23, Math.max(0, parseInt(h, 10))) : NaN
+    const min = m != null && m !== "" ? Math.min(59, Math.max(0, parseInt(m, 10))) : NaN
+    if (!Number.isFinite(hour) || !Number.isFinite(min)) {
+      endHH.value = ""
+      endMM.value = ""
+    } else {
+      endHH.value = String(hour).padStart(2, "0")
+      endMM.value = String(min).padStart(2, "0")
+    }
+    hasEndError.value = false
+    validateEndAfterStartDateTime()
+  },
 })
 
 const DATE_YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/

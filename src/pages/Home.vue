@@ -68,25 +68,39 @@ function createMapPinMarkerEl() {
   return el
 }
 
-/** Discovery profile pins — distinct colour per type. No CSS transition (MapLibre uses transform while panning). */
+/** Discovery profile pins — distinct colour + icon per type. No CSS transition (MapLibre uses transform while panning). */
 const PROFILE_MARKER_COLORS = {
   organisers: '#6366f1',
   talents: '#10b981',
   venues: '#0ea5e9',
 }
 
+/** Material-style paths (24×24), centered inside marker disc */
+const PROFILE_MARKER_ICON_D = {
+  organisers:
+    'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z',
+  talents:
+    'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z',
+  venues:
+    'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+}
+
 function createProfileMarkerEl(profileType) {
   const color = PROFILE_MARKER_COLORS[profileType] ?? '#6b7280'
+  const d = PROFILE_MARKER_ICON_D[profileType] ?? PROFILE_MARKER_ICON_D.venues
   const el = document.createElement('div')
   el.style.width = '52px'
   el.style.height = '62px'
   el.style.cursor = 'pointer'
   el.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 52" fill="none" style="width:100%;height:100%;display:block">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 52" fill="none" style="width:100%;height:100%;display:block" aria-hidden="true">
       <ellipse cx="22" cy="49" rx="9" ry="3" fill="rgba(0,0,0,0.18)"/>
       <path d="M22 2C14.268 2 8 8.268 8 16c0 10.5 14 32 14 32S36 26.5 36 16C36 8.268 29.732 2 22 2z"
         fill="${color}" stroke="white" stroke-width="2.5"/>
       <circle cx="22" cy="16" r="7" fill="white"/>
+      <g transform="translate(22,16) scale(0.26) translate(-12,-12)">
+        <path d="${d}" fill="${color}"/>
+      </g>
     </svg>`
   return el
 }
