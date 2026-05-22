@@ -90,6 +90,8 @@ onMounted(() => {
       }
     }
   }
+  emit('update:dateRange', dateValue.value);
+  emit('update:session', sessionValue.value);
 });
 </script>
 

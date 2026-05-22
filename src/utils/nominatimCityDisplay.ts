@@ -55,3 +55,46 @@ export function cityDisplayFromStoredFullAddress(full: string): string {
   if (parts.length === 2) return parts[1] ?? ''
   return (parts[Math.max(1, parts.length - 3)] ?? parts[1] ?? parts[0]) ?? ''
 }
+
+/** UK / US / EU-style postcodes — excluded from public location lines */
+export function looksLikePostcode(segment: string): boolean {
+  const t = segment.trim()
+  if (!t) return false
+  if (/^\d{4,6}(-\d{4})?$/.test(t)) return true
+  if (/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(t)) return true
+  if (/^\d{4,5}\s+[A-Za-zÀ-ÿ]/.test(t)) return true
+  return false
+}
+
+function cityOrRegionFromAddress(full: string): string {
+  if (!full?.trim()) return ''
+  const parts = full.split(',').map((s) => s.trim()).filter(Boolean)
+  for (const part of parts) {
+    if (looksLikePostcode(part)) continue
+    if (part.length >= 2) return part
+  }
+  const inferred = cityDisplayFromStoredFullAddress(full)
+  if (inferred && !looksLikePostcode(inferred)) return inferred
+  return ''
+}
+
+type ProfileLocationSource = {
+  city?: string | null
+  address?: string | null
+  country?: string | null
+}
+
+/** Short public location line: talents show city/region only (never postcode). */
+export function displayProfileLocationLine(
+  profile: ProfileLocationSource | null | undefined,
+  profileType?: string,
+): string {
+  if (!profile) return ''
+  if (profileType === 'talents') {
+    if (profile.city?.trim()) return profile.city.trim()
+    const fromAddr = cityOrRegionFromAddress(profile.address || '')
+    if (fromAddr) return fromAddr
+    return profile.country?.trim() || ''
+  }
+  return profile.address?.trim() || profile.city?.trim() || profile.country?.trim() || ''
+}

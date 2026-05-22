@@ -2,7 +2,10 @@
   <div class="tw:flex tw:flex-col tw:w-[350px] tw:bg-white tw:rounded-2xl tw:shadow-md tw:overflow-hidden tw:border tw:border-gray-100 hover:tw:shadow-lg tw:transition-all tw:duration-200">
 
     <!-- ── Hero: carousel when additional_images exist ── -->
-    <div class="tw:relative tw:h-40 tw:overflow-hidden tw:rounded-t-2xl">
+    <div
+      class="tw:relative tw:overflow-hidden tw:rounded-t-2xl"
+      :class="profileType === 'talents' ? 'tw:aspect-[3/4] tw:max-h-72' : 'tw:h-40'"
+    >
       <div
         class="tw:flex tw:h-full tw:transition-transform tw:duration-300 tw:ease-in-out"
         :style="{ transform: `translateX(-${heroImageIndex * 100}%)` }"
@@ -122,6 +125,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { displayProfileLocationLine } from '@/utils/nominatimCityDisplay'
 
 const { t } = useI18n()
 
@@ -197,20 +201,10 @@ const subcategoryLabels = computed(() => {
   return subs.slice(0, 4).map(s => s.name)
 })
 
-/** Talent cards: city only. Prefer `city`, else second-to-last comma segment of address (often city before country). */
-function talentCityLine(p) {
-  if (p.city?.trim()) return p.city.trim()
-  const addr = typeof p.address === 'string' ? p.address.trim() : ''
-  if (!addr) return ''
-  const parts = addr.split(',').map((x) => x.trim()).filter(Boolean)
-  if (parts.length >= 2) return parts[parts.length - 2]
-  return parts[parts.length - 1] || ''
-}
-
-const displayLocationLine = computed(() => {
-  if (props.profileType === 'talents') return talentCityLine(props.profile)
-  return props.profile.address?.trim() || ''
-})
+/** Talent cards: city or region only (no postcode). */
+const displayLocationLine = computed(() =>
+  displayProfileLocationLine(props.profile, props.profileType)
+)
 
 const showLocationRow = computed(() => displayLocationLine.value.length > 0)
 

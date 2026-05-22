@@ -26,7 +26,10 @@
       </div>
 
       <!-- Gallery slider -->
-      <div class="tw:relative tw:h-52 tw:md:h-64 tw:overflow-hidden tw:flex-shrink-0">
+      <div
+        class="tw:relative tw:overflow-hidden tw:flex-shrink-0"
+        :class="profileType === 'talents' ? 'tw:aspect-[3/4] tw:max-h-80' : 'tw:h-52 tw:md:h-64'"
+      >
         <div
           class="tw:flex tw:transition-transform tw:duration-300 tw:ease-in-out tw:h-full"
           :style="{ transform: `translateX(-${currentImageIndex * 100}%)` }"
@@ -74,12 +77,12 @@
           <h2 class="tw:text-xl tw:font-semibold tw:leading-tight tw:text-gray-900">
             {{ profile?.title || '—' }}
           </h2>
-          <p v-if="profile?.address" class="tw:mt-0.5 tw:text-xs tw:text-gray-500 tw:flex tw:items-center tw:gap-1">
+          <p v-if="headerLocationLine" class="tw:mt-0.5 tw:text-xs tw:text-gray-500 tw:flex tw:items-center tw:gap-1">
             <svg class="tw:w-3 tw:h-3 tw:shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            {{ profile.address }}
+            {{ headerLocationLine }}
           </p>
         </div>
         <button
@@ -408,8 +411,8 @@
           </div>
 
           <!-- Contact box message -->
-          <div v-if="profile.contact_box_message" class="tw:mt-4 tw:p-4 tw:rounded-xl tw:bg-blue-50 tw:border tw:border-blue-100">
-            <p class="tw:text-sm tw:text-gray-700 tw:italic tw:leading-relaxed">{{ profile.contact_box_message }}</p>
+          <div v-if="contactBoxMessage" class="tw:mt-4 tw:p-4 tw:rounded-xl tw:bg-blue-50 tw:border tw:border-blue-100">
+            <p class="tw:text-sm tw:text-gray-700 tw:italic tw:leading-relaxed">{{ contactBoxMessage }}</p>
           </div>
         </div>
 
@@ -470,6 +473,7 @@ import { useI18n } from 'vue-i18n'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { MAP_CONFIG } from '@/config/mapConfig'
+import { displayProfileLocationLine } from '@/utils/nominatimCityDisplay'
 import { XIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next'
 import DirectionsPanel from './DirectionsPanel.vue'
 
@@ -628,12 +632,21 @@ const locationDisplayName = computed(() => {
 const displayLocationAddress = computed(() => {
   const p = props.profile
   if (!p) return t('dateLocation.notSpecified')
+  if (props.profileType === 'talents') {
+    const line = displayProfileLocationLine(p, 'talents')
+    if (line) return line
+    return t('dateLocation.notSpecified')
+  }
   const parts = []
   if (p.address?.trim()) parts.push(p.address.trim())
   if (p.city?.trim()) parts.push(p.city.trim())
   if (p.country?.trim()) parts.push(p.country.trim())
   return parts.length ? parts.join(', ') : t('dateLocation.notSpecified')
 })
+
+const headerLocationLine = computed(() =>
+  displayProfileLocationLine(props.profile, props.profileType)
+)
 
 const showLocationTab = computed(() => {
   const p = props.profile
@@ -849,6 +862,15 @@ const SOCIAL_CONFIGS = [
   { key: 'fan_club_url', label: 'Fan Club', color: '#FF7700', iconPath: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' },
 ]
 
+const contactBoxMessage = computed(() => {
+  const p = props.profile
+  if (!p) return ''
+  const design = typeof p.contact_box_design_message === 'string' ? p.contact_box_design_message.trim() : ''
+  if (design) return design
+  const legacy = typeof p.contact_box_message === 'string' ? p.contact_box_message.trim() : ''
+  return legacy
+})
+
 const socialLinks = computed(() => {
   const p = props.profile
   if (!p) return []
@@ -887,7 +909,7 @@ const tabs = computed(() => {
     list.push({ id: 'amenities', label: t('discoveryProfile.tabs.amenities') })
   }
   const hasContact = props.profile?.contact_phone || props.profile?.contact_email ||
-    props.profile?.contact_website || socialLinks.value.length > 0
+    props.profile?.contact_website || socialLinks.value.length > 0 || contactBoxMessage.value
   if (hasContact) list.push({ id: 'contact', label: t('discoveryProfile.tabs.contact') })
   return list
 })

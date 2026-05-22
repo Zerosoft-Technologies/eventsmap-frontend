@@ -88,7 +88,7 @@
 
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:min-w-0 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-8 tw:space-y-4 tw:md:space-y-6">
-                <ProfileDraftVisibilityBanner v-if="isEditMode && publicationStatus === 'draft'" />
+                <ProfileDraftVisibilityBanner v-if="showDraftVisibilityBanner" />
                 <!-- <div
                     class="tw:relative tw:rounded-2xl tw:overflow-hidden tw:bg-gray-200 tw:h-96 tw:flex tw:items-center tw:justify-center">
                     <img src="/family-legal-advisor.jpg" alt="Event Background"
@@ -901,6 +901,10 @@ import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import { firstOwnedProfileId } from "@/utils/profileSingleton"
+import {
+  isPublicationDraft,
+  resolvePublicationStatusSlug,
+} from "@/utils/profilePublicationStatus"
 import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
 import maplibregl from "maplibre-gl"
@@ -940,6 +944,10 @@ const isEditMode = ref(false)
 const editingVenueId = ref(null)
 const publicationStatus = ref(null)
 
+const showDraftVisibilityBanner = computed(
+  () => isEditMode.value && isPublicationDraft(publicationStatus.value),
+)
+
 watch(
   [() => venues.value, editingVenueId],
   () => {
@@ -949,7 +957,7 @@ watch(
       return
     }
     const row = venues.value.find((v) => Number(v.id) === Number(id))
-    if (row && row.status != null) publicationStatus.value = row.status
+    if (row) publicationStatus.value = resolvePublicationStatusSlug(row)
   },
   { deep: true }
 )
@@ -1607,7 +1615,7 @@ async function loadVenue(id) {
 
         fieldErrors.value = {}
 
-        publicationStatus.value = venue.status ?? 'draft'
+        publicationStatus.value = resolvePublicationStatusSlug(venue)
 
         allowanceOfDogs.value = mapAllowDogsFromApi(venue)
 

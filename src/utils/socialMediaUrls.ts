@@ -23,7 +23,7 @@ function normalizeKey(key: string): string {
   return String(key).toLowerCase().trim()
 }
 
-function normalizeHref(url: string): string {
+export function normalizeHref(url: string): string {
   let href = url.trim()
   if (!href) return ''
   if (!/^https?:\/\//i.test(href)) {

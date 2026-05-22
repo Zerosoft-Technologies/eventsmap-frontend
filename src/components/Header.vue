@@ -39,7 +39,7 @@
       </div>
       <div>
         <button class="header-btn header-date-field tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:rounded-lg" style="height: 40px;"><img src="../assets/calendar.png" alt="Calendar Icon"/><span class="tw:text-sm">
-          <DatePicker @update:dateRange="dateRange = $event" />
+          <DatePicker @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
         </span></button>
       </div>      
       <transition name="fade">
@@ -287,7 +287,7 @@
         </div>
 
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
-          <DatePicker @update:dateRange="dateRange = $event" @update:session="sessionFilter = $event" />
+          <DatePicker @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
         </div>
 
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
@@ -794,6 +794,11 @@ import { getUserProfileImageUrl } from '@/utils/userProfileImage';
 import { Bell, Images, Loader2, ChevronDown } from 'lucide-vue-next';
 import { chatService } from '@/services/chatService';
 import { MAP_OPEN_EVENT_DETAIL, MAP_OPEN_PROFILE_DETAIL } from '@/utils/mapPopupBridge'
+import {
+  appendDiscoveryDateTimeFilters,
+  formatDiscoveryDateToApi,
+  parseStoredSessionFilter,
+} from '@/utils/discoveryDateTimeFilters'
 import EventDetailsPanel from './EventDetailsPanel.vue'
 import DiscoveryProfileDetailsPanel from './DiscoveryProfileDetailsPanel.vue'
 
@@ -890,8 +895,7 @@ async function handleMobileEmailClick() {
 function handleMobileDateRangeUpdate(newRange) {
   if (!newRange) return
   dateRange.value = Array.isArray(newRange) ? [...newRange] : newRange
-  sessionFilter.value = { ...tempSessionFilter.value }
-  localStorage.setItem('datepicker-session', JSON.stringify(sessionFilter.value))
+  onSessionFilterUpdate(tempSessionFilter.value)
   closeMobileHeader()
 }
 
@@ -1019,6 +1023,12 @@ let catDragStartScrollLeft = 0
 let catDragScrollEl = null
 const dateRange = ref([null, null])
 const sessionFilter = ref({ morning: false, afternoon: false, evening: false, night: false })
+
+function onSessionFilterUpdate(next) {
+  if (!next) return
+  sessionFilter.value = { ...next }
+  localStorage.setItem('datepicker-session', JSON.stringify(sessionFilter.value))
+}
 const mobileInitialDateRange = computed(() => {
   if (activeField.value !== 'date') return null
   return dateRange.value[0] && dateRange.value[1] ? [dateRange.value[0], dateRange.value[1]] : null
@@ -1161,6 +1171,8 @@ function clearSubcategories() {
 }
 
 onMounted(() => {
+  const storedSession = parseStoredSessionFilter(localStorage.getItem('datepicker-session'))
+  if (storedSession) sessionFilter.value = storedSession
   getLocation()
   loadCategories()
   window.addEventListener('keydown', handleMobileMenuKeydown)
@@ -1213,6 +1225,8 @@ function handleReset() {
   venueCloseTime.value = null
   selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" }
   sessionFilter.value = { morning: false, afternoon: false, evening: false, night: false }
+  localStorage.removeItem('datepicker-session')
+  dateRange.value = [null, null]
   discoveryProfileType.value = 'events'
   closeProfileTypeMenu()
   void loadCategories()
@@ -1247,10 +1261,7 @@ const events = ref([])
 const eventsLoading = ref(false)
 
 function formatDateToApi(dateStr) {
-  if (!dateStr) return null
-  const [day, month, year] = dateStr.split('/')
-  const pad2 = (n) => String(n).padStart(2, '0')
-  return `${year}-${pad2(month)}-${pad2(day)}`
+  return formatDiscoveryDateToApi(dateStr)
 }
 
 function debounce(fn, delay = 450) {
@@ -1293,10 +1304,11 @@ async function loadEventsFromApi(searchQuery = '') {
   if (selectedSubcategorySlugs.value.length > 0) params.subcategory = selectedSubcategorySlugs.value.join(',')
   if (startTime.value) params.start_time = startTime.value
   if (endTime.value) params.end_time = endTime.value
-  if (dateRange.value[0]) params.from_date = formatDateToApi(dateRange.value[0])
-  if (dateRange.value[1]) params.to_date = formatDateToApi(dateRange.value[1])
-  const activeSessions = Object.entries(JSON.parse(localStorage.getItem('datepicker-session') || '{}')).filter(([, v]) => v).map(([k]) => k)
-  if (activeSessions.length > 0) activeSessions.forEach(s => { params[s] = true })
+  appendDiscoveryDateTimeFilters(params, {
+    dateRange: dateRange.value,
+    sessionFilter: sessionFilter.value,
+    formatDate: formatDateToApi,
+  })
   const result = await fetchEvents(params)
   events.value = result.data
   const rows = Array.isArray(result.data) ? result.data : []
@@ -1311,6 +1323,14 @@ async function loadProfilesFromApi(profileType, searchQuery = '') {
   if (searchQuery) params.search = searchQuery
   if (selectedCategory.value) params.category = selectedCategory.value.slug
   if (selectedSubcategorySlugs.value.length > 0) params.subcategory = selectedSubcategorySlugs.value.join(',')
+  params.lat = selectedLocation.value.lat
+  params.lng = selectedLocation.value.lng
+  params.radius = 100
+  appendDiscoveryDateTimeFilters(params, {
+    dateRange: dateRange.value,
+    sessionFilter: sessionFilter.value,
+    formatDate: formatDateToApi,
+  })
   const result = await fetchProfiles(profileType, params)
   let rows = result.data
   if (

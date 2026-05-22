@@ -87,7 +87,7 @@
 
             <!-- ================= RIGHT CARD ================= -->
             <div class="tw:flex-1 tw:min-w-0 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
-                <ProfileDraftVisibilityBanner v-if="isEditMode && publicationStatus === 'draft'" />
+                <ProfileDraftVisibilityBanner v-if="showDraftVisibilityBanner" />
                 <!-- <div
                     class="tw:relative tw:rounded-2xl tw:overflow-hidden tw:bg-gray-200 tw:h-96 tw:flex tw:items-center tw:justify-center">
                     <img src="/family-legal-advisor.jpg" alt="Event Background"
@@ -139,7 +139,7 @@
                     <div class="tw:flex tw:justify-between tw:items-center tw:mb-4">
                         <h3 class="tw:text-lg tw:font-semibold tw:text-gray-800">
                             Main Image <span class="tw:text-red-500">*</span> <span
-                                class="tw:text-xs tw:text-gray-500"> Recommended (1200x800) </span>
+                                class="tw:text-xs tw:text-gray-500"> Recommended portrait (3:4) </span>
                         </h3>
                     </div>
 
@@ -161,9 +161,9 @@
                         </svg>
                     </div>
 
-                    <div v-if="mainImage" class="tw:relative tw:mt-4 tw:w-full">
+                    <div v-if="mainImage" class="tw:relative tw:mt-4 tw:mx-auto tw:max-w-xs tw:w-full tw:aspect-[3/4]">
                         <img :src="mainImage.image_url" alt="Talent main image preview"
-                            class="tw:w-full tw:h-[50vh] tw:rounded-lg tw:border tw:border-gray-200" />
+                            class="tw:w-full tw:h-full tw:object-cover tw:rounded-lg tw:border tw:border-gray-200" />
                         <button @click="removeMainImage" type="button"
                             class="tw:absolute tw:top-2 tw:right-2 tw:w-6 tw:h-6 tw:bg-(--secondary-color) tw:text-white tw:rounded-full tw:flex tw:items-center tw:justify-center hover:tw:bg-(--secondary-color) tw:transition-colors">
                             <svg class="tw:w-4 tw:h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -527,13 +527,31 @@
                     </h3>
 
                     <input v-model="contactPhone" type="text" placeholder="Telephone Number"
+                        data-field="contact_phone"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
 
                     <input v-model="contactEmail" type="email" placeholder="Email"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                        data-field="contact_email"
+                        :class="[
+                            'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all',
+                            apiFieldError('contact_email') ? 'tw:border-red-500' : 'tw:border-gray-200'
+                        ]" />
+                    <p v-if="apiFieldError('contact_email')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('contact_email') }}</p>
 
-                    <input v-model="contactWebsite" type="text" placeholder="Website"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                    <div class="tw:space-y-1">
+                        <label class="tw:block tw:text-sm tw:text-gray-700">
+                            Website
+                        </label>
+                        <input v-model="contactWebsite" type="text"
+                            data-field="contact_website"
+                            placeholder="example.com (https:// is added automatically)"
+                            @input="clearApiFieldError('contact_website')"
+                            :class="[
+                                'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all',
+                                apiFieldError('contact_website') ? 'tw:border-red-500' : 'tw:border-gray-200'
+                            ]" />
+                        <p v-if="apiFieldError('contact_website')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('contact_website') }}</p>
+                    </div>
 
                     <!-- SHOW CHATBOX TOGGLE -->
                     <!-- <div class="tw:flex tw:justify-between tw:items-center tw:pt-2">
@@ -571,14 +589,26 @@
                         Social Media Links
                     </h3>
 
-                    <input v-model="facebookUrl" type="text" placeholder="Facebook URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <input v-model="facebookUrl" type="text"
+                        data-field="facebook_url"
+                        placeholder="Facebook — e.g. facebook.com/yourpage"
+                        @input="clearApiFieldError('facebook_url')"
+                        :class="urlInputClass('facebook_url')" />
+                    <p v-if="apiFieldError('facebook_url')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('facebook_url') }}</p>
 
-                    <input v-model="instagramUrl" type="text" placeholder="Instagram URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <input v-model="instagramUrl" type="text"
+                        data-field="instagram_url"
+                        placeholder="Instagram — e.g. instagram.com/yourpage"
+                        @input="clearApiFieldError('instagram_url')"
+                        :class="urlInputClass('instagram_url')" />
+                    <p v-if="apiFieldError('instagram_url')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('instagram_url') }}</p>
 
-                    <input v-model="tiktokUrl" type="text" placeholder="Tik Tok URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <input v-model="tiktokUrl" type="text"
+                        data-field="tiktok_url"
+                        placeholder="TikTok — e.g. tiktok.com/@you"
+                        @input="clearApiFieldError('tiktok_url')"
+                        :class="urlInputClass('tiktok_url')" />
+                    <p v-if="apiFieldError('tiktok_url')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('tiktok_url') }}</p>
                 </div>
 
                 <!-- FAN CLUB SITE SECTION -->
@@ -587,8 +617,12 @@
                         Link to Fan Club Site
                     </h3>
 
-                    <input v-model="fanClubUrl" type="text" placeholder="Enter Fan Club Website URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <input v-model="fanClubUrl" type="text"
+                        data-field="fan_club_url"
+                        placeholder="Fan club site — e.g. myfanclub.com"
+                        @input="clearApiFieldError('fan_club_url')"
+                        :class="urlInputClass('fan_club_url')" />
+                    <p v-if="apiFieldError('fan_club_url')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('fan_club_url') }}</p>
                 </div>
 
                 <!-- BOOKING & TICKET INFO SECTION -->
@@ -661,9 +695,8 @@
                     </h3>
 
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Languages</label>
-                        <input v-model="languagesText" type="text" placeholder="Enter languages"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Languages spoken</label>
+                        <LanguageMultiSelect v-model="selectedLanguages" />
                     </div>
                 </div>
 
@@ -864,6 +897,7 @@ import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
+import LanguageMultiSelect from "@/components/talent/LanguageMultiSelect.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
 import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
@@ -873,7 +907,12 @@ import { useChatStore } from "@/stores/chatStore"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import { firstOwnedProfileId } from "@/utils/profileSingleton"
+import {
+  isPublicationDraft,
+  resolvePublicationStatusSlug,
+} from "@/utils/profilePublicationStatus"
 import { cityDisplayFromStoredFullAddress, locationCityDisplayFromNominatim } from "@/utils/nominatimCityDisplay"
+import { normalizeHref } from "@/utils/socialMediaUrls"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -896,6 +935,10 @@ const isEditMode = ref(false)
 const editingTalentId = ref(null)
 const publicationStatus = ref(null)
 
+const showDraftVisibilityBanner = computed(
+  () => isEditMode.value && isPublicationDraft(publicationStatus.value),
+)
+
 watch(
   [() => talents.value, editingTalentId],
   () => {
@@ -905,12 +948,58 @@ watch(
       return
     }
     const row = talents.value.find((t) => Number(t.id) === Number(id))
-    if (row && row.status != null) publicationStatus.value = row.status
+    if (row) publicationStatus.value = resolvePublicationStatusSlug(row)
   },
   { deep: true }
 )
 const eventDescription = ref("")
 const fieldErrors = ref({})
+
+function apiFieldError(key) {
+    const err = fieldErrors.value[key]
+    if (Array.isArray(err)) return err[0] || ''
+    if (typeof err === 'string') return err
+    return ''
+}
+
+function clearApiFieldError(key) {
+    if (!fieldErrors.value[key]) return
+    const next = { ...fieldErrors.value }
+    delete next[key]
+    fieldErrors.value = next
+}
+
+const URL_INPUT_BASE =
+    'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all'
+
+function urlInputClass(key) {
+    return [URL_INPUT_BASE, apiFieldError(key) ? 'tw:border-red-500' : 'tw:border-gray-200']
+}
+
+function normalizeOptionalUrl(raw) {
+    const trimmed = raw?.trim()
+    if (!trimmed) return undefined
+    return normalizeHref(trimmed)
+}
+
+async function scrollToFirstApiFieldError() {
+    await nextTick()
+    for (const key of Object.keys(fieldErrors.value)) {
+        if (!apiFieldError(key)) continue
+        const el = document.querySelector(`[data-field="${key}"]`)
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.focus()
+            return
+        }
+    }
+}
+
+function applyLocationCityDisplay(displayName, osmAddress) {
+    const cityLabel = locationCityDisplayFromNominatim(displayName, osmAddress)
+    selectedLocationCityDisplay.value = cityLabel
+    talentCity.value = cityLabel
+}
 
 const showMediaModal = ref(false)
 const selectedMediaType = ref('main')
@@ -967,7 +1056,7 @@ const talentNationality = ref('no')
 const exactNationality = ref('')
 const dateOfBirth = ref('')
 const showAge = ref('no')
-const languagesText = ref('')
+const selectedLanguages = ref([])
 const talentHighlightsText = ref('')
 const showUpcomingEvents = ref("")
 const showPastEvents = ref("")
@@ -1298,10 +1387,9 @@ function buildTalentPayload() {
         .filter(Boolean)
     const genre = [catName, ...subNames].filter(Boolean).join(', ') || catName
 
-    const langStr = languagesText.value?.trim()
-    const languages = langStr
-        ? langStr.split(',').map((s) => s.trim()).filter(Boolean)
-        : []
+    const languages = selectedLanguages.value
+        .map((s) => s.trim())
+        .filter(Boolean)
 
     const dobStr = dateOfBirth.value?.trim() || ''
     const ageNum = calculatedAgeFromDob.value
@@ -1319,15 +1407,15 @@ function buildTalentPayload() {
         address: selectedAddress.value || undefined,
         latitude: mapLat.value,
         longitude: mapLng.value,
-        city: talentCity.value || undefined,
+        city: talentCity.value || selectedLocationCityDisplay.value || undefined,
         contact_phone: contactPhone.value || undefined,
         contact_email: contactEmail.value || undefined,
-        contact_website: contactWebsite.value || undefined,
+        contact_website: normalizeOptionalUrl(contactWebsite.value),
         contact_box_design_message: contactBoxDesignMessage.value.trim(),
-        facebook_url: facebookUrl.value || undefined,
-        instagram_url: instagramUrl.value || undefined,
-        tiktok_url: tiktokUrl.value || undefined,
-        fan_club_url: fanClubUrl.value || undefined,
+        facebook_url: normalizeOptionalUrl(facebookUrl.value),
+        instagram_url: normalizeOptionalUrl(instagramUrl.value),
+        tiktok_url: normalizeOptionalUrl(tiktokUrl.value),
+        fan_club_url: normalizeOptionalUrl(fanClubUrl.value),
         nationality: exactNationality.value || undefined,
         show_nationality: talentNationality.value || undefined,
         date_of_birth: dobStr || undefined,
@@ -1367,6 +1455,7 @@ async function createTalent() {
             if (response.errors) {
                 fieldErrors.value = response.errors
                 toast.error(response.message || 'Please correct the errors.')
+                await scrollToFirstApiFieldError()
             } else {
                 toast.error(response.message || 'Failed to create talent.')
             }
@@ -1381,6 +1470,7 @@ async function createTalent() {
         if (error.response?.data?.errors) {
             fieldErrors.value = error.response.data.errors
             toast.error(error.response.data.message || 'Please correct the errors.')
+            await scrollToFirstApiFieldError()
         } else {
             toast.error(error.response?.data?.message || 'Failed to create talent.')
         }
@@ -1403,6 +1493,7 @@ async function updateTalent() {
             if (response.errors) {
                 fieldErrors.value = response.errors
                 toast.error(response.message || 'Please correct the errors.')
+                await scrollToFirstApiFieldError()
             } else {
                 toast.error(response.message || 'Failed to update talent.')
             }
@@ -1417,6 +1508,7 @@ async function updateTalent() {
         if (error.response?.data?.errors) {
             fieldErrors.value = error.response.data.errors
             toast.error(error.response.data.message || 'Please correct the errors.')
+            await scrollToFirstApiFieldError()
         } else {
             toast.error(error.response?.data?.message || 'Failed to update talent.')
         }
@@ -1448,8 +1540,9 @@ async function loadTalent(id) {
         const addrFull = talent.address || ''
         selectedAddress.value = addrFull
         searchAddress.value = addrFull
-        selectedLocationCityDisplay.value = addrFull ? cityDisplayFromStoredFullAddress(addrFull) : ''
-        talentCity.value = talent.city || ''
+        const inferredCity = addrFull ? cityDisplayFromStoredFullAddress(addrFull) : ''
+        talentCity.value = talent.city?.trim() || inferredCity
+        selectedLocationCityDisplay.value = talentCity.value || inferredCity
 
         if (talent.latitude) mapLat.value = talent.latitude
         if (talent.longitude) mapLng.value = talent.longitude
@@ -1509,9 +1602,14 @@ async function loadTalent(id) {
 
         // Languages & highlights
         if (Array.isArray(talent.languages)) {
-            languagesText.value = talent.languages.join(', ')
+            selectedLanguages.value = [...talent.languages]
+        } else if (typeof talent.languages === 'string' && talent.languages.trim()) {
+            selectedLanguages.value = talent.languages
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
         } else {
-            languagesText.value = talent.languages || ''
+            selectedLanguages.value = []
         }
         talentHighlightsText.value = talent.highlights || ''
 
@@ -1521,7 +1619,7 @@ async function loadTalent(id) {
 
         fieldErrors.value = {}
 
-        publicationStatus.value = talent.status ?? 'draft'
+        publicationStatus.value = resolvePublicationStatusSlug(talent)
 
         // Center map
         if (talent.latitude && talent.longitude && map.value) {
@@ -1573,7 +1671,7 @@ function resetForm() {
     talentNationality.value = 'no'
     dateOfBirth.value = ''
     showAge.value = 'no'
-    languagesText.value = ''
+    selectedLanguages.value = []
     talentHighlightsText.value = ''
     showUpcomingEvents.value = false
     showPastEvents.value = false
@@ -1712,7 +1810,7 @@ function selectSuggestion(suggestion) {
     searchAddress.value = display_name
     suggestions.value = []
     selectedAddress.value = display_name
-    selectedLocationCityDisplay.value = locationCityDisplayFromNominatim(display_name, suggestion.address)
+    applyLocationCityDisplay(display_name, suggestion.address)
     mapLat.value = parseFloat(lat)
     mapLng.value = parseFloat(lon)
     if (map.value) {
@@ -1747,7 +1845,7 @@ async function reverseGeocode(lng, lat) {
             const data = await response.json()
             const full = data.display_name || "Address not found"
             selectedAddress.value = full
-            selectedLocationCityDisplay.value = locationCityDisplayFromNominatim(full, data.address)
+            applyLocationCityDisplay(full, data.address)
         }
     } catch (error) {
         console.error("Error reverse geocoding:", error)

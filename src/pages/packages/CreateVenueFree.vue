@@ -87,7 +87,7 @@
 
       <!-- ================= RIGHT CARD ================= -->
       <div class="tw:flex-1 tw:min-w-0 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
-        <ProfileDraftVisibilityBanner v-if="isEditMode && publicationStatus === 'draft'" />
+        <ProfileDraftVisibilityBanner v-if="showDraftVisibilityBanner" />
         <!-- Venue TITLE SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
@@ -626,6 +626,10 @@ import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import { firstOwnedProfileId } from "@/utils/profileSingleton"
+import {
+  isPublicationDraft,
+  resolvePublicationStatusSlug,
+} from "@/utils/profilePublicationStatus"
 import { useMyVenueStore } from "@/stores/myVenueStore"
 import { storeToRefs } from "pinia"
 import maplibregl from "maplibre-gl"
@@ -647,6 +651,10 @@ const isEditMode = ref(false)
 const editingVenueId = ref(null)
 const publicationStatus = ref(null)
 
+const showDraftVisibilityBanner = computed(
+  () => isEditMode.value && isPublicationDraft(publicationStatus.value),
+)
+
 watch(
   [() => venues.value, editingVenueId],
   () => {
@@ -656,7 +664,7 @@ watch(
       return
     }
     const row = venues.value.find((v) => Number(v.id) === Number(id))
-    if (row && row.status != null) publicationStatus.value = row.status
+    if (row) publicationStatus.value = resolvePublicationStatusSlug(row)
   },
   { deep: true }
 )
@@ -1096,7 +1104,7 @@ async function loadVenue(id) {
     }
     fieldErrors.value = {}
 
-    publicationStatus.value = venue.status ?? 'draft'
+    publicationStatus.value = resolvePublicationStatusSlug(venue)
 
     // Accessibility / amenities — v2 JSON uses allow_dogs, parking, valet, play_area; submits use *_of_dogs etc.
     allowanceOfDogs.value = mapAllowDogsFromApi(venue)

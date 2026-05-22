@@ -76,6 +76,12 @@ export interface ProfileSearchParams {
   lat?: number
   lng?: number
   radius?: number
+  from_date?: string
+  to_date?: string
+  morning?: boolean
+  afternoon?: boolean
+  evening?: boolean
+  night?: boolean
   per_page?: number
   page?: number
   [key: string]: unknown
@@ -114,6 +120,10 @@ function buildProfileQueryString(params: ProfileSearchParams): string {
   const qs = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) {
     if (v == null || v === '') continue
+    if (typeof v === 'boolean') {
+      if (v) qs.set(k, 'true')
+      continue
+    }
     qs.set(k, String(v))
   }
   const s = qs.toString()

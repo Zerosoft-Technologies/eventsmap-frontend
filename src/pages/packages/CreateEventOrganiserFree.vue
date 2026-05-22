@@ -88,7 +88,7 @@
 
       <!-- ================= RIGHT CARD ================= -->
       <div class="tw:flex-1 tw:min-w-0 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
-        <ProfileDraftVisibilityBanner v-if="isEditMode && publicationStatus === 'draft'" />
+        <ProfileDraftVisibilityBanner v-if="showDraftVisibilityBanner" />
         <!-- Organiser TITLE SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
@@ -338,6 +338,10 @@ import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import { firstOwnedProfileId } from "@/utils/profileSingleton"
+import {
+  isPublicationDraft,
+  resolvePublicationStatusSlug,
+} from "@/utils/profilePublicationStatus"
 import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
 import { storeToRefs } from "pinia"
 import maplibregl from "maplibre-gl"
@@ -363,6 +367,10 @@ const isEditMode = ref(false)
 const editingOrganiserId = ref(null)
 const publicationStatus = ref(null)
 
+const showDraftVisibilityBanner = computed(
+  () => isEditMode.value && isPublicationDraft(publicationStatus.value),
+)
+
 watch(
   [() => organisers.value, editingOrganiserId],
   () => {
@@ -372,7 +380,7 @@ watch(
       return
     }
     const row = organisers.value.find((o) => Number(o.id) === Number(id))
-    if (row && row.status != null) publicationStatus.value = row.status
+    if (row) publicationStatus.value = resolvePublicationStatusSlug(row)
   },
   { deep: true }
 )
@@ -646,7 +654,7 @@ async function loadOrganiser(id) {
     isEditMode.value = true
     editingOrganiserId.value = id
 
-    publicationStatus.value = d.status ?? 'draft'
+    publicationStatus.value = resolvePublicationStatusSlug(d)
 
     formData.organiserTitle = d.title || ''
     const addrFull = d.address || ''

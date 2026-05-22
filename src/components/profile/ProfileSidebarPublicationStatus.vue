@@ -68,6 +68,10 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { ChevronDown, Loader2 } from 'lucide-vue-next'
 import { publicationStatusPillClass } from '@/utils/profilePublicationStatusStyles'
+import {
+  PUBLISHED_STATUS_SLUG,
+  normalizePublicationStatusSlug,
+} from '@/utils/profilePublicationStatus'
 import { useProfilePublicationMeta } from '@/composables/useProfilePublicationMeta'
 import { patchProfilePublicationStatus } from '@/services/profilePublicationStatusService'
 import { useMyEventStore } from '@/stores/myEventStore'
@@ -130,20 +134,13 @@ const mergedLabels = computed(() => {
   return { ...fromMeta, ...itemLabels }
 })
 
-/** API slug sent when the user chooses Publish (`PATCH …/publish-status`). */
-const PUBLISHED_STATUS_SLUG = 'published'
-
 const pickerOptions = computed(() => ['draft', PUBLISHED_STATUS_SLUG])
 
-const currentSlug = computed(() => {
-  const raw = props.item.publish_status ?? props.item.status ?? 'draft'
-  const s = String(raw).toLowerCase()
-  if (s === 'draft') return 'draft'
-  if (s === PUBLISHED_STATUS_SLUG) return PUBLISHED_STATUS_SLUG
-  const legacyPublished = ['upcoming', 'completed', 'suspended', 'cancelled']
-  if (legacyPublished.includes(s)) return PUBLISHED_STATUS_SLUG
-  return s
-})
+const currentSlug = computed(() =>
+  normalizePublicationStatusSlug(
+    props.item.publish_status ?? props.item.status ?? 'draft',
+  ),
+)
 
 const isDraftStatus = computed(() => currentSlug.value === 'draft')
 

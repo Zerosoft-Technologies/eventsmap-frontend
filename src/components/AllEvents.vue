@@ -211,7 +211,7 @@ const props = defineProps({
 
 const isEventsMode = computed(() => props.profileType === 'events')
 
-const PROFILE_LABELS = { events: 'Events', organisers: 'Organisers', talents: 'Talents', venues: 'Venues' }
+const PROFILE_LABELS = { events: 'Events', organisers: 'Organiser', talents: 'Talent', venues: 'Venue' }
 const panelLabel = computed(() => PROFILE_LABELS[props.profileType] ?? 'Results')
 
 const emptyTitle = computed(() =>

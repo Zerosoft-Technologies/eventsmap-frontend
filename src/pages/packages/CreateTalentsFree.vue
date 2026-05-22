@@ -87,7 +87,7 @@
 
       <!-- ================= RIGHT CARD ================= -->
       <div class="tw:flex-1 tw:min-w-0 tw:overflow-x-hidden tw:bg-[#F6F1E7] tw:rounded-xl tw:md:rounded-3xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4 tw:md:space-y-6">
-        <ProfileDraftVisibilityBanner v-if="isEditMode && publicationStatus === 'draft'" />
+        <ProfileDraftVisibilityBanner v-if="showDraftVisibilityBanner" />
         <!-- Talent TITLE SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
@@ -407,6 +407,17 @@
 
         </div>
 
+        <!-- LANGUAGES SECTION -->
+        <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6 tw:space-y-4">
+          <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+            Languages
+          </h3>
+          <div class="tw:space-y-2">
+            <label class="tw:text-sm tw:font-medium tw:text-gray-700">Languages spoken</label>
+            <LanguageMultiSelect v-model="selectedLanguages" />
+          </div>
+        </div>
+
         <!-- CITY WHERE TALENT IS LIVING SECTION -->
         <!-- <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
@@ -557,11 +568,16 @@ import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
+import LanguageMultiSelect from "@/components/talent/LanguageMultiSelect.vue"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useToast } from "@/composables/useToast"
 import { eventInvitationsNavItem } from "@/utils/eventInvitationsNavItem"
 import { firstOwnedProfileId } from "@/utils/profileSingleton"
+import {
+  isPublicationDraft,
+  resolvePublicationStatusSlug,
+} from "@/utils/profilePublicationStatus"
 import { cityDisplayFromStoredFullAddress, locationCityDisplayFromNominatim } from "@/utils/nominatimCityDisplay"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -582,6 +598,10 @@ const isEditMode = ref(false)
 const editingTalentId = ref(null)
 const publicationStatus = ref(null)
 
+const showDraftVisibilityBanner = computed(
+  () => isEditMode.value && isPublicationDraft(publicationStatus.value),
+)
+
 watch(
   [() => talents.value, editingTalentId],
   () => {
@@ -591,7 +611,7 @@ watch(
       return
     }
     const row = talents.value.find((t) => Number(t.id) === Number(id))
-    if (row && row.status != null) publicationStatus.value = row.status
+    if (row) publicationStatus.value = resolvePublicationStatusSlug(row)
   },
   { deep: true }
 )
@@ -750,6 +770,7 @@ function validateGenre() {
 }
 
 const talentCity = ref("")
+const selectedLanguages = ref([])
 
 // Event Location refs
 const searchAddress = ref("")
@@ -868,6 +889,11 @@ function buildTalentFormData() {
   if (mapLat.value != null && mapLat.value !== '') fd.append('latitude', String(mapLat.value))
   if (mapLng.value != null && mapLng.value !== '') fd.append('longitude', String(mapLng.value))
   if (talentCity.value) fd.append('city', talentCity.value)
+
+  selectedLanguages.value
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .forEach((lang) => fd.append('languages[]', lang))
 
   if (selectedImageFile.value) {
     fd.append('image_path', selectedImageFile.value)
@@ -1016,7 +1042,18 @@ async function loadTalent(id) {
     }
     fieldErrors.value = {}
 
-    publicationStatus.value = talent.status ?? 'draft'
+    publicationStatus.value = resolvePublicationStatusSlug(talent)
+
+    if (Array.isArray(talent.languages)) {
+      selectedLanguages.value = [...talent.languages]
+    } else if (typeof talent.languages === 'string' && talent.languages.trim()) {
+      selectedLanguages.value = talent.languages
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+    } else {
+      selectedLanguages.value = []
+    }
 
     // Center map if coordinates exist
     if (talent.latitude && talent.longitude && map.value) {
@@ -1056,6 +1093,7 @@ function resetForm() {
   selectedLocationCityDisplay.value = ''
   searchAddress.value = ''
   talentCity.value = ''
+  selectedLanguages.value = []
   selectedImageFile.value = null
   fileName.value = ''
   if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
