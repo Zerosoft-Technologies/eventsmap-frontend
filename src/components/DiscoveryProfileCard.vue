@@ -1,5 +1,8 @@
 <template>
-  <div class="tw:flex tw:flex-col tw:w-[350px] tw:bg-white tw:rounded-2xl tw:shadow-md tw:overflow-hidden tw:border tw:border-gray-100 hover:tw:shadow-lg tw:transition-all tw:duration-200">
+  <div
+    class="tw:flex tw:flex-col tw:w-[350px] tw:bg-white tw:rounded-2xl tw:shadow-md tw:overflow-hidden tw:border tw:border-gray-100 tw:transition-all tw:duration-200"
+    :class="mapClusterEmbed ? 'map-cluster-embed-card' : 'hover:tw:shadow-lg'"
+  >
 
     <!-- ── Hero: carousel when additional_images exist ── -->
     <div
@@ -21,7 +24,7 @@
 
       <!-- Prev button -->
       <button
-        v-if="heroImages.length > 1"
+        v-if="heroImages.length > 1 && !mapClusterEmbed"
         type="button"
         class="tw:absolute tw:left-2 tw:top-1/2 tw:z-[3] tw:flex tw:h-7 tw:w-7 tw:-translate-y-1/2 tw:items-center tw:justify-center tw:rounded-full tw:bg-white/90 tw:shadow-md tw:backdrop-blur-sm tw:transition-colors hover:tw:bg-white"
         @click.stop="prevHeroImage"
@@ -33,7 +36,7 @@
 
       <!-- Next button -->
       <button
-        v-if="heroImages.length > 1"
+        v-if="heroImages.length > 1 && !mapClusterEmbed"
         type="button"
         class="tw:absolute tw:right-2 tw:top-1/2 tw:z-[3] tw:flex tw:h-7 tw:w-7 tw:-translate-y-1/2 tw:items-center tw:justify-center tw:rounded-full tw:bg-white/90 tw:shadow-md tw:backdrop-blur-sm tw:transition-colors hover:tw:bg-white"
         @click.stop="nextHeroImage"
@@ -45,7 +48,7 @@
 
       <!-- Image counter -->
       <div
-        v-if="heroImages.length > 1"
+        v-if="heroImages.length > 1 && !mapClusterEmbed"
         class="tw:absolute tw:bottom-2 tw:right-2 tw:z-[3] tw:rounded-full tw:bg-black/60 tw:px-2 tw:py-0.5 tw:text-[10px] tw:font-medium tw:text-white tw:backdrop-blur-sm"
       >
         {{ heroImageIndex + 1 }} / {{ heroImages.length }}
@@ -109,7 +112,7 @@
         <button
           type="button"
           @click.stop="emit('viewProfile', profile)"
-          class="tw:flex-1 tw:text-sm tw:px-2 tw:py-1.5 tw:rounded-lg tw:bg-orange-500 tw:text-white tw:border tw:border-orange-500 tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 tw:no-underline"
+          class="no-hover tw:flex-1 tw:text-sm tw:px-2 tw:py-1.5 tw:rounded-lg tw:bg-orange-500 tw:text-white tw:border tw:border-orange-500 tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 tw:no-underline hover:tw:bg-orange-600 hover:tw:border-orange-600 hover:tw:shadow-sm active:tw:bg-orange-700 active:tw:border-orange-700"
         >
           {{ $t('discoveryCard.viewProfile') }}
           <svg class="tw:w-3.5 tw:h-3.5 tw:shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,6 +135,10 @@ const { t } = useI18n()
 const props = defineProps({
   profile: { type: Object, required: true },
   profileType: { type: String, required: true },
+  mapClusterEmbed: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['viewProfile'])

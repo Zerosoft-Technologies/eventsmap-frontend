@@ -591,7 +591,7 @@
         <!-- INVITE SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
-            <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+            <h3 class="tw:text-xl tw:font-bold tw:text-[var(--text-primary)]">
               Invite
             </h3>
             <!-- <button
@@ -600,15 +600,48 @@
             </button> -->
           </div>
 
-          <p class="tw:text-sm tw:text-gray-600">
-            Make your event stand out even more. These sections help attendees find information and answer their
-            questions.
+          <p class="tw:text-sm tw:text-[var(--text-primary)]">
+            Add registered talent, venues and organisers who are participating in this event.
           </p>
 
           <div class="tw:space-y-3">
-            <InviteSection role="talent" :has-border="true" />
-            <InviteSection role="venue" :has-border="false" />
-            <InviteSection role="organizer" :has-border="true" />
+            <p v-if="inviteProfilesError" class="tw:text-sm tw:text-red-600">{{ inviteProfilesError }}</p>
+            <InviteSection
+              :key="`invite-talent-${inviteSectionResetKey}`"
+              role="talent"
+              :profiles="talentProfiles"
+              :all-profiles="invitationAllProfiles"
+              :loading="invitationRoleLoading('talent')"
+              :load-error="inviteProfilesError ?? ''"
+              :has-border="true"
+              v-model:selectedIds="invitedTalentIds"
+              @open="onInvitePanelOpen"
+              @refetch="onInviteRefetch"
+            />
+            <InviteSection
+              :key="`invite-venue-${inviteSectionResetKey}`"
+              role="venue"
+              :profiles="venueProfiles"
+              :all-profiles="invitationAllProfiles"
+              :loading="invitationRoleLoading('venue')"
+              :load-error="inviteProfilesError ?? ''"
+              :has-border="false"
+              v-model:selectedIds="invitedVenueIds"
+              @open="onInvitePanelOpen"
+              @refetch="onInviteRefetch"
+            />
+            <InviteSection
+              :key="`invite-organizer-${inviteSectionResetKey}`"
+              role="organizer"
+              :profiles="organiserProfiles"
+              :all-profiles="invitationAllProfiles"
+              :loading="invitationRoleLoading('organizer')"
+              :load-error="inviteProfilesError ?? ''"
+              :has-border="true"
+              v-model:selectedIds="invitedOrganiserIds"
+              @open="onInvitePanelOpen"
+              @refetch="onInviteRefetch"
+            />
           </div>
         </div>
 
@@ -617,11 +650,11 @@
 
           <div class="tw:flex tw:flex-col tw:md:flex-row tw:w-full tw:items-stretch tw:md:items-center tw:justify-between tw:gap-3 tw:md:gap-0">
 
-            <button @click="saveEvent" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+            <!-- <button @click="saveEvent" class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
              tw:border tw:border-orange-500 tw:text-[#0061FF]
              tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
               Buy Tickets
-            </button>
+            </button> -->
 
             <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-2">
               <button v-if="isEditMode" @click="cancelEdit" type="button"
@@ -640,8 +673,7 @@
 
           </div>
 
-          <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available
-          </span>
+          <!-- <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span> -->
 
         </div>
 
@@ -679,6 +711,11 @@ import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import eventService from "@/services/eventService"
 import { useToast } from "@/composables/useToast"
 import { useMyEventStore } from "@/stores/myEventStore"
+import { useEventInvitationProfiles } from "@/composables/useEventInvitationProfiles"
+import {
+  parseInvitedProfileIds,
+  profilesFromInvitedObjects,
+} from "@/utils/invitedEventProfiles"
 
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -697,6 +734,53 @@ const isEditMode = ref(false)
 const editEventId = ref(null)
 const existingImageUrl = ref(null)
 const isLoadingEvent = ref(false)
+
+const invitationEventId = computed(() => editEventId.value ?? null)
+
+const {
+  talentProfiles,
+  organiserProfiles,
+  venueProfiles,
+  error: inviteProfilesError,
+  load: loadInvitationProfiles,
+  allProfiles: invitationAllProfiles,
+  ensureRoleLoaded: ensureInvitationRoleLoaded,
+  refetchRole: refetchInvitationRole,
+  roleLoading: invitationRoleLoading,
+  seedProfiles: seedInvitationProfiles,
+} = useEventInvitationProfiles(invitationEventId)
+
+const invitedTalentIds = ref([])
+const invitedOrganiserIds = ref([])
+const invitedVenueIds = ref([])
+const inviteSectionResetKey = ref(0)
+
+function onInvitePanelOpen(role) {
+  ensureInvitationRoleLoaded(role, '')
+}
+
+function onInviteRefetch(role) {
+  refetchInvitationRole(role)
+}
+
+function appendInvitedProfileIds(formData) {
+  invitedTalentIds.value.forEach((id) => {
+    const n = Number(id)
+    if (Number.isFinite(n)) formData.append('invited_talents[]', String(n))
+  })
+  invitedOrganiserIds.value.forEach((id) => {
+    const n = Number(id)
+    if (Number.isFinite(n)) formData.append('invited_organisers[]', String(n))
+  })
+  invitedVenueIds.value.forEach((id) => {
+    const n = Number(id)
+    if (Number.isFinite(n)) formData.append('invited_venues[]', String(n))
+  })
+}
+
+watch(editEventId, () => {
+  loadInvitationProfiles()
+})
 
 function toggleMobileSidebar() {
   mobileSidebarOpen.value = !mobileSidebarOpen.value
@@ -1404,6 +1488,7 @@ async function reverseGeocode(lng, lat) {
 
 // Initialize map on component mount
 onMounted(async () => {
+  loadInvitationProfiles()
   // Fetch categories from API
   await fetchCategories()
 
@@ -1449,9 +1534,8 @@ onMounted(async () => {
   const rawId =
     myEvtStore.takePendingEditorEventId() ?? route.query.edit ?? route.params.id
   if (rawId != null && String(rawId).trim() !== '') {
-    editEventId.value = Number(rawId)
     isEditMode.value = true
-    await fetchEventDetails(Number(rawId))
+    await fetchEventDetails(rawId)
     if (route.query.edit != null && String(route.query.edit) !== '') {
       const q = { ...route.query }
       delete q.edit
@@ -1693,6 +1777,10 @@ function resetForm() {
   dressCodeDescription.value = ''
   ageLimit.value = ''
   entranceStatus.value = ''
+  invitedTalentIds.value = []
+  invitedOrganiserIds.value = []
+  invitedVenueIds.value = []
+  inviteSectionResetKey.value += 1
   const fileInput = document.querySelector('input[type="file"]')
   if (fileInput) fileInput.value = ''
 }
@@ -1746,6 +1834,8 @@ async function createEvent() {
     formData.append('age_limit', ageLimit.value)
     formData.append('entrance_status', entranceStatus.value)
 
+    appendInvitedProfileIds(formData)
+
     // Add image file if exists
     if (selectedImageFile.value) {
       formData.append('image_path', selectedImageFile.value)
@@ -1798,10 +1888,8 @@ function cancelEdit() {
 
 async function handleEventSelected(evtId) {
   closeMobileSidebar()
-  // Set edit mode directly without changing URL
-  editEventId.value = evtId
   isEditMode.value = true
-  fetchEventDetails(evtId)
+  await fetchEventDetails(evtId)
 }
 
 // Fetch event details and populate form for editing
@@ -1809,6 +1897,7 @@ async function fetchEventDetails(id) {
   if (!id) return
 
   isLoadingEvent.value = true
+  editEventId.value = null
   try {
     const response = await eventService.getEventBySlug(String(id))
     if (response.success && response.data) {
@@ -1899,6 +1988,32 @@ async function fetchEventDetails(id) {
       if (existingImageUrl.value) {
         imagePreview.value = existingImageUrl.value
       }
+
+      if (data.id != null) {
+        editEventId.value = Number(data.id)
+      }
+
+      seedInvitationProfiles([
+        ...profilesFromInvitedObjects(data.invited_talents_objects, 'talent'),
+        ...profilesFromInvitedObjects(data.invited_organisers_objects, 'organiser'),
+        ...profilesFromInvitedObjects(data.invited_venues_objects, 'venue'),
+      ])
+      invitedTalentIds.value = parseInvitedProfileIds(
+        data.invited_talents,
+        data.invited_talents_objects,
+        'talent',
+      )
+      invitedOrganiserIds.value = parseInvitedProfileIds(
+        data.invited_organisers,
+        data.invited_organisers_objects,
+        'organiser',
+      )
+      invitedVenueIds.value = parseInvitedProfileIds(
+        data.invited_venues,
+        data.invited_venues_objects,
+        'venue',
+      )
+      inviteSectionResetKey.value += 1
     } else {
       toast.error('Failed to load event details.')
     }
@@ -1954,6 +2069,8 @@ async function updateEvent() {
     formData.append('dress_code', dressCodePayloadValue())
     formData.append('age_limit', ageLimit.value)
     formData.append('entrance_status', entranceStatus.value)
+
+    appendInvitedProfileIds(formData)
 
     // Only send image if user uploaded a new one
     if (selectedImageFile.value) {

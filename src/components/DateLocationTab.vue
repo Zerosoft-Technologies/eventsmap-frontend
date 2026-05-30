@@ -1,115 +1,116 @@
 <template>
   <div class="tw:px-4 tw:py-4 tw:space-y-4">
-    <!-- Date & times card -->
+    <!-- Date, countdown & times -->
     <div
-      class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:p-4 tw:shadow-sm"
+      class="tw:rounded-2xl tw:border tw:border-gray-200 tw:bg-white tw:overflow-hidden tw:shadow-sm"
     >
-      <div>
-        <p class="tw:text-base tw:font-semibold tw:text-[#1a73e8]">
-          {{ t('dateLocation.eventDate') }}
-        </p>
-        <p class="tw:mt-2 tw:text-base tw:font-normal tw:text-gray-600">
-          {{ formattedLongEventDate }}
-        </p>
-      </div>
-
-      <div class="tw:mt-5 tw:grid tw:grid-cols-2 tw:gap-4">
-        <div>
-          <p class="tw:text-base tw:font-semibold tw:text-[#1a73e8]">
-            {{ t('dateLocation.startTime') }}
-          </p>
-          <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
-            <span
-              class="tw:inline-flex tw:items-center tw:justify-center tw:w-8 tw:h-8 tw:flex-shrink-0 tw:text-[#FF7700]"
-              aria-hidden="true"
-            >
-              <svg class="tw:w-5 tw:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </span>
-            <span class="tw:text-base tw:text-gray-600">{{ displayStartTime }}</span>
-          </div>
+      <div class="tw:flex tw:items-center tw:gap-3 tw:px-4 tw:pt-4 tw:pb-3 tw:border-b tw:border-gray-100">
+        <div
+          class="tw:flex tw:h-11 tw:w-11 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl tw:bg-[#1a73e8]/10 tw:text-[#1a73e8]"
+          aria-hidden="true"
+        >
+          <svg class="tw:h-5 tw:w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
         </div>
-        <div>
-          <p class="tw:text-base tw:font-semibold tw:text-[#1a73e8]">
-            {{ t('dateLocation.endTime') }}
+        <div class="tw:min-w-0">
+          <p class="tw:text-[11px] tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400">
+            {{ t('dateLocation.eventDate') }}
           </p>
-          <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
-            <span
-              class="tw:inline-flex tw:items-center tw:justify-center tw:w-8 tw:h-8 tw:flex-shrink-0 tw:text-[#FF7700]"
-              aria-hidden="true"
-            >
-              <svg class="tw:w-5 tw:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </span>
-            <span class="tw:text-base tw:text-gray-600">{{ displayEndTime }}</span>
-          </div>
+          <p class="tw:text-base tw:font-semibold tw:text-gray-900 tw:leading-snug">
+            {{ formattedLongEventDate }}
+          </p>
         </div>
       </div>
-    </div>
-
-    <!-- Event status & countdown -->
-    <!-- <div
-      v-if="showEventStatusSection"
-      class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:p-4 tw:shadow-sm"
-    >
-      <p class="tw:text-base tw:font-semibold tw:text-[#1a73e8] tw:mb-4">
-        {{ t('dateLocation.eventStatus') }}
-      </p>
 
       <div
-        class="tw:rounded-2xl tw:bg-gradient-to-r tw:from-[#3B82F6] tw:to-[#1D4ED8] tw:px-4 tw:py-5 sm:tw:px-6"
+        v-if="showEventStatusSection"
+        class="tw:px-4 tw:py-5 tw:bg-gradient-to-br tw:from-gray-900 tw:via-[#1e3a5f] tw:to-[#0f172a]"
       >
         <template v-if="eventPhase === 'past'">
-          <div class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:gap-3 tw:min-h-[120px]">
+          <div class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:gap-3 tw:py-2">
             <span
-              class="tw:inline-flex tw:items-center tw:gap-2 tw:rounded-full tw:bg-white tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:text-gray-900"
+              class="tw:inline-flex tw:items-center tw:gap-2 tw:rounded-full tw:bg-white/95 tw:px-4 tw:py-1.5 tw:text-xs tw:font-semibold tw:text-gray-800 tw:shadow-sm"
             >
-              <svg class="tw:w-4 tw:h-4 tw:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
               {{ t('eventCard.pastEvent') }}
             </span>
-            <p class="tw:text-center tw:text-base tw:font-semibold tw:text-white">
+            <p class="tw:text-center tw:text-sm tw:font-medium tw:text-white/85">
               {{ t('dateLocation.eventHasEnded') }}
             </p>
           </div>
         </template>
 
         <template v-else>
-          <div class="tw:flex tw:flex-col tw:items-center tw:gap-4">
+          <div class="tw:flex tw:justify-center tw:mb-3">
             <span
-              class="tw:inline-flex tw:items-center tw:gap-2 tw:rounded-full tw:bg-white tw:px-4 tw:py-2 tw:text-sm tw:font-medium tw:text-gray-900"
+              class="tw:inline-flex tw:items-center tw:gap-1.5 tw:rounded-full tw:px-3 tw:py-1 tw:text-xs tw:font-semibold tw:shadow-sm"
+              :class="eventPhase === 'live'
+                ? 'tw:bg-red-500 tw:text-white'
+                : 'tw:bg-white/95 tw:text-gray-800'"
             >
-              <svg class="tw:w-4 tw:h-4 tw:text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <span
+                v-if="eventPhase === 'live'"
+                class="tw:h-1.5 tw:w-1.5 tw:rounded-full tw:bg-white tw:animate-pulse"
+                aria-hidden="true"
+              />
               {{ statusBadgeLabel }}
             </span>
+          </div>
 
-            <p class="tw:text-center tw:text-base tw:font-bold tw:text-white">
-              {{ countdownSectionTitle }}
-            </p>
+          <p class="tw:text-center tw:text-xs tw:font-medium tw:uppercase tw:tracking-wide tw:text-white/70 tw:mb-4">
+            {{ countdownSectionTitle }}
+          </p>
 
-            <div class="tw:grid tw:grid-cols-4 tw:gap-2 tw:w-full tw:max-w-md tw:mx-auto">
-              <div
-                v-for="unit in countdownUnits"
-                :key="unit.key"
-                class="tw:bg-white tw:rounded-xl tw:px-1 tw:py-3 tw:text-center tw:min-w-0 tw:shadow-sm"
-              >
-                <p class="tw:text-xl sm:tw:text-2xl tw:font-bold tw:text-gray-900 tw:tabular-nums">
-                  {{ unit.value }}
+          <div
+            class="tw:flex tw:items-start tw:justify-center"
+            role="timer"
+            :aria-label="countdownSectionTitle"
+          >
+            <template v-for="(seg, idx) in countdownDisplaySegments" :key="seg.key">
+              <span
+                v-if="idx > 0"
+                class="tw:text-2xl sm:tw:text-3xl tw:font-bold tw:text-white tw:leading-none tw:tabular-nums tw:self-start tw:pt-0.5 tw:px-0.5 tw:drop-shadow-md"
+                aria-hidden="true"
+              >:</span>
+              <div class="tw:text-center tw:min-w-[2.25rem] sm:tw:min-w-[2.75rem]">
+                <p class="tw:text-2xl sm:tw:text-3xl tw:font-bold tw:text-white tw:tabular-nums tw:leading-none tw:drop-shadow-md">
+                  {{ seg.display }}
                 </p>
-                <p class="tw:text-[10px] sm:tw:text-xs tw:text-gray-600 tw:mt-1 tw:leading-tight">
-                  {{ unit.label }}
+                <p class="tw:mt-1.5 tw:text-[8px] sm:tw:text-[9px] tw:font-bold tw:uppercase tw:tracking-[0.16em] tw:text-white/90 tw:leading-none">
+                  {{ seg.label }}
                 </p>
               </div>
-            </div>
+            </template>
           </div>
         </template>
       </div>
-    </div> -->
+
+      <div class="tw:grid tw:grid-cols-2 tw:gap-3 tw:p-4">
+        <div class="tw:rounded-xl tw:border tw:border-gray-100 tw:bg-gradient-to-b tw:from-orange-50/80 tw:to-white tw:p-3 tw:text-center">
+          <p class="tw:text-[10px] tw:font-semibold tw:uppercase tw:tracking-wide tw:text-[#FF7700]">
+            {{ t('dateLocation.startTime') }}
+          </p>
+          <p class="tw:mt-2 tw:text-2xl tw:font-bold tw:tabular-nums tw:text-gray-900 tw:leading-none">
+            {{ displayStartTime }}
+          </p>
+        </div>
+        <div class="tw:rounded-xl tw:border tw:border-gray-100 tw:bg-gradient-to-b tw:from-blue-50/80 tw:to-white tw:p-3 tw:text-center">
+          <p class="tw:text-[10px] tw:font-semibold tw:uppercase tw:tracking-wide tw:text-[#1a73e8]">
+            {{ t('dateLocation.endTime') }}
+          </p>
+          <p class="tw:mt-2 tw:text-2xl tw:font-bold tw:tabular-nums tw:text-gray-900 tw:leading-none">
+            {{ displayEndTime }}
+          </p>
+        </div>
+      </div>
+
+      <p
+        v-if="formattedScheduleRange"
+        class="tw:px-4 tw:pb-4 tw:-mt-1 tw:text-center tw:text-xs tw:text-gray-500 tw:leading-relaxed"
+      >
+        {{ formattedScheduleRange }}
+      </p>
+    </div>
 
     <!-- Event Location: venue, address, map, more info / directions -->
     <div
@@ -221,6 +222,12 @@ import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { MAP_CONFIG } from '../config/mapConfig'
 import DirectionsPanel from './DirectionsPanel.vue'
+import {
+  formatEventInstantForLocale,
+  formatEventScheduleRange,
+  parseEndInstantMsForDisplay,
+  parseEventInstantMs,
+} from '@/utils/eventSchedule'
 
 const { t, locale } = useI18n()
 
@@ -246,17 +253,7 @@ const markerInstance = ref(null)
 const isMapLoading = ref(false)
 const isMapInitialized = ref(false)
 
-function formatTimeHHMM(timeStr) {
-  if (timeStr == null || String(timeStr).trim() === '') return ''
-  const s = String(timeStr).trim()
-  const parts = s.split(':')
-  if (parts.length >= 2) {
-    const h = parts[0].padStart(2, '0')
-    const m = parts[1].padStart(2, '0')
-    return `${h}:${m}`
-  }
-  return s
-}
+const timeDisplayOptions = { hour: '2-digit', minute: '2-digit' }
 
 // Computed - Convert coordinates to numbers and validate
 // Support both lat/lng (transformed UI event) and latitude/longitude (raw API event)
@@ -309,42 +306,26 @@ const formattedLongEventDate = computed(() => {
 const displayStartTime = computed(() => {
   const ev = props.event
   if (!ev) return t('dateLocation.notSpecified')
-  if (ev.start_time) {
-    const formatted = formatTimeHHMM(ev.start_time)
-    return formatted || t('dateLocation.notSpecified')
-  }
-  if (ev.start_datetime) {
-    const d = new Date(ev.start_datetime)
-    if (!isNaN(d.getTime())) {
-      return d.toLocaleTimeString(locale.value, {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      })
-    }
-  }
-  return t('dateLocation.notSpecified')
+  const ms = parseEventInstantMs(ev, 'start')
+  const label = formatEventInstantForLocale(ms, locale.value, timeDisplayOptions)
+  return label || t('dateLocation.notSpecified')
 })
 
 const displayEndTime = computed(() => {
   const ev = props.event
   if (!ev) return t('dateLocation.notSpecified')
-  if (ev.end_time) {
-    const formatted = formatTimeHHMM(ev.end_time)
-    return formatted || t('dateLocation.notSpecified')
+  let ms = parseEndInstantMsForDisplay(ev)
+  const startMs = parseEventInstantMs(ev, 'start')
+  if (!isNaN(startMs) && !isNaN(ms) && ms <= startMs) {
+    ms += 24 * 60 * 60 * 1000
   }
-  if (ev.end_datetime) {
-    const d = new Date(ev.end_datetime)
-    if (!isNaN(d.getTime())) {
-      return d.toLocaleTimeString(locale.value, {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      })
-    }
-  }
-  return t('dateLocation.notSpecified')
+  const label = formatEventInstantForLocale(ms, locale.value, timeDisplayOptions)
+  return label || t('dateLocation.notSpecified')
 })
+
+const formattedScheduleRange = computed(() =>
+  formatEventScheduleRange(props.event, locale.value),
+)
 
 const displayAddress = computed(() => {
   if (props.locationDetails?.full_address) {
@@ -397,41 +378,20 @@ function openMoreInfo() {
   }
 }
 
-function normalizeTimePart(timeStr) {
-  if (!timeStr) return '00:00:00'
-  const s = String(timeStr).trim()
-  if (s.length === 5 && s.includes(':') && s.split(':').length === 2) {
-    return `${s}:00`
-  }
-  return s
-}
-
 const eventStartMs = computed(() => {
-  const ev = props.event
-  if (!ev) return null
-  if (ev.start_datetime) {
-    const d = new Date(ev.start_datetime)
-    return isNaN(d.getTime()) ? null : d.getTime()
-  }
-  if (ev.event_date && ev.start_time) {
-    const d = new Date(`${ev.event_date}T${normalizeTimePart(ev.start_time)}`)
-    return isNaN(d.getTime()) ? null : d.getTime()
-  }
-  return null
+  const ms = parseEventInstantMs(props.event, 'start')
+  return isNaN(ms) ? null : ms
 })
 
 const eventEndMs = computed(() => {
   const ev = props.event
   if (!ev) return null
-  if (ev.end_datetime) {
-    const d = new Date(ev.end_datetime)
-    return isNaN(d.getTime()) ? null : d.getTime()
+  let ms = parseEndInstantMsForDisplay(ev)
+  const startMs = eventStartMs.value
+  if (startMs != null && !isNaN(ms) && ms <= startMs) {
+    ms += 24 * 60 * 60 * 1000
   }
-  if (ev.event_date && ev.end_time) {
-    const d = new Date(`${ev.event_date}T${normalizeTimePart(ev.end_time)}`)
-    return isNaN(d.getTime()) ? null : d.getTime()
-  }
-  return null
+  return isNaN(ms) ? null : ms
 })
 
 const eventPhase = computed(() => {
@@ -490,28 +450,18 @@ function updateCountdown() {
   countdownParts.value = { days, hours, minutes, seconds }
 }
 
-const countdownUnits = computed(() => [
-  {
-    key: 'd',
-    value: String(Math.max(0, countdownParts.value.days)),
-    label: t('eventCard.countdownDays')
-  },
-  {
-    key: 'h',
-    value: padTwo(countdownParts.value.hours),
-    label: t('eventCard.countdownHours')
-  },
-  {
-    key: 'm',
-    value: padTwo(countdownParts.value.minutes),
-    label: t('eventCard.countdownMinutes')
-  },
-  {
-    key: 's',
-    value: padTwo(countdownParts.value.seconds),
-    label: t('eventCard.countdownSeconds')
-  }
-])
+/** Same colon-separated layout as the event listing card countdown. */
+const countdownDisplaySegments = computed(() => {
+  const c = countdownParts.value
+  const d = Math.max(0, c.days)
+  const dayDisplay = d > 99 ? String(d) : String(d).padStart(2, '0')
+  return [
+    { key: 'd', display: dayDisplay, label: t('eventCard.countdownDays') },
+    { key: 'h', display: padTwo(c.hours), label: t('eventCard.countdownHours') },
+    { key: 'm', display: padTwo(c.minutes), label: t('eventCard.countdownMinutes') },
+    { key: 's', display: padTwo(c.seconds), label: t('eventCard.countdownSeconds') },
+  ]
+})
 
 let countdownTimerId = null
 

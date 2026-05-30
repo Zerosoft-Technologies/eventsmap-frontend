@@ -6,13 +6,15 @@
   --primary-color: #0061FF;
   --secondary-color: #FF7700;
   --teritiary-color: #1E3A8A;
+  --text-primary: #1E3A8A;
+  --text-accent: #0061FF;
   --gray-color: #F9FAFB;
   --hover-color: #ECEEF4;
   --grey-color: #9CA3AF;
 }
 
 body {
-  color: var(--primary-color);
+  color: var(--text-primary);
   font-family: var(--font-sans);
 }
 
@@ -63,46 +65,52 @@ body.hover-enabled [data-clickable]:not(.no-hover):hover {
   background-color: transparent !important;
 } */
 
-.no-hover-container button:hover,
-.no-hover-container [role="button"]:hover,
-.no-hover-container a:hover,
-.no-hover-container input[type="button"]:hover,
-.no-hover-container input[type="submit"]:hover,
-.no-hover-container .tw-button:hover,
-.no-hover-container .tw-btn:hover,
-.no-hover-container .clickable:hover,
-.no-hover-container [onclick]:hover,
-.no-hover-container [data-clickable]:hover,
-.maplibregl-map button:hover,
-.maplibregl-map [role="button"]:hover,
-.maplibregl-map a:hover,
-.maplibregl-map input[type="button"]:hover,
-.maplibregl-map input[type="submit"]:hover,
-.maplibregl-map .tw-button:hover,
-.maplibregl-map .tw-btn:hover,
-.maplibregl-map .clickable:hover,
-.maplibregl-map [onclick]:hover,
-.maplibregl-map [data-clickable]:hover,
-.mapboxgl-marker button:hover,
-.mapboxgl-marker [role="button"]:hover,
-.mapboxgl-marker a:hover,
-.mapboxgl-marker input[type="button"]:hover,
-.mapboxgl-marker input[type="submit"]:hover,
-.mapboxgl-marker .tw-button:hover,
-.mapboxgl-marker .tw-btn:hover,
-.mapboxgl-marker .clickable:hover,
-.mapboxgl-marker [onclick]:hover,
-.mapboxgl-marker [data-clickable]:hover,
-.mapboxgl-popup button:hover,
-.mapboxgl-popup [role="button"]:hover,
-.mapboxgl-popup a:hover,
-.mapboxgl-popup input[type="button"]:hover,
-.mapboxgl-popup input[type="submit"]:hover,
-.mapboxgl-popup .tw-button:hover,
-.mapboxgl-popup .tw-btn:hover,
-.mapboxgl-popup .clickable:hover,
-.mapboxgl-popup [onclick]:hover,
-.mapboxgl-popup [data-clickable]:hover {
+.no-hover-container button:not(.no-hover):hover,
+.no-hover-container [role="button"]:not(.no-hover):hover,
+.no-hover-container a:not(.no-hover):hover,
+.no-hover-container input[type="button"]:not(.no-hover):hover,
+.no-hover-container input[type="submit"]:not(.no-hover):hover,
+.no-hover-container .tw-button:not(.no-hover):hover,
+.no-hover-container .tw-btn:not(.no-hover):hover,
+.no-hover-container .clickable:not(.no-hover):hover,
+.no-hover-container [onclick]:not(.no-hover):hover,
+.no-hover-container [data-clickable]:not(.no-hover):hover,
+.maplibregl-map button:not(.no-hover):hover,
+.maplibregl-map [role="button"]:not(.no-hover):hover,
+.maplibregl-map a:not(.no-hover):hover,
+.maplibregl-map input[type="button"]:not(.no-hover):hover,
+.maplibregl-map input[type="submit"]:not(.no-hover):hover,
+.maplibregl-map .tw-button:not(.no-hover):hover,
+.maplibregl-map .tw-btn:not(.no-hover):hover,
+.maplibregl-map .clickable:not(.no-hover):hover,
+.maplibregl-map [onclick]:not(.no-hover):hover,
+.maplibregl-map [data-clickable]:not(.no-hover):hover,
+.maplibregl-popup button:not(.no-hover):hover,
+.maplibregl-popup [role="button"]:not(.no-hover):hover,
+.maplibregl-popup a:not(.no-hover):hover,
+.maplibregl-popup-content button:not(.no-hover):hover,
+.maplibregl-popup-content [role="button"]:not(.no-hover):hover,
+.maplibregl-popup-content a:not(.no-hover):hover,
+.mapboxgl-marker button:not(.no-hover):hover,
+.mapboxgl-marker [role="button"]:not(.no-hover):hover,
+.mapboxgl-marker a:not(.no-hover):hover,
+.mapboxgl-marker input[type="button"]:not(.no-hover):hover,
+.mapboxgl-marker input[type="submit"]:not(.no-hover):hover,
+.mapboxgl-marker .tw-button:not(.no-hover):hover,
+.mapboxgl-marker .tw-btn:not(.no-hover):hover,
+.mapboxgl-marker .clickable:not(.no-hover):hover,
+.mapboxgl-marker [onclick]:not(.no-hover):hover,
+.mapboxgl-marker [data-clickable]:not(.no-hover):hover,
+.mapboxgl-popup button:not(.no-hover):hover,
+.mapboxgl-popup [role="button"]:not(.no-hover):hover,
+.mapboxgl-popup a:not(.no-hover):hover,
+.mapboxgl-popup input[type="button"]:not(.no-hover):hover,
+.mapboxgl-popup input[type="submit"]:not(.no-hover):hover,
+.mapboxgl-popup .tw-button:not(.no-hover):hover,
+.mapboxgl-popup .tw-btn:not(.no-hover):hover,
+.mapboxgl-popup .clickable:not(.no-hover):hover,
+.mapboxgl-popup [onclick]:not(.no-hover):hover,
+.mapboxgl-popup [data-clickable]:not(.no-hover):hover {
   background-color: transparent !important;
 }
 
@@ -170,4 +178,16 @@ body.hover-enabled [data-clickable]:not(.no-hover):hover {
 
 details.maplibregl-ctrl.maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-compact-show {
     display: none;
+}
+
+/* Home map: pins and clusters must receive clicks (not blocked by map canvas / hover rules) */
+.maplibregl-marker .map-marker-interactive,
+.maplibregl-marker .map-cluster-pin {
+  pointer-events: auto;
+}
+
+.map-cluster-pin:focus-visible {
+  outline: 2px solid var(--primary-color, #0061ff);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

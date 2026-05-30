@@ -24,7 +24,7 @@
     <!-- Name + meta -->
     <div class="tw:flex-1 tw:min-w-0">
       <div class="tw:flex tw:items-center tw:gap-2 tw:flex-wrap">
-        <span class="tw:text-sm tw:font-medium tw:text-gray-900 tw:truncate">
+        <span class="tw:text-sm tw:font-medium tw:text-[var(--text-primary)] tw:truncate">
           {{ profile.name }}
         </span>
         <span
@@ -35,7 +35,7 @@
         </span>
         <span
           v-if="isRecommended"
-          class="tw:text-xs tw:font-medium tw:px-1.5 tw:py-0.5 tw:rounded tw:bg-blue-100 tw:text-blue-600 tw:flex-shrink-0"
+          class="tw:text-xs tw:font-medium tw:px-1.5 tw:py-0.5 tw:rounded tw:bg-blue-100 tw:text-[var(--primary-color)] tw:flex-shrink-0"
         >
           ★ Recommended
         </span>

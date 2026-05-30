@@ -7,11 +7,7 @@
   
   <!-- Main App Content (hidden during auth check) -->
   <template v-if="!isAuthChecking">
-    <Header 
-      @open-login="isLoginOpen = true"
-      @toggle-wishlist="toggleWishlist"
-    ></Header>
-    <LoginPopup :isOpen="isLoginOpen" @close="isLoginOpen = false" />
+    <Header @toggle-wishlist="toggleWishlist"></Header>
     <router-view />
     
     <!-- Right Wishlist Sidebar (independent from left sidebar) -->
@@ -34,7 +30,6 @@
 </template>
 
 <script setup>
-  import LoginPopup from './components/LoginPopup.vue'
   import Header from './components/Header.vue'
   import ToastContainer from './components/ui/ToastContainer.vue'
   import GlobalProgressBar from './components/ui/GlobalProgressBar.vue'
@@ -42,6 +37,7 @@
   import RightWishlistSidebar from './components/RightWishlistSidebar.vue'
   import ChatSidebar from './components/chat/ChatSidebar.vue'
   import { ref, watch, computed } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
   import { useLoadingStore } from '@/stores/loading'
   import { useAuthStore } from '@/stores/auth'
   import { useWishlistStore } from '@/stores/wishlistStore'
@@ -51,7 +47,8 @@
   const authStore = useAuthStore()
   const wishlistStore = useWishlistStore()
   const chatStore = useChatStore()
-  const isLoginOpen = ref(false)
+  const router = useRouter()
+  const route = useRoute()
   const isWishlistOpen = ref(false)
   
   const isAuthChecking = computed(() => loadingStore.isAuthChecking)
@@ -59,7 +56,12 @@
   // Toggle wishlist sidebar with auth guard
   function toggleWishlist() {
     if (!authStore.isAuthenticated) {
-      isLoginOpen.value = true
+      const path = route.path.toLowerCase()
+      if (path === '/login' || path === '/register') {
+        router.push({ name: 'Login' })
+      } else {
+        router.push({ name: 'Login', query: { redirect: route.fullPath } })
+      }
       return
     }
     isWishlistOpen.value = !isWishlistOpen.value
@@ -84,7 +86,4 @@
       isWishlistOpen.value = false // Close wishlist panel on logout
     }
   }, { immediate: true })
-  
-  watch(isLoginOpen, (newVal, oldVal) => {
-  })
 </script>

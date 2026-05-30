@@ -22,6 +22,7 @@
         'tw:fixed tw:bottom-0 tw:md:bottom-2 tw:left-0 tw:md:left-7 tw:z-50 tw:lg:z-10 tw:transition-all tw:duration-300 tw:overflow-visible'
       ]"
       @click="isMinimized && expand()"
+      style="z-index: 9999;"
     >
       <!-- Minimized State -->
       <template v-if="isMinimized">

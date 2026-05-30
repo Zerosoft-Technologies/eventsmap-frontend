@@ -236,7 +236,7 @@
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Genre <span class="tw:text-red-500">*</span>
+                            Talent Genre <span class="tw:text-red-500">*</span>
                         </h3>
                         <!-- <button
                             class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -261,9 +261,8 @@
                         </div>
                     </div>
 
-                    <!-- Category and Subcategory Dropdowns -->
-                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-4">
-                        <!-- Category Dropdown -->
+                    <!-- Category Dropdown -->
+                    <div class="tw:flex tw:flex-col tw:gap-4">
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
                                 Category <span class="tw:text-red-500">*</span>
@@ -286,82 +285,6 @@
                                     class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
                             <p v-if="categoryError" class="tw:text-red-500 tw:text-sm tw:mt-1">Category is required</p>
-                        </div>
-
-                        <!-- Subcategory Multi-Select -->
-                        <div class="tw:flex-1">
-                            <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories (Max 5) <span class="tw:text-red-500">*</span>
-                            </label>
-
-                            <!-- Multi-Select Input Field -->
-                            <div class="subcategory-dropdown-container" ref="dropdownContainer">
-                                <div @click="toggleSubcategoryDropdown" :class="[
-                                    'subcategory-input',
-                                    (!form.talent_category_id || categoriesError) ? 'disabled' : '',
-                                    subcategoryError ? 'error' : ''
-                                ]">
-                                    <div class="subcategory-input-content">
-                                        <span class="subcategory-input-text">
-                                            {{ form.talent_subcategory_ids.length > 0
-                                                ? `${form.talent_subcategory_ids.length} selected`
-                                                : (form.talent_category_id ? 'Select Subcategories' : 'Select Category First')
-                                            }}
-                                        </span>
-                                        <ChevronDown :class="[
-                                            'dropdown-chevron',
-                                            showSubcategoryDropdown ? 'rotated' : ''
-                                        ]" />
-                                    </div>
-                                </div>
-
-                                <!-- Dropdown Options -->
-                                <div v-if="showSubcategoryDropdown && form.talent_category_id && !categoriesError"
-                                    class="subcategory-dropdown" ref="dropdownMenu">
-                                    <div class="dropdown-content">
-                                        <div v-for="subcategory in availableSubcategories" :key="subcategory.id"
-                                            class="dropdown-option" :class="{
-                                                'selected': form.talent_subcategory_ids.includes(subcategory.id),
-                                                'disabled': !form.talent_subcategory_ids.includes(subcategory.id) && form.talent_subcategory_ids.length >= 5
-                                            }" @click="toggleSubcategory(subcategory.id)">
-                                            <input type="checkbox" :id="`subcategory-${subcategory.id}`"
-                                                :value="subcategory.id" v-model="form.talent_subcategory_ids"
-                                                :disabled="!form.talent_subcategory_ids.includes(subcategory.id) && form.talent_subcategory_ids.length >= 5"
-                                                @change="handleSubcategoryChange" @click.stop class="option-checkbox">
-                                            <label :for="`subcategory-${subcategory.id}`" class="option-label" @click.stop>
-                                                {{ subcategory.name }}
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <!-- Max selection notice -->
-                                    <div v-if="form.talent_subcategory_ids.length >= 5" class="max-selection-notice">
-                                        Maximum 5 subcategories selected
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Selected Tags Display -->
-                            <div v-if="form.talent_subcategory_ids.length > 0" class="selected-tags">
-                                <span v-for="subcategoryId in form.talent_subcategory_ids" :key="subcategoryId"
-                                    class="selected-tag">
-                                    {{ availableSubcategories.find(s => s.id === subcategoryId)?.name }}
-                                    <button @click="removeSubcategory(subcategoryId)" class="tag-remove">
-                                        <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd"
-                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
-                                    </button>
-                                </span>
-                            </div>
-
-                            <!-- Validation Message -->
-                            <p v-if="subcategoryValidationError" class="validation-error">
-                                You can select maximum 5 subcategories only.
-                            </p>
-                            <p v-else-if="subcategoryError" class="validation-error">Please select at least one
-                                subcategory</p>
                         </div>
                     </div>
                 </div>
@@ -1043,7 +966,6 @@ const formData = reactive({
 const talentSchema = {
     talentTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Talent Title' },
     category: { type: 'select', required: true, label: 'Category' },
-    subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
 }
 
 const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(talentSchema, formData)
@@ -1188,8 +1110,8 @@ function removeSubcategory(subcategoryIdToRemove) {
 
 function validateGenre() {
     categoryError.value = !form.talent_category_id
-    subcategoryError.value = form.talent_subcategory_ids.length === 0
-    return form.talent_category_id && form.talent_subcategory_ids.length > 0
+    subcategoryError.value = false
+    return !!form.talent_category_id
 }
 
 const dobMaxIso = computed(() => new Date().toISOString().slice(0, 10))

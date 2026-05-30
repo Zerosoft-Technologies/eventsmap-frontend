@@ -61,30 +61,41 @@
             {{ currentImageIndex + 1 }} / {{ images.length }}
           </span>
         </div>
+
+        <!-- Event status (live / upcoming / past) — on image for visibility -->
+        <div
+          v-if="eventStatus"
+          class="tw:absolute tw:top-3 tw:left-3 tw:z-20 tw:max-w-[calc(100%-5.5rem)]"
+        >
+          <span
+            role="status"
+            class="tw:inline-flex tw:items-center tw:gap-1.5 tw:px-3 tw:py-1.5 tw:text-xs tw:font-semibold tw:rounded-full tw:border tw:shadow-lg tw:backdrop-blur-sm"
+            :class="eventStatusBadgeClass"
+          >
+            <span
+              v-if="eventStatus.type === 'live'"
+              class="tw:w-2 tw:h-2 tw:rounded-full tw:bg-white tw:shrink-0 tw:animate-pulse"
+              aria-hidden="true"
+            />
+            <span class="tw:truncate">{{ eventStatus.text }}</span>
+          </span>
+        </div>
       </div>
 
-      <!-- Header with Title and Event Status -->
-      <div class="tw:px-4 tw:py-4 tw:flex tw:items-center tw:justify-between tw:gap-3">
-        <h2 class="tw:text-xl tw:font-semibold tw:leading-tight tw:flex-1">
+      <!-- Header: title + close -->
+      <div class="tw:px-4 tw:py-4 tw:flex tw:items-start tw:justify-between tw:gap-3">
+        <h2 class="tw:text-xl tw:font-semibold tw:leading-tight tw:flex-1 tw:min-w-0 tw:text-gray-900">
           {{ event?.title || $t('eventDetails.untitled') }}
         </h2>
-        
-        <div class="tw:flex tw:items-center tw:gap-2">
-          <!-- Event Status Button -->
-          <button v-if="eventStatus" class="tw:flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:rounded-full tw:border tw:border-[#0061FF] tw:bg-white">
-            <!-- <img src="../assets/live-streaming-blue.png" :alt="eventStatus.text" class="tw:w-3 tw:h-3" /> -->
-            <span>{{ eventStatus.text }}</span>
-          </button>
-          
-          <!-- Close Button in Header -->
-          <button 
-            @click="close"
-            class="tw:p-2 tw:rounded-lg tw:hover:tw:bg-gray-100 tw:transition-colors tw:tw-flex tw:items-center tw:justify-center"
-            :aria-label="$t('eventDetails.close')"
-          >
-            <XIcon class="tw:w-5 tw:h-5 tw:text-gray-600" />
-          </button>
-        </div>
+
+        <button
+          type="button"
+          @click="close"
+          class="tw:p-2 tw:rounded-lg tw:hover:tw:bg-gray-100 tw:transition-colors tw:flex tw:items-center tw:justify-center tw:flex-shrink-0"
+          :aria-label="$t('eventDetails.close')"
+        >
+          <XIcon class="tw:w-5 tw:h-5 tw:text-gray-600" />
+        </button>
       </div>
 
       <!-- <div class="tw:h-px tw:bg-gray-200 tw:mb-3"></div> -->
@@ -466,7 +477,7 @@
                   </div>
 
                   <div v-if="organiserDescription(org)">
-                    <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">About</p>
+                    <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">Description</p>
                     <p class="tw:text-sm tw:text-gray-700 tw:leading-relaxed tw:line-clamp-4">{{ organiserDescription(org) }}</p>
                   </div>
 
@@ -524,7 +535,7 @@
 
                   <!-- Description -->
                   <div v-if="venueDescription(venue)">
-                    <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">About</p>
+                    <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">Description</p>
                     <p class="tw:text-sm tw:text-gray-700 tw:leading-relaxed tw:line-clamp-4">{{ venueDescription(venue) }}</p>
                   </div>
 
@@ -889,7 +900,9 @@ const tabs = computed(() => {
           : 'eventDetails.tabs.venue'
     })
   }
-  list.push({ id: 'bookingInfo', labelKey: 'eventDetails.tabs.bookingInfo' })
+  if (bookingInstructionsDisplay.value) {
+    list.push({ id: 'bookingInfo', labelKey: 'eventDetails.tabs.bookingInfo' })
+  }
   if (isPremiumEvent.value) {
     list.push({ id: 'contact', labelKey: 'eventDetails.tabs.contact' })
   }
@@ -1200,6 +1213,21 @@ const eventStatus = computed(() => {
     type: 'past',
     text: t('eventCard.pastEvent'),
     icon: '../assets/calendar-past.png'
+  }
+})
+
+const eventStatusBadgeClass = computed(() => {
+  const status = eventStatus.value
+  if (!status) return ''
+  switch (status.type) {
+    case 'live':
+      return 'tw:bg-red-600 tw:text-white tw:border-red-700/80'
+    case 'upcoming':
+      return 'tw:bg-white/95 tw:text-[#0061FF] tw:border-[#0061FF]/40'
+    case 'past':
+      return 'tw:bg-gray-900/80 tw:text-white tw:border-gray-700/60'
+    default:
+      return 'tw:bg-white/95 tw:text-gray-800 tw:border-gray-200'
   }
 })
 

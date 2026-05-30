@@ -1,7 +1,7 @@
 <template>
   <header :class="fixedMenu ? 'tw:fixed tw:top-0 tw:left-0 z-50': ''" class="tw:w-full tw:bg-transparent tw:py-2 tw:px-4 tw:md:py-3 tw:md:px-8 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-y-2 header-root">
     <h1 class="tw:font-bold tw:leading-[1.4] tw:tracking-[-0.5px] tw:text-lg">
-      <RouterLink to="/">
+      <RouterLink to="/" @click="goToHomeMap">
         <img src="../assets/logo.png" alt="Logo" style="width: 80px;" />
       </RouterLink>
     </h1>
@@ -267,7 +267,7 @@
           </button>
         </div>
         <!-- Not authenticated: login button -->
-        <button v-else @click="$emit('open-login')" style="height: 40px;" class="header-btn tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:gap-1.5">
+        <button v-else type="button" @click="goToLogin" style="height: 40px;" class="header-btn tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:items-center tw:gap-1.5">
           <img src="../assets/login.png" alt="Login Icon"/>
           <span class="tw:text-sm tw:font-medium">{{ $t('header.login') }}</span>
         </button>
@@ -304,7 +304,7 @@
         <div v-if="authStore.isAuthenticated" @click="handleLogout" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg tw:cursor-pointer">
           <p>{{ $t('header.logout') || 'Logout' }}</p>
         </div>
-        <div v-if="!authStore.isAuthenticated" @click="$emit('open-login')" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg tw:cursor-pointer">
+        <div v-if="!authStore.isAuthenticated" @click="goToLogin" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg tw:cursor-pointer">
           <p>{{ $t('header.login') }}</p>
         </div>
 
@@ -719,7 +719,7 @@
           <button
             type="button"
             style="height: 40px;"
-            @click="closeMobileHeader(); $emit('open-login')"
+            @click="goToLogin"
             class="mobile-field-btn tw:px-4 tw:bg-white tw:rounded-md tw:flex tw:items-center tw:gap-1.5"
           >
             <img src="../assets/login.png" alt="Login Icon"/>
@@ -797,6 +797,7 @@ import { MAP_OPEN_EVENT_DETAIL, MAP_OPEN_PROFILE_DETAIL } from '@/utils/mapPopup
 import {
   appendDiscoveryDateTimeFilters,
   formatDiscoveryDateToApi,
+  getDefaultDiscoveryDateRange,
   parseStoredSessionFilter,
 } from '@/utils/discoveryDateTimeFilters'
 import EventDetailsPanel from './EventDetailsPanel.vue'
@@ -804,7 +805,7 @@ import DiscoveryProfileDetailsPanel from './DiscoveryProfileDetailsPanel.vue'
 
 const AllEvents = defineAsyncComponent(() => import('./AllEvents.vue'))
 
-const emit = defineEmits(['open-login', 'toggle-wishlist'])
+const emit = defineEmits(['toggle-wishlist'])
 
 const { t, locale } = useI18n()
 const { switchLanguage, getAvailableLanguages, initializeLanguage } = useLanguageSwitch()
@@ -835,6 +836,16 @@ const galleryRoute = computed(() => {
   }
   return `${basePath}/gallery-images`
 })
+
+function goToLogin() {
+  closeMobileHeader()
+  const path = route.path.toLowerCase()
+  if (path === '/login' || path === '/register') {
+    router.push({ name: 'Login' })
+    return
+  }
+  router.push({ name: 'Login', query: { redirect: route.fullPath } })
+}
 
 async function handleLogout() {
   closeMobileHeader()
@@ -954,9 +965,9 @@ const showProfileTypeMenu = ref(false)
 
 const profileTypeOptions = computed(() => [
   { value: 'events', label: t('header.profileType.events') },
-  { value: 'organisers', label: t('header.profileType.organisers') },
-  { value: 'talents', label: t('header.profileType.talents') },
+  { value: 'talents', label: t('header.profileType.talent') },
   { value: 'venues', label: t('header.profileType.venues') },
+  { value: 'organisers', label: t('header.profileType.organisers') },
 ])
 
 const discoveryProfileLabel = computed(() => {
@@ -1021,7 +1032,7 @@ let catDragStartX = 0
 let catDragStartScrollLeft = 0
 /** Scroll container receiving drag (desktop or mobile category row) */
 let catDragScrollEl = null
-const dateRange = ref([null, null])
+const dateRange = ref(getDefaultDiscoveryDateRange())
 const sessionFilter = ref({ morning: false, afternoon: false, evening: false, night: false })
 
 function onSessionFilterUpdate(next) {
@@ -1175,6 +1186,9 @@ onMounted(() => {
   if (storedSession) sessionFilter.value = storedSession
   getLocation()
   loadCategories()
+  if (route.name === 'Home') {
+    void loadListingFromApi(searchTerm.value.trim())
+  }
   window.addEventListener('keydown', handleMobileMenuKeydown)
   window.addEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetailFromHome)
   window.addEventListener(MAP_OPEN_PROFILE_DETAIL, onMapOpenProfileDetailFromHome)
@@ -1212,10 +1226,17 @@ const isProfilePage = computed(() => {
 function toggleWishlistPanel() { emit('toggle-wishlist') }
 function handleClose() { showResults.value = false }
 
+function goToHomeMap() {
+  handleReset()
+  if (route.path !== '/') {
+    router.push('/')
+  }
+}
+
 function handleReset() {
   showResults.value = false
   searchTerm.value = ""
-  searchInput.value.blur()
+  if (searchInput.value) searchInput.value.blur()
   city.value = "Amsterdam"
   selectedCategory.value = null
   selectedSubcategorySlugs.value = []
@@ -1224,14 +1245,18 @@ function handleReset() {
   venueOpenTime.value = null
   venueCloseTime.value = null
   selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" }
+  mapStore.setAppliedLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
   sessionFilter.value = { morning: false, afternoon: false, evening: false, night: false }
   localStorage.removeItem('datepicker-session')
-  dateRange.value = [null, null]
+  dateRange.value = getDefaultDiscoveryDateRange()
   discoveryProfileType.value = 'events'
   closeProfileTypeMenu()
   void loadCategories()
-  mapStore.clearSearchHighlightEventIds()
+  mapStore.clearMapEvents()
   mapStore.clearMapProfiles()
+  if (route.path === '/') {
+    void loadListingFromApi('')
+  }
 }
 
 async function getLocation() {
@@ -1253,6 +1278,14 @@ async function getLocation() {
     city.value = "Amsterdam"
     selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" }
     mapStore.setPendingLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
+  }
+  if (route.name === 'Home') {
+    mapStore.setAppliedLocation({
+      lat: selectedLocation.value.lat,
+      lng: selectedLocation.value.lng,
+      name: selectedLocation.value.name,
+    })
+    void loadListingFromApi(searchTerm.value.trim())
   }
   if (isMobileMenuOpen.value) closeMobileHeader()
 }
@@ -1289,7 +1322,7 @@ async function loadListingFromApi(searchQuery = '') {
   } catch (e) {
     console.error('Failed to load listing:', e)
     events.value = []
-    mapStore.clearSearchHighlightEventIds()
+    mapStore.clearMapEvents()
     mapStore.clearMapProfiles()
   } finally {
     eventsLoading.value = false
@@ -1310,9 +1343,9 @@ async function loadEventsFromApi(searchQuery = '') {
     formatDate: formatDateToApi,
   })
   const result = await fetchEvents(params)
-  events.value = result.data
   const rows = Array.isArray(result.data) ? result.data : []
-  mapStore.setSearchHighlightEventIds(rows.map((ev) => ev?.id))
+  events.value = rows
+  mapStore.setMapEvents(rows)
   mapStore.clearMapProfiles()
 }
 
@@ -1342,8 +1375,7 @@ async function loadProfilesFromApi(profileType, searchQuery = '') {
     )
   }
   events.value = rows
-  mapStore.clearSearchHighlightEventIds()
-  // Push profile locations to the map (normalize lat/lng vs latitude/longitude, strings, organiser field names)
+  mapStore.clearMapEvents()
   mapStore.setMapProfiles(
     rows
       .map((p) => {
@@ -1376,10 +1408,15 @@ let timeout = null
 const debouncedSearch = () => { clearTimeout(timeout); timeout = setTimeout(searchCity, 500) }
 
 const selectCity = (place) => {
-  city.value = place.display_name.split(',')[0]
+  const lat = parseFloat(place.lat)
+  const lng = parseFloat(place.lon)
+  const name = place.display_name.split(',')[0]
+  city.value = name
   searchResults.value = []
-  selectedLocation.value = { lat: parseFloat(place.lat), lng: parseFloat(place.lon), name: place.display_name.split(',')[0] }
-  mapStore.setPendingLocation({ lat: parseFloat(place.lat), lng: parseFloat(place.lon), name: place.display_name.split(',')[0] })
+  selectedLocation.value = { lat, lng, name }
+  mapStore.setAppliedLocation({ lat, lng, name })
+  void loadListingFromApi(searchTerm.value.trim())
+  showResults.value = true
   if (isMobileMenuOpen.value) closeMobileHeader()
 }
 

@@ -51,7 +51,13 @@ export interface DiscoveryProfile {
   }>
   capacity?: number | null
   description_items?: string[]
+  allowance_of_dogs?: string | null
   wheelchair_accessible?: boolean | null
+  accessible_parking_close_to_entrance?: boolean | null
+  accessible_parking?: boolean | null
+  valet_parking?: boolean | null
+  childrens_play_area?: boolean | null
+  accessibility_description?: string | null
   parking?: boolean | null
   play_area?: boolean | null
   allow_dogs?: boolean | null

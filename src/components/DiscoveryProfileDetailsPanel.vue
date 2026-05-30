@@ -150,9 +150,75 @@
 
           <!-- Description -->
           <div v-if="profile?.description">
-            <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">About</p>
-            <p class="tw:text-sm tw:text-gray-700 tw:leading-relaxed tw:whitespace-pre-line">{{ profile.description }}</p>
+            <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">Description</p>
+            <ExpandableText
+              :text="profile.description"
+              :max-length="120"
+              :more-label="t('discoveryProfile.viewMore')"
+              :less-label="t('discoveryProfile.viewLess')"
+            />
           </div>
+
+          <!-- Venue: description of venue (dogs, features, items, accessibility) -->
+          <template v-if="profileType === 'venues'">
+            <div v-if="venueDogsLabel">
+              <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">
+                {{ t('discoveryProfile.allowanceOfDogs') }}
+              </p>
+              <p class="tw:text-sm tw:text-gray-700 tw:leading-relaxed">{{ venueDogsLabel }}</p>
+            </div>
+
+            <div v-if="venueFeatureRows.length">
+              <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-2">
+                {{ t('discoveryProfile.venueFeatures') }}
+              </p>
+              <ul class="tw:space-y-2">
+                <li
+                  v-for="row in venueFeatureRows"
+                  :key="row.key"
+                  class="tw:flex tw:items-center tw:justify-between tw:gap-3 tw:text-sm"
+                >
+                  <span class="tw:text-gray-700">{{ row.label }}</span>
+                  <span
+                    class="tw:shrink-0 tw:rounded-full tw:px-2.5 tw:py-0.5 tw:text-xs tw:font-medium"
+                    :class="row.yes ? 'tw:bg-emerald-50 tw:text-emerald-800 tw:border tw:border-emerald-200' : 'tw:bg-gray-100 tw:text-gray-600 tw:border tw:border-gray-200'"
+                  >
+                    {{ row.yes ? t('discoveryProfile.featureYes') : t('discoveryProfile.featureNo') }}
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="venueDescriptionItems.length">
+              <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-2">
+                {{ t('discoveryProfile.descriptionItems') }}
+              </p>
+              <ul class="tw:space-y-1.5">
+                <li
+                  v-for="item in venueDescriptionItems"
+                  :key="item"
+                  class="tw:flex tw:items-start tw:gap-2 tw:text-sm tw:text-gray-700"
+                >
+                  <svg class="tw:w-4 tw:h-4 tw:shrink-0 tw:mt-0.5 tw:text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <span>{{ item }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="venueAccessibilityText">
+              <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">
+                {{ t('discoveryProfile.accessibility') }}
+              </p>
+              <ExpandableText
+                :text="venueAccessibilityText"
+                :max-length="120"
+                :more-label="t('discoveryProfile.viewMore')"
+                :less-label="t('discoveryProfile.viewLess')"
+              />
+            </div>
+          </template>
 
           <!-- Category -->
           <div v-if="profileCategoryName">
@@ -178,7 +244,18 @@
           <template v-if="profileType === 'talents'">
             <div v-if="profile.highlights">
               <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">Highlights</p>
-              <p class="tw:text-sm tw:text-gray-700 tw:leading-relaxed tw:whitespace-pre-line">{{ profile.highlights }}</p>
+              <ExpandableText
+                :text="profile.highlights"
+                :max-length="120"
+                :more-label="t('discoveryProfile.viewMore')"
+                :less-label="t('discoveryProfile.viewLess')"
+              />
+            </div>
+            <div v-if="talentAgeLabel" class="tw:flex tw:items-center tw:gap-3">
+              <div>
+                <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-0.5">Age</p>
+                <p class="tw:text-sm tw:text-gray-800">{{ talentAgeLabel }}</p>
+              </div>
             </div>
             <div v-if="profile.nationality" class="tw:flex tw:items-center tw:gap-3">
               <div>
@@ -322,19 +399,59 @@
         </div>
 
         <!-- Amenities Tab (venues) -->
-        <div v-else-if="activeTab === 'amenities'" class="tw:px-4 tw:py-4">
-          <ul class="tw:space-y-2">
-            <li
-              v-for="item in profile.description_items"
-              :key="item"
-              class="tw:flex tw:items-center tw:gap-2 tw:text-sm tw:text-gray-700"
-            >
-              <svg class="tw:w-4 tw:h-4 tw:shrink-0 tw:text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-              {{ item }}
-            </li>
-          </ul>
+        <div v-else-if="activeTab === 'amenities'" class="tw:px-4 tw:py-4 tw:space-y-5">
+          <div v-if="venueDogsLabel">
+            <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">
+              {{ t('discoveryProfile.allowanceOfDogs') }}
+            </p>
+            <p class="tw:text-sm tw:text-gray-700">{{ venueDogsLabel }}</p>
+          </div>
+
+          <div v-if="venueFeatureRows.length">
+            <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-2">
+              {{ t('discoveryProfile.venueFeatures') }}
+            </p>
+            <ul class="tw:space-y-2">
+              <li
+                v-for="row in venueFeatureRows"
+                :key="row.key"
+                class="tw:flex tw:items-center tw:justify-between tw:gap-3 tw:text-sm"
+              >
+                <span class="tw:text-gray-700">{{ row.label }}</span>
+                <span
+                  class="tw:shrink-0 tw:rounded-full tw:px-2.5 tw:py-0.5 tw:text-xs tw:font-medium"
+                  :class="row.yes ? 'tw:bg-emerald-50 tw:text-emerald-800 tw:border tw:border-emerald-200' : 'tw:bg-gray-100 tw:text-gray-600 tw:border tw:border-gray-200'"
+                >
+                  {{ row.yes ? t('discoveryProfile.featureYes') : t('discoveryProfile.featureNo') }}
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <div v-if="venueDescriptionItems.length">
+            <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-2">
+              {{ t('discoveryProfile.descriptionItems') }}
+            </p>
+            <ul class="tw:space-y-2">
+              <li
+                v-for="item in venueDescriptionItems"
+                :key="item"
+                class="tw:flex tw:items-center tw:gap-2 tw:text-sm tw:text-gray-700"
+              >
+                <svg class="tw:w-4 tw:h-4 tw:shrink-0 tw:text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                {{ item }}
+              </li>
+            </ul>
+          </div>
+
+          <p
+            v-if="!venueDogsLabel && !venueFeatureRows.length && !venueDescriptionItems.length"
+            class="tw:text-sm tw:text-gray-500 tw:text-center"
+          >
+            {{ t('discoveryProfile.amenitiesEmpty') }}
+          </p>
         </div>
 
         <!-- Contact Tab -->
@@ -476,6 +593,13 @@ import { MAP_CONFIG } from '@/config/mapConfig'
 import { displayProfileLocationLine } from '@/utils/nominatimCityDisplay'
 import { XIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next'
 import DirectionsPanel from './DirectionsPanel.vue'
+import ExpandableText from '@/components/common/ExpandableText.vue'
+import {
+  resolveAllowanceOfDogsLabel,
+  resolveVenueDescriptionItems,
+  resolveVenueFeatureRows,
+  venueHasAmenitiesContent,
+} from '@/utils/venueDiscoveryDisplay'
 
 const EventCard = defineAsyncComponent(() => import('./Event.vue'))
 
@@ -544,6 +668,23 @@ const profileLabel = computed(() => {
   return map[props.profileType] ?? props.profileType
 })
 
+const venueProfileRecord = computed(() =>
+  props.profileType === 'venues' && props.profile ? props.profile : null,
+)
+
+const venueDogsLabel = computed(() => resolveAllowanceOfDogsLabel(venueProfileRecord.value))
+
+const venueFeatureRows = computed(() => resolveVenueFeatureRows(venueProfileRecord.value))
+
+const venueDescriptionItems = computed(() => resolveVenueDescriptionItems(venueProfileRecord.value))
+
+const venueAccessibilityText = computed(() => {
+  const p = venueProfileRecord.value
+  if (!p) return ''
+  const text = p.accessibility_description
+  return typeof text === 'string' ? text.trim() : ''
+})
+
 const badgeClass = computed(() => {
   const map = {
     organisers: 'tw:bg-indigo-500/80 tw:text-white',
@@ -582,6 +723,38 @@ const subcategoryLabels = computed(() => {
   else if (props.profileType === 'venues') subs = p.venue_subcategories ?? p.subcategories ?? []
   else subs = p.subcategories ?? []
   return subs.map(s => s.name)
+})
+
+function getAgeFromDob(rawDob) {
+  if (!rawDob) return null
+  const str = String(rawDob).trim()
+  if (!str) return null
+
+  // Handles ISO/date strings from API (e.g. 1999-12-31, 1999-12-31T00:00:00Z)
+  const d = new Date(str)
+  if (Number.isNaN(d.getTime())) return null
+
+  const today = new Date()
+  let age = today.getFullYear() - d.getFullYear()
+  const monthDiff = today.getMonth() - d.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d.getDate())) age--
+
+  if (age < 0 || age > 120) return null
+  return age
+}
+
+const talentAgeLabel = computed(() => {
+  const p = props.profile
+  if (!p || props.profileType !== 'talents') return ''
+
+  const rawAge = p.age
+  if (rawAge != null && rawAge !== '') {
+    const n = Number(rawAge)
+    if (!Number.isNaN(n) && n >= 0 && n <= 120) return String(Math.floor(n))
+  }
+
+  const fromDob = getAgeFromDob(p.date_of_birth ?? p.dateOfBirth ?? p.dob)
+  return fromDob != null ? String(fromDob) : ''
 })
 
 // ── Profile URL ────────────────────────────────────────────────
@@ -905,7 +1078,7 @@ const tabs = computed(() => {
   if (props.profileType === 'venues' && props.profile?.opening_hours?.length) {
     list.push({ id: 'hours', label: t('discoveryProfile.tabs.openingHours') })
   }
-  if (props.profileType === 'venues' && props.profile?.description_items?.length) {
+  if (props.profileType === 'venues' && venueHasAmenitiesContent(props.profile)) {
     list.push({ id: 'amenities', label: t('discoveryProfile.tabs.amenities') })
   }
   const hasContact = props.profile?.contact_phone || props.profile?.contact_email ||

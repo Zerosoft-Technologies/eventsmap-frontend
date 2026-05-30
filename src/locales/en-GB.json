@@ -19,8 +19,9 @@
     "noPendingInvitations": "No pending invitations.",
     "profileType": {
       "events": "Events",
+      "talent": "Talent",
       "organisers": "Organisers",
-      "talents": "Talents",
+      "talents": "Talent",
       "venues": "Venues",
       "ariaLabel": "Browse by profile type",
       "menuLabel": "Profile types"
@@ -30,6 +31,8 @@
     "finished": "Event is Finished",
     "liveNow": "Live Now",
     "date": "Date",
+    "startTime": "Start time",
+    "endTime": "End time",
     "location": "Location",
     "category": "Category",
     "dresscode": "Dresscode",
@@ -113,6 +116,16 @@
     "viewProfile": "View Profile",
     "viewDetails": "Details"
   },
+  "mapCluster": {
+    "profilesAtLocation": "{count} profiles at this location",
+    "eventsAtLocation": "{count} events at this location",
+    "browseHint": "Swipe or use the arrows below to browse",
+    "singleEventHint": "Tap View Event for full details",
+    "singleProfileHint": "Tap View Profile for full details",
+    "scrollPrevious": "Previous",
+    "scrollNext": "Next",
+    "carouselControls": "Browse cards at this location"
+  },
   "discoveryProfile": {
     "tabs": {
       "overview": "Overview",
@@ -131,7 +144,16 @@
       "default": "Location"
     },
     "mapLoading": "Loading map...",
-    "mapNoCoordinates": "Map coordinates are not available for this profile. You can still open directions using the address when available."
+    "mapNoCoordinates": "Map coordinates are not available for this profile. You can still open directions using the address when available.",
+    "viewMore": "View more",
+    "viewLess": "View less",
+    "allowanceOfDogs": "Allowance of dogs",
+    "venueFeatures": "Venue features",
+    "descriptionItems": "Description items",
+    "accessibility": "Accessibility",
+    "featureYes": "Yes",
+    "featureNo": "No",
+    "amenitiesEmpty": "No venue amenities listed."
   },
   "mapListingFilter": {
     "timeRange": "Time range",

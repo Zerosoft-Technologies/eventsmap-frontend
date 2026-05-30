@@ -1,7 +1,7 @@
 {
   "header": {
     "search": {
-      "placeholder": "Rechercher des événements..."
+      "placeholder": "Rechercher"
     },
     "location": {
       "placeholder": "Entrez la localisation..."
@@ -15,8 +15,9 @@
     "link": "Lien",
     "profileType": {
       "events": "Événements",
+      "talent": "Talent",
       "organisers": "Organisateurs",
-      "talents": "Talents",
+      "talents": "Talent",
       "venues": "Lieux",
       "ariaLabel": "Parcourir par type de profil",
       "menuLabel": "Types de profil"
@@ -25,6 +26,8 @@
   "eventCard": {
     "liveNow": "En Direct",
     "date": "Date",
+    "startTime": "Heure de début",
+    "endTime": "Heure de fin",
     "location": "Lieu",
     "category": "Catégorie",
     "dresscode": "Code Vestimentaire",
@@ -108,7 +111,7 @@
     "onlineEvents": "Événements en Ligne"
   },
   "map": {
-    "searchThisArea": "Rechercher dans cette zone",
+    "searchThisArea": "Rechercher",
     "centerOnLocation": "Centrer sur ma position",
     "showList": "Afficher la Liste",
     "showMap": "Afficher la Carte"
@@ -269,6 +272,16 @@
     "viewProfile": "Voir le profil",
     "viewDetails": "Détails"
   },
+  "mapCluster": {
+    "profilesAtLocation": "{count} profils à cet emplacement",
+    "eventsAtLocation": "{count} événements à cet emplacement",
+    "browseHint": "Glissez ou utilisez les flèches ci-dessous",
+    "singleEventHint": "Appuyez sur Voir l'événement pour les détails",
+    "singleProfileHint": "Appuyez sur Voir le profil pour les détails",
+    "scrollPrevious": "Précédent",
+    "scrollNext": "Suivant",
+    "carouselControls": "Parcourir les cartes à cet emplacement"
+  },
   "discoveryProfile": {
     "tabs": {
       "overview": "Aperçu",
@@ -287,7 +300,16 @@
       "default": "Lieu"
     },
     "mapLoading": "Chargement de la carte...",
-    "mapNoCoordinates": "Les coordonnées cartographiques ne sont pas disponibles pour ce profil. Vous pouvez ouvrir l’itinéraire à partir de l’adresse si elle est renseignée."
+    "mapNoCoordinates": "Les coordonnées cartographiques ne sont pas disponibles pour ce profil. Vous pouvez ouvrir l’itinéraire à partir de l’adresse si elle est renseignée.",
+    "viewMore": "Voir plus",
+    "viewLess": "Voir moins",
+    "allowanceOfDogs": "Politique chiens",
+    "venueFeatures": "Caractéristiques du lieu",
+    "descriptionItems": "Éléments de description",
+    "accessibility": "Accessibilité",
+    "featureYes": "Oui",
+    "featureNo": "Non",
+    "amenitiesEmpty": "Aucun équipement indiqué."
   },
   "mapListingFilter": {
     "timeRange": "Plage horaire",

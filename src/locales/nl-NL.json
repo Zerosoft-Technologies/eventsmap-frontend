@@ -1,7 +1,7 @@
 {
   "header": {
     "search": {
-      "placeholder": "Zoek evenementen..."
+      "placeholder": "Zoeken"
     },
     "location": {
       "placeholder": "Voer locatie in..."
@@ -15,8 +15,9 @@
     "link": "Link",
     "profileType": {
       "events": "Evenementen",
+      "talent": "Talent",
       "organisers": "Organisatoren",
-      "talents": "Talenten",
+      "talents": "Talent",
       "venues": "Locaties",
       "ariaLabel": "Bladeren op profieltype",
       "menuLabel": "Profieltypes"
@@ -25,6 +26,8 @@
   "eventCard": {
     "liveNow": "Live Nu",
     "date": "Datum",
+    "startTime": "Starttijd",
+    "endTime": "Eindtijd",
     "location": "Locatie",
     "category": "Categorie",
     "dresscode": "Dresscode",
@@ -108,7 +111,7 @@
     "onlineEvents": "Online Evenementen"
   },
   "map": {
-    "searchThisArea": "Zoek in dit gebied",
+    "searchThisArea": "Zoeken",
     "centerOnLocation": "Centreer op mijn locatie",
     "showList": "Toon Lijst",
     "showMap": "Toon Kaart"
@@ -269,6 +272,16 @@
     "viewProfile": "Profiel bekijken",
     "viewDetails": "Details"
   },
+  "mapCluster": {
+    "profilesAtLocation": "{count} profielen op deze locatie",
+    "eventsAtLocation": "{count} evenementen op deze locatie",
+    "browseHint": "Veeg of gebruik de pijlen hieronder",
+    "singleEventHint": "Tik op Evenement bekijken voor details",
+    "singleProfileHint": "Tik op Profiel bekijken voor details",
+    "scrollPrevious": "Vorige",
+    "scrollNext": "Volgende",
+    "carouselControls": "Kaarten op deze locatie bekijken"
+  },
   "discoveryProfile": {
     "tabs": {
       "overview": "Overzicht",
@@ -287,7 +300,16 @@
       "default": "Locatie"
     },
     "mapLoading": "Kaart laden...",
-    "mapNoCoordinates": "Er zijn geen kaartcoördinaten voor dit profiel. Je kunt wel routebeschrijving openen op basis van het adres, indien beschikbaar."
+    "mapNoCoordinates": "Er zijn geen kaartcoördinaten voor dit profiel. Je kunt wel routebeschrijving openen op basis van het adres, indien beschikbaar.",
+    "viewMore": "Meer weergeven",
+    "viewLess": "Minder weergeven",
+    "allowanceOfDogs": "Hondenbeleid",
+    "venueFeatures": "Voorzieningen van de locatie",
+    "descriptionItems": "Beschrijving onderdelen",
+    "accessibility": "Toegankelijkheid",
+    "featureYes": "Ja",
+    "featureNo": "Nee",
+    "amenitiesEmpty": "Geen voorzieningen vermeld."
   },
   "mapListingFilter": {
     "timeRange": "Tijdsvenster",

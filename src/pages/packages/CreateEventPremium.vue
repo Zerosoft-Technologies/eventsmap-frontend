@@ -743,8 +743,21 @@
                             fieldErrors.contact_email[0] }}</p>
                     </div>
 
-                    <input v-model="contactWebsite" type="text" placeholder="Website"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                    <div>
+                        <input
+                            v-model="contactWebsite"
+                            type="url"
+                            inputmode="url"
+                            placeholder="https://example.com"
+                            data-field="contact_website"
+                            @input="clearFieldError('contact_website')"
+                            @blur="normalizeUrlField(contactWebsite)"
+                            :class="urlInputClass('contact_website')"
+                        />
+                        <p v-if="fieldErrors.contact_website" class="tw:text-red-500 tw:text-sm tw:mt-1">
+                            {{ fieldErrors.contact_website[0] }}
+                        </p>
+                    </div>
 
                     <!-- SHOW CHATBOX TOGGLE -->
                     <!-- <div class="tw:flex tw:justify-between tw:items-center tw:pt-2">
@@ -797,14 +810,53 @@
                         Social Media Links
                     </h3>
 
-                    <input v-model="facebookUrl" type="text" placeholder="Facebook URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <div>
+                        <input
+                            v-model="facebookUrl"
+                            type="url"
+                            inputmode="url"
+                            placeholder="https://facebook.com/..."
+                            data-field="facebook_url"
+                            @input="clearFieldError('facebook_url')"
+                            @blur="normalizeUrlField(facebookUrl)"
+                            :class="urlInputClass('facebook_url')"
+                        />
+                        <p v-if="fieldErrors.facebook_url" class="tw:text-red-500 tw:text-sm tw:mt-1">
+                            {{ fieldErrors.facebook_url[0] }}
+                        </p>
+                    </div>
 
-                    <input v-model="instagramUrl" type="text" placeholder="Instagram URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <div>
+                        <input
+                            v-model="instagramUrl"
+                            type="url"
+                            inputmode="url"
+                            placeholder="https://instagram.com/..."
+                            data-field="instagram_url"
+                            @input="clearFieldError('instagram_url')"
+                            @blur="normalizeUrlField(instagramUrl)"
+                            :class="urlInputClass('instagram_url')"
+                        />
+                        <p v-if="fieldErrors.instagram_url" class="tw:text-red-500 tw:text-sm tw:mt-1">
+                            {{ fieldErrors.instagram_url[0] }}
+                        </p>
+                    </div>
 
-                    <input v-model="tiktokUrl" type="text" placeholder="Tik Tok URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <div>
+                        <input
+                            v-model="tiktokUrl"
+                            type="url"
+                            inputmode="url"
+                            placeholder="https://tiktok.com/@..."
+                            data-field="tiktok_url"
+                            @input="clearFieldError('tiktok_url')"
+                            @blur="normalizeUrlField(tiktokUrl)"
+                            :class="urlInputClass('tiktok_url')"
+                        />
+                        <p v-if="fieldErrors.tiktok_url" class="tw:text-red-500 tw:text-sm tw:mt-1">
+                            {{ fieldErrors.tiktok_url[0] }}
+                        </p>
+                    </div>
                 </div>
 
                 <!-- EVENT CONDITIONS SECTION -->
@@ -839,7 +891,7 @@
                 <!-- INVITE SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
-                        <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
+                        <h3 class="tw:text-xl tw:font-bold tw:text-[var(--text-primary)]">
                             Invite
                         </h3>
                         <!-- <button
@@ -849,19 +901,47 @@
                     </div>
 
                     <p class="tw:text-sm tw:text-[#1E3A8A]">
-                        Make your event stand out even more. These sections help attendees find information and
-                        answer
-                        their
-                        questions.
+                        Add registered talent, venues and organisers who are participating in this event
                     </p>
 
                     <div class="tw:space-y-3">
-                        <InviteSection :key="`invite-talent-${inviteSectionResetKey}`" role="talent" :profiles="talentUsers" :has-border="true"
-                            v-model:selectedIds="invitedTalentIds" />
-                        <InviteSection :key="`invite-venue-${inviteSectionResetKey}`" role="venue" :profiles="venueUsers" :has-border="false"
-                            v-model:selectedIds="invitedVenueIds" />
-                        <InviteSection :key="`invite-organizer-${inviteSectionResetKey}`" role="organizer" :profiles="organiserUsers" :has-border="true"
-                            v-model:selectedIds="invitedOrganiserIds" />
+                        <p v-if="inviteProfilesError" class="tw:text-sm tw:text-red-600">{{ inviteProfilesError }}</p>
+                        <InviteSection
+                            :key="`invite-talent-${inviteSectionResetKey}`"
+                            role="talent"
+                            :profiles="talentProfiles"
+                            :all-profiles="invitationAllProfiles"
+                            :loading="invitationRoleLoading('talent')"
+                            :load-error="inviteProfilesError ?? ''"
+                            :has-border="true"
+                            v-model:selectedIds="invitedTalentIds"
+                            @open="onInvitePanelOpen"
+                            @refetch="onInviteRefetch"
+                        />
+                        <InviteSection
+                            :key="`invite-venue-${inviteSectionResetKey}`"
+                            role="venue"
+                            :profiles="venueProfiles"
+                            :all-profiles="invitationAllProfiles"
+                            :loading="invitationRoleLoading('venue')"
+                            :load-error="inviteProfilesError ?? ''"
+                            :has-border="false"
+                            v-model:selectedIds="invitedVenueIds"
+                            @open="onInvitePanelOpen"
+                            @refetch="onInviteRefetch"
+                        />
+                        <InviteSection
+                            :key="`invite-organizer-${inviteSectionResetKey}`"
+                            role="organizer"
+                            :profiles="organiserProfiles"
+                            :all-profiles="invitationAllProfiles"
+                            :loading="invitationRoleLoading('organizer')"
+                            :load-error="inviteProfilesError ?? ''"
+                            :has-border="true"
+                            v-model:selectedIds="invitedOrganiserIds"
+                            @open="onInvitePanelOpen"
+                            @refetch="onInviteRefetch"
+                        />
                     </div>
                 </div>
 
@@ -897,11 +977,11 @@
                 <!-- SAVE / UPDATE EVENT BUTTONS -->
                 <div class="tw:w-full tw:pt-4">
                     <div class="tw:flex tw:flex-col tw:md:flex-row tw:w-full tw:items-stretch tw:md:items-center tw:justify-between tw:gap-3 tw:md:gap-0">
-                        <button class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
+                        <!-- <button class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
                            tw:border tw:border-orange-500 tw:text-[#0061FF]
                            tw:bg-white hover:tw:bg-orange-50 tw:transition-all">
                             Buy Tickets
-                        </button>
+                        </button> -->
                         <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-2">
                             <button v-if="isEditMode" @click="cancelEdit" type="button"
                                 class="tw:w-full tw:md:w-auto tw:px-6 tw:py-3 tw:md:py-2 tw:text-sm tw:font-medium tw:rounded-md 
@@ -917,7 +997,7 @@
                             </button>
                         </div>
                     </div>
-                    <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span>
+                    <!-- <span class="tw:text-red-500 tw:text-sm tw:mt-2 tw:block">Soon available</span> -->
                 </div>
 
             </div>
@@ -1004,6 +1084,12 @@ import "maplibre-gl/dist/maplibre-gl.css"
 
 import flatpickr from "flatpickr"
 import "flatpickr/dist/flatpickr.css"
+import { validateOptionalUrlInput } from "@/utils/socialMediaUrls"
+import { useEventInvitationProfiles } from "@/composables/useEventInvitationProfiles"
+import {
+    parseInvitedProfileIds,
+    profilesFromInvitedObjects,
+} from "@/utils/invitedEventProfiles"
 
 const router = useRouter()
 const route = useRoute()
@@ -1095,8 +1181,75 @@ const errors = ref({
     contactEmail: false,
 })
 
-const allUsers = ref([])
-const isLoadingUsers = ref(false)
+const invitationEventId = computed(() => editingEventId.value ?? null)
+
+const {
+  talentProfiles,
+  organiserProfiles,
+  venueProfiles,
+  error: inviteProfilesError,
+  load: loadInvitationProfiles,
+  allProfiles: invitationAllProfiles,
+  ensureRoleLoaded: ensureInvitationRoleLoaded,
+  refetchRole: refetchInvitationRole,
+  roleLoading: invitationRoleLoading,
+  seedProfiles: seedInvitationProfiles,
+} = useEventInvitationProfiles(invitationEventId)
+
+function onInvitePanelOpen(role) {
+  ensureInvitationRoleLoaded(role, '')
+}
+
+function onInviteRefetch(role) {
+  refetchInvitationRole(role)
+}
+
+const URL_INPUT_BASE =
+    'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all'
+
+function apiFieldError(key) {
+    const err = fieldErrors.value[key]
+    if (Array.isArray(err)) return err[0] || ''
+    if (typeof err === 'string') return err
+    return ''
+}
+
+function urlInputClass(key) {
+    return [URL_INPUT_BASE, apiFieldError(key) ? 'tw:border-red-500' : 'tw:border-gray-200']
+}
+
+function normalizeUrlField(fieldRef) {
+    const result = validateOptionalUrlInput(fieldRef.value)
+    if (result.ok && result.value) fieldRef.value = result.value
+}
+
+function validateOptionalUrlFields() {
+    const checks = [
+        { key: 'contact_website', value: contactWebsite.value },
+        { key: 'facebook_url', value: facebookUrl.value },
+        { key: 'instagram_url', value: instagramUrl.value },
+        { key: 'tiktok_url', value: tiktokUrl.value },
+        { key: 'ticket_url', value: ticketUrl.value },
+    ]
+    const next = { ...fieldErrors.value }
+    let valid = true
+    for (const { key, value } of checks) {
+        const result = validateOptionalUrlInput(value)
+        if (!result.ok) {
+            next[key] = [result.error]
+            valid = false
+        } else if (next[key]) {
+            delete next[key]
+        }
+    }
+    fieldErrors.value = next
+    return valid
+}
+
+function appendValidatedOptionalUrl(formData, key, rawValue) {
+    const result = validateOptionalUrlInput(rawValue)
+    if (result.ok && result.value) formData.append(key, result.value)
+}
 
 // Clear individual field error
 function clearFieldError(fieldName) {
@@ -1109,6 +1262,12 @@ function clearFieldError(fieldName) {
     }
     if (fieldName === 'subcategories') {
         subcategoryError.value = false
+    }
+
+    if (fieldErrors.value[fieldName]) {
+        const next = { ...fieldErrors.value }
+        delete next[fieldName]
+        fieldErrors.value = next
     }
 }
 
@@ -1527,26 +1686,29 @@ const availableSubcategories = computed(() => {
     return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
 })
 
-function normalizeInviteRole(role) {
-    const r = String(role ?? '').toLowerCase().trim()
-    if (r === 'organiser') return 'organizer'
-    return r
-}
-
-const talentUsers = computed(() =>
-    allUsers.value.filter((u) => normalizeInviteRole(u.profile_type) === 'talent')
-)
-const organiserUsers = computed(() =>
-    allUsers.value.filter((u) => normalizeInviteRole(u.profile_type) === 'organizer')
-)
-const venueUsers = computed(() =>
-    allUsers.value.filter((u) => normalizeInviteRole(u.profile_type) === 'venue')
-)
-
-// Invite section selected IDs (optional - passed to API when user selects)
+// Invite section selected IDs (profile primary keys for invited_* arrays)
 const invitedTalentIds = ref([])
 const invitedOrganiserIds = ref([])
 const invitedVenueIds = ref([])
+
+function appendInvitedProfileIds(formData) {
+    invitedTalentIds.value.forEach((id) => {
+        const n = Number(id)
+        if (Number.isFinite(n)) formData.append('invited_talents[]', String(n))
+    })
+    invitedOrganiserIds.value.forEach((id) => {
+        const n = Number(id)
+        if (Number.isFinite(n)) formData.append('invited_organisers[]', String(n))
+    })
+    invitedVenueIds.value.forEach((id) => {
+        const n = Number(id)
+        if (Number.isFinite(n)) formData.append('invited_venues[]', String(n))
+    })
+}
+
+watch(editingEventId, () => {
+    loadInvitationProfiles()
+})
 
 const menuItems = [
     { id: "home", icon: Home, label: "Home", route: "/create-event-premium" },
@@ -1972,6 +2134,13 @@ async function scrollToFirstError() {
         scrollEl(selects()[3])
         return
     }
+
+    for (const key of ['contact_website', 'facebook_url', 'instagram_url', 'tiktok_url', 'ticket_url']) {
+        if (fieldErrors.value[key]?.length) {
+            scrollEl(document.querySelector(`[data-field="${key}"]`))
+            return
+        }
+    }
 }
 
 // Form validation functions
@@ -2025,13 +2194,15 @@ function validateForm() {
         endTime.value !== "" &&
         !datetimeRangeError.value
 
+    const urlsValid = validateOptionalUrlFields()
+
     // Check for any validation errors
     const hasOtherErrors = Object.values(errors.value).some(error => error) ||
         categoryError.value ||
         subcategoryError.value ||
         pastDateError.value
 
-    return !hasOtherErrors && timeValid
+    return !hasOtherErrors && timeValid && urlsValid
 }
 
 async function handleSubmit() {
@@ -2101,13 +2272,13 @@ async function createEvent() {
         formData.append('description', eventDescription.value)
 
         // Optional fields
-        if (contactWebsite.value) formData.append('contact_website', contactWebsite.value)
+        appendValidatedOptionalUrl(formData, 'contact_website', contactWebsite.value)
         if (contactBoxMessage.value) formData.append('contact_box_message', contactBoxMessage.value)
         if (venueDetailsText.value) formData.append('venue_details', venueDetailsText.value)
-        if (facebookUrl.value) formData.append('facebook_url', facebookUrl.value)
-        if (instagramUrl.value) formData.append('instagram_url', instagramUrl.value)
-        if (tiktokUrl.value) formData.append('tiktok_url', tiktokUrl.value)
-        if (ticketUrl.value) formData.append('ticket_url', ticketUrl.value)
+        appendValidatedOptionalUrl(formData, 'facebook_url', facebookUrl.value)
+        appendValidatedOptionalUrl(formData, 'instagram_url', instagramUrl.value)
+        appendValidatedOptionalUrl(formData, 'tiktok_url', tiktokUrl.value)
+        appendValidatedOptionalUrl(formData, 'ticket_url', ticketUrl.value)
         if (bookingInstructions.value) formData.append('booking_instructions', bookingInstructions.value)
         // Backend boolean flags
         formData.append('is_recurring', isRecurring.value ? '1' : '0')
@@ -2119,9 +2290,7 @@ async function createEvent() {
         if (conditionAgeLimit.value) formData.append('condition_age_limit', conditionAgeLimit.value)
 
         // Invite section IDs (optional - pass when user has selected)
-        invitedTalentIds.value.forEach(id => formData.append('invited_talents[]', id))
-        invitedOrganiserIds.value.forEach(id => formData.append('invited_organisers[]', id))
-        invitedVenueIds.value.forEach(id => formData.append('invited_venues[]', id))
+        appendInvitedProfileIds(formData)
 
         // Add image_id if exists
         if (form.image_path) {
@@ -2282,34 +2451,9 @@ async function reverseGeocode(lng, lat) {
     }
 }
 
-async function fetchUsers() {
-    try {
-        isLoadingUsers.value = true
-        const response = await api.get('/v2/users')
-        const data = response.data?.data ?? response.data ?? []
-        allUsers.value = Array.isArray(data) ? data.map(normalizeUser) : []
-        console.log('Fetched users:', allUsers.value)
-    } catch (error) {
-        console.error('Error fetching users:', error)
-        allUsers.value = []
-    } finally {
-        isLoadingUsers.value = false
-    }
-}
-
-function normalizeUser(u) {
-    return {
-        id: u.id,
-        name: u.name ?? u.username ?? '',
-        profile_type: u.profile_type ?? 'talent',
-        account_type: u.account_type ?? 'free',
-        country: u.country ?? '',
-    }
-}
-
 // Initialize map on component mount
 onMounted(async () => {
-    fetchUsers()
+    loadInvitationProfiles()
     fetchCategories()
 
     // Add click outside listener for dropdown
@@ -2493,10 +2637,27 @@ async function loadEvent(id) {
             ? !!d.show_past_events
             : false
 
-        // Invite selections
-        invitedTalentIds.value = Array.isArray(d.invited_talents) ? d.invited_talents.map(id => String(id)) : []
-        invitedOrganiserIds.value = Array.isArray(d.invited_organisers) ? d.invited_organisers.map(id => String(id)) : []
-        invitedVenueIds.value = Array.isArray(d.invited_venues) ? d.invited_venues.map(id => String(id)) : []
+        // Invite selections (profile PKs from ids and/or *_objects)
+        seedInvitationProfiles([
+            ...profilesFromInvitedObjects(d.invited_talents_objects, 'talent'),
+            ...profilesFromInvitedObjects(d.invited_organisers_objects, 'organiser'),
+            ...profilesFromInvitedObjects(d.invited_venues_objects, 'venue'),
+        ])
+        invitedTalentIds.value = parseInvitedProfileIds(
+            d.invited_talents,
+            d.invited_talents_objects,
+            'talent',
+        )
+        invitedOrganiserIds.value = parseInvitedProfileIds(
+            d.invited_organisers,
+            d.invited_organisers_objects,
+            'organiser',
+        )
+        invitedVenueIds.value = parseInvitedProfileIds(
+            d.invited_venues,
+            d.invited_venues_objects,
+            'venue',
+        )
         inviteSectionResetKey.value += 1
 
         // Load image_ids from event
@@ -2653,13 +2814,13 @@ async function updateEvent() {
         // Optional fields
         if (contactPhone.value) formData.append('contact_phone', contactPhone.value)
         if (contactEmail.value) formData.append('contact_email', contactEmail.value)
-        if (contactWebsite.value) formData.append('contact_website', contactWebsite.value)
+        appendValidatedOptionalUrl(formData, 'contact_website', contactWebsite.value)
         if (contactBoxMessage.value) formData.append('contact_box_message', contactBoxMessage.value)
         if (venueDetailsText.value) formData.append('venue_details', venueDetailsText.value)
-        if (facebookUrl.value) formData.append('facebook_url', facebookUrl.value)
-        if (instagramUrl.value) formData.append('instagram_url', instagramUrl.value)
-        if (tiktokUrl.value) formData.append('tiktok_url', tiktokUrl.value)
-        if (ticketUrl.value) formData.append('ticket_url', ticketUrl.value)
+        appendValidatedOptionalUrl(formData, 'facebook_url', facebookUrl.value)
+        appendValidatedOptionalUrl(formData, 'instagram_url', instagramUrl.value)
+        appendValidatedOptionalUrl(formData, 'tiktok_url', tiktokUrl.value)
+        appendValidatedOptionalUrl(formData, 'ticket_url', ticketUrl.value)
         if (bookingInstructions.value) formData.append('booking_instructions', bookingInstructions.value)
         
         // Boolean fields
@@ -2674,9 +2835,7 @@ async function updateEvent() {
         if (conditionAgeLimit.value) formData.append('condition_age_limit', conditionAgeLimit.value)
         
         // Invite section IDs
-        invitedTalentIds.value.forEach(id => formData.append('invited_talents[]', id))
-        invitedOrganiserIds.value.forEach(id => formData.append('invited_organisers[]', id))
-        invitedVenueIds.value.forEach(id => formData.append('invited_venues[]', id))
+        appendInvitedProfileIds(formData)
         
         // ── Main image ──────────────────────────────────────────────────────
         // Prefer gallery UUID (same as create flow). Upload-via-modal already assigns form.image_path after the image exists server-side.

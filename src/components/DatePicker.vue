@@ -21,13 +21,14 @@
 <script setup>
 import { ref, defineEmits, onMounted, defineProps } from "vue";
 import VueTailwindDatepicker from "vue-tailwind-datepicker";
+import { getDefaultDiscoveryDateRange } from "@/utils/discoveryDateTimeFilters";
 
 const props = defineProps({
   // When used inside the mobile overlay dropdown we want the calendar
   // to be part of normal document flow (no popover overlap).
   inline: { type: Boolean, default: false },
   noInput: { type: Boolean, default: false },
-  /** Seed range when mounting (e.g. mobile draft from applied filters). Omit to use today. */
+  /** Seed range when mounting (e.g. mobile draft from applied filters). Omit to use current month. */
   initialDateRange: { type: Array, default: null },
   /** Seed session toggles when mounting (mobile draft). */
   initialSession: { type: Object, default: null },
@@ -35,11 +36,8 @@ const props = defineProps({
   persistSessionToStorage: { type: Boolean, default: true },
 })
 
-const today = new Date();
-const pad = (n) => String(n).padStart(2, "0");
-let formattedDate = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
-
-const dateValue = ref([formattedDate, formattedDate]);
+const [defaultStart, defaultEnd] = getDefaultDiscoveryDateRange()
+const dateValue = ref([defaultStart, defaultEnd])
 const formatter = ref({
   date: "DD/MM/YYYY",
   month: "MMM"

@@ -1,5 +1,8 @@
 <template>
-  <div class="tw:flex tw:flex-col tw:w-[350px] tw:bg-white tw:rounded-2xl tw:shadow-md tw:overflow-hidden tw:border tw:border-gray-100 hover:tw:shadow-lg tw:transition-all tw:duration-200">
+  <div
+    class="tw:flex tw:flex-col tw:w-[350px] tw:bg-white tw:rounded-2xl tw:shadow-md tw:overflow-hidden tw:border tw:border-gray-100 tw:transition-all tw:duration-200"
+    :class="mapClusterEmbed ? 'map-cluster-embed-card' : 'hover:tw:shadow-lg'"
+  >
 
     <!-- ── Hero: cover only, or carousel when additional_images exist ── -->
     <div class="tw:relative tw:h-40 tw:overflow-hidden tw:rounded-t-2xl">
@@ -16,7 +19,7 @@
         </div>
       </div>
       <button
-        v-if="heroImages.length > 1"
+        v-if="heroImages.length > 1 && !mapClusterEmbed"
         type="button"
         class="tw:absolute tw:left-2 tw:top-1/2 tw:z-[3] tw:flex tw:h-7 tw:w-7 tw:-translate-y-1/2 tw:items-center tw:justify-center tw:rounded-full tw:bg-white/90 tw:shadow-md tw:backdrop-blur-sm tw:transition-colors hover:tw:bg-white"
         :aria-label="t('eventDetails.previousImage')"
@@ -25,7 +28,7 @@
         <ChevronLeftIcon class="tw:h-3.5 tw:w-3.5 tw:text-gray-700" />
       </button>
       <button
-        v-if="heroImages.length > 1"
+        v-if="heroImages.length > 1 && !mapClusterEmbed"
         type="button"
         class="tw:absolute tw:right-2 tw:top-1/2 tw:z-[3] tw:flex tw:h-7 tw:w-7 tw:-translate-y-1/2 tw:items-center tw:justify-center tw:rounded-full tw:bg-white/90 tw:shadow-md tw:backdrop-blur-sm tw:transition-colors hover:tw:bg-white"
         :aria-label="t('eventDetails.nextImage')"
@@ -34,7 +37,7 @@
         <ChevronRightIcon class="tw:h-3.5 tw:w-3.5 tw:text-gray-700" />
       </button>
       <div
-        v-if="heroImages.length > 1"
+        v-if="heroImages.length > 1 && !mapClusterEmbed"
         class="tw:absolute tw:bottom-2 tw:right-2 tw:z-[3] tw:rounded-full tw:bg-black/60 tw:px-2 tw:py-0.5 tw:text-[10px] tw:font-medium tw:text-white tw:backdrop-blur-sm"
       >
         {{ heroImageIndex + 1 }} / {{ heroImages.length }}
@@ -127,7 +130,23 @@
           <svg class="tw:w-4 tw:h-4 tw:shrink-0 tw:mt-0.5 tw:text-[var(--primary-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
-          <span class="tw:text-sm tw:text-[var(--primary-color)] tw:leading-snug">{{ formattedEventSchedule }}</span>
+          <div
+            v-if="scheduleDisplay.date || scheduleDisplay.startTime || scheduleDisplay.endTime"
+            class="tw:flex tw:flex-col tw:gap-0.5 tw:min-w-0 tw:text-sm tw:text-[var(--primary-color)] tw:leading-snug"
+          >
+            <p v-if="scheduleDisplay.date" class="tw:m-0">
+              <span class="tw:font-medium">{{ $t('eventCard.date') }}:</span>
+              {{ ' ' }}{{ scheduleDisplay.date }}
+            </p>
+            <p v-if="scheduleDisplay.startTime" class="tw:m-0">
+              <span class="tw:font-medium">{{ $t('eventCard.startTime') }}:</span>
+              {{ ' ' }}{{ scheduleDisplay.startTime }}
+            </p>
+            <p v-if="scheduleDisplay.endTime" class="tw:m-0">
+              <span class="tw:font-medium">{{ $t('eventCard.endTime') }}:</span>
+              {{ ' ' }}{{ scheduleDisplay.endTime }}<template v-if="scheduleDisplay.endDate"> · {{ scheduleDisplay.endDate }}</template>
+            </p>
+          </div>
         </div>
 
         <!-- Location -->
@@ -206,8 +225,9 @@
         </button>
         <button
           v-if="!hideViewEvent"
+          type="button"
           @click="emit('viewEvent', event)"
-          class="tw:flex-1 tw:text-sm tw:px-2 tw:py-1.5 tw:rounded-lg tw:bg-orange-500 tw:text-white tw:border tw:border-orange-500 tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 hover:tw:bg-orange-600"
+          class="event-card-view-btn no-hover tw:flex-1 tw:text-sm tw:px-2 tw:py-1.5 tw:rounded-lg tw:bg-orange-500 tw:text-white tw:border tw:border-orange-500 tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 hover:tw:bg-orange-600 hover:tw:border-orange-600 active:tw:bg-orange-700 active:tw:border-orange-700"
         >
           {{ $t('eventCard.viewEvent') }}
           <svg class="tw:w-3.5 tw:h-3.5 tw:shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -275,17 +295,23 @@ import { useAuthStore } from '@/stores/auth'
 import { buildEventGalleryImageUrls } from '@/utils/eventGalleryImages'
 import { getUserProfileImageUrl } from '@/utils/userProfileImage'
 import DirectionsPanel from './DirectionsPanel.vue'
+import { getEventCardScheduleDisplay } from '@/utils/eventSchedule'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const wishlistStore = useWishlistStore()
 const authStore = useAuthStore()
 
-const props = defineProps({ 
+const props = defineProps({
   event: Object,
   hideViewEvent: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
+  /** Map cluster popup: hide hero gallery chrome so carousel controls stay clear */
+  mapClusterEmbed: {
+    type: Boolean,
+    default: false,
+  },
 })
 const emit = defineEmits(['viewEvent'])
 
@@ -339,65 +365,14 @@ function getEventCoordinates(ev) {
 
 const hasMapCoordinates = computed(() => getEventCoordinates(props.event) != null)
 
-function parseEndInstantMsForDisplay(ev) {
-  if (!ev) return NaN
-  let e = parseEventInstantMs(ev, 'end')
-  if (!isNaN(e)) return e
-  const datePart = normalizeEventDatePart(ev?.event_date)
-  const et = ev?.end_time
-  if (datePart && et != null && String(et).trim() !== '') {
-    const t = new Date(`${datePart}T${String(et).trim()}`)
-    if (!isNaN(t.getTime())) return t.getTime()
-  }
-  return NaN
-}
-
-const formattedEventSchedule = computed(() => {
-  const ev = props.event
-  if (!ev) return ''
-  const opt = {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }
-  const sMs = parseEventInstantMs(ev, 'start')
-  let eMs = parseEndInstantMsForDisplay(ev)
-  if (!isNaN(sMs) && !isNaN(eMs) && eMs <= sMs) {
-    eMs += 24 * 60 * 60 * 1000
-  }
-  const fmt = (ms) => {
-    if (isNaN(ms)) return ''
-    const d = new Date(ms)
-    if (isNaN(d.getTime())) return ''
-    return d.toLocaleString(undefined, opt)
-  }
-  const startLabel = fmt(sMs)
-  const endLabel = fmt(eMs)
-  if (startLabel && endLabel) return `${startLabel} – ${endLabel}`
-  if (startLabel) return startLabel
-  if (ev.start_datetime) return formatDateTime(ev.start_datetime)
-  return formatDateTime(ev.end_datetime)
-})
+const scheduleDisplay = computed(() =>
+  getEventCardScheduleDisplay(props.event, locale.value),
+)
 
 function handleRouteClick() {
     const c = getEventCoordinates(props.event)
     if (!c) return
     showDirectionsPanel.value = true
-}
-
-function formatDateTime(dateStr) {
-    if (!dateStr) return ''
-    const d = new Date(dateStr)
-    if (isNaN(d.getTime())) return dateStr
-    return d.toLocaleString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    })
 }
 
 /* ------------------ WISHLIST (optimistic in store; pending = block double-click) ------------------ */
@@ -607,3 +582,24 @@ onBeforeUnmount(() => {
     }
 })
 </script>
+
+<style scoped>
+.event-card-view-btn {
+  background-color: var(--secondary-color, #ff7700);
+  border-color: var(--secondary-color, #ff7700);
+  color: #fff;
+}
+
+.event-card-view-btn:hover,
+.event-card-view-btn:focus-visible {
+  background-color: #e66800 !important;
+  border-color: #e66800 !important;
+  color: #fff !important;
+}
+
+.event-card-view-btn:active {
+  background-color: #cc5c00 !important;
+  border-color: #cc5c00 !important;
+  color: #fff !important;
+}
+</style>

@@ -21,8 +21,8 @@ export const useMapStore = defineStore('map', () => {
   // Location chosen in the UI but not yet applied
   const pendingLocation = ref<SelectedLocation | null>(null)
 
-  /** Event IDs from latest header search result (home map pin highlight) */
-  const searchHighlightEventIds = shallowRef<ReadonlySet<number>>(new Set())
+  /** Events to render as map markers (latest header listing query). */
+  const mapEventItems = shallowRef<Record<string, unknown>[]>([])
 
   /** Profile items to show as map markers (non-event profile types) */
   const mapProfileItems = shallowRef<MapProfileItem[]>([])
@@ -41,17 +41,12 @@ export const useMapStore = defineStore('map', () => {
     appliedLocation.value = { ...loc }
   }
 
-  function setSearchHighlightEventIds(ids: Array<number | string | null | undefined>) {
-    const next = new Set<number>()
-    for (const raw of ids) {
-      const n = typeof raw === 'number' ? raw : Number(raw)
-      if (Number.isFinite(n)) next.add(n)
-    }
-    searchHighlightEventIds.value = next
+  function setMapEvents(items: Record<string, unknown>[]) {
+    mapEventItems.value = Array.isArray(items) ? items : []
   }
 
-  function clearSearchHighlightEventIds() {
-    searchHighlightEventIds.value = new Set()
+  function clearMapEvents() {
+    mapEventItems.value = []
   }
 
   function setMapProfiles(items: MapProfileItem[]) {
@@ -65,13 +60,13 @@ export const useMapStore = defineStore('map', () => {
   return {
     appliedLocation,
     pendingLocation,
-    searchHighlightEventIds,
+    mapEventItems,
     mapProfileItems,
     setPendingLocation,
     applyPendingLocation,
     setAppliedLocation,
-    setSearchHighlightEventIds,
-    clearSearchHighlightEventIds,
+    setMapEvents,
+    clearMapEvents,
     setMapProfiles,
     clearMapProfiles,
   }

@@ -30,6 +30,20 @@ export function parseStoredSessionFilter(
   }
 }
 
+function formatDiscoveryDateDisplay(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
+}
+
+/** Default header range: first through last day of the current month (DD/MM/YYYY). */
+export function getDefaultDiscoveryDateRange(now = new Date()): [string, string] {
+  const year = now.getFullYear()
+  const month = now.getMonth()
+  const first = new Date(year, month, 1)
+  const last = new Date(year, month + 1, 0)
+  return [formatDiscoveryDateDisplay(first), formatDiscoveryDateDisplay(last)]
+}
+
 /** DD/MM/YYYY → YYYY-MM-DD for API query params. */
 export function formatDiscoveryDateToApi(dateStr: string | null | undefined): string | null {
   if (!dateStr || typeof dateStr !== 'string') return null
