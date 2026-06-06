@@ -25,6 +25,14 @@ import {
   type DocumentData,
 } from 'firebase/firestore'
 import { firestore } from '@/services/firebase'
+import { getPresence, isChatActive } from '@/services/chatPresence'
+
+export class ChatUnavailableError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ChatUnavailableError'
+  }
+}
 
 const CONVERSATIONS = 'conversations'
 const MESSAGES = 'messages'
@@ -234,8 +242,24 @@ export async function sendMessage(
   receiverId: number,
   text: string,
   senderName: string = '',
-  receiverName: string = ''
+  receiverName: string = '',
 ): Promise<void> {
+  const [senderPresence, receiverPresence] = await Promise.all([
+    getPresence(senderId),
+    getPresence(receiverId),
+  ])
+
+  if (!isChatActive(senderPresence)) {
+    throw new ChatUnavailableError(
+      'You are unavailable for chat. Turn on chat availability to send messages.',
+    )
+  }
+  if (!isChatActive(receiverPresence)) {
+    throw new ChatUnavailableError(
+      'This user is unavailable for chat and cannot receive messages right now.',
+    )
+  }
+
   const convRef = doc(firestore, CONVERSATIONS, conversationId)
   const msgColl = collection(firestore, CONVERSATIONS, conversationId, MESSAGES)
   const newMsgRef = doc(msgColl)

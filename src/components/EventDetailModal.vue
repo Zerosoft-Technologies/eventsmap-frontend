@@ -67,10 +67,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                       </svg>
                     </div>
-                    <div class="tw:flex-1 tw:min-w-0">
+                    <!-- <div class="tw:flex-1 tw:min-w-0">
                       <p class="tw:text-xs tw:text-gray-500 tw:mb-0.5">Event title</p>
                       <p class="tw:text-sm tw:font-medium tw:text-gray-900">{{ modalOverviewTitle }}</p>
-                    </div>
+                    </div> -->
                   </div>
 
                   <!-- Description -->

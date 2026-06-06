@@ -18,7 +18,9 @@
 
     <div class="tw:flex-1 tw:min-w-0">
       <p class="tw:font-semibold tw:text-sm tw:text-gray-900 tw:truncate">{{ selectedUser.name }}</p>
-      <p class="tw:text-xs tw:text-gray-400 tw:capitalize">{{ selectedUser.profile_type }}</p>
+      <p class="tw:text-xs tw:capitalize" :class="receiverChatActive ? 'tw:text-gray-400' : 'tw:text-slate-500 tw:font-medium'">
+        {{ receiverChatActive ? selectedUser.profile_type : t('chat.unavailable') }}
+      </p>
     </div>
 
     <button @click="$emit('close')"
@@ -27,6 +29,8 @@
       <X class="tw:w-5 tw:h-5 tw:text-gray-500" />
     </button>
   </div>
+
+  <ChatAvailabilityToggle :user-id="currentUserId" />
 
   <!-- Messages body -->
   <div
@@ -104,6 +108,28 @@
     </div>
   </div>
 
+  <!-- Self unavailable -->
+  <div
+    v-if="!senderChatActive"
+    class="tw:bg-slate-100 tw:border-t tw:border-slate-200 tw:px-4 tw:py-2.5 tw:flex-shrink-0"
+  >
+    <p class="tw:text-xs tw:text-slate-600 tw:flex tw:items-center tw:gap-2">
+      <AlertTriangle class="tw:w-4 tw:h-4 tw:flex-shrink-0" />
+      {{ t('chat.selfUnavailableBanner') }}
+    </p>
+  </div>
+
+  <!-- Receiver unavailable -->
+  <div
+    v-else-if="!receiverChatActive"
+    class="tw:bg-amber-50 tw:border-t tw:border-amber-200 tw:px-4 tw:py-2.5 tw:flex-shrink-0"
+  >
+    <p class="tw:text-xs tw:text-amber-800 tw:flex tw:items-center tw:gap-2">
+      <AlertTriangle class="tw:w-4 tw:h-4 tw:flex-shrink-0" />
+      {{ t('chat.receiverUnavailableBanner') }}
+    </p>
+  </div>
+
   <!-- Rate limit warning -->
   <div v-if="rateLimitMessage"
     class="tw:bg-orange-50 tw:border-t tw:border-orange-200 tw:px-4 tw:py-2 tw:flex-shrink-0">
@@ -124,9 +150,16 @@
   <!-- Footer: input -->
   <div
     class="tw:flex tw:items-end tw:gap-2 tw:px-4 tw:py-3 tw:border-t tw:border-gray-100 tw:bg-white tw:flex-shrink-0">
-    <input v-model="inputText" type="text" placeholder="Type a message..." maxlength="1000"
-      class="tw:flex-1 tw:bg-gray-100 tw:rounded-full tw:px-4 tw:py-2.5 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-400 tw:transition-all"
-      @input="onInputChange" @keydown.enter.prevent="sendMessage" :disabled="isSendDisabled" />
+    <input
+      v-model="inputText"
+      type="text"
+      :placeholder="sendPlaceholder"
+      maxlength="1000"
+      class="tw:flex-1 tw:bg-gray-100 tw:rounded-full tw:px-4 tw:py-2.5 tw:text-sm tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-400 tw:transition-all disabled:tw:opacity-60"
+      @input="onInputChange"
+      @keydown.enter.prevent="sendMessage"
+      :disabled="isSendDisabled"
+    />
     <button @click="sendMessage" :disabled="isSendDisabled || !inputText.trim()"
       class="tw:w-10 tw:h-10 tw:flex tw:items-center tw:justify-center tw:rounded-full tw:bg-blue-500 tw:text-white hover:tw:bg-blue-600 tw:transition-colors disabled:tw:opacity-50 disabled:tw:cursor-not-allowed tw:flex-shrink-0">
       <Send v-if="!isSending" class="tw:w-4 tw:h-4" />
@@ -137,6 +170,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft, X, Send, Loader2, MessageCircle, WifiOff, AlertTriangle,
 } from 'lucide-vue-next'
@@ -145,10 +179,17 @@ import type { ChatUser } from '@/services/chatService'
 import { useAuthStore } from '@/stores/auth'
 import {
   validateMessage,
+  validateChatAvailability,
   createSpamState,
   updateSpamState,
   type SpamState,
 } from '@/utils/chatValidation'
+import {
+  subscribeToPresence,
+  isChatActive,
+  type PresenceDoc,
+} from '@/services/chatPresence'
+import ChatAvailabilityToggle from '@/components/chat/ChatAvailabilityToggle.vue'
 import {
   getConversationId,
   getOrCreateConversation,
@@ -159,8 +200,11 @@ import {
   loadOlderMessages,
   setTyping,
   clearTyping,
+  ChatUnavailableError,
   type MessageWithId,
 } from '@/services/chatFirestore'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   currentUserId: number
@@ -186,9 +230,13 @@ const spamState = ref<SpamState>(createSpamState())
 const isTyping = ref(false)
 const loadingOlder = ref(false)
 const hasMoreOlder = ref(true)
+const ownPresence = ref<PresenceDoc | null>(null)
+const otherPresence = ref<PresenceDoc | null>(null)
 let typingDebounce: ReturnType<typeof setTimeout> | null = null
 let unsubscribe: (() => void) | null = null
 let unsubscribeConv: (() => void) | null = null
+let unsubOwnPresence: (() => void) | null = null
+let unsubOtherPresence: (() => void) | null = null
 let rateLimitTimer: ReturnType<typeof setTimeout> | null = null
 
 // ── Derived ─────────────────────────────────────────────────────────
@@ -196,7 +244,22 @@ const conversationId = computed(() =>
   getConversationId(props.currentUserId, props.selectedUser.id)
 )
 
-const isSendDisabled = computed(() => isSending.value || !!rateLimitMessage.value)
+const senderChatActive = computed(() => isChatActive(ownPresence.value))
+const receiverChatActive = computed(() => isChatActive(otherPresence.value))
+
+const isSendDisabled = computed(
+  () =>
+    isSending.value
+    || !!rateLimitMessage.value
+    || !senderChatActive.value
+    || !receiverChatActive.value,
+)
+
+const sendPlaceholder = computed(() => {
+  if (!senderChatActive.value) return t('chat.placeholderSelfInactive')
+  if (!receiverChatActive.value) return t('chat.placeholderReceiverInactive')
+  return t('chat.placeholderDefault')
+})
 
 // ── Helpers ─────────────────────────────────────────────────────────
 function getInitials(name: string): string {
@@ -243,6 +306,7 @@ function onMessagesScroll() {
 
 // ── Typing indicator ──────────────────────────────────────────────────
 function onInputChange() {
+  if (isSendDisabled.value) return
   if (typingDebounce) clearTimeout(typingDebounce)
   setTyping(conversationId.value, props.currentUserId)
   typingDebounce = setTimeout(() => {
@@ -313,9 +377,20 @@ async function sendMessage() {
   const text = inputText.value.trim()
   if (!text || isSendDisabled.value) return
 
+  const availability = validateChatAvailability({
+    senderChatActive: senderChatActive.value,
+    receiverChatActive: receiverChatActive.value,
+  })
+  if (!availability.valid) {
+    rateLimitMessage.value = availability.error ?? t('chat.cannotSend')
+    if (rateLimitTimer) clearTimeout(rateLimitTimer)
+    rateLimitTimer = setTimeout(() => { rateLimitMessage.value = null }, 5000)
+    return
+  }
+
   const validation = validateMessage(text, props.currentUserId, props.selectedUser.id, spamState.value)
   if (!validation.valid) {
-    rateLimitMessage.value = validation.error ?? 'Cannot send message.'
+    rateLimitMessage.value = validation.error ?? t('chat.cannotSend')
     if (rateLimitTimer) clearTimeout(rateLimitTimer)
     rateLimitTimer = setTimeout(() => { rateLimitMessage.value = null }, 5000)
     return
@@ -339,8 +414,12 @@ async function sendMessage() {
     spamState.value = updateSpamState(spamState.value, text)
     inputText.value = ''
   } catch (err: any) {
-    if (err?.response?.status === 429) {
-      rateLimitMessage.value = 'Too many messages. Please wait before sending more.'
+    if (err instanceof ChatUnavailableError) {
+      rateLimitMessage.value = err.message
+      if (rateLimitTimer) clearTimeout(rateLimitTimer)
+      rateLimitTimer = setTimeout(() => { rateLimitMessage.value = null }, 5000)
+    } else if (err?.response?.status === 429) {
+      rateLimitMessage.value = t('chat.rateLimit')
       if (rateLimitTimer) clearTimeout(rateLimitTimer)
       rateLimitTimer = setTimeout(() => {
         rateLimitMessage.value = null
@@ -354,6 +433,24 @@ async function sendMessage() {
   }
 }
 
+function startPresenceListeners() {
+  unsubOwnPresence?.()
+  unsubOtherPresence?.()
+  unsubOwnPresence = subscribeToPresence(props.currentUserId, (data) => {
+    ownPresence.value = data
+  })
+  unsubOtherPresence = subscribeToPresence(props.selectedUser.id, (data) => {
+    otherPresence.value = data
+  })
+}
+
+function stopPresenceListeners() {
+  unsubOwnPresence?.()
+  unsubOtherPresence?.()
+  unsubOwnPresence = null
+  unsubOtherPresence = null
+}
+
 // ── Lifecycle ────────────────────────────────────────────────────────
 watch(() => props.selectedUser.id, () => {
   if (unsubscribe) unsubscribe()
@@ -361,16 +458,19 @@ watch(() => props.selectedUser.id, () => {
   if (typingDebounce) clearTimeout(typingDebounce)
   clearTyping(conversationId.value, props.currentUserId)
   spamState.value = createSpamState()
+  startPresenceListeners()
   initAndListen()
 })
 
 onMounted(() => {
+  startPresenceListeners()
   initAndListen()
 })
 
 onUnmounted(() => {
   if (unsubscribe) unsubscribe()
   if (unsubscribeConv) unsubscribeConv()
+  stopPresenceListeners()
   if (typingDebounce) clearTimeout(typingDebounce)
   clearTyping(conversationId.value, props.currentUserId)
   if (rateLimitTimer) clearTimeout(rateLimitTimer)

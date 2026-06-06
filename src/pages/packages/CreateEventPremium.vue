@@ -337,7 +337,7 @@
                         <!-- Subcategory Multi-Select -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                                Subcategories (Max 6) <span class="tw:text-red-500">*</span>
+                                Subcategories (Max 5) <span class="tw:text-red-500">*</span>
                             </label>
 
                             <!-- Multi-Select Input Field -->
@@ -368,11 +368,11 @@
                                         <div v-for="subcategory in availableSubcategories" :key="subcategory"
                                             class="dropdown-option" :class="{
                                                 'selected': selectedSubcategories.includes(subcategory),
-                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6
+                                                'disabled': !selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5
                                             }" @click="toggleSubcategory(subcategory)">
                                             <input type="checkbox" :id="`subcategory-${subcategory}`"
                                                 :value="subcategory" v-model="selectedSubcategories"
-                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 6"
+                                                :disabled="!selectedSubcategories.includes(subcategory) && selectedSubcategories.length >= 5"
                                                 @change="handleSubcategoryChange" @click.stop class="option-checkbox">
                                             <label :for="`subcategory-${subcategory}`" class="option-label" @click.stop>
                                                 {{ subcategory }}
@@ -381,8 +381,8 @@
                                     </div>
 
                                     <!-- Max selection notice -->
-                                    <div v-if="selectedSubcategories.length >= 6" class="max-selection-notice">
-                                        Maximum 6 subcategories selected
+                                    <div v-if="selectedSubcategories.length >= 5" class="max-selection-notice">
+                                        Maximum 5 subcategories selected
                                     </div>
                                 </div>
                             </div>
@@ -726,9 +726,12 @@
                     <div>
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Phone <span
                                 class="tw:text-gray-400 tw:text-xs">(optional)</span></label>
-                        <input v-model="contactPhone" type="text" placeholder="Telephone Number"
-                            @input="clearFieldError('contactPhone')"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                        <PhoneInput
+                            v-model="contactPhone"
+                            placeholder="Telephone Number"
+                            input-class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all"
+                            @blur="clearFieldError('contactPhone')"
+                        />
                         <p v-if="fieldErrors.contact_phone" class="tw:text-red-500 tw:text-sm tw:mt-1">{{
                             fieldErrors.contact_phone[0] }}</p>
                     </div>
@@ -909,6 +912,7 @@
                         <InviteSection
                             :key="`invite-talent-${inviteSectionResetKey}`"
                             role="talent"
+                            :event-id="editingEventId"
                             :profiles="talentProfiles"
                             :all-profiles="invitationAllProfiles"
                             :loading="invitationRoleLoading('talent')"
@@ -917,10 +921,12 @@
                             v-model:selectedIds="invitedTalentIds"
                             @open="onInvitePanelOpen"
                             @refetch="onInviteRefetch"
+                            @guest-queued="onGuestInviteQueued"
                         />
                         <InviteSection
                             :key="`invite-venue-${inviteSectionResetKey}`"
                             role="venue"
+                            :event-id="editingEventId"
                             :profiles="venueProfiles"
                             :all-profiles="invitationAllProfiles"
                             :loading="invitationRoleLoading('venue')"
@@ -929,10 +935,12 @@
                             v-model:selectedIds="invitedVenueIds"
                             @open="onInvitePanelOpen"
                             @refetch="onInviteRefetch"
+                            @guest-queued="onGuestInviteQueued"
                         />
                         <InviteSection
                             :key="`invite-organizer-${inviteSectionResetKey}`"
                             role="organizer"
+                            :event-id="editingEventId"
                             :profiles="organiserProfiles"
                             :all-profiles="invitationAllProfiles"
                             :loading="invitationRoleLoading('organizer')"
@@ -941,6 +949,7 @@
                             v-model:selectedIds="invitedOrganiserIds"
                             @open="onInvitePanelOpen"
                             @refetch="onInviteRefetch"
+                            @guest-queued="onGuestInviteQueued"
                         />
                     </div>
                 </div>
@@ -1072,6 +1081,7 @@ import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch, reactive } 
 import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
+import PhoneInput from "@/components/common/PhoneInput.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
 import api from "@/services/api"
 import eventService from "@/services/eventService"
@@ -1086,6 +1096,7 @@ import flatpickr from "flatpickr"
 import "flatpickr/dist/flatpickr.css"
 import { validateOptionalUrlInput } from "@/utils/socialMediaUrls"
 import { useEventInvitationProfiles } from "@/composables/useEventInvitationProfiles"
+import { sendGuestInvitation } from "@/api/guestInvitations"
 import {
     parseInvitedProfileIds,
     profilesFromInvitedObjects,
@@ -1690,6 +1701,30 @@ const availableSubcategories = computed(() => {
 const invitedTalentIds = ref([])
 const invitedOrganiserIds = ref([])
 const invitedVenueIds = ref([])
+const pendingGuestInvites = ref([])
+
+function onGuestInviteQueued(payload) {
+  pendingGuestInvites.value.push(payload)
+}
+
+async function flushPendingGuestInvites(eventId) {
+  if (!eventId || pendingGuestInvites.value.length === 0) return
+  const queue = [...pendingGuestInvites.value]
+  pendingGuestInvites.value = []
+  let sent = 0
+  for (const item of queue) {
+    try {
+      const res = await sendGuestInvitation(Number(eventId), item)
+      if (res.success) sent += 1
+    } catch (err) {
+      const msg = err?.response?.data?.message
+      if (msg) toast.error(msg)
+    }
+  }
+  if (sent > 0) {
+    toast.success(`${sent} email invitation(s) sent.`)
+  }
+}
 
 function appendInvitedProfileIds(formData) {
     invitedTalentIds.value.forEach((id) => {
@@ -2308,8 +2343,13 @@ async function createEvent() {
         const response = await eventService.createEvent(formData)
 
         if (response.success) {
+            const newEventId = response.data?.id
+            if (newEventId) {
+                await flushPendingGuestInvites(newEventId)
+            }
             toast.success('Event created successfully!')
             resetForm()
+            pendingGuestInvites.value = []
             await refreshMyEventsAfterCreate()
         } else {
             // Handle API validation errors

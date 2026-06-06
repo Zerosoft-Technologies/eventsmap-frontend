@@ -252,7 +252,7 @@ const emptyLabel = computed(() => {
 })
 
 const listTitleFallback = computed(() => {
-  if (props.sidebarKind === 'talents') return 'Talent Title'
+  if (props.sidebarKind === 'talents') return 'Talent Name'
   if (props.sidebarKind === 'venues') return 'Venue Name'
   if (props.sidebarKind === 'organisers') return 'Organiser Title'
   return 'Event Title'

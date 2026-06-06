@@ -10,7 +10,11 @@ import Event from '../components/Event.vue'
 import DiscoveryProfileCard from '../components/DiscoveryProfileCard.vue'
 import MapProfileClusterList from '../components/map/MapProfileClusterList.vue'
 import MapEventClusterList from '../components/map/MapEventClusterList.vue'
-import { MAP_OPEN_EVENT_DETAIL, MAP_OPEN_PROFILE_DETAIL } from '@/utils/mapPopupBridge'
+import {
+  MAP_OPEN_EVENT_DETAIL,
+  MAP_OPEN_PROFILE_DETAIL,
+  MAP_RESTORE_EVENT_POPUP,
+} from '@/utils/mapPopupBridge'
 import { pickProfileLatLng } from '@/api/discoveryProfiles'
 import { useMapStore } from '@/stores/mapStore'
 import { clusterPrecisionForZoom, createMapClusterMarkerElement } from '@/utils/mapClustering'
@@ -26,6 +30,8 @@ let map
 const mapStore = useMapStore()
 const markerPool = new Map()
 const profileMarkerPool = new Map()
+/** Marker whose popup was closed when opening View Event from the map info window */
+let suspendedEventPopupMarker = null
 
 const style = {
   version: 8,
@@ -260,6 +266,40 @@ function mountEventClusterPopup(events) {
   return popup
 }
 
+function findEventMarkerById(eventId) {
+  const key = `e-${Number(eventId)}`
+  return markerPool.get(key)?.marker ?? null
+}
+
+function suspendOpenEventPopup(eventId) {
+  const marker = findEventMarkerById(eventId)
+  if (!marker) return
+  const popup = marker.getPopup()
+  if (!popup?.isOpen()) return
+  marker.togglePopup()
+  suspendedEventPopupMarker = marker
+}
+
+function restoreSuspendedEventPopup() {
+  if (!suspendedEventPopupMarker) return
+  const marker = suspendedEventPopupMarker
+  const popup = marker.getPopup()
+  if (popup && !popup.isOpen()) {
+    marker.togglePopup()
+  }
+  suspendedEventPopupMarker = null
+}
+
+function onMapOpenEventDetail(e) {
+  const ev = e?.detail
+  const id = ev?.id
+  if (id != null) suspendOpenEventPopup(id)
+}
+
+function onMapRestoreEventPopup() {
+  restoreSuspendedEventPopup()
+}
+
 function mountSingleEventPopup(ev) {
   const popupEl = document.createElement('div')
   popupEl.classList.add('tw:relative', 'tw:bg-white', 'tw:rounded-2xl', 'tw:p-4')
@@ -491,9 +531,15 @@ onMounted(() => {
 
   map.on('load', () => refreshMapFromStore())
   map.on('zoomend', scheduleMapClusterResync)
+
+  window.addEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetail)
+  window.addEventListener(MAP_RESTORE_EVENT_POPUP, onMapRestoreEventPopup)
 })
 
 onUnmounted(() => {
+  window.removeEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetail)
+  window.removeEventListener(MAP_RESTORE_EVENT_POPUP, onMapRestoreEventPopup)
+  suspendedEventPopupMarker = null
   if (mapClusterResyncTimer) clearTimeout(mapClusterResyncTimer)
   clearEventMarkers()
   clearProfileMarkers()

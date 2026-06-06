@@ -28,3 +28,12 @@ firebase deploy --only firestore:rules
 
 - In the browser **Network** tab, confirm the failing request is Firestore (not Storage).
 - Check the **Firestore → Data** tab: collections are `user_presence`, `conversations`, optionally `invitation_notifications`.
+
+## Chat availability (`chat_active`)
+
+Each `user_presence/{userId}` document may include `chat_active` (boolean). When `chat_active` is `false`:
+
+- The user cannot send new messages (enforced in the app and in Firestore rules).
+- Other users cannot send messages to them.
+
+After updating `firestore.rules` in this repo, **publish** rules in Firebase Console so message creates are blocked server-side for inactive users.

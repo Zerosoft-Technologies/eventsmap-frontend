@@ -5,7 +5,7 @@
         <input
           v-model="draft"
           type="text"
-          :placeholder="placeholder"
+          :placeholder="effectivePlaceholder"
           :disabled="disabled || atMax"
           class="lang-multi__input"
           autocomplete="off"
@@ -39,6 +39,7 @@
         </ul>
       </div>
       <button
+        v-if="!pickListOnly"
         type="button"
         class="lang-multi__add no-hover"
         :disabled="disabled || atMax || !draft.trim()"
@@ -50,7 +51,12 @@
     </div>
 
     <p class="lang-multi__hint">
-      Choose from the list or type a language and press Enter. Up to {{ max }} languages.
+      <template v-if="pickListOnly">
+        Choose from the list only. Up to {{ max }} languages.
+      </template>
+      <template v-else>
+        Choose from the list or type a language and press Enter. Up to {{ max }} languages.
+      </template>
     </p>
 
     <div v-if="modelValue.length > 0" class="selected-tags lang-multi__tags">
@@ -79,9 +85,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Plus } from 'lucide-vue-next'
 import { COMMON_LANGUAGES } from '@/data/commonLanguages'
+import { fetchTalentLanguages } from '@/api/referenceData'
 
 const props = withDefaults(
   defineProps<{
@@ -89,11 +96,17 @@ const props = withDefaults(
     max?: number
     placeholder?: string
     disabled?: boolean
+    /** When true, only predefined list items can be added (no custom text). */
+    pickListOnly?: boolean
+    /** Override language options; defaults to backend list when pickListOnly, else COMMON_LANGUAGES. */
+    options?: string[]
   }>(),
   {
     max: 15,
     placeholder: 'Search or type a language…',
     disabled: false,
+    pickListOnly: false,
+    options: undefined,
   }
 )
 
@@ -105,13 +118,20 @@ const draft = ref('')
 const openSuggestions = ref(false)
 const highlightIndex = ref(-1)
 const fieldWrap = ref<HTMLElement | null>(null)
+const languageOptions = ref<string[]>([...COMMON_LANGUAGES])
+const optionsLoading = ref(false)
 
 const atMax = computed(() => props.modelValue.length >= props.max)
+
+const effectivePlaceholder = computed(() => {
+  if (props.pickListOnly) return 'Search and select a language…'
+  return props.placeholder
+})
 
 const filteredSuggestions = computed(() => {
   const q = draft.value.trim().toLowerCase()
   const selected = new Set(props.modelValue.map((l) => l.toLowerCase()))
-  return COMMON_LANGUAGES.filter((lang) => {
+  return languageOptions.value.filter((lang) => {
     if (selected.has(lang.toLowerCase())) return false
     if (!q) return true
     return lang.toLowerCase().includes(q)
@@ -139,6 +159,17 @@ function addLanguage(raw: string) {
 
 function addFromDraft() {
   if (!draft.value.trim()) return
+  if (props.pickListOnly) {
+    const exact = languageOptions.value.find(
+      (lang) => lang.toLowerCase() === draft.value.trim().toLowerCase(),
+    )
+    if (exact) addLanguage(exact)
+    else {
+      const highlighted = filteredSuggestions.value[highlightIndex.value]
+      if (highlighted) addLanguage(highlighted)
+    }
+    return
+  }
   addLanguage(draft.value)
 }
 
@@ -172,9 +203,32 @@ function onDocumentClick(e: MouseEvent) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener('click', onDocumentClick)
+  if (Array.isArray(props.options) && props.options.length > 0) {
+    languageOptions.value = [...props.options]
+    return
+  }
+  if (props.pickListOnly) {
+    optionsLoading.value = true
+    try {
+      languageOptions.value = await fetchTalentLanguages()
+    } catch {
+      languageOptions.value = [...COMMON_LANGUAGES]
+    } finally {
+      optionsLoading.value = false
+    }
+  }
 })
+
+watch(
+  () => props.options,
+  (next) => {
+    if (Array.isArray(next) && next.length > 0) {
+      languageOptions.value = [...next]
+    }
+  },
+)
 
 onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick)

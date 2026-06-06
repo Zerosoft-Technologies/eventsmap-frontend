@@ -142,8 +142,8 @@
         <!-- Overview Tab -->
         <div v-if="activeTab === 'overview'" class="tw:px-4 tw:py-4 tw:space-y-5">
 
-          <!-- Title -->
-          <div>
+          <!-- Name (hidden for talents — shown under gallery in header) -->
+          <div v-if="profileType !== 'talents'">
             <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">Name</p>
             <p class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ profile?.title }}</p>
           </div>
@@ -260,7 +260,7 @@
             <div v-if="profile.nationality" class="tw:flex tw:items-center tw:gap-3">
               <div>
                 <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-0.5">Nationality</p>
-                <p class="tw:text-sm tw:text-gray-800">{{ profile.nationality }}</p>
+                <p class="tw:text-sm tw:text-gray-800">{{ profile.nationality_name || profile.nationality }}</p>
               </div>
             </div>
             <div v-if="profile.languages?.length">

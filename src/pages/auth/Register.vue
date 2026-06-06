@@ -37,6 +37,13 @@
         </h1>
         <p class="tw:text-gray-500 tw:text-sm tw:mb-6">Fill in your details to create an account</p>
 
+        <div
+          v-if="invitationBanner"
+          class="tw:mb-4 tw:rounded-lg tw:border tw:border-blue-200 tw:bg-blue-50 tw:px-4 tw:py-3 tw:text-sm tw:text-blue-900"
+        >
+          {{ invitationBanner }}
+        </div>
+
         <!-- Server Error Banner -->
         <div v-if="authStore.error"
           class="tw:bg-red-50 tw:border tw:border-red-200 tw:text-red-700 tw:rounded-lg tw:px-4 tw:py-3 tw:mb-4 tw:text-sm">
@@ -373,9 +380,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import { Eye, EyeOff } from 'lucide-vue-next'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { fetchGuestInvitationByToken } from '@/api/guestInvitations'
 import { useAuthStore } from '@/stores/auth'
 import PaymentLoadingOverlay from '@/components/ui/PaymentLoadingOverlay.vue'
 
@@ -407,7 +415,40 @@ const StepIndicator = {
 }
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
+
+const invitationToken = ref('')
+const invitationBanner = ref('')
+
+function mapInvitationRoleToProfileType(role: string): string {
+  const r = String(role ?? '').toLowerCase()
+  if (r === 'organiser' || r === 'organizer') return 'organizer'
+  if (r === 'venue') return 'venue'
+  if (r === 'talent') return 'talent'
+  return 'event'
+}
+
+onMounted(async () => {
+  const token = typeof route.query.invitation_token === 'string' ? route.query.invitation_token : ''
+  if (!token) return
+
+  invitationToken.value = token
+  try {
+    const res = await fetchGuestInvitationByToken(token)
+    if (res.success && res.data?.valid) {
+      form.value.email = res.data.email ?? form.value.email
+      if (res.data.name) form.value.name = res.data.name
+      selectedProfileType.value = mapInvitationRoleToProfileType(res.data.receiver_type ?? '')
+      invitationBanner.value = res.data.event_title
+        ? `You are invited to join "${res.data.event_title}" on EventsMap.`
+        : 'You have been invited to join an event on EventsMap.'
+      currentStep.value = 1
+    }
+  } catch {
+    invitationBanner.value = 'This invitation link is invalid or has expired.'
+  }
+})
 
 // ── Profile types ─────────────────────────────────────────
 const profileTypes = [
@@ -498,6 +539,7 @@ async function handleRegisterStep() {
       profile_type: selectedProfileType.value,
       account_type: 'free',
       status: 'active',
+      ...(invitationToken.value ? { invitation_token: invitationToken.value } : {}),
     } as any)
     if (result.success) router.push({ name: 'Login', query: { verified: 'pending' } })
   } else {
@@ -644,6 +686,10 @@ async function handleBillingSubmit() {
     payload.company_name  = billing.value.companyName
     payload.vat_number    = billing.value.vatNumber
     payload.vat_validated = billing.value.vatValidated
+  }
+
+  if (invitationToken.value) {
+    payload.invitation_token = invitationToken.value
   }
 
   const result = await authStore.register(payload as any)

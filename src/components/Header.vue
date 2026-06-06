@@ -793,7 +793,11 @@ import { getCreateRoute } from '@/utils/routeResolver';
 import { getUserProfileImageUrl } from '@/utils/userProfileImage';
 import { Bell, Images, Loader2, ChevronDown } from 'lucide-vue-next';
 import { chatService } from '@/services/chatService';
-import { MAP_OPEN_EVENT_DETAIL, MAP_OPEN_PROFILE_DETAIL } from '@/utils/mapPopupBridge'
+import {
+  MAP_OPEN_EVENT_DETAIL,
+  MAP_OPEN_PROFILE_DETAIL,
+  MAP_RESTORE_EVENT_POPUP,
+} from '@/utils/mapPopupBridge'
 import {
   appendDiscoveryDateTimeFilters,
   formatDiscoveryDateToApi,
@@ -1047,6 +1051,8 @@ const mobileInitialDateRange = computed(() => {
 const selectedLocation = ref({ lat: 52.3676, lng: 4.9041, name: "Amsterdam" })
 
 const showEventDetailsPanel = ref(false)
+/** View Event was opened from a map marker info window — restore popup on close */
+const eventDetailOpenedFromMapPopup = ref(false)
 const selectedEvent = ref(null)
 
 const showProfileDetailsPanel = ref(false)
@@ -1442,9 +1448,14 @@ function handleViewEvent(event) {
 function closeEventDetailsPanel() {
   showEventDetailsPanel.value = false
   selectedEvent.value = null
+  if (eventDetailOpenedFromMapPopup.value) {
+    eventDetailOpenedFromMapPopup.value = false
+    window.dispatchEvent(new CustomEvent(MAP_RESTORE_EVENT_POPUP))
+  }
 }
 
 function handleViewProfile(profile) {
+  eventDetailOpenedFromMapPopup.value = false
   showEventDetailsPanel.value = false
   selectedEvent.value = null
   selectedProfile.value = profile ?? null
@@ -1453,7 +1464,10 @@ function handleViewProfile(profile) {
 
 function onMapOpenEventDetailFromHome(e) {
   const d = e?.detail
-  if (d) handleViewEvent(d)
+  if (d) {
+    eventDetailOpenedFromMapPopup.value = true
+    handleViewEvent(d)
+  }
 }
 
 function onMapOpenProfileDetailFromHome(e) {
@@ -1469,6 +1483,7 @@ function closeProfileDetailsPanel() {
 
 /** Collapse/minimize listing dock — hide event & profile detail widgets (all browse modes) */
 function handleListingPanelMinimized() {
+  eventDetailOpenedFromMapPopup.value = false
   closeEventDetailsPanel()
   closeProfileDetailsPanel()
 }

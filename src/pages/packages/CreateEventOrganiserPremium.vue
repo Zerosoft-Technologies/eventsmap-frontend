@@ -562,8 +562,11 @@
                         Contact Details
                     </h3>
 
-                    <input v-model="contactPhone" type="text" placeholder="Telephone Number"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                    <PhoneInput
+                        v-model="contactPhone"
+                        placeholder="Telephone Number"
+                        input-class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all"
+                    />
 
                     <input v-model="contactEmail" type="email" placeholder="Email"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
@@ -832,6 +835,7 @@ import { useRouter, useRoute } from "vue-router"
 import OrganiserSidebar from "./eventsidebar/OrganiserSidebar.vue"
 import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
+import PhoneInput from "@/components/common/PhoneInput.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
 import eventService from "@/services/eventService"

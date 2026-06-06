@@ -20,6 +20,28 @@ export interface ValidationResult {
   error?: string
 }
 
+export interface ChatAvailabilityContext {
+  senderChatActive: boolean
+  receiverChatActive: boolean
+}
+
+/** Block send when either party has turned off chat availability. */
+export function validateChatAvailability(ctx: ChatAvailabilityContext): ValidationResult {
+  if (!ctx.senderChatActive) {
+    return {
+      valid: false,
+      error: 'You are unavailable for chat. Turn on chat availability to send messages.',
+    }
+  }
+  if (!ctx.receiverChatActive) {
+    return {
+      valid: false,
+      error: 'This user is unavailable for chat and cannot receive messages right now.',
+    }
+  }
+  return { valid: true }
+}
+
 export interface SpamState {
   lastSendTime: number
   lastMessage: string

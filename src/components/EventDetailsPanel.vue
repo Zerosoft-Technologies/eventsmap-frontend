@@ -84,7 +84,7 @@
 
       <!-- Header: title + close -->
       <div class="tw:px-4 tw:py-4 tw:flex tw:items-start tw:justify-between tw:gap-3">
-        <h2 class="tw:text-xl tw:font-semibold tw:leading-tight tw:flex-1 tw:min-w-0 tw:text-gray-900">
+        <h2 class="tw:text-xl tw:font-semibold tw:leading-snug tw:flex-1 tw:min-w-0 tw:text-gray-900 tw:line-clamp-2">
           {{ event?.title || $t('eventDetails.untitled') }}
         </h2>
 
@@ -221,7 +221,7 @@
             <!-- Event details: label above value; checkmarks on first three rows only -->
             <div class="tw:space-y-6">
               <!-- Event title -->
-              <div>
+              <!-- <div>
                 <p class="tw:text-base tw:font-semibold tw:text-gray-900">
                   {{ $t('eventDetails.overviewEventTitle') }}
                 </p>
@@ -231,7 +231,7 @@
                   </svg>
                   <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewTitleDisplay }}</span>
                 </div>
-              </div>
+              </div> -->
 
               <!-- Description -->
               <div>

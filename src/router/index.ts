@@ -62,6 +62,17 @@ const routes: RouteRecordRaw[] = [
   // ── Public Routes ───────────────────────────────────────
   { path: '/', name: 'Home', component: Home },
   { path: '/invitations/:id/respond', name: 'InvitationResponse', component: InvitationResponse },
+  {
+    path: '/invitation/:token',
+    redirect: (to) => ({
+      name: 'Register',
+      query: {
+        invitation_token: String(to.params.token ?? ''),
+        ...(typeof to.query.email === 'string' ? { email: to.query.email } : {}),
+        ...(typeof to.query.role === 'string' ? { role: to.query.role } : {}),
+      },
+    }),
+  },
 
   // ── Auth Routes (guest only) ────────────────────────────
   { path: '/login', name: 'Login', component: Login, meta: { guest: true } },

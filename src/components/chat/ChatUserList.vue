@@ -1,20 +1,22 @@
 <template>
   <!-- Header -->
   <div class="tw:flex tw:items-center tw:justify-between tw:px-4 tw:py-4 tw:border-b tw:border-gray-100 tw:flex-shrink-0">
-    <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900">Messages</h2>
+    <h2 class="tw:text-lg tw:font-semibold tw:text-gray-900">{{ t('chat.messagesTitle') }}</h2>
     <button
       @click="$emit('close')"
       class="tw:w-8 tw:h-8 tw:flex tw:items-center tw:justify-center tw:rounded-full hover:tw:bg-gray-100 tw:transition-colors"
-      title="Close chat"
+      :title="t('chat.closeChat')"
     >
       <X class="tw:w-5 tw:h-5 tw:text-gray-500" />
     </button>
   </div>
 
+  <ChatAvailabilityToggle :user-id="currentUserId" />
+
   <!-- Loading -->
   <div v-if="loading" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:flex-1 tw:gap-3 tw:text-gray-400">
     <Loader2 class="tw:w-8 tw:h-8 tw:animate-spin tw:text-blue-500" />
-    <span class="tw:text-sm">Loading participants...</span>
+    <span class="tw:text-sm">{{ t('chat.loadingParticipants') }}</span>
   </div>
 
   <!-- Error -->
@@ -25,15 +27,15 @@
       @click="loadChatList"
       class="tw:px-4 tw:py-2 tw:text-sm tw:bg-blue-500 tw:text-white tw:rounded-lg hover:tw:bg-blue-600 tw:transition-colors"
     >
-      Retry
+      {{ t('chat.retry') }}
     </button>
   </div>
 
   <!-- Empty -->
   <div v-else-if="users.length === 0" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:flex-1 tw:gap-3 tw:px-6 tw:text-center">
     <MessageCircle class="tw:w-12 tw:h-12 tw:text-gray-300" />
-    <p class="tw:text-sm tw:font-medium tw:text-gray-500">No participants yet</p>
-    <p class="tw:text-xs tw:text-gray-400">Premium users you can chat with will appear here</p>
+    <p class="tw:text-sm tw:font-medium tw:text-gray-500">{{ t('chat.noParticipants') }}</p>
+    <p class="tw:text-xs tw:text-gray-400">{{ t('chat.noParticipantsHint') }}</p>
   </div>
 
   <!-- User list -->
@@ -43,6 +45,7 @@
       :key="user.id"
       @click="$emit('select-user', user)"
       class="tw:w-full tw:flex tw:items-center tw:gap-3 tw:px-4 tw:py-3 hover:tw:bg-gray-50 tw:transition-colors tw:text-left tw:border-b tw:border-gray-50"
+      :class="{ 'tw:opacity-70': !isUserChatActive(user.id) }"
     >
       <!-- Avatar -->
       <div class="tw:relative tw:flex-shrink-0">
@@ -57,9 +60,15 @@
         </div>
         <!-- Online indicator -->
         <span
-          v-if="presenceMap[user.id]?.online"
+          v-if="presenceMap[user.id]?.online && isUserChatActive(user.id)"
           class="tw:absolute tw:bottom-0 tw:right-0 tw:w-3 tw:h-3 tw:bg-green-500 tw:rounded-full tw:border-2 tw:border-white"
-          title="Online"
+          :title="t('chat.online')"
+        />
+        <!-- Unavailable for chat -->
+        <span
+          v-else-if="!isUserChatActive(user.id)"
+          class="tw:absolute tw:bottom-0 tw:right-0 tw:w-3 tw:h-3 tw:bg-slate-400 tw:rounded-full tw:border-2 tw:border-white"
+          :title="t('chat.unavailable')"
         />
         <!-- Premium badge -->
         <span
@@ -73,11 +82,17 @@
 
       <!-- Info -->
       <div class="tw:flex-1 tw:min-w-0">
-        <div class="tw:flex tw:items-center tw:justify-between tw:mb-0.5">
+        <div class="tw:flex tw:items-center tw:justify-between tw:mb-0.5 tw:gap-2">
           <span class="tw:font-medium tw:text-sm tw:text-gray-900 tw:truncate">{{ user.name }}</span>
           <span
-            v-if="user.last_message_at"
-            class="tw:text-xs tw:text-gray-400 tw:flex-shrink-0 tw:ml-2"
+            v-if="!isUserChatActive(user.id)"
+            class="tw:flex-shrink-0 tw:text-[10px] tw:font-semibold tw:uppercase tw:tracking-wide tw:text-slate-500 tw:bg-slate-100 tw:px-1.5 tw:py-0.5 tw:rounded"
+          >
+            {{ t('chat.unavailable') }}
+          </span>
+          <span
+            v-else-if="user.last_message_at"
+            class="tw:text-xs tw:text-gray-400 tw:flex-shrink-0"
           >
             {{ formatTime(user.last_message_at) }}
           </span>
@@ -103,14 +118,18 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { X, Loader2, MessageCircle, WifiOff } from 'lucide-vue-next'
 import { chatService, type ChatUser } from '@/services/chatService'
 import {
   subscribeToConversationsForUser,
   type ConversationWithMeta,
 } from '@/services/chatFirestore'
-import { subscribeToPresence, type PresenceDoc } from '@/services/chatPresence'
+import { subscribeToPresence, isChatActive, type PresenceDoc } from '@/services/chatPresence'
+import ChatAvailabilityToggle from '@/components/chat/ChatAvailabilityToggle.vue'
 import type { Timestamp } from 'firebase/firestore'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   currentUserId: number
@@ -127,6 +146,10 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const presenceMap = reactive<Record<number, PresenceDoc | null>>({})
 const unsubPresence: (() => void)[] = []
+
+function isUserChatActive(userId: number): boolean {
+  return isChatActive(presenceMap[userId])
+}
 
 function mergeConversationsToUsers(conversations: ConversationWithMeta[]) {
   const premiumUsers = Array.from(apiUserMap.value.values())
@@ -161,7 +184,6 @@ function mergeConversationsToUsers(conversations: ConversationWithMeta[]) {
 
   users.value = result
 
-  // Subscribe to presence for displayed users
   const ids = new Set(result.map(u => u.id))
   for (const fn of unsubPresence) fn()
   unsubPresence.length = 0
@@ -179,7 +201,7 @@ async function initChatList() {
   try {
     const apiUsers = await chatService.getChatUsers()
     const premium = apiUsers.filter(
-      u => u.id !== props.currentUserId && u.account_type === 'premium'
+      u => u.id !== props.currentUserId && u.account_type === 'premium',
     )
     apiUserMap.value = new Map(premium.map(u => [u.id, { ...u }]))
 
@@ -187,13 +209,13 @@ async function initChatList() {
       mergeConversationsToUsers(conversations)
     }, (err) => {
       console.error('Conversations listener error:', err)
-      error.value = 'Failed to load conversations.'
+      error.value = t('chat.conversationsLoadError')
     })
 
     loading.value = false
     return unsub
   } catch (err) {
-    error.value = 'Failed to load chat list. Please try again.'
+    error.value = t('chat.listLoadError')
     console.error('Error loading chat list:', err)
     loading.value = false
     return () => {}
@@ -220,10 +242,10 @@ function formatTime(isoString: string): string {
   const diffHours = Math.floor(diffMins / 60)
   const diffDays = Math.floor(diffHours / 24)
 
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffMins < 1) return t('chat.justNow')
+  if (diffMins < 60) return t('chat.minutesAgo', { count: diffMins })
   if (diffDays === 0) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  if (diffDays === 1) return 'Yesterday'
+  if (diffDays === 1) return t('chat.yesterday')
   if (diffDays < 7) return date.toLocaleDateString([], { weekday: 'short' })
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }

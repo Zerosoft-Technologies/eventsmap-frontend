@@ -63,6 +63,13 @@
       :users="displaySelectedUsers"
       @remove="removeUser"
     />
+
+    <InviteGuestEmailBlock
+      :role="role"
+      :event-id="eventId"
+      @queued="$emit('guest-queued', $event)"
+      @sent="$emit('guest-sent', $event)"
+    />
   </div>
 </template>
 
@@ -71,9 +78,10 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { User, MapPin, Mic2 } from 'lucide-vue-next'
 import InviteSearchPanel from './InviteSearchPanel.vue'
 import SelectedChips from './SelectedChips.vue'
+import InviteGuestEmailBlock from './InviteGuestEmailBlock.vue'
 import { mockProfiles } from '@/data/mockProfiles'
 
-const emit = defineEmits(['update:selectedIds', 'open', 'refetch'])
+const emit = defineEmits(['update:selectedIds', 'open', 'refetch', 'guest-queued', 'guest-sent'])
 
 const props = defineProps({
   role: {
@@ -105,6 +113,10 @@ const props = defineProps({
   loadError: {
     type: String,
     default: '',
+  },
+  eventId: {
+    type: [Number, String],
+    default: null,
   },
 })
 

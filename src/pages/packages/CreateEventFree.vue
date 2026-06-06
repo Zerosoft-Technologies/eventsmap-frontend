@@ -601,7 +601,7 @@
           </div>
 
           <p class="tw:text-sm tw:text-[var(--text-primary)]">
-            Add registered talent, venues and organisers who are participating in this event.
+            Add registered participants or invite someone by email who is not on EventsMap yet.
           </p>
 
           <div class="tw:space-y-3">
@@ -609,6 +609,7 @@
             <InviteSection
               :key="`invite-talent-${inviteSectionResetKey}`"
               role="talent"
+              :event-id="editEventId"
               :profiles="talentProfiles"
               :all-profiles="invitationAllProfiles"
               :loading="invitationRoleLoading('talent')"
@@ -617,10 +618,12 @@
               v-model:selectedIds="invitedTalentIds"
               @open="onInvitePanelOpen"
               @refetch="onInviteRefetch"
+              @guest-queued="onGuestInviteQueued"
             />
             <InviteSection
               :key="`invite-venue-${inviteSectionResetKey}`"
               role="venue"
+              :event-id="editEventId"
               :profiles="venueProfiles"
               :all-profiles="invitationAllProfiles"
               :loading="invitationRoleLoading('venue')"
@@ -629,10 +632,12 @@
               v-model:selectedIds="invitedVenueIds"
               @open="onInvitePanelOpen"
               @refetch="onInviteRefetch"
+              @guest-queued="onGuestInviteQueued"
             />
             <InviteSection
               :key="`invite-organizer-${inviteSectionResetKey}`"
               role="organizer"
+              :event-id="editEventId"
               :profiles="organiserProfiles"
               :all-profiles="invitationAllProfiles"
               :loading="invitationRoleLoading('organizer')"
@@ -641,6 +646,7 @@
               v-model:selectedIds="invitedOrganiserIds"
               @open="onInvitePanelOpen"
               @refetch="onInviteRefetch"
+              @guest-queued="onGuestInviteQueued"
             />
           </div>
         </div>
@@ -707,6 +713,7 @@ import {
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import InviteSection from "@/components/invite/InviteSection.vue"
+import { sendGuestInvitation } from "@/api/guestInvitations"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import eventService from "@/services/eventService"
 import { useToast } from "@/composables/useToast"
@@ -754,6 +761,30 @@ const invitedTalentIds = ref([])
 const invitedOrganiserIds = ref([])
 const invitedVenueIds = ref([])
 const inviteSectionResetKey = ref(0)
+const pendingGuestInvites = ref([])
+
+function onGuestInviteQueued(payload) {
+  pendingGuestInvites.value.push(payload)
+}
+
+async function flushPendingGuestInvites(eventId) {
+  if (!eventId || pendingGuestInvites.value.length === 0) return
+  const queue = [...pendingGuestInvites.value]
+  pendingGuestInvites.value = []
+  let sent = 0
+  for (const item of queue) {
+    try {
+      const res = await sendGuestInvitation(Number(eventId), item)
+      if (res.success) sent += 1
+    } catch (err) {
+      const msg = err?.response?.data?.message
+      if (msg) toast.error(msg)
+    }
+  }
+  if (sent > 0) {
+    toast.success(`${sent} email invitation(s) sent.`)
+  }
+}
 
 function onInvitePanelOpen(role) {
   ensureInvitationRoleLoaded(role, '')
@@ -1845,8 +1876,13 @@ async function createEvent() {
     const response = await eventService.createEvent(formData)
 
     if (response.success) {
+      const newEventId = response.data?.id
+      if (newEventId) {
+        await flushPendingGuestInvites(newEventId)
+      }
       toast.success('Event created successfully!')
       resetForm()
+      pendingGuestInvites.value = []
       await refreshMyEventsAfterCreate()
     } else {
       // Handle API validation errors

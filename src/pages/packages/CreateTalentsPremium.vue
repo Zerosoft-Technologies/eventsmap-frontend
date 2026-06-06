@@ -104,11 +104,11 @@
                     </div>
                 </div> -->
 
-                <!-- Talent TITLE SECTION -->
+                <!-- Talent NAME SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Create Premium Talent <span class="tw:text-red-500">*</span>
+                            Talent Name <span class="tw:text-red-500">*</span>
                         </h3>
                         <!-- <button
                             class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-blue-50 tw:text-blue-600 tw:flex tw:items-center tw:justify-center hover:tw:bg-blue-100 tw:transition-all">
@@ -116,7 +116,7 @@
                         </button> -->
                     </div>
 
-                    <input v-model="formData.talentTitle" type="text" placeholder="Enter Talent Title"
+                    <input v-model="formData.talentTitle" type="text" placeholder="Enter Talent Name"
                         data-field="talentTitle" @input="formErrors.talentTitle && clearError('talentTitle')" :class="[
                             'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all',
                             formErrors.talentTitle ? 'tw:border-red-500' : 'tw:border-gray-200'
@@ -180,8 +180,7 @@
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                            Additional Images (Max. 5 Images) <span class="tw:text-xs tw:text-gray-500"> Recommended
-                                (1200x800) </span>
+                            Additional Images (Max. 5 Images) <span class="tw:text-xs tw:text-gray-500"> Recommended portrait (3:4) </span>
                         </h3>
                     </div>
 
@@ -449,9 +448,11 @@
                         Contact Details
                     </h3>
 
-                    <input v-model="contactPhone" type="text" placeholder="Telephone Number"
-                        data-field="contact_phone"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                    <PhoneInput
+                        v-model="contactPhone"
+                        placeholder="Telephone Number"
+                        input-class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all"
+                    />
 
                     <input v-model="contactEmail" type="email" placeholder="Email"
                         data-field="contact_email"
@@ -496,12 +497,12 @@
                     </div> -->
                 </div>
 
-                <!-- CONTACT BOX DESIGN SECTION -->
+                <!-- CONTACT BOX + DESIGN SECTION -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box Design</h3>
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box + Design</h3>
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Design Message</label>
-                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your design message"
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Contact Message</label>
+                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your contact message"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
                 </div>
@@ -564,12 +565,10 @@
                         Nationality of Talent
                     </h3>
 
-                    <!-- Exact Nationality Input -->
+                    <!-- Nationality picker (ISO 3166-1) -->
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Enter Nationality</label>
-                        <input v-model="exactNationality" type="text"
-                            placeholder="e.g., American, British, German, French"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Nationality</label>
+                        <CountrySelect v-model="nationalityCode" placeholder="Search and select nationality…" />
                     </div>
 
                 </div>
@@ -619,7 +618,7 @@
 
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Languages spoken</label>
-                        <LanguageMultiSelect v-model="selectedLanguages" />
+                        <LanguageMultiSelect v-model="selectedLanguages" pick-list-only />
                     </div>
                 </div>
 
@@ -820,10 +819,14 @@ import { useRouter, useRoute } from "vue-router"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
+import PhoneInput from "@/components/common/PhoneInput.vue"
+import CountrySelect from "@/components/common/CountrySelect.vue"
 import LanguageMultiSelect from "@/components/talent/LanguageMultiSelect.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
 import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
+import { resolveCountryCode } from "@/utils/countryIso3166"
+import { fetchCountries } from "@/api/referenceData"
 import { useFormValidation } from "@/composables/useFormValidation"
 import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
@@ -964,7 +967,7 @@ const formData = reactive({
 })
 
 const talentSchema = {
-    talentTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Talent Title' },
+    talentTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Talent Name' },
     category: { type: 'select', required: true, label: 'Category' },
 }
 
@@ -975,7 +978,7 @@ const contactEmail = ref("")
 const contactWebsite = ref("")
 const contactBoxDesignMessage = ref("")
 const talentNationality = ref('no')
-const exactNationality = ref('')
+const nationalityCode = ref('')
 const dateOfBirth = ref('')
 const showAge = ref('no')
 const selectedLanguages = ref([])
@@ -1338,7 +1341,7 @@ function buildTalentPayload() {
         instagram_url: normalizeOptionalUrl(instagramUrl.value),
         tiktok_url: normalizeOptionalUrl(tiktokUrl.value),
         fan_club_url: normalizeOptionalUrl(fanClubUrl.value),
-        nationality: exactNationality.value || undefined,
+        nationality: nationalityCode.value || undefined,
         show_nationality: talentNationality.value || undefined,
         date_of_birth: dobStr || undefined,
         age: dobStr && ageNum !== null && ageNum >= 0 ? ageNum : undefined,
@@ -1516,7 +1519,12 @@ async function loadTalent(id) {
         fanClubUrl.value = talent.fan_club_url || ''
 
         // Nationality & age
-        exactNationality.value = talent.nationality || ''
+        try {
+            const countries = await fetchCountries()
+            nationalityCode.value = resolveCountryCode(talent.nationality, countries)
+        } catch {
+            nationalityCode.value = typeof talent.nationality === 'string' ? talent.nationality : ''
+        }
         talentNationality.value = talent.show_nationality || ''
         const dobApi = talent.date_of_birth ?? talent.dateOfBirth
         dateOfBirth.value = formatApiDateToInput(dobApi)
@@ -1589,7 +1597,7 @@ function resetForm() {
     instagramUrl.value = ''
     tiktokUrl.value = ''
     fanClubUrl.value = ''
-    exactNationality.value = ''
+    nationalityCode.value = ''
     talentNationality.value = 'no'
     dateOfBirth.value = ''
     showAge.value = 'no'
