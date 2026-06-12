@@ -92,6 +92,7 @@ import { firebaseAuth } from '@/services/firebase'
 import { chatService, type ChatUser } from '@/services/chatService'
 import { setOnline, setOffline } from '@/services/chatPresence'
 import { useAuthStore } from '@/stores/auth'
+import { useChatStore } from '@/stores/chatStore'
 import ChatUserList from './ChatUserList.vue'
 import ChatConversation from './ChatConversation.vue'
 
@@ -107,6 +108,7 @@ defineEmits<{
 }>()
 
 const authStore = useAuthStore()
+const chatStore = useChatStore()
 
 // ── State ────────────────────────────────────────────────────────────
 const view = ref<ChatView>('checking')
@@ -135,8 +137,15 @@ async function initChat() {
     const name = authStore.user?.name || authStore.user?.email || `User ${authStore.user?.id}`
     if (authStore.user?.id) await setOnline(authStore.user.id, name)
 
-    // 5. Show user list
-    view.value = 'user-list'
+    // 5. Open pending conversation or user list
+    const pending = chatStore.pendingConversationUser
+    if (pending) {
+      selectedUser.value = pending
+      view.value = 'conversation'
+      chatStore.clearPendingConversation()
+    } else {
+      view.value = 'user-list'
+    }
 
   } catch (err: any) {
     console.error('Chat initialization error:', err)

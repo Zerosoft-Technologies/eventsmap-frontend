@@ -1,7 +1,7 @@
 <template>
   <header :class="fixedMenu ? 'tw:fixed tw:top-0 tw:left-0 z-50': ''" class="tw:w-full tw:bg-transparent tw:py-2 tw:px-4 tw:md:py-3 tw:md:px-8 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-y-2 header-root">
     <h1 class="tw:font-bold tw:leading-[1.4] tw:tracking-[-0.5px] tw:text-lg">
-      <RouterLink to="/" @click="goToHomeMap">
+      <RouterLink to="/" @click.prevent="goToHomeMap">
         <img src="../assets/logo.png" alt="Logo" style="width: 80px;" />
       </RouterLink>
     </h1>
@@ -39,7 +39,7 @@
       </div>
       <div>
         <button class="header-btn header-date-field tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:rounded-lg" style="height: 40px;"><img src="../assets/calendar.png" alt="Calendar Icon"/><span class="tw:text-sm">
-          <DatePicker @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
+          <DatePicker :key="desktopPickerKey" @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
         </span></button>
       </div>      
       <transition name="fade">
@@ -127,7 +127,7 @@
                 type="button"
                 @click="selectCategory(category)"
                 :class="[
-                  'category-pill tw:inline-flex tw:shrink-0 tw:text-sm tw:py-2 tw:px-5 tw:rounded-md tw:transition-all',
+                  'category-pill tw:inline-flex tw:shrink-0 tw:text-sm tw:py-2 tw:px-5 tw:rounded-full tw:transition-all',
                   selectedCategory?.id === category.id
                     ? 'category-pill--active'
                     : 'category-pill--default'
@@ -165,6 +165,18 @@
         <button @click="toggleWishlistPanel" style="height: 40px;" class="icon-btn tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1.5 tw:items-center tw:relative">
           <img src="../assets/favourite.png" alt="Favourite Icon"/>
           <span v-if="wishlistStore.wishlistEvents.length > 0" class="badge badge--red">{{ wishlistStore.wishlistEvents.length }}</span>
+        </button>
+      </div>
+      <!-- Chat (authenticated only) -->
+      <div v-if="authStore.isAuthenticated">
+        <button
+          type="button"
+          @click="toggleChatPanel"
+          style="height: 40px;"
+          class="icon-btn tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1.5 tw:items-center tw:relative"
+          :aria-label="$t('header.chat')"
+        >
+          <MessageSquareText class="tw:w-5 tw:h-5 tw:text-(--primary-color)" />
         </button>
       </div>
       <!-- Invitation notifications (authenticated only) -->
@@ -287,7 +299,7 @@
         </div>
 
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
-          <DatePicker @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
+          <DatePicker :key="desktopPickerKey" @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
         </div>
 
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
@@ -365,6 +377,18 @@
             >
               {{ wishlistStore.wishlistEvents.length }}
             </span>
+          </button>
+
+          <!-- Chat icon (authenticated only) -->
+          <button
+            v-if="authStore.isAuthenticated"
+            type="button"
+            @click="toggleChatPanelMobile"
+            style="height: 40px;"
+            class="icon-btn tw:bg-white tw:p-2.5 tw:rounded-md tw:flex tw:gap-1.5 tw:items-center tw:relative"
+            :aria-label="$t('header.chat')"
+          >
+            <MessageSquareText class="tw:w-5 tw:h-5 tw:text-(--primary-color)" />
           </button>
 
           <!-- Invitation notifications icon (authenticated only) -->
@@ -631,7 +655,7 @@
                   type="button"
                   @click="selectCategoryFromMobileMenu(category)"
                   :class="[
-                    'category-pill tw:inline-flex tw:shrink-0 tw:text-sm tw:py-2 tw:px-3 tw:rounded-md tw:transition-all',
+                    'category-pill tw:inline-flex tw:shrink-0 tw:text-sm tw:py-2 tw:px-3 tw:rounded-full tw:transition-all',
                     selectedCategory?.id === category.id
                       ? 'category-pill--active'
                       : 'category-pill--default'
@@ -732,7 +756,7 @@
 
   <div v-if="showResults">
     <AllEvents
-      :events="events"
+      :events="viewportFilteredEvents"
       :loading="eventsLoading"
       :profile-type="discoveryProfileType"
       :selected-category="selectedCategory"
@@ -789,19 +813,24 @@ import { useAuthStore } from '@/stores/auth';
 import { useMapStore } from '@/stores/mapStore';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { useNotificationStore } from '@/stores/notificationStore';
+import { useChatStore } from '@/stores/chatStore';
 import { getCreateRoute } from '@/utils/routeResolver';
 import { getUserProfileImageUrl } from '@/utils/userProfileImage';
-import { Bell, Images, Loader2, ChevronDown } from 'lucide-vue-next';
+import { Bell, Images, Loader2, ChevronDown, MessageSquareText } from 'lucide-vue-next';
 import { chatService } from '@/services/chatService';
 import {
   MAP_OPEN_EVENT_DETAIL,
   MAP_OPEN_PROFILE_DETAIL,
   MAP_RESTORE_EVENT_POPUP,
+  MAP_POPUP_CLOSED,
+  MAP_RESET_HOME,
 } from '@/utils/mapPopupBridge'
+import { filterItemsByMapViewport } from '@/utils/mapViewportFilter'
 import {
   appendDiscoveryDateTimeFilters,
   formatDiscoveryDateToApi,
   getDefaultDiscoveryDateRange,
+  getHomeStartDiscoveryWindow,
   parseStoredSessionFilter,
 } from '@/utils/discoveryDateTimeFilters'
 import EventDetailsPanel from './EventDetailsPanel.vue'
@@ -816,6 +845,7 @@ const { switchLanguage, getAvailableLanguages, initializeLanguage } = useLanguag
 const authStore = useAuthStore()
 const wishlistStore = useWishlistStore()
 const notificationStore = useNotificationStore()
+const chatStore = useChatStore()
 const mapStore = useMapStore()
 const router = useRouter()
 
@@ -854,7 +884,7 @@ function goToLogin() {
 async function handleLogout() {
   closeMobileHeader()
   await authStore.logout()
-  router.push({ name: 'Login' })
+  goToHomeMap()
 }
 
 function toggleMobileMenu() {
@@ -879,6 +909,19 @@ function toggleField(field) {
 
 function toggleWishlistPanelMobile() {
   toggleWishlistPanel()
+  closeMobileHeader()
+}
+
+function toggleChatPanel() {
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'Login', query: { redirect: route.fullPath } })
+    return
+  }
+  chatStore.toggle()
+}
+
+function toggleChatPanelMobile() {
+  toggleChatPanel()
   closeMobileHeader()
 }
 
@@ -948,6 +991,7 @@ const isMobileMenuOpen = ref(false)
 const activeField = ref(null)
 const tempSessionFilter = ref({ morning: false, afternoon: false, evening: false, night: false })
 const mobilePickerKey = ref(0)
+const desktopPickerKey = ref(0)
 const isCalendarOpen = computed(() => isMobileMenuOpen.value && activeField.value === 'date')
 
 watch(isMobileMenuOpen, (val) => { document.body.style.overflow = val ? 'hidden' : '' })
@@ -1053,6 +1097,8 @@ const selectedLocation = ref({ lat: 52.3676, lng: 4.9041, name: "Amsterdam" })
 const showEventDetailsPanel = ref(false)
 /** View Event was opened from a map marker info window — restore popup on close */
 const eventDetailOpenedFromMapPopup = ref(false)
+/** Restore list dock after map info-window flow */
+const listingVisibleBeforeMapEvent = ref(false)
 const selectedEvent = ref(null)
 
 const showProfileDetailsPanel = ref(false)
@@ -1198,12 +1244,14 @@ onMounted(() => {
   window.addEventListener('keydown', handleMobileMenuKeydown)
   window.addEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetailFromHome)
   window.addEventListener(MAP_OPEN_PROFILE_DETAIL, onMapOpenProfileDetailFromHome)
+  window.addEventListener(MAP_POPUP_CLOSED, onMapPopupClosedFromHome)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleMobileMenuKeydown)
   window.removeEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetailFromHome)
   window.removeEventListener(MAP_OPEN_PROFILE_DETAIL, onMapOpenProfileDetailFromHome)
+  window.removeEventListener(MAP_POPUP_CLOSED, onMapPopupClosedFromHome)
   document.body.style.overflow = ''
 })
 
@@ -1235,34 +1283,62 @@ function handleClose() { showResults.value = false }
 function goToHomeMap() {
   handleReset()
   if (route.path !== '/') {
-    router.push('/')
+    void router.push('/')
   }
 }
 
 function handleReset() {
   showResults.value = false
-  searchTerm.value = ""
+  showSuggestion.value = false
+  showLocation.value = false
+  showNotificationDropdown.value = false
+  activeField.value = null
+  isMobileMenuOpen.value = false
+  homeListingDockLayout.value = 'hidden'
+  listingVisibleBeforeMapEvent.value = false
+
+  searchTerm.value = ''
+  searchLocation.value = ''
+  searchResults.value = []
   if (searchInput.value) searchInput.value.blur()
-  city.value = "Amsterdam"
+
+  showEventDetailsPanel.value = false
+  selectedEvent.value = null
+  eventDetailOpenedFromMapPopup.value = false
+  showProfileDetailsPanel.value = false
+  selectedProfile.value = null
+
+  chatStore.close()
+
+  city.value = 'Amsterdam'
   selectedCategory.value = null
   selectedSubcategorySlugs.value = []
-  startTime.value = null
-  endTime.value = null
   venueOpenTime.value = null
   venueCloseTime.value = null
-  selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" }
+  selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: 'Amsterdam' }
   mapStore.setAppliedLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
+  mapStore.setMapViewportBounds(null)
+
   sessionFilter.value = { morning: false, afternoon: false, evening: false, night: false }
   localStorage.removeItem('datepicker-session')
-  dateRange.value = getDefaultDiscoveryDateRange()
+
+  const homeWindow = getHomeStartDiscoveryWindow()
+  dateRange.value = [...homeWindow.dateRange]
+  startTime.value = homeWindow.startTime
+  endTime.value = homeWindow.endTime
+  desktopPickerKey.value++
+  mobilePickerKey.value++
+
   discoveryProfileType.value = 'events'
   closeProfileTypeMenu()
-  void loadCategories()
+
+  events.value = []
   mapStore.clearMapEvents()
   mapStore.clearMapProfiles()
-  if (route.path === '/') {
-    void loadListingFromApi('')
-  }
+  window.dispatchEvent(new CustomEvent(MAP_RESET_HOME))
+
+  void loadCategories()
+  void loadListingFromApi('')
 }
 
 async function getLocation() {
@@ -1298,6 +1374,12 @@ async function getLocation() {
 
 const events = ref([])
 const eventsLoading = ref(false)
+
+/** List view mirrors map viewport — map leads, counts stay in sync when panning/zooming. */
+const viewportFilteredEvents = computed(() => {
+  if (route.name !== 'Home') return events.value
+  return filterItemsByMapViewport(events.value, mapStore.mapViewportBounds)
+})
 
 function formatDateToApi(dateStr) {
   return formatDiscoveryDateToApi(dateStr)
@@ -1445,12 +1527,20 @@ function handleViewEvent(event) {
   showEventDetailsPanel.value = true
 }
 
+function restoreListingAfterMapEventFlow() {
+  if (listingVisibleBeforeMapEvent.value) {
+    showResults.value = true
+  }
+  listingVisibleBeforeMapEvent.value = false
+}
+
 function closeEventDetailsPanel() {
   showEventDetailsPanel.value = false
   selectedEvent.value = null
   if (eventDetailOpenedFromMapPopup.value) {
     eventDetailOpenedFromMapPopup.value = false
     window.dispatchEvent(new CustomEvent(MAP_RESTORE_EVENT_POPUP))
+    restoreListingAfterMapEventFlow()
   }
 }
 
@@ -1465,8 +1555,16 @@ function handleViewProfile(profile) {
 function onMapOpenEventDetailFromHome(e) {
   const d = e?.detail
   if (d) {
+    listingVisibleBeforeMapEvent.value = showResults.value
+    showResults.value = false
     eventDetailOpenedFromMapPopup.value = true
     handleViewEvent(d)
+  }
+}
+
+function onMapPopupClosedFromHome() {
+  if (!eventDetailOpenedFromMapPopup.value && !showEventDetailsPanel.value) {
+    restoreListingAfterMapEventFlow()
   }
 }
 
@@ -1744,12 +1842,12 @@ export default {
 }
 .category-pill--default {
   background: #fff;
-  border: 1.5px solid rgba(0,0,0,0.10);
+  border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 35%, rgba(0, 0, 0, 0.12));
   color: inherit;
 }
 .category-pill--default:hover {
   background: #f9fafb;
-  border-color: rgba(0,0,0,0.18);
+  border-color: var(--secondary-color, #FF7700);
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0,0,0,0.07);
 }

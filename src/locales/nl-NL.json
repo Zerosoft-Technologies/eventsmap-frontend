@@ -13,6 +13,7 @@
     "defaultLocation": "Amsterdam",
     "language": "Taal",
     "link": "Link",
+    "chat": "Chat",
     "profileType": {
       "events": "Evenementen",
       "talent": "Talent",
@@ -36,7 +37,7 @@
     "route": "Route",
     "link": "Link",
     "comingSoon": "Binnenkort",
-    "pastEvent": "Verleden Evenement",
+    "pastEvent": "Afgelopen",
     "upcomingEvent": "Aankomend Evenement",
     "openingHours": "Openingstijden",
     "addToWishlist": "Toevoegen aan verlanglijst",
@@ -220,7 +221,7 @@
       "socials": "Socials",
       "bookingInfo": "Boekingsinfo",
       "contact": "Contact",
-      "talents": "Talenten",
+      "talents": "Talent",
       "organisers": "Organisatoren",
       "venues": "Locaties",
       "community": "Community",
@@ -306,9 +307,12 @@
       "openingHours": "Openingstijden",
       "amenities": "Voorzieningen",
       "contact": "Contact",
-      "upcomingEvents": "Aankomende evenementen"
+      "upcomingEvents": "Aankomende evenementen",
+      "finishedEvents": "Afgelopen"
     },
     "upcomingEventsEmpty": "Geen aankomende evenementen voor dit profiel.",
+    "finishedEventsEmpty": "Geen afgelopen evenementen voor dit profiel.",
+    "message": "Bericht",
     "profileLocation": {
       "organiser": "Locatie van de organisator",
       "talent": "Locatie van het talent",

@@ -14,6 +14,7 @@
     "defaultLocation": "Amsterdam",
     "language": "Language",
     "link": "Link",
+    "chat": "Chat",
     "notifications": "Notifications",
     "invitationNotifications": "Invitation notifications",
     "noPendingInvitations": "No pending invitations.",
@@ -41,7 +42,7 @@
     "route": "Route",
     "link": "Link",
     "comingSoon": "Coming Soon",
-    "pastEvent": "Past Event",
+    "pastEvent": "Finished",
     "upcomingEvent": "Upcoming Event",
     "openingHours": "Opening Hours",
     "addToWishlist": "Add to wishlist",
@@ -151,9 +152,12 @@
       "openingHours": "Opening Hours",
       "amenities": "Amenities",
       "contact": "Contact",
-      "upcomingEvents": "Upcoming Events"
+      "upcomingEvents": "Upcoming Events",
+      "finishedEvents": "Finished"
     },
     "upcomingEventsEmpty": "No upcoming events listed for this profile.",
+    "finishedEventsEmpty": "No finished events listed for this profile.",
+    "message": "Message",
     "profileLocation": {
       "organiser": "Organiser Location",
       "talent": "Talent Location",

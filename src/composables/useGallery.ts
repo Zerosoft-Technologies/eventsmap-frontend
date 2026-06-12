@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 import { galleryApi, type GalleryImage, type GalleryPagination } from '@/api/gallery'
 import { useToast } from '@/composables/useToast'
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 export function useGallery() {
@@ -78,7 +78,7 @@ export function useGallery() {
    */
   function validateFile(file: File): string | null {
     if (file.size > MAX_FILE_SIZE) {
-      return 'File size exceeds 5MB limit'
+      return 'File size exceeds 10MB limit'
     }
     if (!ALLOWED_TYPES.includes(file.type)) {
       return 'Invalid image format - JPG, PNG, GIF, WebP only'

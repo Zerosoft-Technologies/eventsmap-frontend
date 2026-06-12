@@ -151,22 +151,16 @@
           <p v-if="fieldErrors.image_path" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image_path[0] }}</p>
         </div>
 
-        <!-- GENRE SECTION -->
+        <!-- TALENT TYPE -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
           <div class="tw:flex tw:justify-between tw:items-center">
             <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-              Genre <span class="tw:text-red-500">*</span>
+              Talent Type <span class="tw:text-red-500">*</span>
             </h3>
           </div>
 
-          <!-- Error Display -->
-          <div v-if="categoriesError" class="tw:bg-red-50 tw:border tw:border-red-200 tw:rounded-lg tw:p-4 tw:mb-4">
+          <div v-if="categoriesError" class="tw:bg-red-50 tw:border tw:border-red-200 tw:rounded-lg tw:p-4">
             <div class="tw:flex tw:items-center">
-              <svg class="tw:w-5 tw:h-5 tw:text-red-400 tw:mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clip-rule="evenodd"></path>
-              </svg>
               <p class="tw:text-red-800 tw:text-sm">{{ categoriesError }}</p>
               <button @click="fetchCategories"
                 class="tw:ml-auto tw:text-red-600 tw:text-sm tw:font-medium hover:tw:text-red-700">
@@ -175,108 +169,34 @@
             </div>
           </div>
 
-          <!-- Category and Subcategory Dropdowns -->
-          <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-4">
-            <!-- Category Dropdown -->
-            <div class="tw:flex-1">
-              <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                Category <span class="tw:text-red-500">*</span>
-              </label>
-              <div class="tw:relative">
-                <select v-model="form.talent_category_id" @change="handleCategoryChangeWithValidation"
-                  data-field="category"
-                  :disabled="isLoadingCategories || categoriesError" :class="[
-                    'tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
-                    (categoryError || formErrors.category) ? 'tw:border-red-500' : 'tw:border-gray-200',
-                    (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
-                  ]">
-                  <option value="">
-                    {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading categories' :
-                    'Select Category') }}
-                  </option>
-                  <option v-for="category in categoriesTalents" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
-                <ChevronDown
-                  class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
-              </div>
-              <p v-if="formErrors.category || categoryError" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ formErrors.category || 'Category is required' }}</p>
+          <div data-field="talentType">
+            <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
+              Choose from Musician, Dancer, Singer, Actor or Group
+            </label>
+            <div class="tw:relative">
+              <select
+                v-model="selectedTalentType"
+                @change="handleTalentTypeChange"
+                :disabled="isLoadingCategories || !!categoriesError"
+                :class="[
+                  'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:appearance-none tw:cursor-pointer',
+                  (talentTypeError || formErrors.talentType) ? 'tw:border-red-500' : 'tw:border-gray-200',
+                  (isLoadingCategories || categoriesError) ? 'tw:bg-gray-100 tw:cursor-not-allowed' : ''
+                ]"
+              >
+                <option value="">
+                  {{ isLoadingCategories ? 'Loading...' : (categoriesError ? 'Error loading types' : 'Select talent type') }}
+                </option>
+                <option v-for="type in talentTypeOptions" :key="type" :value="type">
+                  {{ type }}
+                </option>
+              </select>
+              <ChevronDown
+                class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
             </div>
-
-            <!-- Subcategory Multi-Select -->
-            <div class="tw:flex-1">
-              <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
-                Subcategories <span class="tw:text-red-500">*</span>
-              </label>
-
-              <!-- Multi-Select Input Field -->
-              <div class="subcategory-dropdown-container" ref="dropdownContainer" data-field="subcategories">
-                <div @click="toggleSubcategoryDropdown" :class="[
-                  'subcategory-input',
-                  (!form.talent_category_id || categoriesError) ? 'disabled' : '',
-                  (subcategoryError || formErrors.subcategories) ? 'error' : ''
-                ]">
-                  <div class="subcategory-input-content">
-                    <span class="subcategory-input-text">
-                      {{ form.talent_subcategory_ids.length > 0
-                        ? `${form.talent_subcategory_ids.length} selected`
-                        : (form.talent_category_id ? 'Select Subcategories' : 'Select Category First')
-                      }}
-                    </span>
-                    <ChevronDown :class="[
-                      'dropdown-chevron',
-                      showSubcategoryDropdown ? 'rotated' : ''
-                    ]" />
-                  </div>
-                </div>
-
-                <!-- Dropdown Options -->
-                <div v-if="showSubcategoryDropdown && form.talent_category_id && !categoriesError" class="subcategory-dropdown"
-                  ref="dropdownMenu">
-                  <div class="dropdown-content">
-                    <div v-for="subcategory in availableSubcategories" :key="subcategory.id" class="dropdown-option"
-                      :class="{
-                        'selected': form.talent_subcategory_ids.includes(subcategory.id),
-                        'disabled': !form.talent_subcategory_ids.includes(subcategory.id) && form.talent_subcategory_ids.length >= 1
-                      }" @click="toggleSubcategory(subcategory.id)">
-                      <input type="checkbox" :id="`subcategory-${subcategory.id}`" :value="subcategory.id"
-                        v-model="form.talent_subcategory_ids"
-                        :disabled="!form.talent_subcategory_ids.includes(subcategory.id) && form.talent_subcategory_ids.length >= 1"
-                        @change="handleSubcategoryChange" @click.stop class="option-checkbox">
-                      <label :for="`subcategory-${subcategory.id}`" class="option-label" @click.stop>
-                        {{ subcategory.name }}
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- Max selection notice -->
-                  <div v-if="form.talent_subcategory_ids.length >= 5" class="max-selection-notice">
-                    Maximum 5 subcategories selected
-                  </div>
-                </div>
-              </div>
-
-              <!-- Selected Tags Display -->
-              <div v-if="form.talent_subcategory_ids.length > 0" class="selected-tags">
-                <span v-for="subcategoryId in form.talent_subcategory_ids" :key="subcategoryId" class="selected-tag">
-                  {{ availableSubcategories.find(s => s.id === subcategoryId)?.name }}
-                  <button @click="removeSubcategory(subcategoryId)" class="tag-remove">
-                    <svg class="tag-remove-icon" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clip-rule="evenodd"></path>
-                    </svg>
-                  </button>
-                </span>
-              </div>
-
-              <!-- Validation Message -->
-              <p v-if="subcategoryValidationError" class="validation-error">
-                You can select maximum 5 subcategories only.
-              </p>
-              <p v-else-if="formErrors.subcategories || subcategoryError" class="validation-error">{{ formErrors.subcategories || 'Please select at least one subcategory' }}</p>
-            </div>
+            <p v-if="formErrors.talentType || talentTypeError" class="tw:text-red-500 tw:text-sm tw:mt-1">
+              {{ formErrors.talentType || 'Please select a talent type' }}
+            </p>
           </div>
         </div>
 
@@ -572,7 +492,7 @@ import {
   SkipBackIcon,
 } from "lucide-vue-next"
 
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from "vue"
+import { ref, reactive, computed, onMounted, nextTick, watch } from "vue"
 import { storeToRefs } from "pinia"
 import { useMyTalentStore } from "@/stores/myTalentStore"
 import { useRouter, useRoute } from "vue-router"
@@ -592,6 +512,7 @@ import {
   isPublicationDraft,
   resolvePublicationStatusSlug,
 } from "@/utils/profilePublicationStatus"
+import { TALENT_FREE_TYPE_OPTIONS, isTalentFreeType } from "@/constants/talentFreeTypes"
 import { cityDisplayFromStoredFullAddress, locationCityDisplayFromNominatim } from "@/utils/nominatimCityDisplay"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -640,46 +561,22 @@ const existingImageUrl = ref(null)
 // ── Form Validation (generic composable) ─────────────────────
 const formData = reactive({
   talentTitle: '',
-  category: '',
-  subcategories: [],
+  talentType: '',
 })
 
 const talentSchema = {
   talentTitle: { type: 'text', required: true, min: 3, max: 100, label: 'Talent Name' },
-  category: { type: 'select', required: true, label: 'Category' },
-  subcategories: { type: 'multiselect', required: true, min: 1, max: 5, label: 'Subcategories' },
+  talentType: { type: 'select', required: true, label: 'Talent Type' },
 }
 
 const { errors: formErrors, validate, clearError, resetErrors, scrollToFirstError } = useFormValidation(talentSchema, formData)
 
-// Genre state
-const form = reactive({
-  talent_category_id: "",
-  talent_subcategory_ids: []
-})
+const talentTypeOptions = TALENT_FREE_TYPE_OPTIONS
+const selectedTalentType = ref('')
 const categoriesTalents = ref([])
 const isLoadingCategories = ref(false)
 const categoriesError = ref(null)
-const showSubcategoryDropdown = ref(false)
-const categoryError = ref(false)
-const subcategoryError = ref(false)
-const subcategoryValidationError = ref(false)
-
-// Dropdown refs for click outside functionality
-const dropdownContainer = ref(null)
-const dropdownMenu = ref(null)
-
-// Computed property for available subcategories
-const availableSubcategories = computed(() => {
-  if (!form.talent_category_id) return []
-  const selectedCategoryData = categoriesTalents.value.find(cat => cat.id === form.talent_category_id)
-  return selectedCategoryData ? selectedCategoryData.subcategories : []
-})
-
-// Computed property for selected category details
-const selectedCategoryDetails = computed(() => {
-  return categoriesTalents.value.find(cat => cat.id === form.talent_category_id)
-})
+const talentTypeError = ref(false)
 
 // Fetch categories from API using eventService
 async function fetchCategories() {
@@ -702,85 +599,22 @@ async function fetchCategories() {
   }
 }
 
-// Handle category change with validation clearing
-function handleCategoryChangeWithValidation() {
-  form.talent_subcategory_ids = []
-  subcategoryError.value = false
-  subcategoryValidationError.value = false
-  categoryError.value = false
-  showSubcategoryDropdown.value = false
-  clearError('category')
-  clearError('subcategories')
+function resolveTalentCategoryId(type) {
+  const match = categoriesTalents.value.find(
+    (cat) => String(cat.name).toLowerCase() === String(type).toLowerCase(),
+  )
+  return match?.id ?? null
 }
 
-// Handle category change
-function handleCategoryChange() {
-  handleCategoryChangeWithValidation()
+function handleTalentTypeChange() {
+  formData.talentType = selectedTalentType.value
+  talentTypeError.value = false
+  clearError('talentType')
 }
 
-// Toggle subcategory dropdown
-function toggleSubcategoryDropdown() {
-  if (!form.talent_category_id || categoriesError.value) return
-  showSubcategoryDropdown.value = !showSubcategoryDropdown.value
-}
-
-// Toggle individual subcategory selection
-function toggleSubcategory(subcategoryId) {
-  if (!form.talent_subcategory_ids.includes(subcategoryId) && form.talent_subcategory_ids.length >= 1) {
-    return
-  }
-
-  const index = form.talent_subcategory_ids.indexOf(subcategoryId)
-  if (index > -1) {
-    form.talent_subcategory_ids.splice(index, 1)
-  } else {
-    form.talent_subcategory_ids.push(subcategoryId)
-  }
-
-  handleSubcategoryChange()
-  if (form.talent_subcategory_ids.length > 0) {
-    clearError('subcategories')
-  }
-}
-
-// Click outside handler to close dropdown
-function handleClickOutside(event) {
-  if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
-    showSubcategoryDropdown.value = false
-  }
-}
-
-// Handle subcategory change with max 5 validation
-// AFTER
-function handleSubcategoryChange() {
-  subcategoryError.value = false
-
-  if (form.talent_subcategory_ids.length > 5) {
-    form.talent_subcategory_ids = form.talent_subcategory_ids.slice(0, 5)
-    subcategoryValidationError.value = true
-    setTimeout(() => {
-      subcategoryValidationError.value = false
-    }, 3000)
-  } else {
-    subcategoryValidationError.value = false
-  }
-}
-
-// Remove subcategory from selection
-function removeSubcategory(subcategoryIdToRemove) {
-  const index = form.talent_subcategory_ids.indexOf(subcategoryIdToRemove)
-  if (index > -1) {
-    form.talent_subcategory_ids.splice(index, 1)
-    subcategoryValidationError.value = false
-  }
-}
-
-// Validate genre fields
-function validateGenre() {
-  categoryError.value = !form.talent_category_id
-  subcategoryError.value = form.talent_subcategory_ids.length === 0
-
-  return form.talent_category_id && form.talent_subcategory_ids.length > 0
+function validateTalentType() {
+  talentTypeError.value = !selectedTalentType.value
+  return !!selectedTalentType.value
 }
 
 const talentCity = ref("")
@@ -875,28 +709,21 @@ function removeTalentImage() {
 
 // ── Sync category/subcategory selections into formData for validation ──
 function syncFormData() {
-  formData.category = selectedCategoryDetails.value?.name || ''
-  formData.subcategories = form.talent_subcategory_ids
-    .map((id) => availableSubcategories.value.find((s) => s.id === id)?.name)
-    .filter(Boolean)
+  formData.talentType = selectedTalentType.value
 }
 
 function buildTalentFormData() {
-  const categoryId = Number(form.talent_category_id)
-  const subIds = form.talent_subcategory_ids.map(Number).filter((n) => !Number.isNaN(n))
-  const catName =
-    categoriesTalents.value.find((c) => c.id === categoryId)?.name || ''
-  const subNames = form.talent_subcategory_ids
-    .map((sid) => availableSubcategories.value.find((s) => s.id === sid)?.name)
-    .filter(Boolean)
-  const genre = [catName, ...subNames].filter(Boolean).join(', ') || catName
+  const type = selectedTalentType.value
+  const categoryId = resolveTalentCategoryId(type)
 
   const fd = new FormData()
   fd.append('title', formData.talentTitle)
   fd.append('event_type', 'free')
-  fd.append('category_id', String(categoryId))
-  subIds.forEach((id) => fd.append('subcategory_ids[]', String(id)))
-  if (genre) fd.append('genre', genre)
+  if (categoryId != null) {
+    fd.append('talent_category_id', String(categoryId))
+    fd.append('category_id', String(categoryId))
+  }
+  if (type) fd.append('highlights', type)
   if (selectedAddress.value) {
     fd.append('location', selectedAddress.value)
     fd.append('address', selectedAddress.value)
@@ -921,7 +748,7 @@ function buildTalentFormData() {
 function validateForm() {
   syncFormData()
   const schemaOk = validate()
-  const genreOk = validateGenre()
+  const typeOk = validateTalentType()
   const hasImage =
     selectedImageFile.value !== null ||
     (isEditMode.value && !!existingImageUrl.value)
@@ -938,7 +765,7 @@ function validateForm() {
     delete extra.address
   }
   fieldErrors.value = extra
-  return schemaOk && genreOk && hasImage && addressOk
+  return schemaOk && typeOk && hasImage && addressOk
 }
 
 // ── Create Talent ───────────────────────────────────────────────
@@ -1031,19 +858,18 @@ async function loadTalent(id) {
     if (talent.latitude) mapLat.value = talent.latitude
     if (talent.longitude) mapLng.value = talent.longitude
 
-    const catId = talent.talent_category_id ?? talent.category_id
-    if (catId) {
-      form.talent_category_id = catId
-      await nextTick()
-      const subs = talent.talent_subcategories || talent.subcategories || []
-      if (subs.length) {
-        form.talent_subcategory_ids = subs.map((s) => Number(s.id)).filter((n) => !Number.isNaN(n))
-      } else if (Array.isArray(talent.talent_subcategory_ids) && talent.talent_subcategory_ids.length > 0) {
-        form.talent_subcategory_ids = talent.talent_subcategory_ids.map((id) => Number(id)).filter((n) => !Number.isNaN(n))
-      } else if (Array.isArray(talent.subcategory_ids) && talent.subcategory_ids.length > 0) {
-        form.talent_subcategory_ids = talent.subcategory_ids.map((id) => Number(id)).filter((n) => !Number.isNaN(n))
-      }
+    const catName =
+      talent.talent_category?.name ||
+      talent.category?.name ||
+      (typeof talent.highlights === 'string' ? talent.highlights.trim() : '')
+    if (isTalentFreeType(catName)) {
+      selectedTalentType.value = catName
+      formData.talentType = catName
+    } else {
+      selectedTalentType.value = ''
+      formData.talentType = ''
     }
+    talentTypeError.value = false
 
     selectedImageFile.value = null
     fileName.value = ''
@@ -1108,10 +934,8 @@ async function cancelEdit() {
 // ── Reset Form ──────────────────────────────────────────────────
 function resetForm() {
   formData.talentTitle = ''
-  formData.category = ''
-  formData.subcategories = []
-  form.talent_category_id = ''
-  form.talent_subcategory_ids = []
+  formData.talentType = ''
+  selectedTalentType.value = ''
   selectedAddress.value = ''
   selectedLocationCityDisplay.value = ''
   searchAddress.value = ''
@@ -1131,9 +955,7 @@ function resetForm() {
   fieldErrors.value = {}
   mapLat.value = null
   mapLng.value = null
-  categoryError.value = false
-  subcategoryError.value = false
-  subcategoryValidationError.value = false
+  talentTypeError.value = false
   isEditMode.value = false
   editingTalentId.value = null
   resetErrors()
@@ -1292,8 +1114,6 @@ function handleBack() {
 onMounted(async () => {
   fetchCategories()
 
-  document.addEventListener('click', handleClickOutside)
-
   map.value = new maplibregl.Map({
     container: "event-map",
     style: "https://api.maptiler.com/maps/streets-v2/style.json?key=4Rm2OIdojZoTFcWWjJPY",
@@ -1329,8 +1149,4 @@ onMounted(async () => {
   }
 })
 
-// Cleanup on unmount
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
 </script>

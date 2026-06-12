@@ -59,6 +59,13 @@
         <div class="tw:flex tw:justify-between tw:items-center tw:px-4 tw:pb-3 tw:border-b tw:border-gray-100 tw:flex-shrink-0">
           <h3 class="tw:text-sm tw:font-bold tw:text-gray-600 tw:tracking-[0.1em] tw:uppercase">{{ panelLabel }}</h3>
           <div class="tw:flex tw:items-center tw:gap-3">
+            <button
+              v-if="!isLoading && computedEvents.length > 0"
+              @click.stop="reset"
+              class="tw:text-xs tw:text-gray-500 tw:px-2.5 tw:py-1 tw:rounded-lg tw:border tw:border-gray-200 hover:tw:bg-gray-50 tw:transition-colors"
+            >
+              {{ $t('header.resetSearch') }}
+            </button>
             <img
               class="tw:cursor-pointer tw:opacity-60 hover:tw:opacity-100 tw:transition-opacity"
               @click.stop="minimize"
@@ -141,16 +148,6 @@
             </div>
           </transition-group>
 
-          <!-- Reset search -->
-          <div v-if="!isLoading && computedEvents.length > 0" class="tw:text-center tw:pb-5">
-            <button
-              @click="reset"
-              class="tw:text-sm tw:text-gray-500 tw:px-5 tw:py-2 tw:rounded-lg tw:border tw:border-gray-200 hover:tw:bg-gray-50 tw:transition-colors"
-            >
-              {{ $t('header.resetSearch') }}
-            </button>
-          </div>
-
         </div>
       </template>
     </div>
@@ -212,8 +209,9 @@ const props = defineProps({
 
 const isEventsMode = computed(() => props.profileType === 'events')
 
-const PROFILE_LABELS = { events: 'Events', organisers: 'Organiser', talents: 'Talent', venues: 'Venue' }
-const panelLabel = computed(() => PROFILE_LABELS[props.profileType] ?? 'Results')
+// Phase 2 UX: the minimized/CTA button should always read "List View"
+// (it is not "Events" only; it covers events + other discovery profiles).
+const panelLabel = computed(() => 'List View')
 
 const emptyTitle = computed(() =>
   isEventsMode.value ? t('allEvents.noEventsFound') : t('allEvents.noProfilesFound')

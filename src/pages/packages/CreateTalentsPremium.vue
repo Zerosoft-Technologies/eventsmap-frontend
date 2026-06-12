@@ -260,8 +260,9 @@
                         </div>
                     </div>
 
-                    <!-- Category Dropdown -->
-                    <div class="tw:flex tw:flex-col tw:gap-4">
+                    <!-- Category and Subcategory Dropdowns -->
+                    <div class="tw:flex tw:flex-col tw:md:flex-row tw:gap-4">
+                        <!-- Category Dropdown -->
                         <div class="tw:flex-1">
                             <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
                                 Category <span class="tw:text-red-500">*</span>
@@ -284,6 +285,55 @@
                                     class="tw:absolute tw:right-4 tw:top-1/2 tw:-translate-y-1/2 tw:w-5 tw:h-5 tw:text-gray-400 tw:pointer-events-none" />
                             </div>
                             <p v-if="categoryError" class="tw:text-red-500 tw:text-sm tw:mt-1">Category is required</p>
+                        </div>
+
+                        <!-- Subcategory Multi-Select -->
+                        <div class="tw:flex-1">
+                            <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-700 tw:mb-2">
+                                Genre (1 subcategory) <span class="tw:text-red-500">*</span>
+                            </label>
+
+                            <!-- Multi-Select Input Field -->
+                            <div class="subcategory-dropdown-container" ref="dropdownContainer">
+                                <div @click="toggleSubcategoryDropdown" :class="[
+                                    'subcategory-input',
+                                    (!form.talent_category_id || categoriesError) ? 'disabled' : '',
+                                    subcategoryError ? 'error' : ''
+                                ]">
+                                    <div class="subcategory-input-content">
+                                        <span class="subcategory-input-text">
+                                            {{ selectedSubcategoryName || (form.talent_category_id ? 'Select genre' : 'Select category first') }}
+                                        </span>
+                                        <ChevronDown :class="[
+                                            'dropdown-chevron',
+                                            showSubcategoryDropdown ? 'rotated' : ''
+                                        ]" />
+                                    </div>
+                                </div>
+
+                                <!-- Dropdown Options -->
+                                <div v-if="showSubcategoryDropdown && form.talent_category_id && !categoriesError"
+                                    class="subcategory-dropdown" ref="dropdownMenu">
+                                    <div class="dropdown-content">
+                                        <div v-for="subcategory in availableSubcategories" :key="subcategory.id"
+                                            class="dropdown-option" :class="{
+                                                'selected': form.talent_subcategory_ids.includes(subcategory.id),
+                                            }" @click="selectSubcategory(subcategory.id)">
+                                            <input type="radio" :id="`subcategory-${subcategory.id}`"
+                                                :checked="form.talent_subcategory_ids.includes(subcategory.id)"
+                                                :name="`talent-subcategory-${form.talent_category_id}`"
+                                                @change="selectSubcategory(subcategory.id)" @click.stop class="option-checkbox">
+                                            <label :for="`subcategory-${subcategory.id}`" class="option-label" @click.stop>
+                                                {{ subcategory.name }}
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Validation Message -->
+                            <p v-if="subcategoryError" class="validation-error">Please select one genre</p>
                         </div>
                     </div>
                 </div>
@@ -477,33 +527,50 @@
                         <p v-if="apiFieldError('contact_website')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('contact_website') }}</p>
                     </div>
 
-                    <!-- SHOW CHATBOX TOGGLE -->
-                    <!-- <div class="tw:flex tw:justify-between tw:items-center tw:pt-2">
-                        <span class="tw:text-sm tw:text-gray-900">Show Chatbox</span>
-
-                        <label class="tw:relative tw:inline-flex tw:items-center tw:w-12 tw:h-6 tw:cursor-pointer">
-                            <input type="checkbox" v-model="showChatbox" class="tw:sr-only tw:peer" />
-
-                            
-                            <div
-                                class="tw:w-12 tw:h-6 tw:bg-gray-300 tw:rounded-full tw:transition tw:peer-checked:bg-orange-500">
-                            </div>
-
-                            
-                            <div
-                                class="tw:absolute tw:left-1 tw:top-1 tw:w-4 tw:h-4 tw:bg-white tw:rounded-full tw:transition tw:peer-checked:translate-x-6">
-                            </div>
-                        </label>
-                    </div> -->
                 </div>
 
-                <!-- CONTACT BOX + DESIGN SECTION -->
+                <!-- CONTACT BOX + DESIGN -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box + Design</h3>
+
                     <div class="tw:space-y-2">
+                        <span class="tw:text-sm tw:font-medium tw:text-gray-700">Show contact box on your public profile</span>
+                        <div class="tw:flex tw:gap-4">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-contact-box"
+                                    :checked="showContactBox"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                    @change="showContactBox = true"
+                                />
+                                <span class="tw:text-sm tw:text-gray-800">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-contact-box"
+                                    :checked="!showContactBox"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                    @change="showContactBox = false"
+                                />
+                                <span class="tw:text-sm tw:text-gray-800">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div v-if="showContactBox" class="tw:space-y-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Contact Message</label>
-                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your contact message"
-                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
+                        <textarea
+                            v-model="contactBoxDesignMessage"
+                            rows="4"
+                            placeholder="Enter your contact message"
+                            data-field="contact_box_design_message"
+                            class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all tw:resize-none"
+                        ></textarea>
+                        <p v-if="apiFieldError('contact_box_design_message')" class="tw:text-red-500 tw:text-sm">
+                            {{ apiFieldError('contact_box_design_message') }}
+                        </p>
                     </div>
                 </div>
 
@@ -565,10 +632,49 @@
                         Nationality of Talent
                     </h3>
 
-                    <!-- Nationality picker (ISO 3166-1) -->
                     <div class="tw:space-y-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Nationality</label>
-                        <CountrySelect v-model="nationalityCode" placeholder="Search and select nationality…" />
+                        <CountrySelect
+                            v-model="nationalityCode"
+                            data-field="nationality"
+                            variant="premium"
+                            placeholder="Search and select nationality…"
+                            :has-error="!!fieldErrors.nationality?.length || !!apiFieldError('nationality')"
+                            @update:model-value="onNationalityChange"
+                        />
+                        <p class="tw:text-xs tw:text-gray-500">Choose from the ISO 3166-1 country list.</p>
+                        <p v-if="fieldErrors.nationality?.length" class="tw:text-red-500 tw:text-sm">
+                            {{ fieldErrors.nationality[0] }}
+                        </p>
+                        <p v-else-if="apiFieldError('nationality')" class="tw:text-red-500 tw:text-sm">
+                            {{ apiFieldError('nationality') }}
+                        </p>
+                    </div>
+
+                    <div class="tw:space-y-2">
+                        <span class="tw:text-sm tw:font-medium tw:text-gray-700">Show nationality on your public profile</span>
+                        <div class="tw:flex tw:gap-4">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-nationality"
+                                    value="yes"
+                                    v-model="talentNationality"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-800">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-nationality"
+                                    value="no"
+                                    v-model="talentNationality"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                />
+                                <span class="tw:text-sm tw:text-gray-800">No</span>
+                            </label>
+                        </div>
                     </div>
 
                 </div>
@@ -895,6 +1001,10 @@ function clearApiFieldError(key) {
     fieldErrors.value = next
 }
 
+function onNationalityChange() {
+    clearApiFieldError('nationality')
+}
+
 const URL_INPUT_BASE =
     'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all'
 
@@ -915,7 +1025,11 @@ async function scrollToFirstApiFieldError() {
         const el = document.querySelector(`[data-field="${key}"]`)
         if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.focus()
+            const focusTarget =
+                el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT'
+                    ? el
+                    : el.querySelector('input, textarea, select')
+            if (focusTarget instanceof HTMLElement) focusTarget.focus()
             return
         }
     }
@@ -977,6 +1091,7 @@ const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
 const contactBoxDesignMessage = ref("")
+const showContactBox = ref(false)
 const talentNationality = ref('no')
 const nationalityCode = ref('')
 const dateOfBirth = ref('')
@@ -1037,6 +1152,12 @@ const selectedCategoryDetails = computed(() => {
     return categoriesTalents.value.find(cat => cat.id === form.talent_category_id)
 })
 
+const selectedSubcategoryName = computed(() => {
+    const id = form.talent_subcategory_ids[0]
+    if (!id) return ''
+    return availableSubcategories.value.find((s) => s.id === id)?.name ?? ''
+})
+
 // Fetch categories from API using eventService
 async function fetchCategories() {
     try {
@@ -1073,17 +1194,10 @@ function toggleSubcategoryDropdown() {
     showSubcategoryDropdown.value = !showSubcategoryDropdown.value
 }
 
-function toggleSubcategory(subcategoryId) {
-    if (!form.talent_subcategory_ids.includes(subcategoryId) && form.talent_subcategory_ids.length >= 5) {
-        return
-    }
-    const index = form.talent_subcategory_ids.indexOf(subcategoryId)
-    if (index > -1) {
-        form.talent_subcategory_ids.splice(index, 1)
-    } else {
-        form.talent_subcategory_ids.push(subcategoryId)
-    }
-    handleSubcategoryChange()
+function selectSubcategory(subcategoryId) {
+    form.talent_subcategory_ids = [subcategoryId]
+    subcategoryError.value = false
+    showSubcategoryDropdown.value = false
 }
 
 function handleClickOutside(event) {
@@ -1092,29 +1206,10 @@ function handleClickOutside(event) {
     }
 }
 
-function handleSubcategoryChange() {
-    subcategoryError.value = false
-    if (form.talent_subcategory_ids.length > 5) {
-        form.talent_subcategory_ids = form.talent_subcategory_ids.slice(0, 5)
-        subcategoryValidationError.value = true
-        setTimeout(() => { subcategoryValidationError.value = false }, 3000)
-    } else {
-        subcategoryValidationError.value = false
-    }
-}
-
-function removeSubcategory(subcategoryIdToRemove) {
-    const index = form.talent_subcategory_ids.indexOf(subcategoryIdToRemove)
-    if (index > -1) {
-        form.talent_subcategory_ids.splice(index, 1)
-        subcategoryValidationError.value = false
-    }
-}
-
 function validateGenre() {
     categoryError.value = !form.talent_category_id
-    subcategoryError.value = false
-    return !!form.talent_category_id
+    subcategoryError.value = form.talent_subcategory_ids.length !== 1
+    return !!form.talent_category_id && form.talent_subcategory_ids.length === 1
 }
 
 const dobMaxIso = computed(() => new Date().toISOString().slice(0, 10))
@@ -1293,7 +1388,24 @@ function syncFormData() {
         .filter(Boolean)
 }
 
-function buildTalentPayload() {
+function normalizeShowNationalityFlag(value) {
+    if (value === true || value === '1' || value === 'yes') return 'yes'
+    return 'no'
+}
+
+async function resolveNationalityCodeForApi(raw) {
+    const trimmed = String(raw ?? '').trim()
+    if (!trimmed) return undefined
+    try {
+        const countries = await fetchCountries()
+        const resolved = resolveCountryCode(trimmed, countries)
+        return resolved || undefined
+    } catch {
+        return trimmed.length === 2 ? trimmed.toUpperCase() : undefined
+    }
+}
+
+async function buildTalentPayload() {
     const imagePath = typeof formData.image_path === 'string' ? formData.image_path.trim() : ''
     if (!imagePath) {
         throw new Error('image_path is required')
@@ -1336,13 +1448,14 @@ function buildTalentPayload() {
         contact_phone: contactPhone.value || undefined,
         contact_email: contactEmail.value || undefined,
         contact_website: normalizeOptionalUrl(contactWebsite.value),
-        contact_box_design_message: contactBoxDesignMessage.value.trim(),
+        show_contact_box: !!showContactBox.value,
+        contact_box_design_message: showContactBox.value ? contactBoxDesignMessage.value.trim() : '',
         facebook_url: normalizeOptionalUrl(facebookUrl.value),
         instagram_url: normalizeOptionalUrl(instagramUrl.value),
         tiktok_url: normalizeOptionalUrl(tiktokUrl.value),
         fan_club_url: normalizeOptionalUrl(fanClubUrl.value),
-        nationality: nationalityCode.value || undefined,
-        show_nationality: talentNationality.value || undefined,
+        nationality: await resolveNationalityCodeForApi(nationalityCode.value),
+        show_nationality: normalizeShowNationalityFlag(talentNationality.value),
         date_of_birth: dobStr || undefined,
         age: dobStr && ageNum !== null && ageNum >= 0 ? ageNum : undefined,
         show_age: showAge.value || undefined,
@@ -1363,7 +1476,7 @@ async function createTalent() {
             return
         }
         fieldErrors.value = {}
-        const payload = buildTalentPayload()
+        const payload = await buildTalentPayload()
         const response = await eventService.createTalent(payload)
         if (response.success) {
             toast.success('Talent created successfully.')
@@ -1406,7 +1519,7 @@ async function updateTalent() {
     if (!editingTalentId.value) return
     try {
         fieldErrors.value = {}
-        const payload = buildTalentPayload()
+        const payload = await buildTalentPayload()
         const response = await eventService.updateTalent(editingTalentId.value, payload)
         if (response.success) {
             toast.success('Talent updated successfully.')
@@ -1512,6 +1625,8 @@ async function loadTalent(id) {
         contactPhone.value = talent.contact_phone || ''
         contactEmail.value = talent.contact_email || ''
         contactWebsite.value = talent.contact_website || ''
+        showContactBox.value = talent.show_contact_box === true || talent.show_contact_box === '1'
+            || (!!talent.contact_box_design_message && talent.show_contact_box !== false && talent.show_contact_box !== '0')
         contactBoxDesignMessage.value = talent.contact_box_design_message || ''
         facebookUrl.value = talent.facebook_url || ''
         instagramUrl.value = talent.instagram_url || ''
@@ -1525,7 +1640,7 @@ async function loadTalent(id) {
         } catch {
             nationalityCode.value = typeof talent.nationality === 'string' ? talent.nationality : ''
         }
-        talentNationality.value = talent.show_nationality || ''
+        talentNationality.value = normalizeShowNationalityFlag(talent.show_nationality)
         const dobApi = talent.date_of_birth ?? talent.dateOfBirth
         dateOfBirth.value = formatApiDateToInput(dobApi)
         showAge.value = talent.show_age || 'no'
@@ -1592,6 +1707,7 @@ function resetForm() {
     contactPhone.value = ''
     contactEmail.value = ''
     contactWebsite.value = ''
+    showContactBox.value = false
     contactBoxDesignMessage.value = ''
     facebookUrl.value = ''
     instagramUrl.value = ''
@@ -1655,6 +1771,31 @@ async function handleSubmit() {
     }
 
     delete extraErrors.date_of_birth
+    delete extraErrors.nationality
+
+    if (nationalityCode.value?.trim()) {
+        try {
+            const countries = await fetchCountries()
+            const resolved = resolveCountryCode(nationalityCode.value, countries)
+            if (!resolved) {
+                extraErrors.nationality = ['Please select a valid nationality from the ISO 3166-1 list.']
+                hasExtraErrors = true
+            } else if (resolved !== nationalityCode.value) {
+                nationalityCode.value = resolved
+            }
+        } catch {
+            if (nationalityCode.value.trim().length !== 2) {
+                extraErrors.nationality = ['Could not validate nationality. Please try again.']
+                hasExtraErrors = true
+            }
+        }
+    }
+
+    if (talentNationality.value === 'yes' && !nationalityCode.value?.trim()) {
+        extraErrors.nationality = ['Nationality is required when you choose to show it on your profile.']
+        hasExtraErrors = true
+    }
+
     if (showAge.value === 'yes' && !dateOfBirth.value?.trim()) {
         extraErrors.date_of_birth = ['Date of birth is required when you choose to share age on your profile.']
         hasExtraErrors = true
@@ -1673,6 +1814,10 @@ async function handleSubmit() {
 
     if (!isValid || !genreValid || hasExtraErrors) {
         await scrollToFirstError()
+        const hasSchemaError = Object.keys(talentSchema).some((field) => formErrors[field])
+        if (!hasSchemaError) {
+            await scrollToFirstApiFieldError()
+        }
         return
     }
 

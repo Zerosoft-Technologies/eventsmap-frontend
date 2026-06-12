@@ -527,10 +527,43 @@
             </div>
           </div>
 
-          <!-- Contact box message -->
-          <div v-if="contactBoxMessage" class="tw:mt-4 tw:p-4 tw:rounded-xl tw:bg-blue-50 tw:border tw:border-blue-100">
+          <!-- Contact box message (premium: only when enabled) -->
+          <div v-if="showContactBox && contactBoxMessage" class="tw:mt-4 tw:p-4 tw:rounded-xl tw:bg-[#FFFAF5] tw:border tw:border-[#FF7700]/30">
             <p class="tw:text-sm tw:text-gray-700 tw:italic tw:leading-relaxed">{{ contactBoxMessage }}</p>
           </div>
+
+          <!-- Message / chat (premium talent profiles) -->
+          <button
+            v-if="canMessageProfile"
+            type="button"
+            @click="openProfileChat"
+            class="tw:mt-2 tw:w-full tw:flex tw:items-center tw:justify-center tw:gap-2 tw:rounded-xl tw:border tw:border-[#FF7700] tw:bg-[#FF7700] tw:px-4 tw:py-2.5 tw:text-sm tw:font-semibold tw:text-white tw:transition-colors hover:tw:bg-[#e66800]"
+          >
+            <svg class="tw:w-4 tw:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            {{ t('discoveryProfile.message') }}
+          </button>
+        </div>
+
+        <!-- Finished (past) events — premium profiles only -->
+        <div v-else-if="activeTab === 'finishedEvents'" class="tw:px-4 tw:py-4">
+          <div v-if="finishedEvents.length === 0" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:py-10 tw:gap-3">
+            <svg class="tw:w-12 tw:h-12 tw:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <p class="tw:text-sm tw:text-gray-500 tw:text-center">{{ t('discoveryProfile.finishedEventsEmpty') }}</p>
+          </div>
+          <ul v-else class="tw:space-y-3">
+            <li
+              v-for="ev in finishedEvents"
+              :key="ev.id"
+              class="tw:flex tw:flex-col tw:gap-0.5 tw:p-3 tw:rounded-xl tw:border tw:border-gray-100 tw:bg-gray-50/80"
+            >
+              <span class="tw:text-xs tw:font-medium tw:text-gray-500">{{ formatFinishedEventDate(ev) }}</span>
+              <span class="tw:text-sm tw:font-semibold tw:text-gray-900 tw:line-clamp-2">{{ ev.title }}</span>
+            </li>
+          </ul>
         </div>
 
         <!-- Upcoming Events Tab -->
@@ -587,6 +620,9 @@
 <script setup>
 import { ref, computed, watch, nextTick, onBeforeUnmount, onMounted, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useChatStore } from '@/stores/chatStore'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { MAP_CONFIG } from '@/config/mapConfig'
@@ -604,6 +640,9 @@ import {
 const EventCard = defineAsyncComponent(() => import('./Event.vue'))
 
 const { t } = useI18n()
+const router = useRouter()
+const authStore = useAuthStore()
+const chatStore = useChatStore()
 
 // ── Mobile detection (< md breakpoint = 768px) ─────────────────
 const isMobile = ref(false)
@@ -625,7 +664,7 @@ const props = defineProps({
 const profilePanelOuterStyle = computed(() => {
   if (isMobile.value) return { zIndex: 100 }
   const left = props.mapListingExpanded ? '430px' : '1.75rem'
-  return { left, zIndex: 100 }
+  return { left, zIndex: 10100 }
 })
 
 const emit = defineEmits(['close', 'viewEvent'])
@@ -1035,7 +1074,17 @@ const SOCIAL_CONFIGS = [
   { key: 'fan_club_url', label: 'Fan Club', color: '#FF7700', iconPath: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' },
 ]
 
+const showContactBox = computed(() => {
+  const p = props.profile
+  if (!p) return false
+  if (p.show_contact_box === true || p.show_contact_box === '1') return true
+  if (p.show_contact_box === false || p.show_contact_box === '0') return false
+  const design = typeof p.contact_box_design_message === 'string' ? p.contact_box_design_message.trim() : ''
+  return design.length > 0
+})
+
 const contactBoxMessage = computed(() => {
+  if (!showContactBox.value) return ''
   const p = props.profile
   if (!p) return ''
   const design = typeof p.contact_box_design_message === 'string' ? p.contact_box_design_message.trim() : ''
@@ -1043,6 +1092,35 @@ const contactBoxMessage = computed(() => {
   const legacy = typeof p.contact_box_message === 'string' ? p.contact_box_message.trim() : ''
   return legacy
 })
+
+const profileOwnerUserId = computed(() => {
+  const p = props.profile
+  if (!p) return null
+  const nested = p.user?.id
+  if (nested != null) return Number(nested)
+  if (p.user_id != null) return Number(p.user_id)
+  return null
+})
+
+const canMessageProfile = computed(() => {
+  if (!showContactBox.value) return false
+  if (props.profileType !== 'talents') return false
+  const uid = profileOwnerUserId.value
+  if (uid == null || !Number.isFinite(uid)) return false
+  if (authStore.user?.id != null && Number(authStore.user.id) === uid) return false
+  return true
+})
+
+function openProfileChat() {
+  if (!authStore.isAuthenticated) {
+    void router.push({ name: 'Login' })
+    return
+  }
+  const uid = profileOwnerUserId.value
+  if (uid == null) return
+  const name = props.profile?.title || props.profile?.user?.name || `Talent ${uid}`
+  chatStore.openWithUser({ id: uid, name, profile_type: 'talent', account_type: 'premium' })
+}
 
 const socialLinks = computed(() => {
   const p = props.profile
@@ -1062,6 +1140,23 @@ const upcomingEvents = computed(() => {
   return ev
 })
 
+const finishedEvents = computed(() => {
+  const p = props.profile
+  if (!p) return []
+  if (!p.show_past_events) return []
+  const ev = p.past_events
+  if (!Array.isArray(ev) || ev.length === 0) return []
+  return ev
+})
+
+function formatFinishedEventDate(ev) {
+  const raw = ev?.event_date || ev?.start_date || ev?.date
+  if (!raw) return '—'
+  const d = new Date(String(raw))
+  if (Number.isNaN(d.getTime())) return String(raw)
+  return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 // ── Tabs ───────────────────────────────────────────────────────
 const tabs = computed(() => {
   const list = [{ id: 'overview', label: t('discoveryProfile.tabs.overview') }]
@@ -1069,6 +1164,12 @@ const tabs = computed(() => {
     list.push({
       id: 'upcomingEvents',
       label: `${t('discoveryProfile.tabs.upcomingEvents')} (${upcomingEvents.value.length})`,
+    })
+  }
+  if (finishedEvents.value.length > 0) {
+    list.push({
+      id: 'finishedEvents',
+      label: `${t('discoveryProfile.tabs.finishedEvents')} (${finishedEvents.value.length})`,
     })
   }
   if (showLocationTab.value) {
@@ -1082,7 +1183,7 @@ const tabs = computed(() => {
     list.push({ id: 'amenities', label: t('discoveryProfile.tabs.amenities') })
   }
   const hasContact = props.profile?.contact_phone || props.profile?.contact_email ||
-    props.profile?.contact_website || socialLinks.value.length > 0 || contactBoxMessage.value
+    props.profile?.contact_website || socialLinks.value.length > 0 || contactBoxMessage.value || canMessageProfile.value
   if (hasContact) list.push({ id: 'contact', label: t('discoveryProfile.tabs.contact') })
   return list
 })

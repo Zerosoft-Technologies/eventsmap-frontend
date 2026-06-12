@@ -5,7 +5,7 @@
   >
 
     <!-- ── Hero: cover only, or carousel when additional_images exist ── -->
-    <div class="tw:relative tw:h-40 tw:overflow-hidden tw:rounded-t-2xl">
+    <div class="tw:relative tw:aspect-square tw:max-h-52 tw:overflow-hidden tw:rounded-t-2xl">
       <div
         class="tw:flex tw:h-full tw:transition-transform tw:duration-300 tw:ease-in-out"
         :style="{ transform: `translateX(-${heroImageIndex * 100}%)` }"
@@ -131,21 +131,10 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
           <div
-            v-if="scheduleDisplay.date || scheduleDisplay.startTime || scheduleDisplay.endTime"
+            v-if="dateTimeRangeDisplay"
             class="tw:flex tw:flex-col tw:gap-0.5 tw:min-w-0 tw:text-sm tw:text-[var(--primary-color)] tw:leading-snug"
           >
-            <p v-if="scheduleDisplay.date" class="tw:m-0">
-              <span class="tw:font-medium">{{ $t('eventCard.date') }}:</span>
-              {{ ' ' }}{{ scheduleDisplay.date }}
-            </p>
-            <p v-if="scheduleDisplay.startTime" class="tw:m-0">
-              <span class="tw:font-medium">{{ $t('eventCard.startTime') }}:</span>
-              {{ ' ' }}{{ scheduleDisplay.startTime }}
-            </p>
-            <p v-if="scheduleDisplay.endTime" class="tw:m-0">
-              <span class="tw:font-medium">{{ $t('eventCard.endTime') }}:</span>
-              {{ ' ' }}{{ scheduleDisplay.endTime }}<template v-if="scheduleDisplay.endDate"> · {{ scheduleDisplay.endDate }}</template>
-            </p>
+            <p class="tw:m-0">{{ dateTimeRangeDisplay }}</p>
           </div>
         </div>
 
@@ -216,7 +205,7 @@
           type="button"
           :disabled="!hasMapCoordinates"
           @click.stop="handleRouteClick"
-          class="tw:flex-1 tw:text-sm tw:px-2 tw:py-1.5 tw:rounded-lg tw:border tw:border-[var(--primary-color)]/35 tw:text-[var(--primary-color)] tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 hover:tw:bg-blue-50/90 hover:tw:border-[var(--primary-color)]/50 disabled:tw:opacity-40 disabled:tw:pointer-events-none disabled:hover:tw:bg-white"
+          class="tw:flex-1 tw:text-sm tw:px-2 tw:py-1.5 tw:rounded-lg tw:border tw:border-[var(--primary-color)]/35 tw:text-[var(--primary-color)] tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 hover:tw:bg-[#FFFAF5] hover:tw:border-[var(--primary-color)]/50 disabled:tw:opacity-40 disabled:tw:pointer-events-none disabled:hover:tw:bg-white"
         >
           <svg class="tw:w-3.5 tw:h-3.5 tw:shrink-0 tw:text-[var(--primary-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -295,7 +284,7 @@ import { useAuthStore } from '@/stores/auth'
 import { buildEventGalleryImageUrls } from '@/utils/eventGalleryImages'
 import { getUserProfileImageUrl } from '@/utils/userProfileImage'
 import DirectionsPanel from './DirectionsPanel.vue'
-import { getEventCardScheduleDisplay } from '@/utils/eventSchedule'
+import { formatEventCardDateTimeRange } from '@/utils/eventSchedule'
 
 const { t, locale } = useI18n()
 const wishlistStore = useWishlistStore()
@@ -365,10 +354,6 @@ function getEventCoordinates(ev) {
 
 const hasMapCoordinates = computed(() => getEventCoordinates(props.event) != null)
 
-const scheduleDisplay = computed(() =>
-  getEventCardScheduleDisplay(props.event, locale.value),
-)
-
 function handleRouteClick() {
     const c = getEventCoordinates(props.event)
     if (!c) return
@@ -386,16 +371,16 @@ const wishlistButtonClass = computed(() => {
     ? 'tw:pointer-events-none tw:opacity-90 tw:cursor-wait tw:hover:scale-100 active:tw:scale-100'
     : ''
   if (isWishlisted.value) {
-    return `${base} ${pending} tw:border-[var(--primary-color)] tw:bg-[var(--primary-color)] tw:shadow-sm hover:tw:brightness-95`
+    return `${base} ${pending} tw:border-[#FF7700] tw:bg-[#FF7700] tw:shadow-sm hover:tw:brightness-95`
   }
-  return `${base} ${pending} tw:border-[var(--primary-color)]/40 tw:bg-white tw:text-[var(--primary-color)] hover:tw:border-[var(--primary-color)] hover:tw:bg-blue-50/90`
+  return `${base} ${pending} tw:border-[#FF7700]/40 tw:bg-white tw:text-[#FF7700] hover:tw:border-[#FF7700] hover:tw:bg-[#FFFAF5]`
 })
 
 const wishlistIconClass = computed(() => {
   if (isWishlisted.value) {
     return 'tw:text-white tw:fill-white tw:stroke-white'
   }
-  return 'tw:text-[var(--primary-color)] tw:fill-none tw:stroke-[var(--primary-color)]'
+  return 'tw:text-[#FF7700] tw:fill-none tw:stroke-[#FF7700]'
 })
 
 async function handleWishlistToggle() {
@@ -497,6 +482,10 @@ const isLive = computed(() => {
     const now = Date.now()
     return now >= s && now <= en
 })
+
+const dateTimeRangeDisplay = computed(() =>
+  formatEventCardDateTimeRange(props.event, locale.value, { isLive: isLive.value }),
+)
 
 const isFinished = computed(() => {
     const en = end.value
@@ -601,5 +590,24 @@ onBeforeUnmount(() => {
   background-color: #cc5c00 !important;
   border-color: #cc5c00 !important;
   color: #fff !important;
+}
+
+/* Map info-window: title max 2 lines; detail + action text same size */
+.map-cluster-embed-card .event-card-title-row h4 {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.map-cluster-embed-card .tw\:space-y-1\.5 .tw\:text-sm,
+.map-cluster-embed-card .tw\:space-y-1\.5 .tw\:text-xs {
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+}
+
+.map-cluster-embed-card .tw\:flex.tw\:gap-2.tw\:pt-2 button {
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
 }
 </style>

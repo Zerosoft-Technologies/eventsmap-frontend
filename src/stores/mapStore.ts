@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, shallowRef } from 'vue'
 import type { DiscoveryProfile } from '@/api/discoveryProfiles'
+import type { MapViewportBounds } from '@/utils/mapViewportFilter'
 
 export type MapProfileItem = DiscoveryProfile & { profileType: string }
 
@@ -26,6 +27,9 @@ export const useMapStore = defineStore('map', () => {
 
   /** Profile items to show as map markers (non-event profile types) */
   const mapProfileItems = shallowRef<MapProfileItem[]>([])
+
+  /** Current map viewport — list view filters to markers inside this box (map leads). */
+  const mapViewportBounds = ref<MapViewportBounds | null>(null)
 
   function setPendingLocation(loc: SelectedLocation) {
     pendingLocation.value = { ...loc }
@@ -57,11 +61,16 @@ export const useMapStore = defineStore('map', () => {
     mapProfileItems.value = []
   }
 
+  function setMapViewportBounds(bounds: MapViewportBounds | null) {
+    mapViewportBounds.value = bounds
+  }
+
   return {
     appliedLocation,
     pendingLocation,
     mapEventItems,
     mapProfileItems,
+    mapViewportBounds,
     setPendingLocation,
     applyPendingLocation,
     setAppliedLocation,
@@ -69,6 +78,7 @@ export const useMapStore = defineStore('map', () => {
     clearMapEvents,
     setMapProfiles,
     clearMapProfiles,
+    setMapViewportBounds,
   }
 })
 

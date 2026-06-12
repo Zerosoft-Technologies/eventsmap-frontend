@@ -13,11 +13,12 @@
     "defaultLocation": "Amsterdam",
     "language": "Langue",
     "link": "Lien",
+    "chat": "Chat",
     "profileType": {
       "events": "Événements",
-      "talent": "Talent",
+      "talent": "Talents",
       "organisers": "Organisateurs",
-      "talents": "Talent",
+      "talents": "Talents",
       "venues": "Lieux",
       "ariaLabel": "Parcourir par type de profil",
       "menuLabel": "Types de profil"
@@ -36,7 +37,7 @@
     "route": "Itinéraire",
     "link": "Lien",
     "comingSoon": "Bientôt",
-    "pastEvent": "Événement Passé",
+    "pastEvent": "Terminé",
     "upcomingEvent": "Événement Avenir",
     "openingHours": "Horaires d'ouverture",
     "addToWishlist": "Ajouter aux favoris",
@@ -306,9 +307,12 @@
       "openingHours": "Horaires",
       "amenities": "Équipements",
       "contact": "Contact",
-      "upcomingEvents": "Événements à venir"
+      "upcomingEvents": "Événements à venir",
+      "finishedEvents": "Terminé"
     },
     "upcomingEventsEmpty": "Aucun événement à venir pour ce profil.",
+    "finishedEventsEmpty": "Aucun événement terminé pour ce profil.",
+    "message": "Message",
     "profileLocation": {
       "organiser": "Lieu de l'organisateur",
       "talent": "Lieu du talent",

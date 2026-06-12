@@ -7,7 +7,7 @@
     <!-- ── Hero: carousel when additional_images exist ── -->
     <div
       class="tw:relative tw:overflow-hidden tw:rounded-t-2xl"
-      :class="profileType === 'talents' ? 'tw:aspect-[3/4] tw:max-h-72' : 'tw:h-40'"
+      :class="profileType === 'talents' ? 'tw:aspect-[3/4] tw:max-h-72' : 'tw:aspect-square tw:max-h-52'"
     >
       <div
         class="tw:flex tw:h-full tw:transition-transform tw:duration-300 tw:ease-in-out"

@@ -3,6 +3,7 @@
     <div class="lang-multi__row">
       <div ref="fieldWrap" class="lang-multi__field">
         <input
+          ref="inputEl"
           v-model="draft"
           type="text"
           :placeholder="effectivePlaceholder"
@@ -13,14 +14,17 @@
           @keydown.down.prevent="moveHighlight(1)"
           @keydown.up.prevent="moveHighlight(-1)"
           @keydown.escape="closeSuggestions"
-          @focus="openSuggestions = true"
-          @input="highlightIndex = -1"
+          @focus="onInputFocus"
+          @click="onInputFocus"
+          @input="onDraftInput"
         />
-        <ul
-          v-if="openSuggestions && filteredSuggestions.length > 0"
-          class="lang-multi__dropdown"
-          role="listbox"
-        >
+        <Teleport to="body">
+          <ul
+            v-if="openSuggestions && filteredSuggestions.length > 0"
+            class="lang-multi__dropdown"
+            :style="dropdownStyle"
+            role="listbox"
+          >
           <li
             v-for="(lang, idx) in filteredSuggestions"
             :key="lang"
@@ -37,6 +41,7 @@
             </button>
           </li>
         </ul>
+        </Teleport>
       </div>
       <button
         v-if="!pickListOnly"
@@ -85,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { Plus } from 'lucide-vue-next'
 import { COMMON_LANGUAGES } from '@/data/commonLanguages'
 import { fetchTalentLanguages } from '@/api/referenceData'
@@ -118,10 +123,13 @@ const draft = ref('')
 const openSuggestions = ref(false)
 const highlightIndex = ref(-1)
 const fieldWrap = ref<HTMLElement | null>(null)
+const inputEl = ref<HTMLInputElement | null>(null)
+const dropdownStyle = ref<Record<string, string>>({})
 const languageOptions = ref<string[]>([...COMMON_LANGUAGES])
 const optionsLoading = ref(false)
 
 const atMax = computed(() => props.modelValue.length >= props.max)
+const isDisabled = computed(() => props.disabled)
 
 const effectivePlaceholder = computed(() => {
   if (props.pickListOnly) return 'Search and select a language…'
@@ -135,8 +143,35 @@ const filteredSuggestions = computed(() => {
     if (selected.has(lang.toLowerCase())) return false
     if (!q) return true
     return lang.toLowerCase().includes(q)
-  }).slice(0, 12)
+  })
 })
+
+function updateDropdownPosition() {
+  const el = inputEl.value
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  dropdownStyle.value = {
+    position: 'fixed',
+    top: `${rect.bottom + 4}px`,
+    left: `${rect.left}px`,
+    width: `${rect.width}px`,
+    zIndex: '9999',
+  }
+}
+
+function onInputFocus() {
+  if (isDisabled.value || atMax.value) return
+  openSuggestions.value = true
+  nextTick(() => updateDropdownPosition())
+}
+
+function onDraftInput() {
+  highlightIndex.value = -1
+  if (props.pickListOnly) {
+    openSuggestions.value = true
+    nextTick(() => updateDropdownPosition())
+  }
+}
 
 function normalizeLanguage(raw: string): string {
   return raw.trim().replace(/\s+/g, ' ')
@@ -154,7 +189,15 @@ function addLanguage(raw: string) {
   emit('update:modelValue', [...props.modelValue, value])
   draft.value = ''
   highlightIndex.value = -1
-  closeSuggestions()
+  if (props.pickListOnly) {
+    openSuggestions.value = true
+    nextTick(() => {
+      updateDropdownPosition()
+      inputEl.value?.focus()
+    })
+  } else {
+    closeSuggestions()
+  }
 }
 
 function addFromDraft() {
@@ -205,6 +248,8 @@ function onDocumentClick(e: MouseEvent) {
 
 onMounted(async () => {
   document.addEventListener('click', onDocumentClick)
+  window.addEventListener('resize', updateDropdownPosition)
+  window.addEventListener('scroll', updateDropdownPosition, true)
   if (Array.isArray(props.options) && props.options.length > 0) {
     languageOptions.value = [...props.options]
     return
@@ -232,6 +277,8 @@ watch(
 
 onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick)
+  window.removeEventListener('resize', updateDropdownPosition)
+  window.removeEventListener('scroll', updateDropdownPosition, true)
 })
 </script>
 
@@ -272,15 +319,10 @@ onUnmounted(() => {
 }
 
 .lang-multi__dropdown {
-  position: absolute;
-  z-index: 40;
-  left: 0;
-  right: 0;
-  top: calc(100% + 4px);
   margin: 0;
   padding: 0.25rem 0;
   list-style: none;
-  max-height: 12rem;
+  max-height: 16rem;
   overflow-y: auto;
   background: #fff;
   border: 1px solid rgb(229 231 235);

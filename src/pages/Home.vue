@@ -14,6 +14,8 @@ import {
   MAP_OPEN_EVENT_DETAIL,
   MAP_OPEN_PROFILE_DETAIL,
   MAP_RESTORE_EVENT_POPUP,
+  MAP_POPUP_CLOSED,
+  MAP_RESET_HOME,
 } from '@/utils/mapPopupBridge'
 import { pickProfileLatLng } from '@/api/discoveryProfiles'
 import { useMapStore } from '@/stores/mapStore'
@@ -23,6 +25,9 @@ import { groupEventsIntoClusters } from '@/utils/eventMapClustering'
 import { groupProfilesIntoClusters } from '@/utils/profileMapClustering'
 import { eventMapFocusPulse } from '@/utils/mapEventFocus'
 import i18n from '../i18n'
+
+/** City / neighbourhood zoom (~1 km visible area at equator). */
+const MAP_CITY_ZOOM = 13
 
 const mapContainer = ref(null)
 
@@ -78,23 +83,25 @@ function fitMapToResults() {
     if (loc?.lat != null && loc?.lng != null) {
       map.flyTo({
         center: [loc.lng, loc.lat],
-        zoom: Math.max(map.getZoom(), 11),
+        zoom: MAP_CITY_ZOOM,
         speed: 1.2,
         curve: 1.42,
         essential: true,
       })
     }
+    publishMapViewportBounds()
     return
   }
 
   if (points.length === 1) {
     map.flyTo({
       center: [points[0].lng, points[0].lat],
-      zoom: Math.max(map.getZoom(), 12),
+      zoom: MAP_CITY_ZOOM,
       speed: 1.2,
       curve: 1.42,
       essential: true,
     })
+    publishMapViewportBounds()
     return
   }
 
@@ -102,10 +109,11 @@ function fitMapToResults() {
   for (const p of points) bounds.extend([p.lng, p.lat])
   map.fitBounds(bounds, {
     padding: { top: 120, bottom: 120, left: 80, right: 80 },
-    maxZoom: 14,
+    maxZoom: MAP_CITY_ZOOM,
     duration: 800,
     essential: true,
   })
+  publishMapViewportBounds()
 }
 
 /** Event listing pins — branded image */
@@ -171,6 +179,7 @@ function mountProfileClusterPopup(profiles) {
     anchor: 'bottom',
     offset: [0, -80],
   }).setDOMContent(popupEl)
+  wirePopupCloseRestoreList(popup)
 
   createApp({
     render: () =>
@@ -214,12 +223,14 @@ function mountSingleProfilePopup(p) {
     .use(i18n)
     .mount(popupEl)
 
-  return new maplibregl.Popup({
+  const popup = new maplibregl.Popup({
     closeButton: false,
     maxWidth: 'none',
     anchor: 'bottom',
     offset: [0, -42],
   }).setDOMContent(popupEl)
+  wirePopupCloseRestoreList(popup)
+  return popup
 }
 
 function easeMapToPoint(lng, lat) {
@@ -239,6 +250,12 @@ function wireMapMarker(marker, el, lng, lat) {
   })
 }
 
+function wirePopupCloseRestoreList(popup) {
+  popup.on('close', () => {
+    window.dispatchEvent(new CustomEvent(MAP_POPUP_CLOSED))
+  })
+}
+
 function mountEventClusterPopup(events) {
   const popupEl = document.createElement('div')
   popupEl.classList.add('tw:relative', 'tw:bg-transparent')
@@ -249,6 +266,7 @@ function mountEventClusterPopup(events) {
     anchor: 'bottom',
     offset: [0, -80],
   }).setDOMContent(popupEl)
+  wirePopupCloseRestoreList(popup)
 
   createApp({
     render: () =>
@@ -300,6 +318,34 @@ function onMapRestoreEventPopup() {
   restoreSuspendedEventPopup()
 }
 
+function dismissAllMapPopups() {
+  for (const { marker } of markerPool.values()) {
+    const popup = marker.getPopup()
+    if (popup?.isOpen()) marker.togglePopup()
+  }
+  for (const { marker } of profileMarkerPool.values()) {
+    const popup = marker.getPopup()
+    if (popup?.isOpen()) marker.togglePopup()
+  }
+  suspendedEventPopupMarker = null
+}
+
+function onMapResetHome() {
+  dismissAllMapPopups()
+  if (!map) return
+  const loc = mapStore.appliedLocation
+  if (loc?.lat != null && loc?.lng != null) {
+    map.flyTo({
+      center: [loc.lng, loc.lat],
+      zoom: MAP_CITY_ZOOM,
+      speed: 1.2,
+      curve: 1.42,
+      essential: true,
+    })
+  }
+  publishMapViewportBounds()
+}
+
 function mountSingleEventPopup(ev) {
   const popupEl = document.createElement('div')
   popupEl.classList.add('tw:relative', 'tw:bg-white', 'tw:rounded-2xl', 'tw:p-4')
@@ -319,12 +365,14 @@ function mountSingleEventPopup(ev) {
     'tw:absolute tw:left-1/2 tw:-translate-x-1/2 tw:-bottom-2 tw:w-0 tw:h-0 tw:border-l-10 tw:border-l-transparent tw:border-r-10 tw:border-r-transparent tw:border-t-12 tw:border-t-white tw:shadow-md'
   popupEl.appendChild(triangleDiv)
 
-  return new maplibregl.Popup({
+  const popup = new maplibregl.Popup({
     closeButton: false,
     maxWidth: 'none',
     anchor: 'bottom',
     offset: [0, -45],
   }).setDOMContent(popupEl)
+  wirePopupCloseRestoreList(popup)
+  return popup
 }
 
 function clearEventMarkers() {
@@ -478,12 +526,25 @@ function syncProfileMarkers() {
 
 let mapClusterResyncTimer = null
 
+function publishMapViewportBounds() {
+  if (!map) return
+  const b = map.getBounds()
+  mapStore.setMapViewportBounds({
+    west: b.getWest(),
+    south: b.getSouth(),
+    east: b.getEast(),
+    north: b.getNorth(),
+  })
+}
+
 function scheduleMapClusterResync() {
   if (!map) return
+  publishMapViewportBounds()
   if (mapStore.mapEventItems.length === 0 && mapStore.mapProfileItems.length === 0) return
   if (mapClusterResyncTimer) clearTimeout(mapClusterResyncTimer)
   mapClusterResyncTimer = setTimeout(() => {
     mapClusterResyncTimer = null
+    publishMapViewportBounds()
     const hasEvents = mapStore.mapEventItems.length > 0
     const hasProfiles = mapStore.mapProfileItems.length > 0
     if (hasEvents && !hasProfiles) syncEventMarkers()
@@ -526,19 +587,25 @@ onMounted(() => {
     container: mapContainer.value,
     style,
     center: [mapStore.appliedLocation.lng, mapStore.appliedLocation.lat],
-    zoom: 10,
+    zoom: MAP_CITY_ZOOM,
   })
 
-  map.on('load', () => refreshMapFromStore())
+  map.on('load', () => {
+    publishMapViewportBounds()
+    refreshMapFromStore()
+  })
+  map.on('moveend', scheduleMapClusterResync)
   map.on('zoomend', scheduleMapClusterResync)
 
   window.addEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetail)
   window.addEventListener(MAP_RESTORE_EVENT_POPUP, onMapRestoreEventPopup)
+  window.addEventListener(MAP_RESET_HOME, onMapResetHome)
 })
 
 onUnmounted(() => {
   window.removeEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetail)
   window.removeEventListener(MAP_RESTORE_EVENT_POPUP, onMapRestoreEventPopup)
+  window.removeEventListener(MAP_RESET_HOME, onMapResetHome)
   suspendedEventPopupMarker = null
   if (mapClusterResyncTimer) clearTimeout(mapClusterResyncTimer)
   clearEventMarkers()
@@ -556,7 +623,7 @@ watch(
     if (hasResults) return
     map.flyTo({
       center: [loc.lng, loc.lat],
-      zoom: Math.max(map.getZoom(), 12),
+      zoom: MAP_CITY_ZOOM,
       speed: 1.2,
       curve: 1.42,
       easing: (t) => t,

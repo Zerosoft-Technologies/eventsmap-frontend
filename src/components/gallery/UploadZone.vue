@@ -35,7 +35,7 @@
         <p class="tw:text-sm tw:font-medium tw:text-gray-600">
           {{ isDragging ? 'Drop your image here' : 'Click to upload or drag & drop images here' }}
         </p>
-        <p class="tw:text-xs tw:text-gray-400 tw:mt-1">Supported: JPG, PNG, GIF, WebP &middot; Maximum 5MB</p>
+        <p class="tw:text-xs tw:text-gray-400 tw:mt-1">Supported: JPG, PNG, GIF, WebP &middot; Maximum 10MB</p>
       </template>
 
       <input
@@ -91,7 +91,7 @@
     <!-- Supported formats info -->
     <div v-if="!selectedFile && !uploading" class="tw:mt-3 tw:flex tw:flex-col sm:tw:flex-row tw:gap-2 tw:text-xs tw:text-gray-500">
       <span class="tw:flex tw:items-center tw:gap-1"><Check class="tw:w-3.5 tw:h-3.5 tw:text-emerald-500" /> JPG, PNG, GIF, WebP formats supported</span>
-      <span class="tw:flex tw:items-center tw:gap-1"><Check class="tw:w-3.5 tw:h-3.5 tw:text-emerald-500" /> Maximum 5MB per file</span>
+      <span class="tw:flex tw:items-center tw:gap-1"><Check class="tw:w-3.5 tw:h-3.5 tw:text-emerald-500" /> Maximum 10MB per file</span>
     </div>
   </div>
 </template>
@@ -115,7 +115,7 @@ const isDragging = ref(false)
 const selectedFile = ref<File | null>(null)
 const altText = ref('')
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024
+const MAX_FILE_SIZE = 10 * 1024 * 1024
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 function openFilePicker() {
@@ -149,7 +149,7 @@ function selectFile(file: File) {
   if (file.size > MAX_FILE_SIZE) {
     // Emit will not happen; parent validates too but show inline feedback
     import('@/composables/useToast').then(({ useToast }) => {
-      useToast().error('File size exceeds 5MB limit')
+      useToast().error('File size exceeds 10MB limit')
     })
     return
   }

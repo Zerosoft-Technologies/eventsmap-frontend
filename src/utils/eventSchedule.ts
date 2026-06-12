@@ -175,3 +175,74 @@ export function formatEventScheduleRange(
   if (startLabel) return startLabel
   return ''
 }
+
+/**
+ * Compact "middle-point" date/time format for event cards / map info windows:
+ * - Upcoming: "Sat, 7 May 2026 · 03:00–09:00"
+ * - Live:      "03:00–09:00" (no date prefix)
+ *
+ * Locale-specific rules:
+ * - EN: weekday short + comma (via toLocaleDateString en-GB)
+ * - FR: "Sam. ... · 23h00–02h00" (we convert "23:00" → "23h00")
+ * - NL: "Za ... · 23:00–02:00" (we capitalize first letter)
+ */
+export function formatEventCardDateTimeRange(
+  ev: Record<string, unknown> | null | undefined,
+  locale: string,
+  opts?: { isLive?: boolean },
+): string {
+  if (!ev) return ''
+  const isLive = !!opts?.isLive
+
+  const sMs = parseEventInstantMs(ev, 'start')
+  let eMs = parseEndInstantMsForDisplay(ev)
+  if (!isNaN(sMs) && !isNaN(eMs) && eMs <= sMs) {
+    eMs += 24 * 60 * 60 * 1000
+  }
+
+  if (isNaN(sMs)) return ''
+
+  const startDate = new Date(sMs)
+  const endDate = !isNaN(eMs) ? new Date(eMs) : new Date(sMs)
+
+  const loc = (locale || '').toLowerCase()
+  const isFr = loc.startsWith('fr')
+  const isNl = loc.startsWith('nl')
+
+  const timeOpts: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }
+
+  const fmtTime = (d: Date) => {
+    const raw = d.toLocaleTimeString(locale, timeOpts)
+    if (isFr) {
+      // Convert "23:00" -> "23h00" for FR UX.
+      return raw.replace(':', 'h')
+    }
+    return raw
+  }
+
+  const startTime = fmtTime(startDate)
+  const endTime = fmtTime(endDate)
+
+  if (isLive) {
+    return `${startTime}–${endTime}`
+  }
+
+  const dateOpts: Intl.DateTimeFormatOptions = {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }
+
+  let dateLabel = startDate.toLocaleDateString(locale, dateOpts)
+  if (isFr || isNl) {
+    // fr-FR / nl-NL abbreviations are often lowercase by default ("sam.", "za")
+    dateLabel = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)
+  }
+
+  return `${dateLabel} · ${startTime}–${endTime}`
+}

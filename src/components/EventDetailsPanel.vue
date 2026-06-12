@@ -54,6 +54,24 @@
           <ChevronRightIcon class="tw:w-4 tw:h-4 tw:text-gray-700" />
         </button>
 
+        <!-- Wishlist heart (top-right on gallery) -->
+        <button
+          type="button"
+          :aria-pressed="wishlistStore.isWishlisted(event?.id)"
+          :aria-label="wishlistStore.isWishlisted(event?.id) ? $t('eventCard.removeFromWishlist') : $t('eventCard.addToWishlist')"
+          :aria-busy="wishlistStore.isWishlistPending(event?.id)"
+          @click.stop="handleWishlistToggle"
+          class="tw:absolute tw:top-3 tw:right-3 tw:z-20 tw:flex tw:h-9 tw:w-9 tw:items-center tw:justify-center tw:rounded-full tw:border tw:bg-white/95 tw:shadow-lg tw:backdrop-blur-sm tw:transition-all tw:duration-200 tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[#FF7700]/40"
+          :class="detailsWishlistBtnClass"
+        >
+          <HeartIcon
+            class="tw:w-4 tw:h-4 tw:transition-all tw:duration-200"
+            :class="detailsWishlistIconClass"
+            :stroke-width="2"
+            aria-hidden="true"
+          />
+        </button>
+
         <!-- Image counter -->
         <div v-if="images.length > 1"
           class="tw:absolute tw:bottom-4 tw:right-4 tw:px-2 tw:py-1 tw:bg-black/60 tw:backdrop-blur-sm tw:rounded-full tw:z-10">
@@ -341,16 +359,6 @@
               </div>
             </div>
 
-            <!-- Like Button -->
-            <div class="tw:mt-8">
-              <button
-                type="button"
-                class="tw:inline-flex tw:items-center tw:justify-center tw:gap-2 tw:px-5 tw:py-2.5 tw:bg-white tw:border-2 tw:border-[#FF7700] tw:rounded-lg tw:text-[#1a73e8] tw:font-medium tw:transition-colors hover:tw:bg-[#FFFAF5] focus:tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[#FF7700]/40"
-              >
-                <ThumbsUpIcon class="tw:w-5 tw:h-5 tw:flex-shrink-0" :stroke-width="2" aria-hidden="true" />
-                Like
-              </button>
-            </div>
           </div>
 
           <!-- Talents Tab (invited API objects and/or legacy talents) -->
@@ -653,8 +661,7 @@ import {
   UsersIcon,
   CalendarIcon,
   LinkIcon,
-  UserIcon,
-  ThumbsUpIcon
+  UserIcon
 } from 'lucide-vue-next'
 import AboutTab from './AboutTab.vue'
 import DateLocationTab from './DateLocationTab.vue'
@@ -715,7 +722,7 @@ const props = defineProps({
 const desktopPanelOuterStyle = computed(() => {
   if (isMobile.value) return {}
   const left = props.mapListingExpanded ? '430px' : '1.75rem'
-  return { left }
+  return { left, zIndex: 10100 }
 })
 
 // Emits
@@ -727,16 +734,16 @@ const detailsWishlistBtnClass = computed(() => {
     ? 'tw:opacity-90 tw:pointer-events-none tw:cursor-wait'
     : ''
   if (wishlistStore.isWishlisted(props.event?.id)) {
-    return `${base} tw:border-[var(--primary-color)] tw:bg-[var(--primary-color)]/10`
+    return `${base} tw:border-[#FF7700] tw:bg-[#FF7700]`
   }
-  return `${base}`
+  return `${base} tw:border-[#FF7700]/40 hover:tw:border-[#FF7700] hover:tw:bg-[#FFFAF5]`
 })
 
 const detailsWishlistIconClass = computed(() => {
   if (wishlistStore.isWishlisted(props.event?.id)) {
-    return 'tw:text-[var(--primary-color)] tw:fill-[var(--primary-color)] tw:stroke-[var(--primary-color)]'
+    return 'tw:text-white tw:fill-white tw:stroke-white'
   }
-  return 'tw:text-gray-400 tw:fill-none'
+  return 'tw:text-[#FF7700] tw:fill-none tw:stroke-[#FF7700]'
 })
 
 // Wishlist toggle (optimistic UI + rollback + toast in store)

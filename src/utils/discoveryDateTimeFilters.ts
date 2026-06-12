@@ -35,6 +35,24 @@ function formatDiscoveryDateDisplay(d: Date): string {
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
 }
 
+/** Logo / home reset: today from now through the next 6 hours (DD/MM/YYYY + HH:mm). */
+export function getHomeStartDiscoveryWindow(now = new Date()): {
+  dateRange: [string, string]
+  startTime: string
+  endTime: string
+} {
+  const end = new Date(now.getTime() + 6 * 60 * 60 * 1000)
+  const pad2 = (n: number) => String(n).padStart(2, '0')
+  const fmtDate = (d: Date) =>
+    `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`
+  const fmtTime = (d: Date) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`
+  return {
+    dateRange: [fmtDate(now), fmtDate(end)],
+    startTime: fmtTime(now),
+    endTime: fmtTime(end),
+  }
+}
+
 /** Default header range: first through last day of the current month (DD/MM/YYYY). */
 export function getDefaultDiscoveryDateRange(now = new Date()): [string, string] {
   const year = now.getFullYear()

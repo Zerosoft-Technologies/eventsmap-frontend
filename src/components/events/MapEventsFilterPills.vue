@@ -10,11 +10,11 @@
         type="button"
         :disabled="disabledSubcategories"
         @click.stop="openSubMenu"
-        class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:bg-white tw:transition-colors tw:max-w-[min(200px,46vw)]"
+        class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-[#FF7700]/35 tw:text-sm tw:whitespace-nowrap tw:bg-white tw:transition-colors tw:max-w-[min(200px,46vw)]"
         :class="
           disabledSubcategories
             ? 'tw:opacity-50 tw:cursor-not-allowed tw:text-gray-500'
-            : 'tw:text-gray-600 hover:tw:bg-gray-50'
+            : 'tw:text-gray-700 hover:tw:bg-[#FF7700]/5'
         "
       >
         <span class="tw:truncate">{{ subcategoryLabel }}</span>
@@ -28,7 +28,7 @@
         ref="timeBtnRef"
         type="button"
         @click.stop="openTimeMenu"
-        class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:max-w-[min(220px,52vw)]"
+        class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-[#FF7700]/35 tw:text-sm tw:whitespace-nowrap tw:text-gray-700 tw:bg-white hover:tw:bg-[#FF7700]/5 tw:transition-colors tw:max-w-[min(220px,52vw)]"
       >
         <span class="tw:truncate">{{ timeRangeLabel }}</span>
         <ChevronDown class="tw:w-3.5 tw:h-3.5 tw:text-gray-400 tw:flex-shrink-0" aria-hidden="true" />
@@ -41,7 +41,7 @@
         ref="hoursBtnRef"
         type="button"
         @click.stop="openVenueHoursMenu"
-        class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:text-sm tw:whitespace-nowrap tw:text-gray-600 tw:bg-white hover:tw:bg-gray-50 tw:transition-colors tw:max-w-[min(220px,52vw)]"
+        class="tw:inline-flex tw:items-center tw:gap-1 tw:px-3 tw:py-1.5 tw:rounded-full tw:border tw:border-[#FF7700]/35 tw:text-sm tw:whitespace-nowrap tw:text-gray-700 tw:bg-white hover:tw:bg-[#FF7700]/5 tw:transition-colors tw:max-w-[min(220px,52vw)]"
       >
         <span class="tw:truncate">{{ venueHoursLabel }}</span>
         <ChevronDown class="tw:w-3.5 tw:h-3.5 tw:text-gray-400 tw:flex-shrink-0" aria-hidden="true" />
@@ -54,7 +54,7 @@
     <div
       v-show="openMenu === 'sub'"
       ref="subPanelRef"
-      class="map-filter-dropdown tw:fixed tw:min-w-[220px] tw:max-w-[min(100vw-2rem,280px)] tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:shadow-xl tw:py-0 tw:overflow-hidden tw:flex tw:flex-col"
+      class="map-filter-dropdown tw:fixed tw:min-w-[220px] tw:max-w-[min(100vw-2rem,280px)] tw:rounded-xl tw:border tw:border-[#FF7700]/35 tw:bg-white tw:shadow-xl tw:py-0 tw:overflow-hidden tw:flex tw:flex-col"
       :style="subPanelStyle"
       role="dialog"
       aria-label="Subcategories"
@@ -93,7 +93,7 @@
         >
           <input
             type="checkbox"
-            class="tw:rounded tw:border-gray-300 tw:text-[var(--primary-color)] tw:focus:ring-[var(--primary-color)]"
+            class="tw:rounded tw:border-[#FF7700]/45 tw:text-[var(--secondary-color,#FF7700)] tw:focus:ring-[var(--secondary-color,#FF7700)]/25"
             :checked="selectedSlugs.includes(sub.slug)"
             @change="emit('toggle-subcategory', sub.slug)"
           />
@@ -105,7 +105,7 @@
     <div
       v-show="showTimeRange && openMenu === 'time'"
       ref="timePanelRef"
-      class="map-filter-dropdown tw:fixed tw:w-[248px] tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:shadow-xl tw:p-3"
+      class="map-filter-dropdown tw:fixed tw:w-[248px] tw:rounded-xl tw:border tw:border-[#FF7700]/35 tw:bg-white tw:shadow-xl tw:p-3"
       :style="timePanelStyle"
     >
       <div class="tw:space-y-2">
@@ -115,7 +115,7 @@
             type="time"
             :value="startTime || ''"
             step="60"
-            class="tw:w-full tw:rounded-lg tw:border tw:border-gray-200 tw:px-2 tw:py-1.5 tw:text-sm tw:outline-none focus:tw:ring-2 focus:tw:ring-[var(--primary-color)]/30"
+            class="tw:w-full tw:rounded-lg tw:border tw:border-[#FF7700]/35 tw:px-2 tw:py-1.5 tw:text-sm tw:outline-none focus:tw:ring-2 focus:tw:ring-[var(--secondary-color,#FF7700)]/30 focus:tw:border-[#FF7700]"
             @input="onStartInput($event)"
           />
         </div>
@@ -125,7 +125,7 @@
             type="time"
             :value="endTime || ''"
             step="60"
-            class="tw:w-full tw:rounded-lg tw:border tw:border-gray-200 tw:px-2 tw:py-1.5 tw:text-sm tw:outline-none focus:tw:ring-2 focus:tw:ring-[var(--primary-color)]/30"
+            class="tw:w-full tw:rounded-lg tw:border tw:border-[#FF7700]/35 tw:px-2 tw:py-1.5 tw:text-sm tw:outline-none focus:tw:ring-2 focus:tw:ring-[var(--secondary-color,#FF7700)]/30 focus:tw:border-[#FF7700]"
             @input="onEndInput($event)"
           />
         </div>
@@ -142,7 +142,7 @@
     <div
       v-show="showVenueHoursFilter && openMenu === 'hours'"
       ref="hoursPanelRef"
-      class="map-filter-dropdown tw:fixed tw:w-[248px] tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:shadow-xl tw:p-3"
+      class="map-filter-dropdown tw:fixed tw:w-[248px] tw:rounded-xl tw:border tw:border-[#FF7700]/35 tw:bg-white tw:shadow-xl tw:p-3"
       :style="hoursPanelStyle"
     >
       <div class="tw:space-y-2">
@@ -152,7 +152,7 @@
             type="time"
             :value="venueOpenTime || ''"
             step="60"
-            class="tw:w-full tw:rounded-lg tw:border tw:border-gray-200 tw:px-2 tw:py-1.5 tw:text-sm tw:outline-none focus:tw:ring-2 focus:tw:ring-[var(--primary-color)]/30"
+            class="tw:w-full tw:rounded-lg tw:border tw:border-[#FF7700]/35 tw:px-2 tw:py-1.5 tw:text-sm tw:outline-none focus:tw:ring-2 focus:tw:ring-[var(--secondary-color,#FF7700)]/30 focus:tw:border-[#FF7700]"
             @input="onVenueOpenInput($event)"
           />
         </div>
@@ -162,7 +162,7 @@
             type="time"
             :value="venueCloseTime || ''"
             step="60"
-            class="tw:w-full tw:rounded-lg tw:border tw:border-gray-200 tw:px-2 tw:py-1.5 tw:text-sm tw:outline-none focus:tw:ring-2 focus:tw:ring-[var(--primary-color)]/30"
+            class="tw:w-full tw:rounded-lg tw:border tw:border-[#FF7700]/35 tw:px-2 tw:py-1.5 tw:text-sm tw:outline-none focus:tw:ring-2 focus:tw:ring-[var(--secondary-color,#FF7700)]/30 focus:tw:border-[#FF7700]"
             @input="onVenueCloseInput($event)"
           />
         </div>

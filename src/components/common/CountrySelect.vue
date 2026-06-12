@@ -1,5 +1,5 @@
 <template>
-  <div class="country-select">
+  <div class="country-select" :class="{ 'country-select--premium': variant === 'premium' }">
     <div ref="fieldWrap" class="country-select__field">
       <input
         v-model="search"
@@ -7,6 +7,10 @@
         :placeholder="selectedLabel || placeholder"
         :disabled="disabled || loading"
         class="country-select__input"
+        :class="{
+          'country-select__input--error': hasError,
+          'country-select__input--premium': variant === 'premium',
+        }"
         autocomplete="off"
         @focus="open = true"
         @keydown.enter.prevent="selectHighlighted"
@@ -61,11 +65,15 @@ const props = withDefaults(
     modelValue?: string
     placeholder?: string
     disabled?: boolean
+    hasError?: boolean
+    variant?: 'default' | 'premium'
   }>(),
   {
     modelValue: '',
     placeholder: 'Search and select nationality…',
     disabled: false,
+    hasError: false,
+    variant: 'default',
   },
 )
 
@@ -192,6 +200,20 @@ onUnmounted(() => {
   box-shadow: 0 0 0 3px rgb(0 97 255 / 0.12);
 }
 
+.country-select__input--premium:focus {
+  border-color: #ff7700;
+  box-shadow: 0 0 0 3px rgb(255 119 0 / 0.15);
+}
+
+.country-select__input--error {
+  border-color: rgb(239 68 68);
+}
+
+.country-select__input--error:focus {
+  border-color: rgb(239 68 68);
+  box-shadow: 0 0 0 3px rgb(239 68 68 / 0.12);
+}
+
 .country-select__input:disabled {
   background: rgb(249 250 251);
   cursor: not-allowed;
@@ -246,6 +268,12 @@ onUnmounted(() => {
 .country-select__option--active {
   background: rgb(239 246 255);
   color: var(--primary-color, #0061ff);
+}
+
+.country-select--premium .country-select__option:hover,
+.country-select--premium .country-select__option--active {
+  background: rgb(255 247 237);
+  color: #ff7700;
 }
 
 .country-select__hint {

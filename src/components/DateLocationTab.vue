@@ -224,7 +224,7 @@ import { MAP_CONFIG } from '../config/mapConfig'
 import DirectionsPanel from './DirectionsPanel.vue'
 import {
   formatEventInstantForLocale,
-  formatEventScheduleRange,
+  formatEventCardDateTimeRange,
   parseEndInstantMsForDisplay,
   parseEventInstantMs,
 } from '@/utils/eventSchedule'
@@ -324,7 +324,7 @@ const displayEndTime = computed(() => {
 })
 
 const formattedScheduleRange = computed(() =>
-  formatEventScheduleRange(props.event, locale.value),
+  formatEventCardDateTimeRange(props.event, locale.value, { isLive: eventPhase.value === 'live' }),
 )
 
 const displayAddress = computed(() => {
