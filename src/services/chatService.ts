@@ -16,6 +16,24 @@ export interface ChatAccessResponse {
   reason?: string
 }
 
+export interface BlockedChatUser {
+  id: number
+  name: string
+  profile_type?: string | null
+  avatar?: string | null
+}
+
+export interface ChatBlocksResponse {
+  blocked: number[]
+  blocked_by: number[]
+  blocked_users: BlockedChatUser[]
+}
+
+export interface CanMessageResponse {
+  can_message: boolean
+  reason?: string
+}
+
 export interface InvitationRespondPayload {
   status: 'accepted' | 'rejected'
   token?: string
@@ -38,6 +56,29 @@ export const chatService = {
   async getChatUsers(): Promise<ChatUser[]> {
     const { data } = await api.get('/v2/chat/users')
     return (data.data ?? data ?? []) as ChatUser[]
+  },
+
+  async getBlocks(): Promise<ChatBlocksResponse> {
+    const { data } = await api.get('/v2/chat/blocks')
+    const payload = (data.data ?? data ?? {}) as Partial<ChatBlocksResponse>
+    return {
+      blocked: Array.isArray(payload.blocked) ? payload.blocked.map(Number) : [],
+      blocked_by: Array.isArray(payload.blocked_by) ? payload.blocked_by.map(Number) : [],
+      blocked_users: Array.isArray(payload.blocked_users) ? payload.blocked_users : [],
+    }
+  },
+
+  async blockUser(userId: number): Promise<void> {
+    await api.post(`/v2/chat/block/${userId}`)
+  },
+
+  async unblockUser(userId: number): Promise<void> {
+    await api.delete(`/v2/chat/block/${userId}`)
+  },
+
+  async canMessage(userId: number): Promise<CanMessageResponse> {
+    const { data } = await api.get(`/v2/chat/can-message/${userId}`)
+    return (data.data ?? data) as CanMessageResponse
   },
 
   /**

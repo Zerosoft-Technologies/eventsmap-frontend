@@ -174,6 +174,10 @@
                         </button>
                     </div>
                     <p v-if="fieldErrors.image_path" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image_path[0] }}</p>
+
+                    <div class="tw:pt-4 tw:border-t tw:border-gray-100 tw:mt-4">
+                        <MapPhotoMarkerToggle v-model="showPhotoMapMarker" input-name="talent-show-photo-map-marker" />
+                    </div>
                 </div>
 
                 <!-- ADDITIONAL IMAGES SECTION -->
@@ -927,6 +931,7 @@ import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisib
 import InviteSection from "@/components/invite/InviteSection.vue"
 import PhoneInput from "@/components/common/PhoneInput.vue"
 import CountrySelect from "@/components/common/CountrySelect.vue"
+import MapPhotoMarkerToggle from "@/components/map/MapPhotoMarkerToggle.vue"
 import LanguageMultiSelect from "@/components/talent/LanguageMultiSelect.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
 import { galleryApi } from "@/api/gallery"
@@ -1100,6 +1105,7 @@ const selectedLanguages = ref([])
 const talentHighlightsText = ref('')
 const showUpcomingEvents = ref("")
 const showPastEvents = ref("")
+const showPhotoMapMarker = ref(false)
 
 const facebookUrl = ref("")
 const instagramUrl = ref("")
@@ -1463,6 +1469,7 @@ async function buildTalentPayload() {
         highlights: talentHighlightsText.value || undefined,
         show_upcoming_events: !!showUpcomingEvents.value,
         show_past_events: !!showPastEvents.value,
+        show_photo_map_marker: !!showPhotoMapMarker.value,
     }
 }
 
@@ -1661,6 +1668,7 @@ async function loadTalent(id) {
         // Visibility
         showUpcomingEvents.value = talent.show_upcoming_events === '1' || talent.show_upcoming_events === true
         showPastEvents.value = talent.show_past_events === '1' || talent.show_past_events === true
+        showPhotoMapMarker.value = talent.show_photo_map_marker === '1' || talent.show_photo_map_marker === true
 
         fieldErrors.value = {}
 
@@ -1721,6 +1729,7 @@ function resetForm() {
     talentHighlightsText.value = ''
     showUpcomingEvents.value = false
     showPastEvents.value = false
+    showPhotoMapMarker.value = false
     categoryError.value = false
     subcategoryError.value = false
     subcategoryValidationError.value = false

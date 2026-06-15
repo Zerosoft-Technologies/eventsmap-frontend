@@ -58,6 +58,15 @@ body.hover-enabled [data-clickable]:not(.no-hover):hover {
   background-color: var(--hover-color);
 }
 
+/* Wishlist heart: keep orange background when liked (global/map hover rules wash it out) */
+.event-details-wishlist-btn.is-wishlisted,
+.event-details-wishlist-btn.is-wishlisted:hover,
+.event-card-wishlist-btn.is-wishlisted,
+.event-card-wishlist-btn.is-wishlisted:hover {
+  background-color: #FF7700 !important;
+  border-color: #FF7700 !important;
+}
+
 /* .no-hover-container *,
 .maplibregl-map *,
 .mapboxgl-marker,
@@ -190,4 +199,54 @@ details.maplibregl-ctrl.maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-com
   outline: 2px solid var(--primary-color, #0061ff);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* Modern premium photo map markers (Home.vue) */
+.map-photo-pin-marker--modern {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 48px;
+  height: 56px;
+  cursor: pointer;
+  pointer-events: auto;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.22));
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.map-photo-pin-marker--modern:hover {
+  transform: scale(1.08) translateY(-2px);
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.28));
+}
+
+.map-photo-pin-marker__shell {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  padding: 3px;
+  background: var(--pin-accent, #ff7700);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 0 2px rgba(255, 255, 255, 0.95);
+}
+
+.map-photo-pin-marker__photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-image: var(--pin-photo);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 2px solid #fff;
+}
+
+.map-photo-pin-marker__tail {
+  width: 0;
+  height: 0;
+  margin-top: -1px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--pin-accent, #ff7700);
 }

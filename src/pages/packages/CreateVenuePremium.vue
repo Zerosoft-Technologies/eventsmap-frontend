@@ -176,6 +176,10 @@
                         </button>
                     </div>
                     <p v-if="fieldErrors.image_path" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image_path[0] }}</p>
+
+                    <div class="tw:pt-4 tw:border-t tw:border-gray-100 tw:mt-4">
+                        <MapPhotoMarkerToggle v-model="showPhotoMapMarker" input-name="venue-show-photo-map-marker" />
+                    </div>
                 </div>
 
                                 <!-- ADDITIONAL IMAGES SECTION -->
@@ -700,12 +704,27 @@
                     <OpeningHoursEditor v-model="openingHoursSchedule" :error-message="fieldErrors.opening_hours?.[0] || ''" />
                 </div>
 
-                <!-- CONTACT BOX DESIGN SECTION -->
+                <!-- CONTACT BOX + DESIGN -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box Design</h3>
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box + Design</h3>
+
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Design Message</label>
-                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your design message"
+                        <span class="tw:text-sm tw:font-medium tw:text-gray-700">Show contact box on your public profile</span>
+                        <div class="tw:flex tw:gap-4">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input type="radio" name="show-contact-box-venue" :checked="showContactBox" class="tw:w-4 tw:h-4 tw:text-orange-500" @change="showContactBox = true" />
+                                <span class="tw:text-sm tw:text-gray-800">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input type="radio" name="show-contact-box-venue" :checked="!showContactBox" class="tw:w-4 tw:h-4 tw:text-orange-500" @change="showContactBox = false" />
+                                <span class="tw:text-sm tw:text-gray-800">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div v-if="showContactBox" class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Contact Message</label>
+                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your contact message"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
                 </div>
@@ -899,6 +918,7 @@ import PhoneInput from "@/components/common/PhoneInput.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
 import BinarySegmentedField from "@/components/premium/BinarySegmentedField.vue"
 import OpeningHoursEditor from "@/components/premium/OpeningHoursEditor.vue"
+import MapPhotoMarkerToggle from "@/components/map/MapPhotoMarkerToggle.vue"
 import { galleryApi } from "@/api/gallery"
 import eventService from "@/services/eventService"
 import { useFormValidation } from "@/composables/useFormValidation"
@@ -991,6 +1011,7 @@ const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
 const contactBoxDesignMessage = ref("")
+const showContactBox = ref(false)
 /** null = not chosen yet (validate on submit) */
 const childrensPlayArea = ref(null)
 const facebookUrl = ref("")
@@ -999,6 +1020,7 @@ const tiktokUrl = ref("")
 
 const showUpcomingEvents = ref("")
 const showPastEvents = ref("")
+const showPhotoMapMarker = ref(false)
 
 const venueFeatureFieldsTouched = ref(false)
 
@@ -1432,13 +1454,15 @@ function buildVenuePayload() {
         contact_phone: contactPhone.value || undefined,
         contact_email: contactEmail.value || undefined,
         contact_website: contactWebsite.value || undefined,
-        contact_box_design_message: contactBoxDesignMessage.value.trim(),
+        show_contact_box: !!showContactBox.value,
+        contact_box_design_message: showContactBox.value ? contactBoxDesignMessage.value.trim() : '',
         opening_hours: serializeVenueOpeningHoursForApi(openingHoursSchedule.value),
         facebook_url: facebookUrl.value || undefined,
         instagram_url: instagramUrl.value || undefined,
         tiktok_url: tiktokUrl.value || undefined,
         show_upcoming_events: !!showUpcomingEvents.value,
         show_past_events: !!showPastEvents.value,
+        show_photo_map_marker: !!showPhotoMapMarker.value,
     }
 }
 
@@ -1641,6 +1665,8 @@ async function loadVenue(id) {
         contactPhone.value = venue.contact_phone || ''
         contactEmail.value = venue.contact_email || ''
         contactWebsite.value = venue.contact_website || ''
+        showContactBox.value = venue.show_contact_box === true || venue.show_contact_box === '1'
+            || (!!venue.contact_box_design_message && venue.show_contact_box !== false && venue.show_contact_box !== '0')
         contactBoxDesignMessage.value = venue.contact_box_design_message || ''
         facebookUrl.value = venue.facebook_url || ''
         instagramUrl.value = venue.instagram_url || ''
@@ -1651,6 +1677,7 @@ async function loadVenue(id) {
         // Visibility
         showUpcomingEvents.value = venue.show_upcoming_events === '1' || venue.show_upcoming_events === true
         showPastEvents.value = venue.show_past_events === '1' || venue.show_past_events === true
+        showPhotoMapMarker.value = venue.show_photo_map_marker === '1' || venue.show_photo_map_marker === true
 
         // Center map
         if (venue.latitude != null && venue.longitude != null && map.value) {
@@ -1700,6 +1727,7 @@ function resetForm() {
     contactEmail.value = ''
     contactWebsite.value = ''
     contactBoxDesignMessage.value = ''
+    showContactBox.value = false
     facebookUrl.value = ''
     instagramUrl.value = ''
     tiktokUrl.value = ''
@@ -1714,6 +1742,7 @@ function resetForm() {
     venueFeatureFieldsTouched.value = false
     showUpcomingEvents.value = false
     showPastEvents.value = false
+    showPhotoMapMarker.value = false
     categoryError.value = false
     subcategoryError.value = false
     subcategoryValidationError.value = false

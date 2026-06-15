@@ -229,7 +229,9 @@
               <article
                 v-for="row in visibleInvites"
                 :key="String(row.id)"
-                class="tw:group tw:relative tw:flex tw:flex-col tw:rounded-2xl tw:border tw:border-gray-100/90 tw:bg-white tw:shadow-sm tw:overflow-hidden tw:transition-all tw:duration-200 hover:tw:shadow-lg hover:tw:shadow-blue-500/5 hover:tw:-translate-y-0.5 hover:tw:border-blue-200/60"
+                class="tw:group tw:relative tw:flex tw:flex-col tw:rounded-2xl tw:border tw:border-gray-100/90 tw:bg-white tw:shadow-sm tw:overflow-hidden tw:transition-all tw:duration-200 hover:tw:shadow-lg hover:tw:shadow-blue-500/5 hover:tw:-translate-y-0.5 hover:tw:border-blue-200/60 tw:cursor-pointer"
+                :title="row.slug ? 'Double-click to view profile' : undefined"
+                @dblclick="openInviteProfile(row)"
               >
                 <div
                   class="tw:h-1.5 tw:bg-gradient-to-r"
@@ -260,19 +262,17 @@
                       >
                         {{ row.name }}
                       </h3>
-                      <a
-                        v-if="row.email"
-                        :href="`mailto:${row.email}`"
-                        class="tw:mt-1.5 tw:inline-flex tw:items-center tw:gap-1.5 tw:text-xs tw:text-gray-500 hover:tw:text-[#0061FF] tw:transition-colors tw:max-w-full"
-                      >
-                        <Mail class="tw:w-3.5 tw:h-3.5 tw:flex-shrink-0" />
-                        <span class="tw:truncate">{{ row.email }}</span>
-                      </a>
                       <p
-                        v-else
-                        class="tw:mt-1.5 tw:text-xs tw:text-gray-400"
+                        v-if="row.genre"
+                        class="tw:mt-1.5 tw:text-xs tw:font-medium tw:text-[#0061FF] tw:truncate"
                       >
-                        No email on file
+                        {{ row.genre }}
+                      </p>
+                      <p
+                        v-if="row.category"
+                        class="tw:mt-0.5 tw:text-xs tw:text-gray-500 tw:truncate"
+                      >
+                        {{ row.category }}
                       </p>
                     </div>
                   </div>
@@ -324,7 +324,6 @@ import {
   MessageSquareText,
   Images,
   SkipBackIcon,
-  Mail,
   LayoutGrid,
   Mic2,
   Briefcase,
@@ -332,6 +331,10 @@ import {
 } from "lucide-vue-next"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import { useChatStore } from "@/stores/chatStore"
+import {
+  fetchProfiles,
+  type ProfileType,
+} from "@/api/discoveryProfiles"
 import {
   fetchAccountInvites,
   type AccountInviteRow,
@@ -465,11 +468,11 @@ const visibleInvites = computed(() => {
   const q = search.value.trim().toLowerCase()
   if (q) {
     list = list.filter((i) => {
-      const email = (i.email || "").toLowerCase()
       return (
         i.name.toLowerCase().includes(q) ||
         (i.eventTitle && i.eventTitle.toLowerCase().includes(q)) ||
-        email.includes(q) ||
+        (i.genre && i.genre.toLowerCase().includes(q)) ||
+        (i.category && i.category.toLowerCase().includes(q)) ||
         (i.slug && i.slug.toLowerCase().includes(q))
       )
     })
@@ -524,6 +527,29 @@ function handleEventSelected() {
 function handleChatboxClick() {
   closeMobileSidebar()
   chatStore.open()
+}
+
+function inviteProfileType(row: AccountInviteRow): ProfileType {
+  if (row.inviteType === "venue") return "venues"
+  if (row.inviteType === "organiser") return "organisers"
+  return "talents"
+}
+
+async function openInviteProfile(row: AccountInviteRow) {
+  if (!row.slug) return
+  const profileType = inviteProfileType(row)
+  try {
+    const { data } = await fetchProfiles(profileType, { search: row.name, per_page: 50 })
+    const match = data.find((p) => p.slug === row.slug) ?? data[0]
+    if (!match) return
+    sessionStorage.setItem(
+      "pendingDiscoveryProfile",
+      JSON.stringify({ profile: match, profileType }),
+    )
+    router.push({ name: "Home" })
+  } catch {
+    // ignore
+  }
 }
 
 // function goInviteNew() {

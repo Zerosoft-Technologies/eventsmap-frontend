@@ -7,6 +7,12 @@ service cloud.firestore {
       return !exists(path) || get(path).data.get('chat_active', true) != false;
     }
 
+    function chatUsersBlocked(senderId, receiverId) {
+      let blockBySender = /databases/$(database)/documents/chat_blocks/$(senderId)/users/$(receiverId);
+      let blockByReceiver = /databases/$(database)/documents/chat_blocks/$(receiverId)/users/$(senderId);
+      return exists(blockBySender) || exists(blockByReceiver);
+    }
+
     // ── Presence (chatSidebar → setOnline / setOffline / setChatActive)
     match /user_presence/{userId} {
       allow read: if request.auth != null;
@@ -40,7 +46,8 @@ service cloud.firestore {
               .hasAny([int(request.auth.uid)])
           && request.resource.data.sender_id == int(request.auth.uid)
           && userChatActive(request.auth.uid)
-          && userChatActive(string(request.resource.data.receiver_id));
+          && userChatActive(string(request.resource.data.receiver_id))
+          && !chatUsersBlocked(request.auth.uid, string(request.resource.data.receiver_id));
 
         allow update, delete: if request.auth != null
           && get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants != null
@@ -56,6 +63,12 @@ service cloud.firestore {
         || int(request.auth.uid) == resource.data.receiver_id
       );
       allow create, update, delete: if false;
+    }
+
+    // ── Chat blocks (backend sync; read-only for clients)
+    match /chat_blocks/{blockerId}/users/{blockedId} {
+      allow read: if request.auth != null;
+      allow write: if false;
     }
 
     // Everything else: implicit deny

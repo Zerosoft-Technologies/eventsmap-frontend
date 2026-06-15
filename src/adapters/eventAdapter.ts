@@ -162,6 +162,14 @@ function pickStr(...vals: unknown[]): string | undefined {
   return undefined
 }
 
+function pickBool(...vals: unknown[]): boolean {
+  for (const v of vals) {
+    if (v === true || v === 1 || v === '1' || v === 'true') return true
+    if (v === false || v === 0 || v === '0' || v === 'false') return false
+  }
+  return false
+}
+
 function pickOrganizerProfileImageUrl(ev: EventV2Raw): string | undefined {
   const e = ev as Record<string, unknown>
   const top = pickStr(
@@ -411,6 +419,9 @@ export function mapEventV2ToUI(event: EventV2Raw): Event {
     event_type: pickStr(
       (event as Record<string, unknown>).event_type,
       (event as Record<string, unknown>).eventType
+    ),
+    show_photo_map_marker: pickBool(
+      (event as Record<string, unknown>).show_photo_map_marker,
     ),
     booking_instructions:
       pickStr(

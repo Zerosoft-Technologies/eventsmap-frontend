@@ -14,7 +14,8 @@ export interface AccountInvitesSummary {
 export interface AccountInviteRow {
   id: string | number
   name: string
-  email: string | null
+  genre: string | null
+  category: string | null
   /** Public profile slug (e.g. from API) */
   slug: string | null
   profileId: string | number | null
@@ -83,7 +84,8 @@ function normalizeOne(raw: Record<string, unknown>, index: number): AccountInvit
     'title',
   ])
 
-  const email = pickString(raw, ['email', 'user_email']) || null
+  const genre = pickString(raw, ['genre']) || null
+  const category = pickString(raw, ['category']) || null
   const slug = pickString(raw, ['slug', 'profile_slug']) || null
   const profileId = pickId(raw, ['profile_id', 'profileId', 'user_id'])
 
@@ -118,7 +120,8 @@ function normalizeOne(raw: Record<string, unknown>, index: number): AccountInvit
   return {
     id,
     name: name || 'Unknown',
-    email,
+    genre,
+    category,
     slug: slug || null,
     profileId,
     inviteType: mapInviteType(typeRaw),

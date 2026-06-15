@@ -264,14 +264,23 @@ const contactDesignBlocks = computed(() => {
   const ev = props.event
   if (!ev) return []
 
-  const eventLevel = trimTxt(
-    firstNonEmptyString(
-      ev.contact_box_design_message,
-      ev.contact_info?.design_message,
-      ev.contact_box_message,
-      ev.contact_info?.box_message,
-    ),
-  )
+  const eventShowsContact =
+    ev.show_contact_box === true ||
+    ev.show_contact_box === '1' ||
+    (ev.show_contact_box !== false &&
+      ev.show_contact_box !== '0' &&
+      !('show_contact_box' in ev))
+
+  const eventLevel = eventShowsContact
+    ? trimTxt(
+        firstNonEmptyString(
+          ev.contact_box_design_message,
+          ev.contact_info?.design_message,
+          ev.contact_box_message,
+          ev.contact_info?.box_message,
+        ),
+      )
+    : ''
   if (eventLevel) {
     return [{ kind: 'event', entityLabel: '', entityName: '', text: eventLevel }]
   }
@@ -293,13 +302,23 @@ const contactDesignBlocks = computed(() => {
     })
   }
 
+  function profileShowsContact(entity) {
+    if (!entity || typeof entity !== 'object') return true
+    if (entity.show_contact_box === true || entity.show_contact_box === '1') return true
+    if (entity.show_contact_box === false || entity.show_contact_box === '0') return false
+    return true
+  }
+
   for (const o of ev.invited_organisers_objects || []) {
+    if (!profileShowsContact(o?.organiser_v2 ?? o)) continue
     addBlock('organiser', 'eventDetails.contact.fromOrganiser', o?.name, o?.contact_box_design_message)
   }
   for (const o of ev.invited_talents_objects || []) {
+    if (!profileShowsContact(o?.talent_v2 ?? o)) continue
     addBlock('talent', 'eventDetails.contact.fromTalent', o?.name, o?.contact_box_design_message)
   }
   for (const o of ev.invited_venues_objects || []) {
+    if (!profileShowsContact(o?.venue_v2 ?? o)) continue
     addBlock('venue', 'eventDetails.contact.fromVenue', o?.name, o?.contact_box_design_message)
   }
 

@@ -284,6 +284,10 @@
                         </button>
                     </div>
                     <p v-if="fieldErrors.image_path" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image_path[0] }}</p>
+
+                    <div class="tw:pt-4 tw:border-t tw:border-gray-100 tw:mt-4">
+                        <MapPhotoMarkerToggle v-model="showPhotoMapMarker" input-name="organiser-show-photo-map-marker" />
+                    </div>
                 </div>
 
                 <!-- ADDITIONAL IMAGES SECTION -->
@@ -593,12 +597,27 @@
                     </div> -->
                 </div>
 
-                <!-- CONTACT BOX DESIGN SECTION -->
+                <!-- CONTACT BOX + DESIGN -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box Design</h3>
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box + Design</h3>
+
                     <div class="tw:space-y-2">
-                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Design Message</label>
-                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your design message"
+                        <span class="tw:text-sm tw:font-medium tw:text-gray-700">Show contact box on your public profile</span>
+                        <div class="tw:flex tw:gap-4">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input type="radio" name="show-contact-box-organiser" :checked="showContactBox" class="tw:w-4 tw:h-4 tw:text-orange-500" @change="showContactBox = true" />
+                                <span class="tw:text-sm tw:text-gray-800">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input type="radio" name="show-contact-box-organiser" :checked="!showContactBox" class="tw:w-4 tw:h-4 tw:text-orange-500" @change="showContactBox = false" />
+                                <span class="tw:text-sm tw:text-gray-800">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div v-if="showContactBox" class="tw:space-y-2">
+                        <label class="tw:text-sm tw:font-medium tw:text-gray-700">Contact Message</label>
+                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your contact message"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
                 </div>
@@ -838,6 +857,7 @@ import InviteSection from "@/components/invite/InviteSection.vue"
 import PhoneInput from "@/components/common/PhoneInput.vue"
 import AdditionalImageUpload from "@/components/common/AdditionalImageUpload.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
+import MapPhotoMarkerToggle from "@/components/map/MapPhotoMarkerToggle.vue"
 import eventService from "@/services/eventService"
 import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
 import { storeToRefs } from "pinia"
@@ -897,6 +917,7 @@ const contactPhone = ref("")
 const contactEmail = ref("")
 const contactWebsite = ref("")
 const contactBoxDesignMessage = ref('')
+const showContactBox = ref(false)
 // const bookingInstructions = ref('');
 // const ticketUrl = ref('');
 // const eventOption = ref('');
@@ -906,6 +927,7 @@ const isRecurring = ref(false)
 const isCopyEvent = ref(false)
 const showUpcomingEvents = ref("")
 const showPastEvents = ref("")
+const showPhotoMapMarker = ref(false)
 const showChatbox = ref(false)
 
 const notifications = ref({
@@ -1316,7 +1338,8 @@ function buildFormData() {
     if (contactPhone.value) fd.append('contact_phone', contactPhone.value)
     if (contactEmail.value) fd.append('contact_email', contactEmail.value)
     if (contactWebsite.value) fd.append('contact_website', contactWebsite.value)
-    fd.append('contact_box_design_message', contactBoxDesignMessage.value ?? '')
+    fd.append('show_contact_box', showContactBox.value ? '1' : '0')
+    fd.append('contact_box_design_message', showContactBox.value ? (contactBoxDesignMessage.value ?? '') : '')
 
     // Social
     if (facebookUrl.value) fd.append('facebook_url', facebookUrl.value)
@@ -1326,6 +1349,7 @@ function buildFormData() {
     // Visibility
     fd.append('show_upcoming_events', showUpcomingEvents.value ? '1' : '0')
     fd.append('show_past_events', showPastEvents.value ? '1' : '0')
+    fd.append('show_photo_map_marker', showPhotoMapMarker.value ? '1' : '0')
 
     // ── Main image (Always send UUID, not file) ───────────────────────────
     if (formData.image_path) {
@@ -1474,6 +1498,8 @@ async function loadOrganiser(id) {
         contactEmail.value = d.contact_email ?? ''
         contactWebsite.value = d.contact_website ?? ''
 
+        showContactBox.value = d.show_contact_box === true || d.show_contact_box === '1'
+            || (!!d.contact_box_design_message && d.show_contact_box !== false && d.show_contact_box !== '0')
         contactBoxDesignMessage.value = d.contact_box_design_message ?? ''
 
         facebookUrl.value = d.facebook_url ?? ''
@@ -1482,6 +1508,7 @@ async function loadOrganiser(id) {
 
         showUpcomingEvents.value = !!d.show_upcoming_events
         showPastEvents.value = !!d.show_past_events
+        showPhotoMapMarker.value = !!d.show_photo_map_marker
 
         // Load image data
         formData.image_path = d.image_path || ''
@@ -1545,11 +1572,13 @@ function resetForm() {
     contactEmail.value = ''
     contactWebsite.value = ''
     contactBoxDesignMessage.value = ''
+    showContactBox.value = false
     facebookUrl.value = ''
     instagramUrl.value = ''
     tiktokUrl.value = ''
     showUpcomingEvents.value = false
     showPastEvents.value = false
+    showPhotoMapMarker.value = false
     imagePreviewUrl.value = null
     additionalImages.value = []
     pendingFileMap.value = {}

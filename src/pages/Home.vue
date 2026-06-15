@@ -24,6 +24,16 @@ import { attachMarkerPopupClick } from '@/utils/mapMarkerPopup'
 import { groupEventsIntoClusters } from '@/utils/eventMapClustering'
 import { groupProfilesIntoClusters } from '@/utils/profileMapClustering'
 import { eventMapFocusPulse } from '@/utils/mapEventFocus'
+import {
+  discoveryCoverImageUrl,
+  shouldUsePhotoMapMarker,
+  profileMarkerPoolKey,
+  eventMarkerPoolKey,
+  eventMarkerVariant,
+  profileMarkerVariant,
+  dedupeMapItemsById,
+  createPhotoMapMarkerElement,
+} from '@/utils/mapMarkerImage'
 import i18n from '../i18n'
 
 /** City / neighbourhood zoom (~1 km visible area at equator). */
@@ -116,17 +126,27 @@ function fitMapToResults() {
   publishMapViewportBounds()
 }
 
-/** Event listing pins — branded image */
-function createMapPinMarkerEl() {
+/** Event listing pins — branded image or premium photo circle marker */
+function createEventMarkerEl(event) {
+  const color = '#FF7700'
+  const imageUrl = discoveryCoverImageUrl(event)
+  const usePhoto = shouldUsePhotoMapMarker(event) && imageUrl
+
   const el = document.createElement('div')
   el.className = 'map-event-pin-marker map-marker-interactive'
-  el.style.backgroundImage = `url(http://185.133.88.194:3001/marker.png)`
-  el.style.width = '60px'
-  el.style.height = '60px'
-  el.style.backgroundSize = 'contain'
-  el.style.backgroundRepeat = 'no-repeat'
   el.style.cursor = 'pointer'
   el.style.pointerEvents = 'auto'
+
+  if (usePhoto) {
+    const photoPin = createPhotoMapMarkerElement(color, imageUrl, `event-${event.id}`)
+    return photoPin
+  }
+
+  el.style.width = '60px'
+  el.style.height = '60px'
+  el.style.backgroundImage = 'url(/marker.png)'
+  el.style.backgroundSize = 'contain'
+  el.style.backgroundRepeat = 'no-repeat'
   return el
 }
 
@@ -147,15 +167,24 @@ const PROFILE_MARKER_ICON_D = {
     'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
 }
 
-function createProfileMarkerEl(profileType) {
+function createProfileMarkerEl(profile) {
+  const profileType = profile.profileType
   const color = PROFILE_MARKER_COLORS[profileType] ?? '#6b7280'
   const d = PROFILE_MARKER_ICON_D[profileType] ?? PROFILE_MARKER_ICON_D.venues
+  const imageUrl = discoveryCoverImageUrl(profile)
+  const usePhoto = shouldUsePhotoMapMarker(profile) && imageUrl
+
   const el = document.createElement('div')
   el.className = 'map-profile-pin-marker map-marker-interactive'
   el.style.width = '52px'
   el.style.height = '62px'
   el.style.cursor = 'pointer'
   el.style.pointerEvents = 'auto'
+
+  if (usePhoto) {
+    return createPhotoMapMarkerElement(color, imageUrl, `profile-${profile.id}`)
+  }
+
   el.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 52" fill="none" style="width:100%;height:100%;display:block" aria-hidden="true">
       <ellipse cx="22" cy="49" rx="9" ry="3" fill="rgba(0,0,0,0.18)"/>
@@ -285,8 +314,41 @@ function mountEventClusterPopup(events) {
 }
 
 function findEventMarkerById(eventId) {
-  const key = `e-${Number(eventId)}`
-  return markerPool.get(key)?.marker ?? null
+  const id = Number(eventId)
+  const stableKey = eventMarkerPoolKey(id)
+  const stable = markerPool.get(stableKey)
+  if (stable?.marker) return stable.marker
+
+  for (const [key, entry] of markerPool.entries()) {
+    if (key === stableKey || key.startsWith(`e-${id}-`)) {
+      return entry.marker ?? null
+    }
+  }
+  return null
+}
+
+function removeEventMarkersForId(eventId, keepKey = null) {
+  const id = Number(eventId)
+  const prefix = `e-${id}`
+  for (const [key, entry] of [...markerPool.entries()]) {
+    if (keepKey && key === keepKey) continue
+    if (key === prefix || key.startsWith(`${prefix}-`)) {
+      entry.marker.remove()
+      markerPool.delete(key)
+    }
+  }
+}
+
+function removeProfileMarkersForId(profileId, keepKey = null) {
+  const id = Number(profileId)
+  const prefix = `p-${id}`
+  for (const [key, entry] of [...profileMarkerPool.entries()]) {
+    if (keepKey && key === keepKey) continue
+    if (key === prefix || key.startsWith(`${prefix}-`)) {
+      entry.marker.remove()
+      profileMarkerPool.delete(key)
+    }
+  }
 }
 
 function suspendOpenEventPopup(eventId) {
@@ -380,47 +442,84 @@ function clearEventMarkers() {
   markerPool.clear()
 }
 
+let eventMarkerSyncRunning = false
+let eventMarkerSyncQueued = false
+let profileMarkerSyncRunning = false
+let profileMarkerSyncQueued = false
+
 function syncEventMarkers() {
   if (!map?.loaded()) return
-
-  const points = mapStore.mapEventItems
-    .map((ev) => {
-      const ll = eventLngLat(ev)
-      if (!ll) return null
-      return { event: ev, latitude: ll.lat, longitude: ll.lng }
-    })
-    .filter(Boolean)
-
-  const precision = clusterPrecisionForZoom(map.getZoom())
-  const clusters = groupEventsIntoClusters(points, precision)
-
-  const nextKeys = new Set()
-  for (const cluster of clusters) {
-    if (cluster.events.length === 1) {
-      nextKeys.add(`e-${Number(cluster.events[0].id)}`)
-    } else {
-      nextKeys.add(`ec-${cluster.key}`)
-    }
+  if (eventMarkerSyncRunning) {
+    eventMarkerSyncQueued = true
+    return
   }
+  eventMarkerSyncRunning = true
 
-  for (const [key, { marker }] of markerPool.entries()) {
-    if (!nextKeys.has(key)) {
-      marker.remove()
-      markerPool.delete(key)
+  try {
+    const events = dedupeMapItemsById(mapStore.mapEventItems)
+    const points = events
+      .map((ev) => {
+        const ll = eventLngLat(ev)
+        if (!ll) return null
+        return { event: ev, latitude: ll.lat, longitude: ll.lng }
+      })
+      .filter(Boolean)
+
+    const precision = clusterPrecisionForZoom(map.getZoom())
+    const clusters = groupEventsIntoClusters(points, precision)
+
+    const nextKeys = new Set()
+    for (const cluster of clusters) {
+      if (cluster.events.length === 1) {
+        nextKeys.add(eventMarkerPoolKey(cluster.events[0].id))
+      } else {
+        nextKeys.add(`ec-${cluster.key}`)
+      }
     }
-  }
 
-  for (const cluster of clusters) {
-    const lat = cluster.latitude
-    const lng = cluster.longitude
+    for (const [key, { marker }] of markerPool.entries()) {
+      if (!nextKeys.has(key)) {
+        marker.remove()
+        markerPool.delete(key)
+      }
+    }
 
-    if (cluster.events.length === 1) {
-      const ev = cluster.events[0]
-      const key = `e-${Number(ev.id)}`
+    for (const cluster of clusters) {
+      const lat = cluster.latitude
+      const lng = cluster.longitude
+
+      if (cluster.events.length === 1) {
+        const ev = cluster.events[0]
+        const key = eventMarkerPoolKey(ev.id)
+        const variant = eventMarkerVariant(ev)
+        const existing = markerPool.get(key)
+
+        if (existing?.variant === variant) continue
+
+        if (existing) {
+          existing.marker.remove()
+          markerPool.delete(key)
+        }
+        removeEventMarkersForId(ev.id, key)
+
+        const el = createEventMarkerEl(ev)
+        const popup = mountSingleEventPopup(ev)
+
+        const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+          .setLngLat([lng, lat])
+          .setPopup(popup)
+          .addTo(map)
+
+        wireMapMarker(marker, el, lng, lat)
+        markerPool.set(key, { marker, el, variant })
+        continue
+      }
+
+      const key = `ec-${cluster.key}`
       if (markerPool.has(key)) continue
 
-      const el = createMapPinMarkerEl()
-      const popup = mountSingleEventPopup(ev)
+      const el = createMapClusterMarkerElement(cluster.events.length, 'event')
+      const popup = mountEventClusterPopup(cluster.events)
 
       const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat([lng, lat])
@@ -429,22 +528,13 @@ function syncEventMarkers() {
 
       wireMapMarker(marker, el, lng, lat)
       markerPool.set(key, { marker, el })
-      continue
     }
-
-    const key = `ec-${cluster.key}`
-    if (markerPool.has(key)) continue
-
-    const el = createMapClusterMarkerElement(cluster.events.length, 'event')
-    const popup = mountEventClusterPopup(cluster.events)
-
-    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
-      .setLngLat([lng, lat])
-      .setPopup(popup)
-      .addTo(map)
-
-    wireMapMarker(marker, el, lng, lat)
-    markerPool.set(key, { marker, el })
+  } finally {
+    eventMarkerSyncRunning = false
+    if (eventMarkerSyncQueued) {
+      eventMarkerSyncQueued = false
+      syncEventMarkers()
+    }
   }
 }
 
@@ -455,48 +545,80 @@ function clearProfileMarkers() {
 
 function syncProfileMarkers() {
   if (!map?.loaded()) return
+  if (profileMarkerSyncRunning) {
+    profileMarkerSyncQueued = true
+    return
+  }
+  profileMarkerSyncRunning = true
 
-  const points = mapStore.mapProfileItems
-    .map((p) => {
-      const ll = pickProfileLatLng(p)
-      if (!ll) return null
-      return {
-        profile: { ...p, latitude: ll.latitude, longitude: ll.longitude },
-        latitude: ll.latitude,
-        longitude: ll.longitude,
+  try {
+    const profiles = dedupeMapItemsById(mapStore.mapProfileItems)
+    const points = profiles
+      .map((p) => {
+        const ll = pickProfileLatLng(p)
+        if (!ll) return null
+        return {
+          profile: { ...p, latitude: ll.latitude, longitude: ll.longitude },
+          latitude: ll.latitude,
+          longitude: ll.longitude,
+        }
+      })
+      .filter(Boolean)
+
+    const precision = clusterPrecisionForZoom(map.getZoom())
+    const clusters = groupProfilesIntoClusters(points, precision)
+
+    const nextKeys = new Set()
+    for (const cluster of clusters) {
+      if (cluster.profiles.length === 1) {
+        nextKeys.add(profileMarkerPoolKey(cluster.profiles[0].id))
+      } else {
+        nextKeys.add(`c-${cluster.key}`)
       }
-    })
-    .filter(Boolean)
-
-  const precision = clusterPrecisionForZoom(map.getZoom())
-  const clusters = groupProfilesIntoClusters(points, precision)
-
-  const nextKeys = new Set()
-  for (const cluster of clusters) {
-    if (cluster.profiles.length === 1) {
-      nextKeys.add(`p-${Number(cluster.profiles[0].id)}`)
-    } else {
-      nextKeys.add(`c-${cluster.key}`)
     }
-  }
 
-  for (const [key, { marker }] of profileMarkerPool.entries()) {
-    if (!nextKeys.has(key)) {
-      marker.remove()
-      profileMarkerPool.delete(key)
+    for (const [key, { marker }] of profileMarkerPool.entries()) {
+      if (!nextKeys.has(key)) {
+        marker.remove()
+        profileMarkerPool.delete(key)
+      }
     }
-  }
 
-  for (const cluster of clusters) {
-    const { latitude: lat, longitude: lng } = cluster
+    for (const cluster of clusters) {
+      const { latitude: lat, longitude: lng } = cluster
 
-    if (cluster.profiles.length === 1) {
-      const p = cluster.profiles[0]
-      const key = `p-${Number(p.id)}`
+      if (cluster.profiles.length === 1) {
+        const p = cluster.profiles[0]
+        const key = profileMarkerPoolKey(p.id)
+        const variant = profileMarkerVariant(p)
+        const existing = profileMarkerPool.get(key)
+
+        if (existing?.variant === variant) continue
+
+        if (existing) {
+          existing.marker.remove()
+          profileMarkerPool.delete(key)
+        }
+        removeProfileMarkersForId(p.id, key)
+
+        const el = createProfileMarkerEl(p)
+        const popup = mountSingleProfilePopup(p)
+
+        const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+          .setLngLat([lng, lat])
+          .setPopup(popup)
+          .addTo(map)
+
+        wireMapMarker(marker, el, lng, lat)
+        profileMarkerPool.set(key, { marker, el, variant })
+        continue
+      }
+
+      const key = `c-${cluster.key}`
       if (profileMarkerPool.has(key)) continue
 
-      const el = createProfileMarkerEl(p.profileType)
-      const popup = mountSingleProfilePopup(p)
+      const el = createMapClusterMarkerElement(cluster.profiles.length, 'profile')
+      const popup = mountProfileClusterPopup(cluster.profiles)
 
       const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat([lng, lat])
@@ -505,22 +627,13 @@ function syncProfileMarkers() {
 
       wireMapMarker(marker, el, lng, lat)
       profileMarkerPool.set(key, { marker, el })
-      continue
     }
-
-    const key = `c-${cluster.key}`
-    if (profileMarkerPool.has(key)) continue
-
-    const el = createMapClusterMarkerElement(cluster.profiles.length, 'profile')
-    const popup = mountProfileClusterPopup(cluster.profiles)
-
-    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
-      .setLngLat([lng, lat])
-      .setPopup(popup)
-      .addTo(map)
-
-    wireMapMarker(marker, el, lng, lat)
-    profileMarkerPool.set(key, { marker, el })
+  } finally {
+    profileMarkerSyncRunning = false
+    if (profileMarkerSyncQueued) {
+      profileMarkerSyncQueued = false
+      syncProfileMarkers()
+    }
   }
 }
 
@@ -608,6 +721,10 @@ onUnmounted(() => {
   window.removeEventListener(MAP_RESET_HOME, onMapResetHome)
   suspendedEventPopupMarker = null
   if (mapClusterResyncTimer) clearTimeout(mapClusterResyncTimer)
+  eventMarkerSyncRunning = false
+  eventMarkerSyncQueued = false
+  profileMarkerSyncRunning = false
+  profileMarkerSyncQueued = false
   clearEventMarkers()
   clearProfileMarkers()
   map?.remove()

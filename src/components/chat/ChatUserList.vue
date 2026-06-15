@@ -31,15 +31,24 @@
     </button>
   </div>
 
-  <!-- Empty -->
-  <div v-else-if="users.length === 0" class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:flex-1 tw:gap-3 tw:px-6 tw:text-center">
+  <!-- Empty (no conversations and no blocked profiles to manage) -->
+  <div
+    v-else-if="users.length === 0 && blockedProfiles.length === 0"
+    class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:flex-1 tw:gap-3 tw:px-6 tw:text-center"
+  >
     <MessageCircle class="tw:w-12 tw:h-12 tw:text-gray-300" />
     <p class="tw:text-sm tw:font-medium tw:text-gray-500">{{ t('chat.noParticipants') }}</p>
     <p class="tw:text-xs tw:text-gray-400">{{ t('chat.noParticipantsHint') }}</p>
   </div>
 
-  <!-- User list -->
-  <div v-else class="tw:flex-1 tw:overflow-y-auto">
+  <!-- Messages + blocked profiles -->
+  <div v-else class="tw:flex-1 tw:overflow-y-auto tw:flex tw:flex-col">
+    <div v-if="users.length === 0" class="tw:px-4 tw:py-6 tw:text-center">
+      <MessageCircle class="tw:w-10 tw:h-10 tw:text-gray-300 tw:mx-auto tw:mb-2" />
+      <p class="tw:text-sm tw:font-medium tw:text-gray-500">{{ t('chat.noParticipants') }}</p>
+      <p class="tw:text-xs tw:text-gray-400 tw:mt-1">{{ t('chat.noParticipantsHint') }}</p>
+    </div>
+
     <button
       v-for="user in users"
       :key="user.id"
@@ -113,14 +122,59 @@
         </div>
       </div>
     </button>
+
+    <!-- Blocked profiles (always reachable for unblock) -->
+    <section
+      v-if="blockedProfiles.length > 0"
+      class="tw:border-t tw:border-gray-200 tw:mt-auto"
+    >
+      <div class="tw:px-4 tw:py-3 tw:bg-gray-50 tw:border-b tw:border-gray-100">
+        <h3 class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-500">
+          {{ t('chat.blockedProfilesTitle') }}
+        </h3>
+        <p class="tw:text-xs tw:text-gray-400 tw:mt-0.5">{{ t('chat.blockedProfilesHint') }}</p>
+      </div>
+
+      <div
+        v-for="user in blockedProfiles"
+        :key="`blocked-${user.id}`"
+        class="tw:flex tw:items-center tw:gap-3 tw:px-4 tw:py-3 tw:border-b tw:border-gray-50"
+      >
+        <div class="tw:w-10 tw:h-10 tw:rounded-full tw:bg-gradient-to-br tw:from-slate-400 tw:to-slate-600 tw:flex tw:items-center tw:justify-center tw:text-white tw:font-semibold tw:text-sm tw:flex-shrink-0 tw:overflow-hidden">
+          <img
+            v-if="user.avatar"
+            :src="user.avatar"
+            :alt="user.name"
+            class="tw:w-full tw:h-full tw:object-cover"
+          />
+          <span v-else>{{ getInitials(user.name) }}</span>
+        </div>
+
+        <div class="tw:flex-1 tw:min-w-0">
+          <p class="tw:font-medium tw:text-sm tw:text-gray-900 tw:truncate">{{ user.name }}</p>
+          <p class="tw:text-xs tw:text-gray-500">{{ t('chat.blockedStatusLabel') }}</p>
+        </div>
+
+        <button
+          type="button"
+          class="tw:flex-shrink-0 tw:px-3 tw:py-1.5 tw:text-xs tw:font-medium tw:text-blue-600 tw:bg-blue-50 tw:rounded-lg hover:tw:bg-blue-100 tw:transition-colors disabled:tw:opacity-50"
+          :disabled="unblockingId === user.id"
+          @click="handleUnblock(user.id)"
+        >
+          <Loader2 v-if="unblockingId === user.id" class="tw:w-3.5 tw:h-3.5 tw:animate-spin" />
+          <span v-else>{{ t('chat.unblockProfile') }}</span>
+        </button>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { X, Loader2, MessageCircle, WifiOff } from 'lucide-vue-next'
 import { chatService, type ChatUser } from '@/services/chatService'
+import { useChatStore } from '@/stores/chatStore'
 import {
   subscribeToConversationsForUser,
   type ConversationWithMeta,
@@ -130,6 +184,8 @@ import ChatAvailabilityToggle from '@/components/chat/ChatAvailabilityToggle.vue
 import type { Timestamp } from 'firebase/firestore'
 
 const { t } = useI18n()
+
+const chatStore = useChatStore()
 
 const props = defineProps<{
   currentUserId: number
@@ -144,8 +200,12 @@ const users = ref<ChatUser[]>([])
 const apiUserMap = ref<Map<number, ChatUser>>(new Map())
 const loading = ref(true)
 const error = ref<string | null>(null)
+const unblockingId = ref<number | null>(null)
 const presenceMap = reactive<Record<number, PresenceDoc | null>>({})
 const unsubPresence: (() => void)[] = []
+let lastConversations: ConversationWithMeta[] = []
+
+const blockedProfiles = computed(() => chatStore.blockedUsers)
 
 function isUserChatActive(userId: number): boolean {
   return isChatActive(presenceMap[userId])
@@ -159,6 +219,7 @@ function mergeConversationsToUsers(conversations: ConversationWithMeta[]) {
 
   for (const conv of conversations) {
     const otherId = conv.otherParticipantId
+    if (chatStore.isMessagingBlocked(otherId)) continue
     seenIds.add(otherId)
     const base = userMap.get(otherId) ?? {
       id: otherId,
@@ -177,7 +238,7 @@ function mergeConversationsToUsers(conversations: ConversationWithMeta[]) {
   }
 
   for (const u of premiumUsers) {
-    if (!seenIds.has(u.id)) {
+    if (!seenIds.has(u.id) && !chatStore.isMessagingBlocked(u.id)) {
       result.push(u)
     }
   }
@@ -199,6 +260,7 @@ async function initChatList() {
   loading.value = true
   error.value = null
   try {
+    await chatStore.loadBlocks(true)
     const apiUsers = await chatService.getChatUsers()
     const premium = apiUsers.filter(
       u => u.id !== props.currentUserId && u.account_type === 'premium',
@@ -206,6 +268,7 @@ async function initChatList() {
     apiUserMap.value = new Map(premium.map(u => [u.id, { ...u }]))
 
     const unsub = subscribeToConversationsForUser(props.currentUserId, (conversations) => {
+      lastConversations = conversations
       mergeConversationsToUsers(conversations)
     }, (err) => {
       console.error('Conversations listener error:', err)
@@ -224,6 +287,19 @@ async function initChatList() {
 
 function loadChatList() {
   initChatList()
+}
+
+async function handleUnblock(userId: number) {
+  unblockingId.value = userId
+  try {
+    await chatStore.unblockUser(userId)
+    mergeConversationsToUsers(lastConversations)
+  } catch (err) {
+    console.error('Failed to unblock profile:', err)
+    error.value = t('chat.unblockFailed')
+  } finally {
+    unblockingId.value = null
+  }
 }
 
 function getInitials(name: string): string {

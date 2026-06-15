@@ -266,6 +266,7 @@
 <script setup>
 import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { galleryApi } from '@/api/gallery'
+import { useToast } from '@/composables/useToast'
 import { Loader2, Search, X, Upload, Image as ImageIcon, FolderOpen } from 'lucide-vue-next'
 import { useDropdownState } from '@/composables/useDropdownState'
 
@@ -295,6 +296,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select', 'close', 'image-updated'])
+
+const toast = useToast()
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 // State
 const activeTab = ref('library')
@@ -377,6 +381,12 @@ const handleFileSelect = async (event) => {
   const file = files[0]
   if (!(file instanceof File)) return
 
+  if (file.size > MAX_UPLOAD_BYTES) {
+    toast.error('Image must not exceed 10MB.')
+    if (fileInput.value) fileInput.value.value = ''
+    return
+  }
+
   uploading.value = true
   uploadProgress.value = 0
 
@@ -410,6 +420,11 @@ const handleFileSelect = async (event) => {
     }
   } catch (error) {
     console.error('Error uploading images:', error)
+    const msg =
+      error?.response?.data?.message ||
+      error?.response?.data?.errors?.image?.[0] ||
+      'Failed to upload image. Files up to 10MB are supported.'
+    toast.error(msg)
   } finally {
     uploading.value = false
     uploadProgress.value = 0

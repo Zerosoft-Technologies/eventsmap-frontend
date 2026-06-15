@@ -61,8 +61,8 @@
           :aria-label="wishlistStore.isWishlisted(event?.id) ? $t('eventCard.removeFromWishlist') : $t('eventCard.addToWishlist')"
           :aria-busy="wishlistStore.isWishlistPending(event?.id)"
           @click.stop="handleWishlistToggle"
-          class="tw:absolute tw:top-3 tw:right-3 tw:z-20 tw:flex tw:h-9 tw:w-9 tw:items-center tw:justify-center tw:rounded-full tw:border tw:bg-white/95 tw:shadow-lg tw:backdrop-blur-sm tw:transition-all tw:duration-200 tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[#FF7700]/40"
-          :class="detailsWishlistBtnClass"
+          class="event-details-wishlist-btn no-hover tw:absolute tw:top-3 tw:right-3 tw:z-20 tw:flex tw:h-9 tw:w-9 tw:items-center tw:justify-center tw:rounded-full tw:border tw:shadow-lg tw:backdrop-blur-sm tw:transition-all tw:duration-200 tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[#FF7700]/40"
+          :class="[detailsWishlistBtnClass, { 'is-wishlisted': wishlistStore.isWishlisted(event?.id) }]"
         >
           <HeartIcon
             class="tw:w-4 tw:h-4 tw:transition-all tw:duration-200"
@@ -256,10 +256,8 @@
                 <p class="tw:text-base tw:font-semibold tw:text-gray-900">
                   {{ $t('eventDetails.eventDescription') }}
                 </p>
-                <div class="tw:mt-2 tw:flex tw:items-start tw:gap-2">
-                  <svg class="tw:w-5 tw:h-5 tw:mt-0.5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
+                <div class="tw:mt-2 tw:flex tw:items-start tw:gap-2.5">
+                  <span class="tw:mt-2 tw:h-2 tw:w-2 tw:rounded-full tw:bg-[#1a237e] tw:flex-shrink-0" aria-hidden="true" />
                   <span class="tw:text-base tw:font-medium tw:text-[#1a73e8] tw:whitespace-pre-line tw:leading-relaxed">{{ overviewDescriptionDisplay }}</span>
                 </div>
               </div>
@@ -269,10 +267,8 @@
                 <p class="tw:text-base tw:font-semibold tw:text-gray-900">
                   {{ $t('eventDetails.overviewCategory') }}
                 </p>
-                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
-                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
+                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2.5">
+                  <span class="tw:h-2 tw:w-2 tw:rounded-full tw:bg-[#1a237e] tw:flex-shrink-0" aria-hidden="true" />
                   <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewCategoryDisplay }}</span>
                 </div>
               </div>
@@ -291,10 +287,8 @@
                     {{ name }}
                   </span>
                 </div>
-                <div v-else class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
-                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
+                <div v-else class="tw:mt-2 tw:flex tw:items-center tw:gap-2.5">
+                  <span class="tw:h-2 tw:w-2 tw:rounded-full tw:bg-[#1a237e] tw:flex-shrink-0" aria-hidden="true" />
                   <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ $t('eventDetails.notSpecified') }}</span>
                 </div>
               </div>
@@ -304,11 +298,9 @@
                 <p class="tw:text-base tw:font-semibold tw:text-gray-900">
                   {{ $t('eventDetails.overviewDressCode') }}
                 </p>
-                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
-                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewDresscodeDisplay }}</span>
+                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2.5">
+                  <span class="tw:h-2 tw:w-2 tw:rounded-full tw:bg-[#1a237e] tw:flex-shrink-0" aria-hidden="true" />
+                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8] tw:uppercase">{{ overviewDresscodeDisplay }}</span>
                 </div>
               </div>
 
@@ -317,10 +309,8 @@
                 <p class="tw:text-base tw:font-semibold tw:text-gray-900">
                   {{ $t('eventDetails.overviewAge') }}
                 </p>
-                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
-                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
+                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2.5">
+                  <span class="tw:h-2 tw:w-2 tw:rounded-full tw:bg-[#1a237e] tw:flex-shrink-0" aria-hidden="true" />
                   <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewAgeDisplay }}</span>
                 </div>
               </div>
@@ -330,10 +320,8 @@
                 <p class="tw:text-base tw:font-semibold tw:text-gray-900">
                   {{ $t('eventDetails.overviewEntranceFee') }}
                 </p>
-                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
-                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
+                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2.5">
+                  <span class="tw:h-2 tw:w-2 tw:rounded-full tw:bg-[#1a237e] tw:flex-shrink-0" aria-hidden="true" />
                   <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewEntranceFeeDisplay }}</span>
                 </div>
               </div>
@@ -374,7 +362,8 @@
                   class="tw:min-w-0"
                 >
                   <article
-                    class="tw:group tw:flex tw:h-full tw:min-h-0 tw:flex-col tw:overflow-hidden tw:rounded-2xl tw:bg-white tw:shadow-[0_1px_3px_rgba(0,0,0,0.06)] tw:ring-1 tw:ring-gray-200/90 tw:transition-all tw:duration-200 hover:tw:-translate-y-0.5 hover:tw:shadow-[0_10px_28px_rgba(0,0,0,0.09)] hover:tw:ring-[#FF7700]/35"
+                    class="tw:group tw:flex tw:h-full tw:min-h-0 tw:flex-col tw:overflow-hidden tw:rounded-2xl tw:bg-white tw:shadow-[0_1px_3px_rgba(0,0,0,0.06)] tw:ring-1 tw:ring-gray-200/90 tw:transition-all tw:duration-200 hover:tw:-translate-y-0.5 hover:tw:shadow-[0_10px_28px_rgba(0,0,0,0.09)] hover:tw:ring-[#FF7700]/35 tw:cursor-pointer"
+                    @click="openInvitedTalentProfile(talent)"
                   >
                     <div
                       class="tw:relative tw:aspect-[3/4] tw:w-full tw:overflow-hidden tw:bg-gradient-to-br tw:from-slate-100 tw:to-slate-200/90"
@@ -486,21 +475,25 @@
 
                   <div v-if="organiserDescription(org)">
                     <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">Description</p>
-                    <p class="tw:text-sm tw:text-gray-700 tw:leading-relaxed tw:line-clamp-4">{{ organiserDescription(org) }}</p>
+                    <ExpandableText
+                      :text="organiserDescription(org)"
+                      :max-length="200"
+                      :more-label="t('discoveryProfile.viewMore')"
+                      :less-label="t('discoveryProfile.viewLess')"
+                    />
                   </div>
 
-                  <a
+                  <button
                     v-if="organiserProfileSlug(org)"
-                    :href="`/organisers/${organiserProfileSlug(org)}`"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="tw:inline-flex tw:items-center tw:gap-1.5 tw:text-sm tw:font-medium tw:text-[#1a73e8] hover:tw:underline tw:underline-offset-2"
+                    type="button"
+                    class="tw:inline-flex tw:items-center tw:gap-1.5 tw:text-sm tw:font-medium tw:text-[#1a73e8] hover:tw:underline tw:underline-offset-2 tw:bg-transparent tw:border-0 tw:p-0 tw:cursor-pointer"
+                    @click="openInvitedOrganiserProfile(org)"
                   >
                     <svg class="tw:w-4 tw:h-4 tw:flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
-                    Click Here to see full Organiser Profile
-                  </a>
+                    {{ $t('eventDetails.viewFullOrganiserProfile') }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -544,41 +537,44 @@
                   <!-- Description -->
                   <div v-if="venueDescription(venue)">
                     <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-1">Description</p>
-                    <p class="tw:text-sm tw:text-gray-700 tw:leading-relaxed tw:line-clamp-4">{{ venueDescription(venue) }}</p>
+                    <ExpandableText
+                      :text="venueDescription(venue)"
+                      :max-length="200"
+                      :more-label="t('discoveryProfile.viewMore')"
+                      :less-label="t('discoveryProfile.viewLess')"
+                    />
                   </div>
 
                   <!-- Opening hours -->
                   <div v-if="venueOpeningHours(venue).length">
                     <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-2">Opening hours</p>
-                    <div class="tw:space-y-1">
+                    <div class="tw:space-y-1.5">
                       <div
                         v-for="slot in venueOpeningHours(venue)"
                         :key="slot.day"
-                        class="tw:flex tw:items-center tw:justify-between tw:text-sm"
+                        class="tw:flex tw:items-center tw:justify-between tw:py-1.5 tw:border-b tw:border-gray-100 last:tw:border-0"
                       >
-                        <span class="tw:w-24 tw:text-gray-700 tw:font-medium">{{ slot.day }}</span>
+                        <span class="tw:w-28 tw:text-sm tw:font-medium tw:text-gray-800">{{ slot.day }}</span>
                         <span
                           v-if="slot.is_open && slot.open && slot.close"
-                          class="tw:text-gray-600"
+                          class="tw:text-sm tw:text-gray-600 tw:tabular-nums"
                         >{{ slot.open }} – {{ slot.close }}</span>
-                        <span v-else class="tw:text-gray-400 tw:italic">Closed</span>
+                        <span v-else class="tw:text-sm tw:text-gray-400 tw:italic">Closed</span>
                       </div>
                     </div>
                   </div>
 
-                  <!-- Read more link -->
-                  <a
+                  <button
                     v-if="venueProfileSlug(venue)"
-                    :href="`/venues/${venueProfileSlug(venue)}`"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="tw:inline-flex tw:items-center tw:gap-1.5 tw:text-sm tw:font-medium tw:text-[#1a73e8] hover:tw:underline tw:underline-offset-2"
+                    type="button"
+                    class="tw:inline-flex tw:items-center tw:gap-1.5 tw:text-sm tw:font-medium tw:text-[#1a73e8] hover:tw:underline tw:underline-offset-2 tw:bg-transparent tw:border-0 tw:p-0 tw:cursor-pointer"
+                    @click="openInvitedVenueProfile(venue)"
                   >
                     <svg class="tw:w-4 tw:h-4 tw:flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
-                    Click here to see full Venue profile
-                  </a>
+                    {{ $t('eventDetails.viewFullVenueProfile') }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -670,6 +666,7 @@ import TalentsTab from './TalentsTab.vue'
 import CommunityTab from './CommunityTab.vue'
 import SocialsTab from './SocialsTab.vue'
 import ContactTab from './ContactTab.vue'
+import ExpandableText from '@/components/common/ExpandableText.vue'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -726,7 +723,7 @@ const desktopPanelOuterStyle = computed(() => {
 })
 
 // Emits
-const emit = defineEmits(['close', 'link', 'route', 'share'])
+const emit = defineEmits(['close', 'link', 'route', 'share', 'viewProfile'])
 
 const detailsWishlistBtnClass = computed(() => {
   const pending = wishlistStore.isWishlistPending(props.event?.id)
@@ -736,7 +733,7 @@ const detailsWishlistBtnClass = computed(() => {
   if (wishlistStore.isWishlisted(props.event?.id)) {
     return `${base} tw:border-[#FF7700] tw:bg-[#FF7700]`
   }
-  return `${base} tw:border-[#FF7700]/40 hover:tw:border-[#FF7700] hover:tw:bg-[#FFFAF5]`
+  return `${base} tw:border-[#FF7700]/40 tw:bg-white/95 hover:tw:border-[#FF7700] hover:tw:bg-[#FFFAF5]`
 })
 
 const detailsWishlistIconClass = computed(() => {
@@ -910,10 +907,27 @@ const tabs = computed(() => {
   if (bookingInstructionsDisplay.value) {
     list.push({ id: 'bookingInfo', labelKey: 'eventDetails.tabs.bookingInfo' })
   }
-  if (isPremiumEvent.value) {
+  if (isPremiumEvent.value && showContactTab.value) {
     list.push({ id: 'contact', labelKey: 'eventDetails.tabs.contact' })
   }
   return list
+})
+
+const showContactTab = computed(() => {
+  const ev = props.event
+  if (!ev || typeof ev !== 'object') return false
+  if (ev.show_contact_box === false || ev.show_contact_box === '0') return false
+  const msg = [
+    ev.contact_box_design_message,
+    ev.contact_box_message,
+    ev.contact_info?.design_message,
+    ev.contact_info?.box_message,
+  ]
+    .map((v) => (typeof v === 'string' ? v.trim() : ''))
+    .find(Boolean)
+  if (msg) return true
+  if (ev.show_contact_box === true || ev.show_contact_box === '1') return true
+  return ev.show_contact_box !== false
 })
 
 const primaryInvitedVenueName = computed(() => {
@@ -934,7 +948,10 @@ const overviewVenueDisplay = computed(() => {
 const overviewDresscodeDisplay = computed(() => {
   const raw = props.event?.dresscode
   if (raw == null || String(raw).trim() === '') return t('eventDetails.notSpecified')
-  return String(raw).replace(/_/g, ' ')
+  const s = String(raw).trim()
+  if (s === 'no_dress_code') return t('eventDetails.dressCodeNone')
+  if (s === 'Dress Code') return t('eventDetails.dressCodeFormal')
+  return String(s).replace(/_/g, ' ')
 })
 
 const overviewAgeDisplay = computed(() => {
@@ -990,7 +1007,7 @@ const overviewSubcategoryLabels = computed(() => {
       .map((s) => (s && typeof s === 'object' ? s.name : s))
       .filter((n) => n != null && String(n).trim() !== '')
       .map((n) => String(n).trim())
-    return [...new Set(names)]
+    return [...new Set(names)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
   }
   const sc = ev?.sub_category
   if (sc && typeof sc === 'object' && sc.name != null && String(sc.name).trim() !== '') {
@@ -1077,6 +1094,26 @@ function organiserDescription(org) {
 
 function organiserProfileSlug(org) {
   return org?.organiser_v2?.slug || null
+}
+
+function openInvitedTalentProfile(talent) {
+  const v2 = talent?.talent_v2
+  if (!v2?.slug) return
+  emit('viewProfile', { ...v2, profileType: 'talents' })
+}
+
+function openInvitedOrganiserProfile(org) {
+  const v2 = org?.organiser_v2
+  if (!v2?.slug) return
+  emit('viewProfile', { ...v2, profileType: 'organisers' })
+}
+
+function openInvitedVenueProfile(venue) {
+  const v2 = venue?.venue_v2
+  const slug = v2?.slug || venue?.slug
+  if (!slug) return
+  const profile = v2 ? { ...v2 } : { ...venue, slug }
+  emit('viewProfile', { ...profile, profileType: 'venues' })
 }
 
 function syncActiveTabWithTabs() {

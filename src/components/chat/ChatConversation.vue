@@ -23,6 +23,39 @@
       </p>
     </div>
 
+    <div class="tw:relative tw:flex-shrink-0">
+      <button
+        type="button"
+        @click.stop="toggleActionsMenu"
+        class="tw:w-8 tw:h-8 tw:flex tw:items-center tw:justify-center tw:rounded-full hover:tw:bg-gray-100 tw:transition-colors"
+        :title="t('chat.moreActions')"
+      >
+        <MoreVertical class="tw:w-5 tw:h-5 tw:text-gray-500" />
+      </button>
+      <div
+        v-if="showActionsMenu"
+        class="tw:absolute tw:right-0 tw:top-full tw:mt-1 tw:w-44 tw:bg-white tw:border tw:border-gray-100 tw:rounded-lg tw:shadow-lg tw:z-10 tw:py-1"
+        @click.stop
+      >
+        <button
+          v-if="!isBlockedByMe"
+          type="button"
+          class="tw:w-full tw:text-left tw:px-3 tw:py-2 tw:text-sm tw:text-red-600 hover:tw:bg-red-50"
+          @click="confirmBlockProfile"
+        >
+          {{ t('chat.blockProfile') }}
+        </button>
+        <button
+          v-else
+          type="button"
+          class="tw:w-full tw:text-left tw:px-3 tw:py-2 tw:text-sm tw:text-gray-700 hover:tw:bg-gray-50"
+          @click="unblockProfile"
+        >
+          {{ t('chat.unblockProfile') }}
+        </button>
+      </div>
+    </div>
+
     <button @click="$emit('close')"
       class="tw:w-8 tw:h-8 tw:flex tw:items-center tw:justify-center tw:rounded-full hover:tw:bg-gray-100 tw:transition-colors"
       title="Close">
@@ -108,9 +141,20 @@
     </div>
   </div>
 
+  <!-- Blocked profile -->
+  <div
+    v-if="isMessagingBlocked"
+    class="tw:bg-red-50 tw:border-t tw:border-red-200 tw:px-4 tw:py-2.5 tw:flex-shrink-0"
+  >
+    <p class="tw:text-xs tw:text-red-700 tw:flex tw:items-center tw:gap-2">
+      <Ban class="tw:w-4 tw:h-4 tw:flex-shrink-0" />
+      {{ blockedBannerText }}
+    </p>
+  </div>
+
   <!-- Self unavailable -->
   <div
-    v-if="!senderChatActive"
+    v-else-if="!senderChatActive"
     class="tw:bg-slate-100 tw:border-t tw:border-slate-200 tw:px-4 tw:py-2.5 tw:flex-shrink-0"
   >
     <p class="tw:text-xs tw:text-slate-600 tw:flex tw:items-center tw:gap-2">
@@ -166,17 +210,31 @@
       <Loader2 v-else class="tw:w-4 tw:h-4 tw:animate-spin" />
     </button>
   </div>
+
+  <ConfirmDialog
+    :visible="showBlockConfirmModal"
+    :title="t('chat.blockConfirmTitle')"
+    :message="t('chat.blockConfirmMessage', { name: selectedUser.name })"
+    :confirm-label="t('chat.blockConfirmAction')"
+    :cancel-label="t('chat.cancel')"
+    variant="danger"
+    :loading="blockInProgress"
+    @cancel="cancelBlockConfirm"
+    @confirm="executeBlockProfile"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
-  ArrowLeft, X, Send, Loader2, MessageCircle, WifiOff, AlertTriangle,
+  ArrowLeft, X, Send, Loader2, MessageCircle, WifiOff, AlertTriangle, MoreVertical, Ban,
 } from 'lucide-vue-next'
 import { Timestamp } from 'firebase/firestore'
 import type { ChatUser } from '@/services/chatService'
+import { chatService } from '@/services/chatService'
 import { useAuthStore } from '@/stores/auth'
+import { useChatStore } from '@/stores/chatStore'
 import {
   validateMessage,
   validateChatAvailability,
@@ -190,6 +248,7 @@ import {
   type PresenceDoc,
 } from '@/services/chatPresence'
 import ChatAvailabilityToggle from '@/components/chat/ChatAvailabilityToggle.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import {
   getConversationId,
   getOrCreateConversation,
@@ -211,10 +270,13 @@ const props = defineProps<{
   selectedUser: ChatUser
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'back'): void
   (e: 'close'): void
+  (e: 'blocked', userId: number): void
 }>()
+
+const chatStore = useChatStore()
 
 // ── State ────────────────────────────────────────────────────────────
 const olderMessages = ref<MessageWithId[]>([])
@@ -232,6 +294,9 @@ const loadingOlder = ref(false)
 const hasMoreOlder = ref(true)
 const ownPresence = ref<PresenceDoc | null>(null)
 const otherPresence = ref<PresenceDoc | null>(null)
+const showActionsMenu = ref(false)
+const showBlockConfirmModal = ref(false)
+const blockInProgress = ref(false)
 let typingDebounce: ReturnType<typeof setTimeout> | null = null
 let unsubscribe: (() => void) | null = null
 let unsubscribeConv: (() => void) | null = null
@@ -246,20 +311,83 @@ const conversationId = computed(() =>
 
 const senderChatActive = computed(() => isChatActive(ownPresence.value))
 const receiverChatActive = computed(() => isChatActive(otherPresence.value))
+const isBlockedByMe = computed(() => chatStore.isBlockedByMe(props.selectedUser.id))
+const hasBlockedMe = computed(() => chatStore.hasBlockedMe(props.selectedUser.id))
+const isMessagingBlocked = computed(() => chatStore.isMessagingBlocked(props.selectedUser.id))
+
+const blockedBannerText = computed(() => {
+  if (isBlockedByMe.value) return t('chat.blockedByYouBanner')
+  if (hasBlockedMe.value) return t('chat.blockedYouBanner')
+  return t('chat.blockedGenericBanner')
+})
 
 const isSendDisabled = computed(
   () =>
     isSending.value
     || !!rateLimitMessage.value
+    || isMessagingBlocked.value
     || !senderChatActive.value
     || !receiverChatActive.value,
 )
 
 const sendPlaceholder = computed(() => {
+  if (isMessagingBlocked.value) return t('chat.placeholderBlocked')
   if (!senderChatActive.value) return t('chat.placeholderSelfInactive')
   if (!receiverChatActive.value) return t('chat.placeholderReceiverInactive')
   return t('chat.placeholderDefault')
 })
+
+function toggleActionsMenu() {
+  showActionsMenu.value = !showActionsMenu.value
+}
+
+function closeActionsMenu() {
+  showActionsMenu.value = false
+}
+
+function confirmBlockProfile() {
+  closeActionsMenu()
+  showBlockConfirmModal.value = true
+}
+
+function cancelBlockConfirm() {
+  if (blockInProgress.value) return
+  showBlockConfirmModal.value = false
+}
+
+async function executeBlockProfile() {
+  if (blockInProgress.value) return
+  blockInProgress.value = true
+  try {
+    await chatStore.blockUser(props.selectedUser.id, {
+      name: props.selectedUser.name,
+      profile_type: props.selectedUser.profile_type,
+      avatar: props.selectedUser.avatar ?? null,
+    })
+    showBlockConfirmModal.value = false
+    emitBlocked()
+  } catch (err) {
+    console.error('Failed to block profile:', err)
+    rateLimitMessage.value = t('chat.blockFailed')
+    showBlockConfirmModal.value = false
+  } finally {
+    blockInProgress.value = false
+  }
+}
+
+async function unblockProfile() {
+  closeActionsMenu()
+  try {
+    await chatStore.unblockUser(props.selectedUser.id)
+  } catch (err) {
+    console.error('Failed to unblock profile:', err)
+    rateLimitMessage.value = t('chat.unblockFailed')
+  }
+}
+
+function emitBlocked() {
+  emit('blocked', props.selectedUser.id)
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────
 function getInitials(name: string): string {
@@ -377,6 +505,22 @@ async function sendMessage() {
   const text = inputText.value.trim()
   if (!text || isSendDisabled.value) return
 
+  if (isMessagingBlocked.value) {
+    rateLimitMessage.value = blockedBannerText.value
+    return
+  }
+
+  try {
+    const canSend = await chatService.canMessage(props.selectedUser.id)
+    if (!canSend.can_message) {
+      rateLimitMessage.value = blockedBannerText.value
+      await chatStore.loadBlocks(true)
+      return
+    }
+  } catch (err) {
+    console.error('Could not verify messaging permission:', err)
+  }
+
   const availability = validateChatAvailability({
     senderChatActive: senderChatActive.value,
     receiverChatActive: receiverChatActive.value,
@@ -465,6 +609,7 @@ watch(() => props.selectedUser.id, () => {
 onMounted(() => {
   startPresenceListeners()
   initAndListen()
+  document.addEventListener('click', closeActionsMenu)
 })
 
 onUnmounted(() => {
@@ -474,5 +619,6 @@ onUnmounted(() => {
   if (typingDebounce) clearTimeout(typingDebounce)
   clearTyping(conversationId.value, props.currentUserId)
   if (rateLimitTimer) clearTimeout(rateLimitTimer)
+  document.removeEventListener('click', closeActionsMenu)
 })
 </script>

@@ -77,6 +77,7 @@
             :selected-user="selectedUser"
             @back="view = 'user-list'"
             @close="$emit('close')"
+            @blocked="onUserBlocked"
           />
         </template>
       </div>
@@ -137,12 +138,19 @@ async function initChat() {
     const name = authStore.user?.name || authStore.user?.email || `User ${authStore.user?.id}`
     if (authStore.user?.id) await setOnline(authStore.user.id, name)
 
+    await chatStore.loadBlocks(true)
+
     // 5. Open pending conversation or user list
     const pending = chatStore.pendingConversationUser
     if (pending) {
-      selectedUser.value = pending
-      view.value = 'conversation'
-      chatStore.clearPendingConversation()
+      if (chatStore.isMessagingBlocked(pending.id)) {
+        chatStore.clearPendingConversation()
+        view.value = 'user-list'
+      } else {
+        selectedUser.value = pending
+        view.value = 'conversation'
+        chatStore.clearPendingConversation()
+      }
     } else {
       view.value = 'user-list'
     }
@@ -156,8 +164,17 @@ async function initChat() {
 }
 
 function openConversation(user: ChatUser) {
+  if (chatStore.isMessagingBlocked(user.id)) return
   selectedUser.value = user
   view.value         = 'conversation'
+}
+
+function onUserBlocked(userId: number) {
+  if (selectedUser.value?.id === userId) {
+    selectedUser.value = null
+    view.value = 'user-list'
+  }
+  void chatStore.loadBlocks(true)
 }
 
 // ── Watchers ─────────────────────────────────────────────────────────

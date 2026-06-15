@@ -101,8 +101,8 @@
           :aria-pressed="isWishlisted"
           :aria-label="isWishlisted ? t('eventCard.removeFromWishlist') : t('eventCard.addToWishlist')"
           @click.stop="handleWishlistToggle"
-          class="event-card-wishlist-btn tw:flex tw:h-8 tw:w-8 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-full tw:border tw:transition-all tw:duration-200 tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[var(--primary-color)]/40 focus-visible:tw:ring-offset-1"
-          :class="wishlistButtonClass"
+          class="event-card-wishlist-btn no-hover tw:flex tw:h-8 tw:w-8 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-full tw:border tw:transition-all tw:duration-200 tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[var(--primary-color)]/40 focus-visible:tw:ring-offset-1"
+          :class="[wishlistButtonClass, { 'is-wishlisted': isWishlisted }]"
           :aria-busy="isWishlistPending"
         >
           <svg

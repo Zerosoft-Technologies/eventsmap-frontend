@@ -378,6 +378,8 @@ export interface Event {
   entrance_status?: string
   /** API: `free` | `premium` (controls Contact tab visibility, etc.) */
   event_type?: string
+  /** Premium: show main image inside map pin circle */
+  show_photo_map_marker?: boolean
   /** Premium create form / API: host booking copy */
   booking_instructions?: string | null
   venue?: unknown

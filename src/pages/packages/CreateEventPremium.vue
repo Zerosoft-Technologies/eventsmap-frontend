@@ -208,6 +208,10 @@
                     <p v-if="errors.eventImage" class="tw:text-red-500 tw:text-sm tw:mt-1">Event image is required</p>
                     <p v-if="fieldErrors.image" class="tw:text-red-500 tw:text-sm tw:mt-1">{{ fieldErrors.image[0] }}
                     </p>
+
+                    <div class="tw:pt-4 tw:border-t tw:border-gray-100 tw:mt-4">
+                        <MapPhotoMarkerToggle v-model="showPhotoMapMarker" input-name="event-show-photo-map-marker" />
+                    </div>
                 </div>
 
                 <!-- ADDITIONAL IMAGES SECTION -->
@@ -784,12 +788,38 @@
                 <!-- CONTACT BOX SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Contact Box
+                        Contact Box + Design
                     </h3>
 
                     <div class="tw:space-y-2">
+                        <span class="tw:text-sm tw:font-medium tw:text-gray-700">Show contact box on your event page</span>
+                        <div class="tw:flex tw:gap-4">
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-contact-box-event"
+                                    :checked="showContactBox"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                    @change="showContactBox = true"
+                                />
+                                <span class="tw:text-sm tw:text-gray-800">Yes</span>
+                            </label>
+                            <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="show-contact-box-event"
+                                    :checked="!showContactBox"
+                                    class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                    @change="showContactBox = false"
+                                />
+                                <span class="tw:text-sm tw:text-gray-800">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div v-if="showContactBox" class="tw:space-y-2">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Contact Message</label>
-                        <textarea v-model="contactBoxMessage" rows="4" placeholder="Enter your contact message"
+                        <textarea v-model="contactBoxDesignMessage" rows="4" placeholder="Enter your contact message"
                             class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all tw:resize-none"></textarea>
                     </div>
                 </div>
@@ -904,7 +934,7 @@
                     </div>
 
                     <p class="tw:text-sm tw:text-[#1E3A8A]">
-                        Add registered talent, venues and organisers who are participating in this event
+                        {{ $t('invite.sectionIntro') }}
                     </p>
 
                     <div class="tw:space-y-3">
@@ -1083,6 +1113,7 @@ import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import PhoneInput from "@/components/common/PhoneInput.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
+import MapPhotoMarkerToggle from "@/components/map/MapPhotoMarkerToggle.vue"
 import api from "@/services/api"
 import eventService from "@/services/eventService"
 import { useAuthStore } from "@/stores/auth"
@@ -1397,8 +1428,11 @@ const isCopyEvent = ref(false)
 // Default visibility: "No"
 const showUpcomingEvents = ref(false)
 const showPastEvents = ref(false)
+const showPhotoMapMarker = ref(false)
 const showChatbox = ref(false)
 const contactBoxMessage = ref('')
+const contactBoxDesignMessage = ref('')
+const showContactBox = ref(false)
 const venueDetailsText = ref('')
 const inviteSectionResetKey = ref(0)
 
@@ -1694,7 +1728,8 @@ const dropdownMenu = ref(null)
 const availableSubcategories = computed(() => {
     if (!selectedCategory.value) return []
     const selectedCategoryData = categories.value.find(cat => cat.name === selectedCategory.value)
-    return selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
+    const names = selectedCategoryData ? selectedCategoryData.subcategories.map(sub => sub.name) : []
+    return [...names].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
 })
 
 // Invite section selected IDs (profile primary keys for invited_* arrays)
@@ -1804,7 +1839,7 @@ function toggleSubcategoryDropdown() {
 
 // Toggle individual subcategory selection
 function toggleSubcategory(subcategory) {
-    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 6) {
+    if (!selectedSubcategories.value.includes(subcategory) && selectedSubcategories.value.length >= 5) {
         return // Prevent selection if already at max 5
     }
 
@@ -2308,7 +2343,11 @@ async function createEvent() {
 
         // Optional fields
         appendValidatedOptionalUrl(formData, 'contact_website', contactWebsite.value)
-        if (contactBoxMessage.value) formData.append('contact_box_message', contactBoxMessage.value)
+        formData.append('show_contact_box', showContactBox.value ? '1' : '0')
+        if (showContactBox.value && contactBoxDesignMessage.value.trim()) {
+            formData.append('contact_box_design_message', contactBoxDesignMessage.value.trim())
+            formData.append('contact_box_message', contactBoxDesignMessage.value.trim())
+        }
         if (venueDetailsText.value) formData.append('venue_details', venueDetailsText.value)
         appendValidatedOptionalUrl(formData, 'facebook_url', facebookUrl.value)
         appendValidatedOptionalUrl(formData, 'instagram_url', instagramUrl.value)
@@ -2320,6 +2359,7 @@ async function createEvent() {
         formData.append('is_copy_event', isCopyEvent.value ? '1' : '0')
         formData.append('show_upcoming_events', showUpcomingEvents.value === null ? '' : (showUpcomingEvents.value ? '1' : '0'))
         formData.append('show_past_events', showPastEvents.value === null ? '' : (showPastEvents.value ? '1' : '0'))
+        formData.append('show_photo_map_marker', showPhotoMapMarker.value ? '1' : '0')
         if (conditionEntranceFee.value) formData.append('condition_entrance_fee', conditionEntranceFee.value)
         if (conditionDressCode.value) formData.append('condition_dress_code', conditionDressCode.value)
         if (conditionAgeLimit.value) formData.append('condition_age_limit', conditionAgeLimit.value)
@@ -2582,6 +2622,9 @@ async function loadEvent(id) {
         contactEmail.value = d.contact_email ?? ''
         contactWebsite.value = d.contact_website ?? ''
         contactBoxMessage.value = d.contact_box_message ?? ''
+        contactBoxDesignMessage.value = d.contact_box_design_message ?? d.contact_box_message ?? ''
+        showContactBox.value = d.show_contact_box === true || d.show_contact_box === '1'
+            || (!!contactBoxDesignMessage.value && d.show_contact_box !== false && d.show_contact_box !== '0')
         facebookUrl.value = d.facebook_url ?? ''
         instagramUrl.value = d.instagram_url ?? ''
         tiktokUrl.value = d.tiktok_url ?? ''
@@ -2676,6 +2719,7 @@ async function loadEvent(id) {
         showPastEvents.value = d.show_past_events !== undefined
             ? !!d.show_past_events
             : false
+        showPhotoMapMarker.value = !!d.show_photo_map_marker
 
         // Invite selections (profile PKs from ids and/or *_objects)
         seedInvitationProfiles([
@@ -2786,6 +2830,8 @@ function resetForm() {
     contactEmail.value = ''
     contactWebsite.value = ''
     contactBoxMessage.value = ''
+    contactBoxDesignMessage.value = ''
+    showContactBox.value = false
     venueDetailsText.value = ''
     facebookUrl.value = ''
     instagramUrl.value = ''
@@ -2796,6 +2842,7 @@ function resetForm() {
     isCopyEvent.value = false
     showUpcomingEvents.value = false
     showPastEvents.value = false
+    showPhotoMapMarker.value = false
     conditionEntranceFee.value = ''
     conditionDressCode.value = ''
     conditionAgeLimit.value = ''
@@ -2855,7 +2902,11 @@ async function updateEvent() {
         if (contactPhone.value) formData.append('contact_phone', contactPhone.value)
         if (contactEmail.value) formData.append('contact_email', contactEmail.value)
         appendValidatedOptionalUrl(formData, 'contact_website', contactWebsite.value)
-        if (contactBoxMessage.value) formData.append('contact_box_message', contactBoxMessage.value)
+        formData.append('show_contact_box', showContactBox.value ? '1' : '0')
+        if (showContactBox.value && contactBoxDesignMessage.value.trim()) {
+            formData.append('contact_box_design_message', contactBoxDesignMessage.value.trim())
+            formData.append('contact_box_message', contactBoxDesignMessage.value.trim())
+        }
         if (venueDetailsText.value) formData.append('venue_details', venueDetailsText.value)
         appendValidatedOptionalUrl(formData, 'facebook_url', facebookUrl.value)
         appendValidatedOptionalUrl(formData, 'instagram_url', instagramUrl.value)
@@ -2868,6 +2919,7 @@ async function updateEvent() {
         formData.append('is_copy_event', isCopyEvent.value ? '1' : '0')
         formData.append('show_upcoming_events', showUpcomingEvents.value === null ? '' : (showUpcomingEvents.value ? '1' : '0'))
         formData.append('show_past_events', showPastEvents.value === null ? '' : (showPastEvents.value ? '1' : '0'))
+        formData.append('show_photo_map_marker', showPhotoMapMarker.value ? '1' : '0')
         
         // Condition fields
         if (conditionEntranceFee.value) formData.append('condition_entrance_fee', conditionEntranceFee.value)

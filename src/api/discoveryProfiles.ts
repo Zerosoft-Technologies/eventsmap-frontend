@@ -61,6 +61,7 @@ export interface DiscoveryProfile {
   parking?: boolean | null
   play_area?: boolean | null
   allow_dogs?: boolean | null
+  show_photo_map_marker?: boolean
 
   [key: string]: unknown
 }

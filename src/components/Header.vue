@@ -787,6 +787,7 @@
     :event="selectedEvent"
     :map-listing-expanded="detailPanelBesideExpandedListing"
     @close="closeEventDetailsPanel"
+    @viewProfile="handleViewProfile"
   />
 
   <!-- Discovery Profile Details Panel -->
@@ -1245,6 +1246,19 @@ onMounted(() => {
   window.addEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetailFromHome)
   window.addEventListener(MAP_OPEN_PROFILE_DETAIL, onMapOpenProfileDetailFromHome)
   window.addEventListener(MAP_POPUP_CLOSED, onMapPopupClosedFromHome)
+
+  const pendingProfileRaw = sessionStorage.getItem('pendingDiscoveryProfile')
+  if (pendingProfileRaw) {
+    sessionStorage.removeItem('pendingDiscoveryProfile')
+    try {
+      const parsed = JSON.parse(pendingProfileRaw)
+      if (parsed?.profile) {
+        handleViewProfile({ ...parsed.profile, profileType: parsed.profileType })
+      }
+    } catch {
+      // ignore malformed session payload
+    }
+  }
 })
 
 onBeforeUnmount(() => {
