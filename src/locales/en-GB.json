@@ -18,6 +18,9 @@
     "notifications": "Notifications",
     "invitationNotifications": "Invitation notifications",
     "noPendingInvitations": "No pending invitations.",
+    "invitationPending": "You have a pending invitation from {sender}, Event Publisher. Please accept or decline your invitation.",
+    "invitationAccept": "Accept",
+    "invitationDecline": "Decline",
     "profileType": {
       "events": "Events",
       "talent": "Talent",
@@ -232,7 +235,10 @@
   "map": {
     "searchThisArea": "Search this area",
     "centerOnLocation": "Center on my location",
+    "list": "List",
+    "listView": "List View",
     "showList": "Show List",
+    "hideList": "Hide List",
     "showMap": "Show Map"
   },
   "errors": {

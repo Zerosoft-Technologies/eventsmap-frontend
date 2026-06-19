@@ -240,6 +240,24 @@
             </div>
           </div>
 
+          <!-- Past events (premium profiles with show_past_events enabled) -->
+          <div v-if="showPastEventsEnabled" class="tw:space-y-2">
+            <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400">
+              {{ t('discoveryProfile.tabs.finishedEvents') }}
+            </p>
+            <ul v-if="finishedEvents.length" class="tw:space-y-2">
+              <li
+                v-for="ev in finishedEvents"
+                :key="`overview-past-${ev.id}`"
+                class="tw:flex tw:flex-col tw:gap-0.5 tw:rounded-lg tw:border tw:border-gray-100 tw:bg-gray-50/80 tw:px-3 tw:py-2"
+              >
+                <span class="tw:text-xs tw:font-medium tw:text-gray-500">{{ formatFinishedEventDate(ev) }}</span>
+                <span class="tw:text-sm tw:font-semibold tw:text-gray-900 tw:line-clamp-2">{{ ev.title }}</span>
+              </li>
+            </ul>
+            <p v-else class="tw:text-sm tw:text-gray-500">{{ t('discoveryProfile.finishedEventsEmpty') }}</p>
+          </div>
+
           <!-- Talent extras -->
           <template v-if="profileType === 'talents'">
             <div v-if="profile.highlights">
@@ -636,6 +654,8 @@ import {
   resolveVenueFeatureRows,
   venueHasAmenitiesContent,
 } from '@/utils/venueDiscoveryDisplay'
+import { fetchPublicProfileDetail } from '@/api/discoveryProfiles'
+import { showPastEventsOnProfile, showUpcomingEventsOnProfile } from '@/utils/profileEventVisibility'
 
 const EventCard = defineAsyncComponent(() => import('./Event.vue'))
 
@@ -669,13 +689,40 @@ const profilePanelOuterStyle = computed(() => {
 
 const emit = defineEmits(['close', 'viewEvent'])
 
+const resolvedProfile = ref(null)
+const profileDetailLoading = ref(false)
+
+/** Listing row merged with GET /v2/public/{type}/{id} for past/upcoming events. */
+const profile = computed(() => resolvedProfile.value ?? props.profile)
+
+watch(
+  () => [props.visible, props.profile?.id, props.profileType],
+  async ([visible, id]) => {
+    if (!visible || id == null) {
+      resolvedProfile.value = props.profile ? { ...props.profile } : null
+      return
+    }
+    resolvedProfile.value = props.profile ? { ...props.profile } : null
+    profileDetailLoading.value = true
+    try {
+      const detail = await fetchPublicProfileDetail(props.profileType, Number(id))
+      resolvedProfile.value = { ...(props.profile ?? {}), ...detail }
+    } catch (err) {
+      console.warn('Could not load full profile detail:', err)
+    } finally {
+      profileDetailLoading.value = false
+    }
+  },
+  { immediate: true },
+)
+
 const activeTab = ref('overview')
 
 // ── Images ─────────────────────────────────────────────────────
 const currentImageIndex = ref(0)
 
 const images = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p) return []
   const main = p.cover_image || p.image_path || p.profile_image || null
   const extras = Array.isArray(p.additional_images)
@@ -685,7 +732,7 @@ const images = computed(() => {
 })
 
 const galleryImages = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p || !Array.isArray(p.additional_images)) return []
   return p.additional_images.map((img) => (typeof img === 'string' ? img : img?.url)).filter(Boolean)
 })
@@ -708,7 +755,7 @@ const profileLabel = computed(() => {
 })
 
 const venueProfileRecord = computed(() =>
-  props.profileType === 'venues' && props.profile ? props.profile : null,
+  props.profileType === 'venues' && profile.value ? profile.value : null,
 )
 
 const venueDogsLabel = computed(() => resolveAllowanceOfDogsLabel(venueProfileRecord.value))
@@ -745,7 +792,7 @@ const profileLocationSectionTitle = computed(() => {
 
 // ── Category / subcategories ───────────────────────────────────
 const profileCategoryName = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p) return null
   if (props.profileType === 'organisers') return p.organiser_category?.name ?? p.category?.name ?? null
   if (props.profileType === 'talents') return p.talent_category?.name ?? p.category?.name ?? null
@@ -754,7 +801,7 @@ const profileCategoryName = computed(() => {
 })
 
 const subcategoryLabels = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p) return []
   let subs = []
   if (props.profileType === 'organisers') subs = p.organiser_subcategories ?? p.subcategories ?? []
@@ -783,7 +830,7 @@ function getAgeFromDob(rawDob) {
 }
 
 const talentAgeLabel = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p || props.profileType !== 'talents') return ''
 
   const rawAge = p.age
@@ -798,7 +845,7 @@ const talentAgeLabel = computed(() => {
 
 // ── Profile URL ────────────────────────────────────────────────
 const profileUrl = computed(() => {
-  const slug = props.profile?.slug
+  const slug = profile.value?.slug
   if (!slug) return '#'
   const map = { organisers: '/organisers', talents: '/talents', venues: '/venues' }
   return `${map[props.profileType] ?? ''}/${slug}`
@@ -812,7 +859,7 @@ const isLocationMapLoading = ref(false)
 const isLocationMapInitialized = ref(false)
 
 const latitudeValue = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p) return null
   const lat = p.lat ?? p.latitude
   if (lat === null || lat === undefined || lat === '') return null
@@ -822,7 +869,7 @@ const latitudeValue = computed(() => {
 })
 
 const longitudeValue = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p) return null
   const lng = p.lng ?? p.longitude
   if (lng === null || lng === undefined || lng === '') return null
@@ -836,13 +883,13 @@ const hasValidCoordinates = computed(
 )
 
 const locationDisplayName = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p?.title?.trim()) return t('dateLocation.notSpecified')
   return p.title.trim()
 })
 
 const displayLocationAddress = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p) return t('dateLocation.notSpecified')
   if (props.profileType === 'talents') {
     const line = displayProfileLocationLine(p, 'talents')
@@ -857,11 +904,11 @@ const displayLocationAddress = computed(() => {
 })
 
 const headerLocationLine = computed(() =>
-  displayProfileLocationLine(props.profile, props.profileType)
+  displayProfileLocationLine(profile.value, props.profileType)
 )
 
 const showLocationTab = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p) return false
   return Boolean(
     p.address?.trim() ||
@@ -892,7 +939,7 @@ function openExternalDirections() {
 const showDirectionsPanel = ref(false)
 
 const directionsEventForPanel = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p || !hasValidCoordinates.value) return null
   const addr = displayLocationAddress.value
   return {
@@ -1059,7 +1106,7 @@ function scheduleLocationMapInit() {
 }
 
 watch(
-  () => [activeTab.value, props.visible, props.profile?.id, latitudeValue.value, longitudeValue.value],
+  () => [activeTab.value, props.visible, profile.value?.id, latitudeValue.value, longitudeValue.value],
   () => {
     destroyLocationMap()
     scheduleLocationMapInit()
@@ -1075,7 +1122,7 @@ const SOCIAL_CONFIGS = [
 ]
 
 const showContactBox = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p) return false
   if (p.show_contact_box === true || p.show_contact_box === '1') return true
   if (p.show_contact_box === false || p.show_contact_box === '0') return false
@@ -1085,7 +1132,7 @@ const showContactBox = computed(() => {
 
 const contactBoxMessage = computed(() => {
   if (!showContactBox.value) return ''
-  const p = props.profile
+  const p = profile.value
   if (!p) return ''
   const design = typeof p.contact_box_design_message === 'string' ? p.contact_box_design_message.trim() : ''
   if (design) return design
@@ -1094,7 +1141,7 @@ const contactBoxMessage = computed(() => {
 })
 
 const profileOwnerUserId = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p) return null
   const nested = p.user?.id
   if (nested != null) return Number(nested)
@@ -1118,32 +1165,32 @@ function openProfileChat() {
   }
   const uid = profileOwnerUserId.value
   if (uid == null) return
-  const name = props.profile?.title || props.profile?.user?.name || `Talent ${uid}`
+  const name = profile.value?.title || profile.value?.user?.name || `Talent ${uid}`
   chatStore.openWithUser({ id: uid, name, profile_type: 'talent', account_type: 'premium' })
 }
 
 const socialLinks = computed(() => {
-  const p = props.profile
+  const p = profile.value
   if (!p) return []
   return SOCIAL_CONFIGS
     .filter(cfg => p[cfg.key])
     .map(cfg => ({ ...cfg, url: p[cfg.key] }))
 })
 
-// ── Upcoming events ────────────────────────────────────────────
+// ── Upcoming / past events (premium past only) ─────────────────
+const showPastEventsEnabled = computed(() => showPastEventsOnProfile(profile.value))
+
 const upcomingEvents = computed(() => {
-  const p = props.profile
-  if (!p) return []
-  if (!p.show_upcoming_events) return []
+  const p = profile.value
+  if (!p || !showUpcomingEventsOnProfile(p)) return []
   const ev = p.upcoming_events
   if (!Array.isArray(ev) || ev.length === 0) return []
   return ev
 })
 
 const finishedEvents = computed(() => {
-  const p = props.profile
-  if (!p) return []
-  if (!p.show_past_events) return []
+  const p = profile.value
+  if (!p || !showPastEventsEnabled.value) return []
   const ev = p.past_events
   if (!Array.isArray(ev) || ev.length === 0) return []
   return ev
@@ -1166,29 +1213,31 @@ const tabs = computed(() => {
       label: `${t('discoveryProfile.tabs.upcomingEvents')} (${upcomingEvents.value.length})`,
     })
   }
-  if (finishedEvents.value.length > 0) {
+  if (showPastEventsEnabled.value) {
     list.push({
       id: 'finishedEvents',
-      label: `${t('discoveryProfile.tabs.finishedEvents')} (${finishedEvents.value.length})`,
+      label: finishedEvents.value.length > 0
+        ? `${t('discoveryProfile.tabs.finishedEvents')} (${finishedEvents.value.length})`
+        : t('discoveryProfile.tabs.finishedEvents'),
     })
   }
   if (showLocationTab.value) {
     list.push({ id: 'location', label: t('discoveryProfile.tabs.location') })
   }
   // if (galleryImages.value.length > 0) list.push({ id: 'gallery', label: t('discoveryProfile.tabs.gallery') })
-  if (props.profileType === 'venues' && props.profile?.opening_hours?.length) {
+  if (props.profileType === 'venues' && profile.value?.opening_hours?.length) {
     list.push({ id: 'hours', label: t('discoveryProfile.tabs.openingHours') })
   }
-  if (props.profileType === 'venues' && venueHasAmenitiesContent(props.profile)) {
+  if (props.profileType === 'venues' && venueHasAmenitiesContent(profile.value)) {
     list.push({ id: 'amenities', label: t('discoveryProfile.tabs.amenities') })
   }
-  const hasContact = props.profile?.contact_phone || props.profile?.contact_email ||
-    props.profile?.contact_website || socialLinks.value.length > 0 || contactBoxMessage.value || canMessageProfile.value
+  const hasContact = profile.value?.contact_phone || profile.value?.contact_email ||
+    profile.value?.contact_website || socialLinks.value.length > 0 || contactBoxMessage.value || canMessageProfile.value
   if (hasContact) list.push({ id: 'contact', label: t('discoveryProfile.tabs.contact') })
   return list
 })
 
-watch(() => props.profile, () => {
+watch(() => profile.value, () => {
   currentImageIndex.value = 0
   activeTab.value = 'overview'
   showDirectionsPanel.value = false

@@ -209,9 +209,7 @@ const props = defineProps({
 
 const isEventsMode = computed(() => props.profileType === 'events')
 
-// Phase 2 UX: the minimized/CTA button should always read "List View"
-// (it is not "Events" only; it covers events + other discovery profiles).
-const panelLabel = computed(() => 'List View')
+const panelLabel = computed(() => t('map.listView'))
 
 const emptyTitle = computed(() =>
   isEventsMode.value ? t('allEvents.noEventsFound') : t('allEvents.noProfilesFound')
@@ -245,7 +243,7 @@ const isLoading = computed(() => props.loading)
 
 // Component state
 const visible = ref(true);
-const isMinimized = ref(false);
+const isMinimized = ref(true);
 
 function emitListingDockLayout() {
   let mode = 'hidden'
@@ -275,6 +273,8 @@ function expand() {
   isMinimized.value = false;
   visible.value = true;
 }
+
+defineExpose({ expand })
 
 /**
  * Handle view event - emit to parent to open the details panel

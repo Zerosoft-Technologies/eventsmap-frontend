@@ -246,3 +246,23 @@ export function formatEventCardDateTimeRange(
 
   return `${dateLabel} · ${startTime}–${endTime}`
 }
+
+/** True when the event has ended (hide from map / discovery list). */
+export function isDiscoveryEventFinished(
+  ev: Record<string, unknown> | null | undefined,
+  nowMs = Date.now(),
+): boolean {
+  const endMs = parseEndInstantMsForDisplay(ev)
+  if (!Number.isNaN(endMs)) return endMs < nowMs
+  const startMs = parseEventInstantMs(ev, 'start')
+  if (!Number.isNaN(startMs) && startMs < nowMs) return true
+  return false
+}
+
+export function filterActiveDiscoveryEvents<T extends Record<string, unknown>>(
+  events: T[],
+  nowMs = Date.now(),
+): T[] {
+  if (!Array.isArray(events)) return []
+  return events.filter((ev) => !isDiscoveryEventFinished(ev, nowMs))
+}

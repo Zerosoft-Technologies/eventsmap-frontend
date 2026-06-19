@@ -247,3 +247,24 @@ export async function fetchProfiles(
     },
   }
 }
+
+/**
+ * Full public profile payload for discovery detail panels (includes past/upcoming events when enabled).
+ */
+export async function fetchPublicProfileDetail(
+  profileType: ProfileType,
+  id: number,
+): Promise<DiscoveryProfile> {
+  const response = await api.get<{ success: boolean; data?: DiscoveryProfile; message?: string }>(
+    `/v2/public/${profileType}/${id}`,
+  )
+  const body = response.data
+  if (body?.success === false) {
+    throw new Error(body.message || 'Failed to fetch profile')
+  }
+  const data = body?.data
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid profile response')
+  }
+  return data
+}

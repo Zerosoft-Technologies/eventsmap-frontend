@@ -36,7 +36,7 @@
             <MessageSquareOff class="tw:w-14 tw:h-14 tw:text-gray-300" />
             <p class="tw:text-base tw:font-medium tw:text-gray-600">Chat not available</p>
             <p class="tw:text-sm tw:text-gray-400 tw:leading-relaxed">
-              Chat is available only for premium users.
+              Chat is available only for registered users. Please log in or create an account.
             </p>
           </div>
         </div>
@@ -122,8 +122,8 @@ async function initChat() {
   errorMessage.value = ''
 
   try {
-    // 1. Check if user is premium (no event dependency)
-    if (authStore.user?.account_type !== 'premium') {
+    // 1. Registered users (audience + premium profiles) may use chat
+    if (!authStore.isAuthenticated) {
       view.value = 'no-access'
       return
     }

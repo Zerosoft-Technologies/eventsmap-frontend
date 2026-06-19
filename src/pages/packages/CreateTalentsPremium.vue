@@ -535,7 +535,7 @@
 
                 <!-- CONTACT BOX + DESIGN -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box + Design</h3>
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box + Message</h3>
 
                     <div class="tw:space-y-2">
                         <span class="tw:text-sm tw:font-medium tw:text-gray-700">Show contact box on your public profile</span>
@@ -1104,7 +1104,7 @@ const showAge = ref('no')
 const selectedLanguages = ref([])
 const talentHighlightsText = ref('')
 const showUpcomingEvents = ref("")
-const showPastEvents = ref("")
+const showPastEvents = ref(true)
 const showPhotoMapMarker = ref(false)
 
 const facebookUrl = ref("")
@@ -1728,7 +1728,7 @@ function resetForm() {
     selectedLanguages.value = []
     talentHighlightsText.value = ''
     showUpcomingEvents.value = false
-    showPastEvents.value = false
+    showPastEvents.value = true
     showPhotoMapMarker.value = false
     categoryError.value = false
     subcategoryError.value = false

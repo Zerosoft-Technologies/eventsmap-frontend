@@ -1,7 +1,11 @@
 <template>
   <div
     class="tw:flex tw:flex-col tw:w-[350px] tw:bg-white tw:rounded-2xl tw:shadow-md tw:overflow-hidden tw:border tw:border-gray-100 tw:transition-all tw:duration-200"
-    :class="mapClusterEmbed ? 'map-cluster-embed-card' : 'hover:tw:shadow-lg'"
+    :class="[
+      mapClusterEmbed ? 'map-cluster-embed-card' : 'hover:tw:shadow-lg',
+      !hideViewEvent && !mapClusterEmbed ? 'tw:cursor-pointer' : '',
+    ]"
+    @click="handleCardClick"
   >
 
     <!-- ── Hero: cover only, or carousel when additional_images exist ── -->
@@ -389,6 +393,13 @@ async function handleWishlistToggle() {
         return
     }
     await wishlistStore.toggleWishlist(props.event)
+}
+
+function handleCardClick(e) {
+  if (props.hideViewEvent) return
+  const target = e?.target
+  if (target?.closest?.('button, a, input, textarea, label')) return
+  emit('viewEvent', props.event)
 }
 
 const organizerDisplayName = computed(() => {

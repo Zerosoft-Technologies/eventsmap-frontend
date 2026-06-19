@@ -107,8 +107,8 @@
                   v-model="statusFilter"
                   class="tw:w-full tw:h-11 tw:rounded-xl tw:border tw:border-gray-200 tw:px-3 tw:text-sm tw:text-gray-900 tw:bg-white focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500"
                 >
-                  <option value="pending">Pending</option>
                   <option value="all">All</option>
+                  <option value="pending">Pending</option>
                   <option value="accepted">Accepted</option>
                   <option value="rejected">Rejected</option>
                 </select>
@@ -212,16 +212,21 @@
                         {{ item.status }}
                       </span>
                       <span
-                        class="tw:inline-flex tw:items-center tw:rounded-full tw:border tw:border-gray-200 tw:bg-gray-50 tw:px-2.5 tw:py-1 tw:text-xs tw:font-medium tw:text-gray-700"
+                        class="tw:inline-flex tw:items-center tw:gap-1.5 tw:rounded-full tw:border tw:border-gray-200 tw:bg-gray-50 tw:px-2.5 tw:py-1 tw:text-xs tw:font-medium tw:text-gray-700"
                       >
-                        {{ formatReceiverType(item.receiver_type) }}
+                        <component
+                          :is="invitationRoleMeta(item.receiver_type).icon"
+                          class="tw:w-3.5 tw:h-3.5 tw:text-gray-500"
+                          aria-hidden="true"
+                        />
+                        {{ invitationRoleMeta(item.receiver_type).label }}
                       </span>
                     </div>
                   </div>
 
                   <p class="tw:text-sm tw:text-gray-700">
-                    <span class="tw:font-medium tw:text-gray-900">Invited by</span>
-                    {{ item.sender?.name || 'Organizer' }}
+                    <span class="tw:font-medium tw:text-gray-900">Event Publisher</span>
+                    {{ item.sender?.name || '—' }}
                     <span v-if="item.sender?.email" class="tw:text-gray-500 tw:text-xs"> · {{ item.sender.email }}</span>
                   </p>
                   <p class="tw:text-xs tw:text-gray-400">
@@ -313,7 +318,7 @@ import {
   CalendarRange,
   Search,
 } from 'lucide-vue-next'
-import EventSidebar from '@/pages/packages/eventsidebar/Eventsidebar.vue'
+import { invitationRoleMeta } from '@/utils/invitationRoleMeta'
 import { useChatStore } from '@/stores/chatStore'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
@@ -340,7 +345,7 @@ const initialLoading = ref(true)
 const listLoading = ref(false)
 const respondingId = ref<number | null>(null)
 
-const statusFilter = ref<'all' | 'pending' | 'accepted' | 'rejected'>('pending')
+const statusFilter = ref<'all' | 'pending' | 'accepted' | 'rejected'>('all')
 const timingFilter = ref<'all' | 'upcoming' | 'past'>('all')
 const page = ref(1)
 const perPage = 15
@@ -538,16 +543,6 @@ function formatShortDate(iso: string) {
   } catch {
     return iso
   }
-}
-
-function formatReceiverType(t: string) {
-  const m: Record<string, string> = {
-    talent: 'Talent',
-    organiser: 'Organiser',
-    organizer: 'Organiser',
-    venue: 'Venue',
-  }
-  return m[String(t || '').toLowerCase()] || t
 }
 
 function statusBadgeClass(status: string) {

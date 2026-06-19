@@ -788,7 +788,7 @@
                 <!-- CONTACT BOX SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Contact Box + Design
+                        Contact Box + Message
                     </h3>
 
                     <div class="tw:space-y-2">
@@ -991,8 +991,11 @@
                     </h3>
 
                     <div class="tw:flex tw:gap-3">
-                        <!-- Recurring Event - create mode only -->
-                        <label class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
+                        <!-- Recurring Event — only after date/time is set -->
+                        <label
+                            v-if="hasEventScheduleSelected"
+                            class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer"
+                        >
                             <input
                                 type="checkbox"
                                 v-model="isRecurring"
@@ -1427,7 +1430,7 @@ const isRecurring = ref(false)
 const isCopyEvent = ref(false)
 // Default visibility: "No"
 const showUpcomingEvents = ref(false)
-const showPastEvents = ref(false)
+const showPastEvents = ref(true)
 const showPhotoMapMarker = ref(false)
 const showChatbox = ref(false)
 const contactBoxMessage = ref('')
@@ -1481,6 +1484,10 @@ const endTime = computed(() => {
     if (endHH.value === "" || endMM.value === "") return ""
     return `${String(endHH.value).padStart(2, "0")}:${String(endMM.value).padStart(2, "0")}`
 })
+
+const hasEventScheduleSelected = computed(
+  () => !!eventDate.value?.trim() && !!startTime.value && !!endTime.value,
+)
 
 const startTimePicker = computed({
     get() {
@@ -2841,7 +2848,7 @@ function resetForm() {
     isRecurring.value = false
     isCopyEvent.value = false
     showUpcomingEvents.value = false
-    showPastEvents.value = false
+    showPastEvents.value = true
     showPhotoMapMarker.value = false
     conditionEntranceFee.value = ''
     conditionDressCode.value = ''

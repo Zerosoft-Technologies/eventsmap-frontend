@@ -35,13 +35,23 @@ function formatDiscoveryDateDisplay(d: Date): string {
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
 }
 
-/** Logo / home reset: today from now through the next 6 hours (DD/MM/YYYY + HH:mm). */
+/** Next 06:00 boundary (rolling “night out” window resets at 06:00 each morning). */
+export function getNextMorningSixAm(now = new Date()): Date {
+  const boundary = new Date(now)
+  boundary.setHours(6, 0, 0, 0)
+  if (now.getTime() >= boundary.getTime()) {
+    boundary.setDate(boundary.getDate() + 1)
+  }
+  return boundary
+}
+
+/** Logo / home reset: from now until 06:00 the next morning (DD/MM/YYYY + HH:mm). */
 export function getHomeStartDiscoveryWindow(now = new Date()): {
   dateRange: [string, string]
   startTime: string
   endTime: string
 } {
-  const end = new Date(now.getTime() + 6 * 60 * 60 * 1000)
+  const end = getNextMorningSixAm(now)
   const pad2 = (n: number) => String(n).padStart(2, '0')
   const fmtDate = (d: Date) =>
     `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`
@@ -49,7 +59,7 @@ export function getHomeStartDiscoveryWindow(now = new Date()): {
   return {
     dateRange: [fmtDate(now), fmtDate(end)],
     startTime: fmtTime(now),
-    endTime: fmtTime(end),
+    endTime: '06:00',
   }
 }
 

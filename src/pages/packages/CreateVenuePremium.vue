@@ -706,7 +706,7 @@
 
                 <!-- CONTACT BOX + DESIGN -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box + Design</h3>
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box + Message</h3>
 
                     <div class="tw:space-y-2">
                         <span class="tw:text-sm tw:font-medium tw:text-gray-700">Show contact box on your public profile</span>
@@ -1019,7 +1019,7 @@ const instagramUrl = ref("")
 const tiktokUrl = ref("")
 
 const showUpcomingEvents = ref("")
-const showPastEvents = ref("")
+const showPastEvents = ref(true)
 const showPhotoMapMarker = ref(false)
 
 const venueFeatureFieldsTouched = ref(false)
@@ -1741,7 +1741,7 @@ function resetForm() {
     openingHoursSchedule.value = createDefaultVenueOpeningHours()
     venueFeatureFieldsTouched.value = false
     showUpcomingEvents.value = false
-    showPastEvents.value = false
+    showPastEvents.value = true
     showPhotoMapMarker.value = false
     categoryError.value = false
     subcategoryError.value = false

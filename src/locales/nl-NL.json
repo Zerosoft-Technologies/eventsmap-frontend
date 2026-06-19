@@ -14,6 +14,12 @@
     "language": "Taal",
     "link": "Link",
     "chat": "Chat",
+    "notifications": "Meldingen",
+    "invitationNotifications": "Uitnodigingsmeldingen",
+    "noPendingInvitations": "Geen openstaande uitnodigingen.",
+    "invitationPending": "U heeft een openstaande uitnodiging van {sender}, Event Publisher. Accepteer of weiger uw uitnodiging.",
+    "invitationAccept": "Accepteren",
+    "invitationDecline": "Weigeren",
     "profileType": {
       "events": "Evenementen",
       "talent": "Talent",
@@ -130,7 +136,10 @@
   "map": {
     "searchThisArea": "Zoeken",
     "centerOnLocation": "Centreer op mijn locatie",
+    "list": "Lijst",
+    "listView": "Lijstweergave",
     "showList": "Toon Lijst",
+    "hideList": "Verberg Lijst",
     "showMap": "Toon Kaart"
   },
   "errors": {

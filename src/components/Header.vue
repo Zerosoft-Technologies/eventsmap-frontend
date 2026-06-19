@@ -23,7 +23,7 @@
               <img src="../assets/maps-search.png" alt="Map Icon" />
               <input v-model="searchLocation" @keyup.enter="debouncedSearch" @input="debouncedSearch" type="text" class="tw:outline-none tw:placeholder-(--primary-color) tw:w-[15ch] tw:text-sm tw:bg-transparent" :placeholder="$t('header.location.placeholder')"> 
             </div>   
-            <div @click="getLocation" class="dropdown-input-row tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:rounded-md">
+            <div @click="getLocation({ openList: true })" class="dropdown-input-row tw:flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2.5 tw:text-sm tw:py-2.5 tw:px-4 tw:rounded-md">
               <img src="../assets/location-01.png" width="16" height="16" alt="Location Icon" />
               <p class="m-0">{{ $t('header.currentLocation') }}</p>
             </div>          
@@ -41,7 +41,20 @@
         <button class="header-btn header-date-field tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:rounded-lg" style="height: 40px;"><img src="../assets/calendar.png" alt="Calendar Icon"/><span class="tw:text-sm">
           <DatePicker :key="desktopPickerKey" @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
         </span></button>
-      </div>      
+      </div>
+      <!-- Browse-as (desktop): organisers / talents / venues — kept outside search so search stays events-only -->
+      <div v-if="!isProfilePage" class="tw:hidden tw:lg:block">
+        <select
+          class="header-profile-type-select tw:h-10 tw:rounded-lg tw:border tw:border-gray-200 tw:bg-white tw:py-2 tw:pl-3 tw:pr-8 tw:text-sm tw:font-medium tw:text-[var(--primary-color)]"
+          :aria-label="$t('header.profileType.ariaLabel')"
+          :value="discoveryProfileType"
+          @change="onDesktopProfileTypeChange"
+        >
+          <option v-for="opt in profileTypeOptions" :key="opt.value" :value="opt.value">
+            {{ opt.label }}
+          </option>
+        </select>
+      </div>
       <transition name="fade">
         <div v-if="showSuggestion" @mousedown.prevent class="suggestion-panel tw:absolute tw:left-0 tw:top-full tw:rounded-2xl tw:p-3 tw:z-10 tw:w-max tw:max-w-[min(920px,calc(100vw-2rem))]">
           <div class="tw:flex tw:items-center tw:gap-2 tw:min-w-0">
@@ -54,56 +67,7 @@
               <img src="../assets/arrow-right.png" alt="Left" class="tw:w-4 tw:h-4 tw:rotate-180" />
             </button>
 
-            <!-- Profile type (events / organisers / talents / venues) → loads matching category tree -->
-            <div
-              v-click-outside="closeProfileTypeMenu"
-              class="tw:relative tw:shrink-0 tw:z-[20]"
-            >
-              <button
-                type="button"
-                class="profile-type-trigger no-hover tw:inline-flex tw:items-center tw:gap-1.5 tw:rounded-md tw:border tw:border-gray-200 tw:bg-white tw:px-2.5 tw:py-2 tw:text-sm tw:font-medium tw:text-[var(--primary-color)] tw:shadow-sm tw:transition-colors hover:tw:border-gray-300 hover:tw:bg-gray-50"
-                :aria-expanded="showProfileTypeMenu"
-                aria-haspopup="listbox"
-                :aria-label="$t('header.profileType.ariaLabel')"
-                @click.stop="toggleProfileTypeMenu"
-              >
-                <span class="tw:truncate tw:max-w-[5.5rem] tw:md:max-w-[7.5rem]">{{ discoveryProfileLabel }}</span>
-                <ChevronDown
-                  class="tw:h-3.5 tw:w-3.5 tw:shrink-0 tw:opacity-70 tw:transition-transform"
-                  :class="showProfileTypeMenu ? 'tw:rotate-180' : ''"
-                  aria-hidden="true"
-                  :stroke-width="2"
-                />
-              </button>
-              <transition name="fade">
-                <div
-                  v-if="showProfileTypeMenu"
-                  class="profile-type-menu tw:absolute tw:left-0 tw:top-[calc(100%+6px)] tw:min-w-[11rem] tw:rounded-xl tw:border tw:border-gray-200 tw:bg-white tw:py-1 tw:shadow-lg tw:overflow-hidden tw:z-10"
-                  role="listbox"
-                  :aria-label="$t('header.profileType.menuLabel')"
-                  @click.stop
-                >
-                  <button
-                    v-for="opt in profileTypeOptions"
-                    :key="opt.value"
-                    type="button"
-                    role="option"
-                    :aria-selected="discoveryProfileType === opt.value"
-                    class="no-hover tw:flex tw:w-full tw:items-center tw:gap-2 tw:px-3 tw:py-2.5 tw:text-left tw:text-sm tw:text-gray-800 tw:transition-colors hover:tw:bg-gray-50"
-                    :class="
-                      discoveryProfileType === opt.value
-                        ? 'tw:bg-blue-50 tw:font-semibold tw:text-[var(--primary-color)]'
-                        : ''
-                    "
-                    @click="selectDiscoveryProfile(opt.value)"
-                  >
-                    {{ opt.label }}
-                  </button>
-                </div>
-              </transition>
-            </div>
-
-            <!-- Categories loading skeleton -->
+            <!-- Event categories + subcategories only (no talent/venue/organiser switcher in search) -->
             <div v-if="categoriesLoading" class="tw:flex tw:items-center tw:gap-2 tw:py-1 tw:min-w-0 tw:max-w-[min(560px,calc(100vw-16rem))] tw:overflow-hidden">
               <div v-for="i in 5" :key="i" class="tw:inline-flex tw:shrink-0 tw:animate-pulse">
                 <div class="tw:h-9 tw:bg-gray-200 tw:rounded-md" :style="{ width: `${80 + Math.random() * 40}px` }"></div>
@@ -209,17 +173,31 @@
                 :key="n.id"
                 class="tw:px-4 tw:py-3 tw:border-b tw:border-gray-50 last:tw:border-b-0 tw:text-sm notif-item"
               >
-                <p class="tw:text-gray-800 tw:mb-0.5 tw:font-medium">{{ n.message }}</p>
-                <p class="tw:text-gray-400 tw:text-xs tw:mb-2">{{ n.event_title }}</p>
-                <div class="tw:flex tw:gap-2 tw:mt-1.5">
-                  <button
-                    @click="handleInvitationResponse(n.invitation_id, 'accepted')"
-                    :disabled="respondingInvitations.has(n.invitation_id)"
-                    class="accept-btn tw:px-3 tw:py-1 tw:text-xs tw:font-semibold tw:rounded-md tw:flex tw:items-center tw:gap-1"
-                  >
-                    <Loader2 v-if="respondingInvitations.has(n.invitation_id)" class="tw:w-3 tw:h-3 tw:animate-spin" />
-                    Accept
-                  </button>
+                <div class="tw:flex tw:items-start tw:gap-2.5">
+                  <div class="tw:w-9 tw:h-9 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center tw:shrink-0">
+                    <component :is="invitationRoleIcon(n.receiver_type)" class="tw:w-4 tw:h-4 tw:text-gray-600" aria-hidden="true" />
+                  </div>
+                  <div class="tw:min-w-0 tw:flex-1">
+                    <p class="tw:text-gray-800 tw:mb-0.5 tw:font-medium">{{ formatInvitationMessage(n) }}</p>
+                    <p class="tw:text-gray-400 tw:text-xs tw:mb-2">{{ n.event_title }}</p>
+                    <div class="tw:flex tw:gap-2 tw:mt-1.5">
+                      <button
+                        @click="handleInvitationResponse(n.invitation_id, 'accepted')"
+                        :disabled="respondingInvitations.has(n.invitation_id)"
+                        class="accept-btn tw:px-3 tw:py-1 tw:text-xs tw:font-semibold tw:rounded-md tw:flex tw:items-center tw:gap-1"
+                      >
+                        <Loader2 v-if="respondingInvitations.has(n.invitation_id)" class="tw:w-3 tw:h-3 tw:animate-spin" />
+                        {{ $t('header.invitationAccept') }}
+                      </button>
+                      <button
+                        @click="handleInvitationResponse(n.invitation_id, 'rejected')"
+                        :disabled="respondingInvitations.has(n.invitation_id)"
+                        class="decline-btn tw:px-3 tw:py-1 tw:text-xs tw:font-semibold tw:rounded-md tw:flex tw:items-center tw:gap-1"
+                      >
+                        {{ $t('header.invitationDecline') }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </li>
             </ul>
@@ -265,7 +243,7 @@
       <div>
         <!-- Authenticated: user menu -->
         <div v-if="authStore.isAuthenticated" class="tw:flex tw:items-center tw:gap-2">
-          <router-link :to="userCreatePath" style="height: 40px;" class="user-name-btn no-hover tw:bg-white tw:px-3.5 tw:py-2.5 tw:rounded-md tw:flex tw:items-center tw:gap-2">
+          <router-link :to="userCreatePath" @click="onHeaderProfileNav" style="height: 40px;" class="user-name-btn no-hover tw:bg-white tw:px-3.5 tw:py-2.5 tw:rounded-md tw:flex tw:items-center tw:gap-2">
             <img
               v-if="headerUserAvatarUrl"
               :src="headerUserAvatarUrl"
@@ -311,7 +289,7 @@
         </div>
 
         <div v-if="authStore.isAuthenticated" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
-          <router-link :to="userCreatePath"><p>{{ authStore.user?.name || 'Profile' }}</p></router-link>
+          <router-link :to="userCreatePath" @click="onHeaderProfileNav"><p>{{ authStore.user?.name || 'Profile' }}</p></router-link>
         </div>
         <div v-if="authStore.isAuthenticated" @click="handleLogout" class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg tw:cursor-pointer">
           <p>{{ $t('header.logout') || 'Logout' }}</p>
@@ -470,17 +448,31 @@
               :key="n.id"
               class="tw:px-1 tw:py-3 tw:border-b tw:border-gray-50 last:tw:border-b-0 tw:text-sm notif-item"
             >
-              <p class="tw:text-gray-800 tw:mb-0.5 tw:font-medium">{{ n.message }}</p>
-              <p class="tw:text-gray-400 tw:text-xs tw:mb-2">{{ n.event_title }}</p>
-              <div class="tw:flex tw:gap-2 tw:mt-1.5">
-                <button
-                  @click="handleInvitationResponse(n.invitation_id, 'accepted')"
-                  :disabled="respondingInvitations.has(n.invitation_id)"
-                  class="accept-btn tw:px-3 tw:py-1 tw:text-xs tw:font-semibold tw:rounded-md tw:flex tw:items-center tw:gap-1"
-                >
-                  <Loader2 v-if="respondingInvitations.has(n.invitation_id)" class="tw:w-3 tw:h-3 tw:animate-spin" />
-                  Accept
-                </button>
+              <div class="tw:flex tw:items-start tw:gap-2.5">
+                <div class="tw:w-9 tw:h-9 tw:rounded-lg tw:bg-gray-100 tw:flex tw:items-center tw:justify-center tw:shrink-0">
+                  <component :is="invitationRoleIcon(n.receiver_type)" class="tw:w-4 tw:h-4 tw:text-gray-600" aria-hidden="true" />
+                </div>
+                <div class="tw:min-w-0 tw:flex-1">
+                  <p class="tw:text-gray-800 tw:mb-0.5 tw:font-medium">{{ formatInvitationMessage(n) }}</p>
+                  <p class="tw:text-gray-400 tw:text-xs tw:mb-2">{{ n.event_title }}</p>
+                  <div class="tw:flex tw:gap-2 tw:mt-1.5">
+                    <button
+                      @click="handleInvitationResponse(n.invitation_id, 'accepted')"
+                      :disabled="respondingInvitations.has(n.invitation_id)"
+                      class="accept-btn tw:px-3 tw:py-1 tw:text-xs tw:font-semibold tw:rounded-md tw:flex tw:items-center tw:gap-1"
+                    >
+                      <Loader2 v-if="respondingInvitations.has(n.invitation_id)" class="tw:w-3 tw:h-3 tw:animate-spin" />
+                      {{ $t('header.invitationAccept') }}
+                    </button>
+                    <button
+                      @click="handleInvitationResponse(n.invitation_id, 'rejected')"
+                      :disabled="respondingInvitations.has(n.invitation_id)"
+                      class="decline-btn tw:px-3 tw:py-1 tw:text-xs tw:font-semibold tw:rounded-md tw:flex tw:items-center tw:gap-1"
+                    >
+                      {{ $t('header.invitationDecline') }}
+                    </button>
+                  </div>
+                </div>
               </div>
             </li>
           </ul>
@@ -756,9 +748,10 @@
 
   <div v-if="showResults">
     <AllEvents
+      ref="allEventsRef"
       :events="viewportFilteredEvents"
       :loading="eventsLoading"
-      :profile-type="discoveryProfileType"
+      :profile-type="profileListingShowsEvents ? 'events' : discoveryProfileType"
       :selected-category="selectedCategory"
       :available-subcategories="availableSubcategories"
       :selected-subcategory-slugs="selectedSubcategorySlugs"
@@ -767,7 +760,7 @@
       :venue-open-time="venueOpenTime"
       :venue-close-time="venueCloseTime"
       @closeResults="handleClose"
-      @resetSearch="handleReset"
+      @resetSearch="clearListFilters"
       @viewEvent="handleViewEvent"
       @viewProfile="handleViewProfile"
       @toggleSubcategory="toggleSubcategory"
@@ -804,7 +797,7 @@
 <!-- ─────────── All script blocks unchanged ─────────── -->
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { ref, onMounted, onBeforeUnmount, computed, defineAsyncComponent, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, defineAsyncComponent, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DatePicker from "./DatePicker.vue";
 import LocationPermissionPrompt from './LocationPermissionPrompt.vue';
@@ -818,7 +811,8 @@ import { useChatStore } from '@/stores/chatStore';
 import { getCreateRoute } from '@/utils/routeResolver';
 import { getUserProfileImageUrl } from '@/utils/userProfileImage';
 import { Bell, Images, Loader2, ChevronDown, MessageSquareText } from 'lucide-vue-next';
-import { chatService } from '@/services/chatService';
+import { respondToInvitation } from '@/services/invitationService';
+import { invitationRoleMeta } from '@/utils/invitationRoleMeta';
 import {
   MAP_OPEN_EVENT_DETAIL,
   MAP_OPEN_PROFILE_DETAIL,
@@ -827,10 +821,10 @@ import {
   MAP_RESET_HOME,
 } from '@/utils/mapPopupBridge'
 import { filterItemsByMapViewport } from '@/utils/mapViewportFilter'
+import { filterActiveDiscoveryEvents } from '@/utils/eventSchedule'
 import {
   appendDiscoveryDateTimeFilters,
   formatDiscoveryDateToApi,
-  getDefaultDiscoveryDateRange,
   getHomeStartDiscoveryWindow,
   parseStoredSessionFilter,
 } from '@/utils/discoveryDateTimeFilters'
@@ -926,7 +920,7 @@ function toggleChatPanelMobile() {
   closeMobileHeader()
 }
 
-function useCurrentLocationFromMobile() { getLocation() }
+function useCurrentLocationFromMobile() { getLocation({ openList: true }) }
 
 function handleMobileLanguageSelect(langCode) {
   switchLanguage(langCode)
@@ -948,7 +942,30 @@ function handleMobileSessionUpdate(newSession) {
 async function handleMobileEmailClick() {
   if (!authStore.isAuthenticated) return
   closeMobileHeader()
+  closeHomePanelsForNav()
   await router.push(userCreatePath.value)
+}
+
+function formatInvitationMessage(n) {
+  const sender = n?.sender_name || 'Someone'
+  if (n?.message?.includes('Please log in')) {
+    return t('header.invitationPending', { sender })
+  }
+  return n?.message || t('header.invitationPending', { sender })
+}
+
+function closeHomePanelsForNav() {
+  if (route.name !== 'Home') return
+  showResults.value = false
+  showEventDetailsPanel.value = false
+  showProfileDetailsPanel.value = false
+  selectedEvent.value = null
+  selectedProfile.value = null
+  homeListingDockLayout.value = 'hidden'
+}
+
+function onHeaderProfileNav() {
+  closeHomePanelsForNav()
 }
 
 function handleMobileDateRangeUpdate(newRange) {
@@ -970,13 +987,20 @@ async function handleInvitationResponse(invitationId, status) {
   if (respondingInvitations.value.has(invitationId)) return
   respondingInvitations.value.add(invitationId)
   try {
-    await chatService.respondToInvitation(String(invitationId), { status })
+    const res = await respondToInvitation(Number(invitationId), { status })
+    if (!res.success) {
+      alert(res.message || 'Failed to respond. Please try again.')
+    }
   } catch (err) {
     console.error('Failed to respond to invitation:', err)
     alert(err?.response?.data?.message || 'Failed to respond. Please try again.')
   } finally {
     respondingInvitations.value.delete(invitationId)
   }
+}
+
+function invitationRoleIcon(receiverType) {
+  return invitationRoleMeta(receiverType).icon
 }
 
 const showLanguageDropdown = ref(false)
@@ -998,6 +1022,10 @@ const isCalendarOpen = computed(() => isMobileMenuOpen.value && activeField.valu
 watch(isMobileMenuOpen, (val) => { document.body.style.overflow = val ? 'hidden' : '' })
 
 const showResults = ref(false)
+const allEventsRef = ref(null)
+/** Suppress list auto-open during cold start / logo reset; enabled after mount. */
+let suppressListingOpenUntil = 0
+const listingUserActionsReady = ref(false)
 const searchInput = ref(null)
 const route = useRoute()
 const city = ref("")
@@ -1039,14 +1067,19 @@ function selectDiscoveryProfile(type) {
     return
   }
   discoveryProfileType.value = type
+  profileListingShowsEvents.value = false
   selectedCategory.value = null
   selectedSubcategorySlugs.value = []
   venueOpenTime.value = null
   venueCloseTime.value = null
   closeProfileTypeMenu()
   loadCategories()
-  showResults.value = true
-  void loadListingFromApi(searchTerm.value.trim())
+  void loadListingFromApi(searchTerm.value.trim(), { openList: true })
+}
+
+function onDesktopProfileTypeChange(e) {
+  const v = e.target && 'value' in e.target ? e.target.value : null
+  if (v) selectDiscoveryProfile(v)
 }
 
 function onMobileProfileTypeChange(e) {
@@ -1062,8 +1095,9 @@ const DISCOVERY_TO_CATEGORY_SCOPE = {
   venues: 'venue',
 }
 const selectedSubcategorySlugs = ref([])
-const startTime = ref(null)
-const endTime = ref(null)
+const _homeDiscoveryDefaults = getHomeStartDiscoveryWindow()
+const startTime = ref(_homeDiscoveryDefaults.startTime)
+const endTime = ref(_homeDiscoveryDefaults.endTime)
 const venueOpenTime = ref(null)
 const venueCloseTime = ref(null)
 const categoriesScrollEl = ref(null)
@@ -1081,7 +1115,7 @@ let catDragStartX = 0
 let catDragStartScrollLeft = 0
 /** Scroll container receiving drag (desktop or mobile category row) */
 let catDragScrollEl = null
-const dateRange = ref(getDefaultDiscoveryDateRange())
+const dateRange = ref([..._homeDiscoveryDefaults.dateRange])
 const sessionFilter = ref({ morning: false, afternoon: false, evening: false, night: false })
 
 function onSessionFilterUpdate(next) {
@@ -1145,7 +1179,7 @@ function handleSuggestionBlur() {
   setTimeout(() => { showSuggestion.value = false }, 150)
 }
 
-/** Opens category strip; also runs on click so it works when input stays focused after picking a category (mousedown.prevent on the panel avoids blur). */
+/** Opens category strip when the search field is focused or clicked. */
 function openSearchSuggestions() {
   showSuggestion.value = true
   searchInput.value?.focus()
@@ -1203,13 +1237,13 @@ function selectCategory(category) {
   selectedCategory.value = category
   selectedSubcategorySlugs.value = []
   showSuggestion.value = false
-  showResults.value = true
+  void loadListingFromApi(searchTerm.value.trim(), { openList: true })
 }
 
 function clearCategoryFilter() {
   selectedCategory.value = null
   selectedSubcategorySlugs.value = []
-  showResults.value = true
+  void loadListingFromApi(searchTerm.value.trim(), { openList: true })
 }
 
 function selectCategoryFromMobileMenu(category) {
@@ -1226,22 +1260,24 @@ function toggleSubcategory(slug) {
   const arr = selectedSubcategorySlugs.value
   const i = arr.indexOf(slug)
   selectedSubcategorySlugs.value = i >= 0 ? arr.filter(s => s !== slug) : [...arr, slug]
-  showResults.value = true
 }
 
 function clearSubcategories() {
   selectedSubcategorySlugs.value = []
-  showResults.value = true
 }
 
 onMounted(() => {
+  suppressListingAutoOpen(1200)
   const storedSession = parseStoredSessionFilter(localStorage.getItem('datepicker-session'))
   if (storedSession) sessionFilter.value = storedSession
-  getLocation()
+  getLocation({ openList: false })
   loadCategories()
   if (route.name === 'Home') {
-    void loadListingFromApi(searchTerm.value.trim())
+    void loadListingFromApi(searchTerm.value.trim(), { openList: false })
   }
+  nextTick(() => {
+    listingUserActionsReady.value = true
+  })
   window.addEventListener('keydown', handleMobileMenuKeydown)
   window.addEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetailFromHome)
   window.addEventListener(MAP_OPEN_PROFILE_DETAIL, onMapOpenProfileDetailFromHome)
@@ -1269,15 +1305,33 @@ onBeforeUnmount(() => {
   document.body.style.overflow = ''
 })
 
+function suppressListingAutoOpen(ms = 800) {
+  suppressListingOpenUntil = Date.now() + ms
+}
+
+function shouldAutoOpenListing() {
+  return listingUserActionsReady.value && Date.now() >= suppressListingOpenUntil
+}
+
+function openListingPanelForSearchAction() {
+  if (!shouldAutoOpenListing()) return
+  openListingPanel()
+}
+
+function openListingPanel() {
+  showResults.value = true
+  nextTick(() => {
+    allEventsRef.value?.expand?.()
+  })
+}
+
 function filterBy(action) {
   if (action == 'search') {
-    loadListingFromApi(searchTerm.value.trim())
-    showResults.value = true
-    searchInput.value.blur()
+    void loadListingFromApi(searchTerm.value.trim(), { openList: true })
+    searchInput.value?.blur()
     mapStore.setAppliedLocation({ lat: selectedLocation.value.lat, lng: selectedLocation.value.lng, name: selectedLocation.value.name })
   } else {
-    loadListingFromApi()
-    showResults.value = true
+    void loadListingFromApi('', { openList: true })
   }
 }
 
@@ -1302,6 +1356,7 @@ function goToHomeMap() {
 }
 
 function handleReset() {
+  suppressListingAutoOpen(1200)
   showResults.value = false
   showSuggestion.value = false
   showLocation.value = false
@@ -1327,23 +1382,15 @@ function handleReset() {
   city.value = 'Amsterdam'
   selectedCategory.value = null
   selectedSubcategorySlugs.value = []
-  venueOpenTime.value = null
-  venueCloseTime.value = null
-  selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: 'Amsterdam' }
-  mapStore.setAppliedLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
   mapStore.setMapViewportBounds(null)
 
   sessionFilter.value = { morning: false, afternoon: false, evening: false, night: false }
   localStorage.removeItem('datepicker-session')
 
-  const homeWindow = getHomeStartDiscoveryWindow()
-  dateRange.value = [...homeWindow.dateRange]
-  startTime.value = homeWindow.startTime
-  endTime.value = homeWindow.endTime
-  desktopPickerKey.value++
-  mobilePickerKey.value++
+  resetDiscoveryDateTimeFilters()
 
   discoveryProfileType.value = 'events'
+  profileListingShowsEvents.value = false
   closeProfileTypeMenu()
 
   events.value = []
@@ -1352,10 +1399,36 @@ function handleReset() {
   window.dispatchEvent(new CustomEvent(MAP_RESET_HOME))
 
   void loadCategories()
-  void loadListingFromApi('')
+  void loadListingFromApi('', { openList: false })
+  void getLocation({ openList: false })
 }
 
-async function getLocation() {
+/** Reset date range, clock window (list + header), session pills, and venue hours to home defaults. */
+function resetDiscoveryDateTimeFilters() {
+  const homeWindow = getHomeStartDiscoveryWindow()
+  dateRange.value = [...homeWindow.dateRange]
+  startTime.value = homeWindow.startTime
+  endTime.value = homeWindow.endTime
+  venueOpenTime.value = null
+  venueCloseTime.value = null
+  tempSessionFilter.value = { morning: false, afternoon: false, evening: false, night: false }
+  desktopPickerKey.value++
+  mobilePickerKey.value++
+}
+
+/** Clear list filters and restore discovery date/time window (keeps location & browse mode). */
+function clearListFilters() {
+  searchTerm.value = ''
+  selectedCategory.value = null
+  selectedSubcategorySlugs.value = []
+  profileListingShowsEvents.value = false
+  sessionFilter.value = { morning: false, afternoon: false, evening: false, night: false }
+  localStorage.removeItem('datepicker-session')
+  resetDiscoveryDateTimeFilters()
+  void loadListingFromApi('', { openList: true })
+}
+
+async function getLocation(options = { openList: false }) {
   const location = await getCurrentLocation()
   if (location) {
     try {
@@ -1381,18 +1454,24 @@ async function getLocation() {
       lng: selectedLocation.value.lng,
       name: selectedLocation.value.name,
     })
-    void loadListingFromApi(searchTerm.value.trim())
+    void loadListingFromApi(searchTerm.value.trim(), { openList: options.openList })
   }
   if (isMobileMenuOpen.value) closeMobileHeader()
 }
 
 const events = ref([])
 const eventsLoading = ref(false)
+/** When browsing organiser subcategories, list/map show that organiser's upcoming events. */
+const profileListingShowsEvents = ref(false)
 
 /** List view mirrors map viewport — map leads, counts stay in sync when panning/zooming. */
 const viewportFilteredEvents = computed(() => {
-  if (route.name !== 'Home') return events.value
-  return filterItemsByMapViewport(events.value, mapStore.mapViewportBounds)
+  let rows = events.value
+  if (discoveryProfileType.value === 'events' || profileListingShowsEvents.value) {
+    rows = filterActiveDiscoveryEvents(rows)
+  }
+  if (route.name !== 'Home') return rows
+  return filterItemsByMapViewport(rows, mapStore.mapViewportBounds)
 })
 
 function formatDateToApi(dateStr) {
@@ -1408,11 +1487,10 @@ function debounce(fn, delay = 450) {
 }
 
 const debouncedFilterEvents = debounce(() => {
-  loadListingFromApi(searchTerm.value.trim())
-  showResults.value = true
+  void loadListingFromApi(searchTerm.value.trim(), { openList: true })
 }, 300)
 
-async function loadListingFromApi(searchQuery = '') {
+async function loadListingFromApi(searchQuery = '', options = { openList: false }) {
   eventsLoading.value = true
   try {
     const profileType = discoveryProfileType.value
@@ -1428,6 +1506,9 @@ async function loadListingFromApi(searchQuery = '') {
     mapStore.clearMapProfiles()
   } finally {
     eventsLoading.value = false
+    if (options.openList) {
+      openListingPanelForSearchAction()
+    }
   }
 }
 
@@ -1445,7 +1526,7 @@ async function loadEventsFromApi(searchQuery = '') {
     formatDate: formatDateToApi,
   })
   const result = await fetchEvents(params)
-  const rows = Array.isArray(result.data) ? result.data : []
+  const rows = filterActiveDiscoveryEvents(Array.isArray(result.data) ? result.data : [])
   events.value = rows
   mapStore.setMapEvents(rows)
   mapStore.clearMapProfiles()
@@ -1461,13 +1542,37 @@ async function loadProfilesFromApi(profileType, searchQuery = '') {
   params.lat = selectedLocation.value.lat
   params.lng = selectedLocation.value.lng
   params.radius = 100
-  appendDiscoveryDateTimeFilters(params, {
-    dateRange: dateRange.value,
-    sessionFilter: sessionFilter.value,
-    formatDate: formatDateToApi,
-  })
+  const skipDateWindow = profileType === 'talents' || profileType === 'organisers'
+  if (!skipDateWindow) {
+    appendDiscoveryDateTimeFilters(params, {
+      dateRange: dateRange.value,
+      sessionFilter: sessionFilter.value,
+      formatDate: formatDateToApi,
+    })
+  }
   const result = await fetchProfiles(profileType, params)
   let rows = result.data
+
+  if (profileType === 'organisers' && selectedSubcategorySlugs.value.length > 0) {
+    const organiserEvents = []
+    const seen = new Set()
+    for (const org of rows) {
+      for (const ev of org.upcoming_events || []) {
+        if (ev?.id != null && !seen.has(ev.id)) {
+          seen.add(ev.id)
+          organiserEvents.push(ev)
+        }
+      }
+    }
+    const activeEvents = filterActiveDiscoveryEvents(organiserEvents)
+    profileListingShowsEvents.value = true
+    events.value = activeEvents
+    mapStore.setMapEvents(activeEvents)
+    mapStore.clearMapProfiles()
+    return
+  }
+
+  profileListingShowsEvents.value = false
   if (
     profileType === 'venues' &&
     (venueOpenTime.value?.trim() || venueCloseTime.value?.trim())
@@ -1490,8 +1595,7 @@ async function loadProfilesFromApi(profileType, searchQuery = '') {
 }
 
 const debouncedReloadEvents = debounce(() => {
-  loadListingFromApi(searchTerm.value.trim())
-  showResults.value = true
+  void loadListingFromApi(searchTerm.value.trim(), { openList: true })
 }, 500)
 
 watch(dateRange, () => { debouncedReloadEvents() }, { deep: true })
@@ -1517,8 +1621,7 @@ const selectCity = (place) => {
   searchResults.value = []
   selectedLocation.value = { lat, lng, name }
   mapStore.setAppliedLocation({ lat, lng, name })
-  void loadListingFromApi(searchTerm.value.trim())
-  showResults.value = true
+  void loadListingFromApi(searchTerm.value.trim(), { openList: true })
   if (isMobileMenuOpen.value) closeMobileHeader()
 }
 
@@ -1904,6 +2007,18 @@ export default {
   box-shadow: 0 3px 8px rgba(22,163,74,0.30);
 }
 .accept-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.decline-btn {
+  background: #fff;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.decline-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+.decline-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ─── Language dropdown ─── */
 .lang-dropdown {

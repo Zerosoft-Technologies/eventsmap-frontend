@@ -14,6 +14,12 @@
     "language": "Langue",
     "link": "Lien",
     "chat": "Chat",
+    "notifications": "Notifications",
+    "invitationNotifications": "Notifications d'invitation",
+    "noPendingInvitations": "Aucune invitation en attente.",
+    "invitationPending": "Vous avez une invitation en attente de {sender}, éditeur d'événement. Veuillez accepter ou refuser votre invitation.",
+    "invitationAccept": "Accepter",
+    "invitationDecline": "Refuser",
     "profileType": {
       "events": "Événements",
       "talent": "Talents",
@@ -130,7 +136,10 @@
   "map": {
     "searchThisArea": "Rechercher",
     "centerOnLocation": "Centrer sur ma position",
+    "list": "Liste",
+    "listView": "Vue liste",
     "showList": "Afficher la Liste",
+    "hideList": "Masquer la Liste",
     "showMap": "Afficher la Carte"
   },
   "errors": {

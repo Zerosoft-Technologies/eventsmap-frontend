@@ -34,7 +34,13 @@ import {
   dedupeMapItemsById,
   createPhotoMapMarkerElement,
 } from '@/utils/mapMarkerImage'
+import { filterItemsByMapViewport } from '@/utils/mapViewportFilter'
+import { filterActiveDiscoveryEvents } from '@/utils/eventSchedule'
+import { circlePolygonFeature } from '@/utils/mapCircleGeo'
 import i18n from '../i18n'
+
+/** Default talent address region radius on the discovery map (km). */
+const TALENT_REGION_RADIUS_KM = 5
 
 /** City / neighbourhood zoom (~1 km visible area at equator). */
 const MAP_CITY_ZOOM = 13
@@ -61,6 +67,77 @@ const style = {
   layers: [{ id: 'osm-layer', type: 'raster', source: 'osm' }],
 }
 
+function getMapVisibleEvents() {
+  const all = dedupeMapItemsById(mapStore.mapEventItems)
+  const active = filterActiveDiscoveryEvents(all)
+  return filterItemsByMapViewport(active, mapStore.mapViewportBounds)
+}
+
+function getMapVisibleProfiles() {
+  const all = dedupeMapItemsById(mapStore.mapProfileItems)
+  return filterItemsByMapViewport(all, mapStore.mapViewportBounds)
+}
+
+function syncTalentRegionCircles() {
+  if (!map?.loaded()) return
+  const sourceId = 'talent-regions'
+  const fillLayerId = 'talent-regions-fill'
+  const lineLayerId = 'talent-regions-line'
+
+  const talents = getMapVisibleProfiles().filter((p) => {
+    const type = p.profileType ?? p.profile_type
+    return type === 'talents' || type === 'talent'
+  })
+
+  const features = talents
+    .map((p) => {
+      const ll = pickProfileLatLng(p)
+      if (!ll) return null
+      return circlePolygonFeature(ll.latitude, ll.longitude, TALENT_REGION_RADIUS_KM, {
+        id: String(p.id ?? ''),
+      })
+    })
+    .filter(Boolean)
+
+  const data = { type: 'FeatureCollection', features }
+
+  if (map.getSource(sourceId)) {
+    map.getSource(sourceId).setData(data)
+    return
+  }
+
+  map.addSource(sourceId, { type: 'geojson', data })
+  map.addLayer({
+    id: fillLayerId,
+    type: 'fill',
+    source: sourceId,
+    paint: {
+      'fill-color': '#FF7700',
+      'fill-opacity': 0.12,
+    },
+  })
+  map.addLayer({
+    id: lineLayerId,
+    type: 'line',
+    source: sourceId,
+    paint: {
+      'line-color': '#FF7700',
+      'line-width': 2,
+      'line-opacity': 0.45,
+    },
+  })
+}
+
+function clearTalentRegionCircles() {
+  if (!map?.loaded()) return
+  const sourceId = 'talent-regions'
+  const fillLayerId = 'talent-regions-fill'
+  const lineLayerId = 'talent-regions-line'
+  if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId)
+  if (map.getLayer(fillLayerId)) map.removeLayer(fillLayerId)
+  if (map.getSource(sourceId)) map.removeSource(sourceId)
+}
+
 function eventLngLat(ev) {
   const lat = ev.lat ?? ev.latitude
   const lng = ev.lng ?? ev.longitude
@@ -73,11 +150,11 @@ function eventLngLat(ev) {
 
 function collectMapPoints() {
   const points = []
-  for (const ev of mapStore.mapEventItems) {
+  for (const ev of getMapVisibleEvents()) {
     const ll = eventLngLat(ev)
     if (ll) points.push(ll)
   }
-  for (const p of mapStore.mapProfileItems) {
+  for (const p of getMapVisibleProfiles()) {
     const ll = pickProfileLatLng(p)
     if (ll) points.push({ lat: ll.latitude, lng: ll.longitude })
   }
@@ -456,7 +533,7 @@ function syncEventMarkers() {
   eventMarkerSyncRunning = true
 
   try {
-    const events = dedupeMapItemsById(mapStore.mapEventItems)
+    const events = getMapVisibleEvents()
     const points = events
       .map((ev) => {
         const ll = eventLngLat(ev)
@@ -541,6 +618,7 @@ function syncEventMarkers() {
 function clearProfileMarkers() {
   for (const { marker } of profileMarkerPool.values()) marker.remove()
   profileMarkerPool.clear()
+  clearTalentRegionCircles()
 }
 
 function syncProfileMarkers() {
@@ -552,7 +630,7 @@ function syncProfileMarkers() {
   profileMarkerSyncRunning = true
 
   try {
-    const profiles = dedupeMapItemsById(mapStore.mapProfileItems)
+    const profiles = getMapVisibleProfiles()
     const points = profiles
       .map((p) => {
         const ll = pickProfileLatLng(p)
@@ -628,6 +706,8 @@ function syncProfileMarkers() {
       wireMapMarker(marker, el, lng, lat)
       profileMarkerPool.set(key, { marker, el })
     }
+
+    syncTalentRegionCircles()
   } finally {
     profileMarkerSyncRunning = false
     if (profileMarkerSyncQueued) {
@@ -775,6 +855,16 @@ watch(
 watch(
   () => mapStore.mapProfileItems,
   () => refreshMapFromStore(),
+  { deep: true },
+)
+
+watch(
+  () => mapStore.mapViewportBounds,
+  () => {
+    if (!map?.loaded()) return
+    syncEventMarkers()
+    syncProfileMarkers()
+  },
   { deep: true },
 )
 </script>

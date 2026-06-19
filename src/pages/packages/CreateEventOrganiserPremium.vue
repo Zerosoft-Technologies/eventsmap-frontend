@@ -575,8 +575,15 @@
                     <input v-model="contactEmail" type="email" placeholder="Email"
                         class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
 
-                    <input v-model="contactWebsite" type="text" placeholder="Website"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-orange-500 focus:tw:border-transparent tw:transition-all" />
+                    <input
+                        v-model="contactWebsite"
+                        type="text"
+                        placeholder="Website"
+                        data-field="contact_website"
+                        @input="clearApiFieldError('contact_website')"
+                        :class="urlInputClass('contact_website')"
+                    />
+                    <p v-if="apiFieldError('contact_website')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('contact_website') }}</p>
 
                     <!-- SHOW CHATBOX TOGGLE -->
                     <!-- <div class="tw:flex tw:justify-between tw:items-center tw:pt-2">
@@ -599,7 +606,7 @@
 
                 <!-- CONTACT BOX + DESIGN -->
                 <div class="tw:bg-white tw:rounded-2xl tw:shadow-sm tw:p-6 tw:space-y-4">
-                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box + Design</h3>
+                    <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">Contact Box + Message</h3>
 
                     <div class="tw:space-y-2">
                         <span class="tw:text-sm tw:font-medium tw:text-gray-700">Show contact box on your public profile</span>
@@ -628,14 +635,35 @@
                         Social Media Links
                     </h3>
 
-                    <input v-model="facebookUrl" type="text" placeholder="Facebook URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <input
+                        v-model="facebookUrl"
+                        type="text"
+                        placeholder="Facebook URL"
+                        data-field="facebook_url"
+                        @input="clearApiFieldError('facebook_url')"
+                        :class="urlInputClass('facebook_url')"
+                    />
+                    <p v-if="apiFieldError('facebook_url')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('facebook_url') }}</p>
 
-                    <input v-model="instagramUrl" type="text" placeholder="Instagram URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <input
+                        v-model="instagramUrl"
+                        type="text"
+                        placeholder="Instagram URL"
+                        data-field="instagram_url"
+                        @input="clearApiFieldError('instagram_url')"
+                        :class="urlInputClass('instagram_url')"
+                    />
+                    <p v-if="apiFieldError('instagram_url')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('instagram_url') }}</p>
 
-                    <input v-model="tiktokUrl" type="text" placeholder="Tik Tok URL"
-                        class="tw:w-full tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all" />
+                    <input
+                        v-model="tiktokUrl"
+                        type="text"
+                        placeholder="Tik Tok URL"
+                        data-field="tiktok_url"
+                        @input="clearApiFieldError('tiktok_url')"
+                        :class="urlInputClass('tiktok_url')"
+                    />
+                    <p v-if="apiFieldError('tiktok_url')" class="tw:text-red-500 tw:text-sm">{{ apiFieldError('tiktok_url') }}</p>
                 </div>
 
                 <!-- Organiser CONDITIONS SECTION -->
@@ -873,6 +901,7 @@ import { useAuthStore } from "@/stores/auth"
 import { useChatStore } from "@/stores/chatStore"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
+import { normalizeHref } from "@/utils/socialMediaUrls"
 
 import flatpickr from "flatpickr"
 import "flatpickr/dist/flatpickr.css"
@@ -926,7 +955,7 @@ const showContactBox = ref(false)
 const isRecurring = ref(false)
 const isCopyEvent = ref(false)
 const showUpcomingEvents = ref("")
-const showPastEvents = ref("")
+const showPastEvents = ref(true)
 const showPhotoMapMarker = ref(false)
 const showChatbox = ref(false)
 
@@ -1110,6 +1139,33 @@ const imagePreviewUrl = ref(null)
 const pendingFileMap = ref({})
 // const clearAllImages = ref(false)
 const fieldErrors = ref({})
+
+function apiFieldError(key) {
+    const err = fieldErrors.value[key]
+    if (Array.isArray(err)) return err[0] || ''
+    if (typeof err === 'string') return err
+    return ''
+}
+
+function clearApiFieldError(key) {
+    if (!fieldErrors.value[key]) return
+    const next = { ...fieldErrors.value }
+    delete next[key]
+    fieldErrors.value = next
+}
+
+const URL_INPUT_BASE =
+    'tw:w-full tw:bg-white tw:border tw:rounded-xl tw:px-4 tw:py-3 tw:text-gray-900 placeholder:tw:text-gray-400 focus:tw:outline-none focus:tw:ring-2 focus:tw:ring-blue-500 focus:tw:border-transparent tw:transition-all'
+
+function urlInputClass(key) {
+    return [URL_INPUT_BASE, apiFieldError(key) ? 'tw:border-red-500' : 'tw:border-gray-200']
+}
+
+function normalizeOptionalUrl(raw) {
+    const trimmed = raw?.trim()
+    if (!trimmed) return undefined
+    return normalizeHref(trimmed)
+}
 
 // Media picker state
 const showMediaModal = ref(false)
@@ -1337,14 +1393,14 @@ function buildFormData() {
     // Contact
     if (contactPhone.value) fd.append('contact_phone', contactPhone.value)
     if (contactEmail.value) fd.append('contact_email', contactEmail.value)
-    if (contactWebsite.value) fd.append('contact_website', contactWebsite.value)
+    if (contactWebsite.value) fd.append('contact_website', normalizeOptionalUrl(contactWebsite.value) ?? contactWebsite.value)
     fd.append('show_contact_box', showContactBox.value ? '1' : '0')
     fd.append('contact_box_design_message', showContactBox.value ? (contactBoxDesignMessage.value ?? '') : '')
 
     // Social
-    if (facebookUrl.value) fd.append('facebook_url', facebookUrl.value)
-    if (instagramUrl.value) fd.append('instagram_url', instagramUrl.value)
-    if (tiktokUrl.value) fd.append('tiktok_url', tiktokUrl.value)
+    if (facebookUrl.value) fd.append('facebook_url', normalizeOptionalUrl(facebookUrl.value) ?? facebookUrl.value)
+    if (instagramUrl.value) fd.append('instagram_url', normalizeOptionalUrl(instagramUrl.value) ?? instagramUrl.value)
+    if (tiktokUrl.value) fd.append('tiktok_url', normalizeOptionalUrl(tiktokUrl.value) ?? tiktokUrl.value)
 
     // Visibility
     fd.append('show_upcoming_events', showUpcomingEvents.value ? '1' : '0')
@@ -1577,7 +1633,7 @@ function resetForm() {
     instagramUrl.value = ''
     tiktokUrl.value = ''
     showUpcomingEvents.value = false
-    showPastEvents.value = false
+    showPastEvents.value = true
     showPhotoMapMarker.value = false
     imagePreviewUrl.value = null
     additionalImages.value = []
