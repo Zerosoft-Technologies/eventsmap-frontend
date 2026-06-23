@@ -8,6 +8,8 @@
       :auto-apply="false" 
       :inline="inline"
       :no-input="noInput"
+      :shortcuts="discoveryShortcuts"
+      :disable-date="isPastDiscoveryCalendarDate"
       @update:model-value="onDateUpdate"
       @update:session-value="onSessionUpdate"
     >
@@ -21,7 +23,13 @@
 <script setup>
 import { ref, defineEmits, onMounted, defineProps } from "vue";
 import VueTailwindDatepicker from "vue-tailwind-datepicker";
-import { getDefaultDiscoveryDateRange } from "@/utils/discoveryDateTimeFilters";
+import {
+  getDefaultDiscoveryDateRange,
+  createDiscoveryUpcomingShortcuts,
+  isPastDiscoveryCalendarDate,
+} from "@/utils/discoveryDateTimeFilters";
+
+const discoveryShortcuts = createDiscoveryUpcomingShortcuts();
 
 const props = defineProps({
   // When used inside the mobile overlay dropdown we want the calendar

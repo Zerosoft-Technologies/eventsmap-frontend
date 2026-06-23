@@ -28,6 +28,7 @@ import {
   discoveryCoverImageUrl,
   shouldUsePhotoMapMarker,
   profileMarkerPoolKey,
+  profileClusterPoolKey,
   eventMarkerPoolKey,
   eventMarkerVariant,
   profileMarkerVariant,
@@ -73,13 +74,39 @@ function getMapVisibleEvents() {
   return filterItemsByMapViewport(active, mapStore.mapViewportBounds)
 }
 
+function normalizeMapProfileType(profileType) {
+  if (!profileType) return null
+  const pt = String(profileType).toLowerCase()
+  if (pt === 'talent' || pt === 'talents') return 'talents'
+  if (pt === 'organizer' || pt === 'organiser' || pt === 'organisers') return 'organisers'
+  if (pt === 'venue' || pt === 'venues') return 'venues'
+  return pt
+}
+
 function getMapVisibleProfiles() {
   const all = dedupeMapItemsById(mapStore.mapProfileItems)
-  return filterItemsByMapViewport(all, mapStore.mapViewportBounds)
+  const activeType = mapStore.mapProfileType
+  const filtered = activeType
+    ? all.filter((p) => normalizeMapProfileType(p.profileType ?? p.profile_type) === activeType)
+    : all
+  return filterItemsByMapViewport(filtered, mapStore.mapViewportBounds)
+}
+
+function syncActiveMapMarkers() {
+  if (!map?.loaded()) return
+  if (mapStore.mapMarkerMode === 'events') {
+    syncEventMarkers()
+    return
+  }
+  syncProfileMarkers()
 }
 
 function syncTalentRegionCircles() {
   if (!map?.loaded()) return
+  if (mapStore.mapMarkerMode !== 'profiles' || mapStore.mapProfileType !== 'talents') {
+    clearTalentRegionCircles()
+    return
+  }
   const sourceId = 'talent-regions'
   const fillLayerId = 'talent-regions-fill'
   const lineLayerId = 'talent-regions-line'
@@ -150,9 +177,12 @@ function eventLngLat(ev) {
 
 function collectMapPoints() {
   const points = []
-  for (const ev of getMapVisibleEvents()) {
-    const ll = eventLngLat(ev)
-    if (ll) points.push(ll)
+  if (mapStore.mapMarkerMode === 'events') {
+    for (const ev of getMapVisibleEvents()) {
+      const ll = eventLngLat(ev)
+      if (ll) points.push(ll)
+    }
+    return points
   }
   for (const p of getMapVisibleProfiles()) {
     const ll = pickProfileLatLng(p)
@@ -245,7 +275,7 @@ const PROFILE_MARKER_ICON_D = {
 }
 
 function createProfileMarkerEl(profile) {
-  const profileType = profile.profileType
+  const profileType = normalizeMapProfileType(profile.profileType ?? profile.profile_type) ?? profile.profileType
   const color = PROFILE_MARKER_COLORS[profileType] ?? '#6b7280'
   const d = PROFILE_MARKER_ICON_D[profileType] ?? PROFILE_MARKER_ICON_D.venues
   const imageUrl = discoveryCoverImageUrl(profile)
@@ -416,9 +446,10 @@ function removeEventMarkersForId(eventId, keepKey = null) {
   }
 }
 
-function removeProfileMarkersForId(profileId, keepKey = null) {
+function removeProfileMarkersForId(profileId, profileType, keepKey = null) {
   const id = Number(profileId)
-  const prefix = `p-${id}`
+  const type = normalizeMapProfileType(profileType) ?? 'profile'
+  const prefix = `p-${type}-${id}`
   for (const [key, entry] of [...profileMarkerPool.entries()]) {
     if (keepKey && key === keepKey) continue
     if (key === prefix || key.startsWith(`${prefix}-`)) {
@@ -631,6 +662,7 @@ function syncProfileMarkers() {
 
   try {
     const profiles = getMapVisibleProfiles()
+    const activeProfileType = mapStore.mapProfileType
     const points = profiles
       .map((p) => {
         const ll = pickProfileLatLng(p)
@@ -649,9 +681,10 @@ function syncProfileMarkers() {
     const nextKeys = new Set()
     for (const cluster of clusters) {
       if (cluster.profiles.length === 1) {
-        nextKeys.add(profileMarkerPoolKey(cluster.profiles[0].id))
+        const p = cluster.profiles[0]
+        nextKeys.add(profileMarkerPoolKey(p.id, p.profileType ?? activeProfileType))
       } else {
-        nextKeys.add(`c-${cluster.key}`)
+        nextKeys.add(profileClusterPoolKey(cluster.key, activeProfileType))
       }
     }
 
@@ -667,7 +700,8 @@ function syncProfileMarkers() {
 
       if (cluster.profiles.length === 1) {
         const p = cluster.profiles[0]
-        const key = profileMarkerPoolKey(p.id)
+        const pt = p.profileType ?? activeProfileType
+        const key = profileMarkerPoolKey(p.id, pt)
         const variant = profileMarkerVariant(p)
         const existing = profileMarkerPool.get(key)
 
@@ -677,10 +711,10 @@ function syncProfileMarkers() {
           existing.marker.remove()
           profileMarkerPool.delete(key)
         }
-        removeProfileMarkersForId(p.id, key)
+        removeProfileMarkersForId(p.id, pt, key)
 
-        const el = createProfileMarkerEl(p)
-        const popup = mountSingleProfilePopup(p)
+        const el = createProfileMarkerEl({ ...p, profileType: pt })
+        const popup = mountSingleProfilePopup({ ...p, profileType: pt })
 
         const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
           .setLngLat([lng, lat])
@@ -692,8 +726,12 @@ function syncProfileMarkers() {
         continue
       }
 
-      const key = `c-${cluster.key}`
-      if (profileMarkerPool.has(key)) continue
+      const key = profileClusterPoolKey(cluster.key, activeProfileType)
+      const existingCluster = profileMarkerPool.get(key)
+      if (existingCluster) {
+        existingCluster.marker.remove()
+        profileMarkerPool.delete(key)
+      }
 
       const el = createMapClusterMarkerElement(cluster.profiles.length, 'profile')
       const popup = mountProfileClusterPopup(cluster.profiles)
@@ -733,36 +771,26 @@ function publishMapViewportBounds() {
 function scheduleMapClusterResync() {
   if (!map) return
   publishMapViewportBounds()
-  if (mapStore.mapEventItems.length === 0 && mapStore.mapProfileItems.length === 0) return
+  if (mapStore.mapMarkerMode === 'events' && mapStore.mapEventItems.length === 0) return
+  if (mapStore.mapMarkerMode === 'profiles' && mapStore.mapProfileItems.length === 0) return
   if (mapClusterResyncTimer) clearTimeout(mapClusterResyncTimer)
   mapClusterResyncTimer = setTimeout(() => {
     mapClusterResyncTimer = null
     publishMapViewportBounds()
-    const hasEvents = mapStore.mapEventItems.length > 0
-    const hasProfiles = mapStore.mapProfileItems.length > 0
-    if (hasEvents && !hasProfiles) syncEventMarkers()
-    else if (hasProfiles && !hasEvents) syncProfileMarkers()
+    syncActiveMapMarkers()
   }, 200)
 }
 
 function refreshMapFromStore() {
   if (!map) return
   const run = () => {
-    const hasEvents = mapStore.mapEventItems.length > 0
-    const hasProfiles = mapStore.mapProfileItems.length > 0
-
-    if (hasEvents) {
+    if (mapStore.mapMarkerMode === 'events') {
       clearProfileMarkers()
       syncEventMarkers()
     } else {
       clearEventMarkers()
-    }
-
-    if (hasProfiles) {
-      clearEventMarkers()
-      syncProfileMarkers()
-    } else {
       clearProfileMarkers()
+      syncProfileMarkers()
     }
 
     fitMapToResults()
@@ -862,10 +890,24 @@ watch(
   () => mapStore.mapViewportBounds,
   () => {
     if (!map?.loaded()) return
-    syncEventMarkers()
-    syncProfileMarkers()
+    syncActiveMapMarkers()
   },
   { deep: true },
+)
+
+watch(
+  () => mapStore.mapMarkerMode,
+  () => refreshMapFromStore(),
+)
+
+watch(
+  () => mapStore.mapProfileType,
+  () => {
+    if (!map?.loaded()) return
+    if (mapStore.mapMarkerMode !== 'profiles') return
+    clearProfileMarkers()
+    syncProfileMarkers()
+  },
 )
 </script>
 

@@ -63,13 +63,74 @@ export function getHomeStartDiscoveryWindow(now = new Date()): {
   }
 }
 
-/** Default header range: first through last day of the current month (DD/MM/YYYY). */
+/** Default header range: today through the next 30 days (upcoming only, DD/MM/YYYY). */
 export function getDefaultDiscoveryDateRange(now = new Date()): [string, string] {
-  const year = now.getFullYear()
-  const month = now.getMonth()
-  const first = new Date(year, month, 1)
-  const last = new Date(year, month + 1, 0)
-  return [formatDiscoveryDateDisplay(first), formatDiscoveryDateDisplay(last)]
+  const [start, end] = getUpcomingRangeFromToday(30, now)
+  return [formatDiscoveryDateDisplay(start), formatDiscoveryDateDisplay(end)]
+}
+
+/** Start of today (local) and end date `days` calendar days ahead (inclusive span). */
+export function getUpcomingRangeFromToday(days: number, now = new Date()): [Date, Date] {
+  const start = startOfDiscoveryDay(now)
+  const end = new Date(start)
+  end.setDate(end.getDate() + days)
+  return [start, end]
+}
+
+function startOfDiscoveryDay(d: Date): Date {
+  const start = new Date(d)
+  start.setHours(0, 0, 0, 0)
+  return start
+}
+
+/** True when the calendar day is strictly before today (past dates are not selectable). */
+export function isPastDiscoveryCalendarDate(date: Date, now = new Date()): boolean {
+  const today = startOfDiscoveryDay(now)
+  const candidate = startOfDiscoveryDay(date)
+  return candidate.getTime() < today.getTime()
+}
+
+/** Today as YYYY-MM-DD for API query params. */
+export function getTodayDiscoveryApiDate(now = new Date()): string {
+  return formatDiscoveryDateToApi(formatDiscoveryDateDisplay(now)) ?? ''
+}
+
+/**
+ * Calendar shortcuts: rolling upcoming windows from today (not calendar week/month/year).
+ * Week = today + 7 days, Month = today + 30 days, Year = today + 365 days.
+ */
+export function createDiscoveryUpcomingShortcuts() {
+  return () => {
+    const today = () => {
+      const d = startOfDiscoveryDay(new Date())
+      return [d, d] as [Date, Date]
+    }
+    const tomorrow = () => {
+      const d = startOfDiscoveryDay(new Date())
+      d.setDate(d.getDate() + 1)
+      return [d, d] as [Date, Date]
+    }
+    const thisWeekend = () => {
+      const now = startOfDiscoveryDay(new Date())
+      const day = now.getDay()
+      const daysUntilSaturday = (6 - day + 7) % 7
+      const saturday = new Date(now)
+      saturday.setDate(saturday.getDate() + daysUntilSaturday)
+      const sunday = new Date(saturday)
+      sunday.setDate(sunday.getDate() + 1)
+      const start = now.getTime() > saturday.getTime() ? now : saturday
+      return [start, sunday] as [Date, Date]
+    }
+
+    return [
+      { label: 'Today', atClick: today },
+      { label: 'Tomorrow', atClick: tomorrow },
+      { label: 'This Weekend', atClick: thisWeekend },
+      { label: 'This Week', atClick: () => getUpcomingRangeFromToday(7) },
+      { label: 'This Month', atClick: () => getUpcomingRangeFromToday(30) },
+      { label: 'This Year', atClick: () => getUpcomingRangeFromToday(365) },
+    ]
+  }
 }
 
 /** DD/MM/YYYY → YYYY-MM-DD for API query params. */
@@ -96,7 +157,9 @@ export function appendDiscoveryDateTimeFilters(
   const formatDate = options.formatDate ?? formatDiscoveryDateToApi
   const range = options.dateRange
   if (range?.[0]) {
-    const from = formatDate(range[0])
+    let from = formatDate(range[0])
+    const today = getTodayDiscoveryApiDate()
+    if (from && today && from < today) from = today
     if (from) target.from_date = from
   }
   if (range?.[1]) {

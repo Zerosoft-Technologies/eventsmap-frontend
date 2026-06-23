@@ -39,7 +39,7 @@
       </div>
       <div>
         <button class="header-btn header-date-field tw:bg-white tw:py-3 tw:hidden tw:gap-2 tw:items-center tw:lg:flex tw:px-4 tw:rounded-lg" style="height: 40px;"><img src="../assets/calendar.png" alt="Calendar Icon"/><span class="tw:text-sm">
-          <DatePicker :key="desktopPickerKey" @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
+          <DatePicker :key="desktopPickerKey" :initial-date-range="dateRange" @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
         </span></button>
       </div>
       <!-- Browse-as (desktop): organisers / talents / venues — kept outside search so search stays events-only -->
@@ -277,7 +277,7 @@
         </div>
 
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
-          <DatePicker :key="desktopPickerKey" @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
+          <DatePicker :key="desktopPickerKey" :initial-date-range="dateRange" @update:dateRange="dateRange = $event" @update:session="onSessionFilterUpdate" />
         </div>
 
         <div class="tw:bg-white tw:py-3 tw:px-4 tw:border tw:border-(--secondary-color) tw:rounded-lg">
@@ -751,7 +751,7 @@
       ref="allEventsRef"
       :events="viewportFilteredEvents"
       :loading="eventsLoading"
-      :profile-type="profileListingShowsEvents ? 'events' : discoveryProfileType"
+      :profile-type="discoveryProfileType"
       :selected-category="selectedCategory"
       :available-subcategories="availableSubcategories"
       :selected-subcategory-slugs="selectedSubcategorySlugs"
@@ -1067,12 +1067,14 @@ function selectDiscoveryProfile(type) {
     return
   }
   discoveryProfileType.value = type
-  profileListingShowsEvents.value = false
   selectedCategory.value = null
   selectedSubcategorySlugs.value = []
   venueOpenTime.value = null
   venueCloseTime.value = null
   closeProfileTypeMenu()
+  // Clear stale pins immediately so the previous profile type never overlaps on the map.
+  mapStore.setMapProfiles([], type)
+  events.value = []
   loadCategories()
   void loadListingFromApi(searchTerm.value.trim(), { openList: true })
 }
@@ -1390,12 +1392,10 @@ function handleReset() {
   resetDiscoveryDateTimeFilters()
 
   discoveryProfileType.value = 'events'
-  profileListingShowsEvents.value = false
   closeProfileTypeMenu()
 
   events.value = []
-  mapStore.clearMapEvents()
-  mapStore.clearMapProfiles()
+  mapStore.resetMapMarkers()
   window.dispatchEvent(new CustomEvent(MAP_RESET_HOME))
 
   void loadCategories()
@@ -1421,7 +1421,6 @@ function clearListFilters() {
   searchTerm.value = ''
   selectedCategory.value = null
   selectedSubcategorySlugs.value = []
-  profileListingShowsEvents.value = false
   sessionFilter.value = { morning: false, afternoon: false, evening: false, night: false }
   localStorage.removeItem('datepicker-session')
   resetDiscoveryDateTimeFilters()
@@ -1461,13 +1460,11 @@ async function getLocation(options = { openList: false }) {
 
 const events = ref([])
 const eventsLoading = ref(false)
-/** When browsing organiser subcategories, list/map show that organiser's upcoming events. */
-const profileListingShowsEvents = ref(false)
 
 /** List view mirrors map viewport — map leads, counts stay in sync when panning/zooming. */
 const viewportFilteredEvents = computed(() => {
   let rows = events.value
-  if (discoveryProfileType.value === 'events' || profileListingShowsEvents.value) {
+  if (discoveryProfileType.value === 'events') {
     rows = filterActiveDiscoveryEvents(rows)
   }
   if (route.name !== 'Home') return rows
@@ -1502,8 +1499,7 @@ async function loadListingFromApi(searchQuery = '', options = { openList: false 
   } catch (e) {
     console.error('Failed to load listing:', e)
     events.value = []
-    mapStore.clearMapEvents()
-    mapStore.clearMapProfiles()
+    mapStore.resetMapMarkers()
   } finally {
     eventsLoading.value = false
     if (options.openList) {
@@ -1529,7 +1525,14 @@ async function loadEventsFromApi(searchQuery = '') {
   const rows = filterActiveDiscoveryEvents(Array.isArray(result.data) ? result.data : [])
   events.value = rows
   mapStore.setMapEvents(rows)
-  mapStore.clearMapProfiles()
+}
+
+function normalizeDiscoveryProfileType(pt) {
+  const v = String(pt).toLowerCase()
+  if (v === 'talent') return 'talents'
+  if (v === 'organizer' || v === 'organiser') return 'organisers'
+  if (v === 'venue') return 'venues'
+  return v
 }
 
 async function loadProfilesFromApi(profileType, searchQuery = '') {
@@ -1551,28 +1554,12 @@ async function loadProfilesFromApi(profileType, searchQuery = '') {
     })
   }
   const result = await fetchProfiles(profileType, params)
-  let rows = result.data
+  let rows = (result.data ?? []).filter((p) => {
+    const pt = p.profileType ?? p.profile_type
+    if (!pt) return true
+    return normalizeDiscoveryProfileType(pt) === profileType
+  })
 
-  if (profileType === 'organisers' && selectedSubcategorySlugs.value.length > 0) {
-    const organiserEvents = []
-    const seen = new Set()
-    for (const org of rows) {
-      for (const ev of org.upcoming_events || []) {
-        if (ev?.id != null && !seen.has(ev.id)) {
-          seen.add(ev.id)
-          organiserEvents.push(ev)
-        }
-      }
-    }
-    const activeEvents = filterActiveDiscoveryEvents(organiserEvents)
-    profileListingShowsEvents.value = true
-    events.value = activeEvents
-    mapStore.setMapEvents(activeEvents)
-    mapStore.clearMapProfiles()
-    return
-  }
-
-  profileListingShowsEvents.value = false
   if (
     profileType === 'venues' &&
     (venueOpenTime.value?.trim() || venueCloseTime.value?.trim())
@@ -1582,7 +1569,6 @@ async function loadProfilesFromApi(profileType, searchQuery = '') {
     )
   }
   events.value = rows
-  mapStore.clearMapEvents()
   mapStore.setMapProfiles(
     rows
       .map((p) => {
@@ -1591,6 +1577,7 @@ async function loadProfilesFromApi(profileType, searchQuery = '') {
         return { ...p, ...ll, profileType }
       })
       .filter(Boolean),
+    profileType,
   )
 }
 

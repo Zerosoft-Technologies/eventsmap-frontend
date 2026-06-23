@@ -5,6 +5,10 @@ import type { MapViewportBounds } from '@/utils/mapViewportFilter'
 
 export type MapProfileItem = DiscoveryProfile & { profileType: string }
 
+export type MapMarkerMode = 'events' | 'profiles'
+
+export type MapProfileType = 'talents' | 'organisers' | 'venues'
+
 export interface SelectedLocation {
   lat: number
   lng: number
@@ -28,6 +32,12 @@ export const useMapStore = defineStore('map', () => {
   /** Profile items to show as map markers (non-event profile types) */
   const mapProfileItems = shallowRef<MapProfileItem[]>([])
 
+  /** Which marker layer is active — events and profiles are never shown together. */
+  const mapMarkerMode = ref<MapMarkerMode>('events')
+
+  /** Active profile taxonomy when `mapMarkerMode === 'profiles'`. */
+  const mapProfileType = ref<MapProfileType | null>(null)
+
   /** Current map viewport — list view filters to markers inside this box (map leads). */
   const mapViewportBounds = ref<MapViewportBounds | null>(null)
 
@@ -46,6 +56,9 @@ export const useMapStore = defineStore('map', () => {
   }
 
   function setMapEvents(items: Record<string, unknown>[]) {
+    mapMarkerMode.value = 'events'
+    mapProfileType.value = null
+    mapProfileItems.value = []
     mapEventItems.value = Array.isArray(items) ? items : []
   }
 
@@ -53,11 +66,21 @@ export const useMapStore = defineStore('map', () => {
     mapEventItems.value = []
   }
 
-  function setMapProfiles(items: MapProfileItem[]) {
+  function setMapProfiles(items: MapProfileItem[], profileType: MapProfileType) {
+    mapMarkerMode.value = 'profiles'
+    mapProfileType.value = profileType
+    mapEventItems.value = []
     mapProfileItems.value = items
   }
 
   function clearMapProfiles() {
+    mapProfileItems.value = []
+  }
+
+  function resetMapMarkers() {
+    mapMarkerMode.value = 'events'
+    mapProfileType.value = null
+    mapEventItems.value = []
     mapProfileItems.value = []
   }
 
@@ -70,6 +93,8 @@ export const useMapStore = defineStore('map', () => {
     pendingLocation,
     mapEventItems,
     mapProfileItems,
+    mapMarkerMode,
+    mapProfileType,
     mapViewportBounds,
     setPendingLocation,
     applyPendingLocation,
@@ -78,6 +103,7 @@ export const useMapStore = defineStore('map', () => {
     clearMapEvents,
     setMapProfiles,
     clearMapProfiles,
+    resetMapMarkers,
     setMapViewportBounds,
   }
 })

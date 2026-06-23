@@ -49,8 +49,20 @@ export function eventMarkerPoolKey(eventId: number): string {
   return `e-${Number(eventId)}`
 }
 
-export function profileMarkerPoolKey(profileId: number): string {
-  return `p-${Number(profileId)}`
+export function profileMarkerPoolKey(
+  profileId: number,
+  profileType?: string | null,
+): string {
+  const type = profileType ? String(profileType).toLowerCase() : 'profile'
+  return `p-${type}-${Number(profileId)}`
+}
+
+export function profileClusterPoolKey(
+  clusterKey: string,
+  profileType?: string | null,
+): string {
+  const type = profileType ? String(profileType).toLowerCase() : 'profile'
+  return `c-${type}-${clusterKey}`
 }
 
 export function eventMarkerVariant(event: {
@@ -63,13 +75,16 @@ export function eventMarkerVariant(event: {
 }
 
 export function profileMarkerVariant(profile: {
+  profileType?: string | null
+  profile_type?: string | null
   event_type?: string
   show_photo_map_marker?: unknown
   cover_image?: string | null
   profile_image?: string | null
-}): MapMarkerVisualVariant {
+}): MapMarkerVisualVariant | string {
+  const pt = profile.profileType ?? profile.profile_type ?? 'profile'
   const usePhoto = shouldUsePhotoMapMarker(profile) && !!discoveryCoverImageUrl(profile)
-  return usePhoto ? 'photo' : 'default'
+  return `${pt}-${usePhoto ? 'photo' : 'default'}`
 }
 
 /** Deduplicate map listing rows by numeric id (last occurrence wins). */
