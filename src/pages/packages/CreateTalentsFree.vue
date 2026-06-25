@@ -330,11 +330,11 @@
         <!-- NATIONALITY SECTION -->
         <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:border tw:border-[#E8E1D5] tw:p-4 tw:md:p-6 tw:space-y-4">
           <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-            Nationality of Talent
+            Talent Nationality
           </h3>
           <div class="tw:space-y-2">
             <label class="tw:text-sm tw:font-medium tw:text-gray-700">Nationality</label>
-            <CountrySelect v-model="nationalityCode" placeholder="Search and select nationality…" />
+            <NationalityMultiSelect v-model="nationalityCodes" />
           </div>
         </div>
 
@@ -500,7 +500,8 @@ import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import LanguageMultiSelect from "@/components/talent/LanguageMultiSelect.vue"
-import CountrySelect from "@/components/common/CountrySelect.vue"
+import NationalityMultiSelect from "@/components/talent/NationalityMultiSelect.vue"
+import { parseNationalityCodes } from "@/utils/countryFlag"
 import eventService from "@/services/eventService"
 import { fetchCountries } from "@/api/referenceData"
 import { resolveCountryCode } from "@/utils/countryIso3166"
@@ -618,8 +619,21 @@ function validateTalentType() {
 }
 
 const talentCity = ref("")
-const nationalityCode = ref("")
+const nationalityCodes = ref([])
 const selectedLanguages = ref([])
+
+function loadNationalityCodesFromTalent(talent, countries) {
+  if (Array.isArray(talent?.nationalities) && talent.nationalities.length > 0) {
+    return talent.nationalities.map((c) => String(c).toUpperCase()).slice(0, 2)
+  }
+  if (Array.isArray(talent?.nationality_list) && talent.nationality_list.length > 0) {
+    return talent.nationality_list.map((n) => String(n.code).toUpperCase()).slice(0, 2)
+  }
+  const parsed = parseNationalityCodes(talent?.nationality)
+  if (parsed.length > 0) return parsed
+  const single = resolveCountryCode(talent?.nationality, countries)
+  return single ? [single] : []
+}
 
 // Event Location refs
 const searchAddress = ref("")
@@ -731,7 +745,10 @@ function buildTalentFormData() {
   if (mapLat.value != null && mapLat.value !== '') fd.append('latitude', String(mapLat.value))
   if (mapLng.value != null && mapLng.value !== '') fd.append('longitude', String(mapLng.value))
   if (talentCity.value) fd.append('city', talentCity.value)
-  if (nationalityCode.value) fd.append('nationality', nationalityCode.value)
+  nationalityCodes.value
+    .map((c) => String(c).trim().toUpperCase())
+    .filter(Boolean)
+    .forEach((code) => fd.append('nationalities[]', code))
 
   selectedLanguages.value
     .map((s) => s.trim())
@@ -899,9 +916,9 @@ async function loadTalent(id) {
 
     try {
       const countries = await fetchCountries()
-      nationalityCode.value = resolveCountryCode(talent.nationality, countries)
+      nationalityCodes.value = loadNationalityCodesFromTalent(talent, countries)
     } catch {
-      nationalityCode.value = typeof talent.nationality === 'string' ? talent.nationality : ''
+      nationalityCodes.value = parseNationalityCodes(talent.nationalities ?? talent.nationality)
     }
 
     // Center map if coordinates exist
@@ -940,7 +957,7 @@ function resetForm() {
   selectedLocationCityDisplay.value = ''
   searchAddress.value = ''
   talentCity.value = ''
-  nationalityCode.value = ''
+  nationalityCodes.value = []
   selectedLanguages.value = []
   selectedImageFile.value = null
   fileName.value = ''

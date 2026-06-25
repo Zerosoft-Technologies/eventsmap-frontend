@@ -139,6 +139,7 @@ export interface TalentV2Payload {
   tiktok_url?: string
   fan_club_url?: string
   nationality?: string
+  nationalities?: string[]
   show_nationality?: string
   /** ISO date YYYY-MM-DD */
   date_of_birth?: string

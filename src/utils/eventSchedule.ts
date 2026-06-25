@@ -247,6 +247,34 @@ export function formatEventCardDateTimeRange(
   return `${dateLabel} · ${startTime}–${endTime}`
 }
 
+/** Long weekday date for event detail Overview (matches Date & Location tab). */
+export function formatOverviewLongEventDate(
+  ev: Record<string, unknown> | null | undefined,
+  locale: string,
+  notSpecified = 'Not specified',
+): string {
+  if (!ev) return notSpecified
+  const dateStr =
+    ev.event_date ||
+    ev.start_date ||
+    (ev.start_datetime ? String(ev.start_datetime).split('T')[0] : null)
+  if (!dateStr) {
+    const fd = ev.formatted_date
+    return fd != null && String(fd).trim() !== '' ? String(fd) : notSpecified
+  }
+  const d = new Date(`${dateStr}T12:00:00`)
+  if (Number.isNaN(d.getTime())) {
+    const fd = ev.formatted_date
+    return fd != null && String(fd).trim() !== '' ? String(fd) : String(dateStr)
+  }
+  return d.toLocaleDateString(locale, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
 /** True when the event has ended (hide from map / discovery list). */
 export function isDiscoveryEventFinished(
   ev: Record<string, unknown> | null | undefined,

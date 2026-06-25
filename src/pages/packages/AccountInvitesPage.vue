@@ -38,6 +38,7 @@
           class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2"
         >
           <EventSidebar
+            sidebar-kind="events"
             :menuItems="menuItems"
             @back="handleBack"
             @event-selected="handleEventSelected"
@@ -49,6 +50,7 @@
 
       <div class="tw:hidden tw:shrink-0 tw:md:block">
         <EventSidebar
+          sidebar-kind="events"
           :menuItems="menuItems"
           @back="handleBack"
           @event-selected="handleEventSelected"
@@ -69,7 +71,7 @@
                 All Invitations
               </h1>
               <p class="tw:text-sm tw:text-gray-600 tw:mt-2 tw:max-w-2xl">
-                Manage all invited talents, venues, and organisers across your events.
+                Add registered participants or invite someone by email who hasn't joined The Events Map yet.
               </p>
             </div>
             <!-- <button

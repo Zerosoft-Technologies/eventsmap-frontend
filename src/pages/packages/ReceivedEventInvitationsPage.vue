@@ -25,9 +25,18 @@
       <div v-if="mobileSidebarOpen" class="tw:md:hidden tw:fixed tw:inset-0 tw:z-50">
         <div class="tw:absolute tw:inset-0 tw:bg-black/30" @click="closeMobileSidebar" />
         <div class="tw:absolute tw:left-0 tw:top-0 tw:h-screen tw:max-w-[92vw] tw:w-full tw:p-2">
+          <OrganiserSidebar
+            v-if="sidebarKind === 'organisers'"
+            :menuItems="menuItems"
+            @back="handleBack"
+            @organiser-selected="handleEventSelected"
+            @chatbox-click="handleChatboxClick"
+            @menu-click="closeMobileSidebar"
+          />
           <EventSidebar
+            v-else
             :sidebar-kind="sidebarKind"
-            :menu-items="menuItems"
+            :menuItems="menuItems"
             @back="handleBack"
             @event-selected="handleEventSelected"
             @chatbox-click="handleChatboxClick"
@@ -37,9 +46,17 @@
       </div>
 
       <div class="tw:hidden tw:shrink-0 tw:md:block">
+        <OrganiserSidebar
+          v-if="sidebarKind === 'organisers'"
+          :menuItems="menuItems"
+          @back="handleBack"
+          @organiser-selected="handleEventSelected"
+          @chatbox-click="handleChatboxClick"
+        />
         <EventSidebar
+          v-else
           :sidebar-kind="sidebarKind"
-          :menu-items="menuItems"
+          :menuItems="menuItems"
           @back="handleBack"
           @event-selected="handleEventSelected"
           @chatbox-click="handleChatboxClick"
@@ -330,6 +347,8 @@ import {
   type InvitedEventPayload,
   type InvitationsPagination,
 } from '@/services/invitationService'
+import EventSidebar from './eventsidebar/Eventsidebar.vue'
+import OrganiserSidebar from './eventsidebar/OrganiserSidebar.vue'
 
 const route = useRoute()
 const router = useRouter()

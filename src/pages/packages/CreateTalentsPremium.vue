@@ -633,20 +633,17 @@
                 <!-- NATIONALITY OF TALENT SECTION -->
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-5">
                     <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
-                        Nationality of Talent
+                        Talent Nationality
                     </h3>
 
-                    <div class="tw:space-y-2">
+                    <div class="tw:space-y-2" data-field="nationality">
                         <label class="tw:text-sm tw:font-medium tw:text-gray-700">Nationality</label>
-                        <CountrySelect
-                            v-model="nationalityCode"
-                            data-field="nationality"
+                        <NationalityMultiSelect
+                            v-model="nationalityCodes"
                             variant="premium"
-                            placeholder="Search and select nationality…"
                             :has-error="!!fieldErrors.nationality?.length || !!apiFieldError('nationality')"
                             @update:model-value="onNationalityChange"
                         />
-                        <p class="tw:text-xs tw:text-gray-500">Choose from the ISO 3166-1 country list.</p>
                         <p v-if="fieldErrors.nationality?.length" class="tw:text-red-500 tw:text-sm">
                             {{ fieldErrors.nationality[0] }}
                         </p>
@@ -930,7 +927,8 @@ import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import ProfileDraftVisibilityBanner from "@/components/profile/ProfileDraftVisibilityBanner.vue"
 import InviteSection from "@/components/invite/InviteSection.vue"
 import PhoneInput from "@/components/common/PhoneInput.vue"
-import CountrySelect from "@/components/common/CountrySelect.vue"
+import NationalityMultiSelect from "@/components/talent/NationalityMultiSelect.vue"
+import { parseNationalityCodes } from "@/utils/countryFlag"
 import MapPhotoMarkerToggle from "@/components/map/MapPhotoMarkerToggle.vue"
 import LanguageMultiSelect from "@/components/talent/LanguageMultiSelect.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
@@ -1098,7 +1096,7 @@ const contactWebsite = ref("")
 const contactBoxDesignMessage = ref("")
 const showContactBox = ref(false)
 const talentNationality = ref('no')
-const nationalityCode = ref('')
+const nationalityCodes = ref([])
 const dateOfBirth = ref('')
 const showAge = ref('no')
 const selectedLanguages = ref([])
@@ -1399,16 +1397,33 @@ function normalizeShowNationalityFlag(value) {
     return 'no'
 }
 
-async function resolveNationalityCodeForApi(raw) {
-    const trimmed = String(raw ?? '').trim()
-    if (!trimmed) return undefined
+async function resolveNationalityCodesForApi(codes) {
+    if (!Array.isArray(codes) || codes.length === 0) return undefined
     try {
         const countries = await fetchCountries()
-        const resolved = resolveCountryCode(trimmed, countries)
-        return resolved || undefined
+        const resolved = codes
+            .map((code) => resolveCountryCode(code, countries))
+            .filter(Boolean)
+        return resolved.length ? resolved : undefined
     } catch {
-        return trimmed.length === 2 ? trimmed.toUpperCase() : undefined
+        const fallback = codes
+            .map((c) => String(c).trim().toUpperCase())
+            .filter((c) => c.length === 2)
+        return fallback.length ? fallback : undefined
     }
+}
+
+function loadNationalityCodesFromTalent(talent, countries) {
+    if (Array.isArray(talent?.nationalities) && talent.nationalities.length > 0) {
+        return talent.nationalities.map((c) => String(c).toUpperCase()).slice(0, 2)
+    }
+    if (Array.isArray(talent?.nationality_list) && talent.nationality_list.length > 0) {
+        return talent.nationality_list.map((n) => String(n.code).toUpperCase()).slice(0, 2)
+    }
+    const parsed = parseNationalityCodes(talent?.nationality)
+    if (parsed.length > 0) return parsed
+    const single = resolveCountryCode(talent?.nationality, countries)
+    return single ? [single] : []
 }
 
 async function buildTalentPayload() {
@@ -1460,7 +1475,7 @@ async function buildTalentPayload() {
         instagram_url: normalizeOptionalUrl(instagramUrl.value),
         tiktok_url: normalizeOptionalUrl(tiktokUrl.value),
         fan_club_url: normalizeOptionalUrl(fanClubUrl.value),
-        nationality: await resolveNationalityCodeForApi(nationalityCode.value),
+        nationalities: await resolveNationalityCodesForApi(nationalityCodes.value),
         show_nationality: normalizeShowNationalityFlag(talentNationality.value),
         date_of_birth: dobStr || undefined,
         age: dobStr && ageNum !== null && ageNum >= 0 ? ageNum : undefined,
@@ -1643,9 +1658,9 @@ async function loadTalent(id) {
         // Nationality & age
         try {
             const countries = await fetchCountries()
-            nationalityCode.value = resolveCountryCode(talent.nationality, countries)
+            nationalityCodes.value = loadNationalityCodesFromTalent(talent, countries)
         } catch {
-            nationalityCode.value = typeof talent.nationality === 'string' ? talent.nationality : ''
+            nationalityCodes.value = parseNationalityCodes(talent.nationalities ?? talent.nationality)
         }
         talentNationality.value = normalizeShowNationalityFlag(talent.show_nationality)
         const dobApi = talent.date_of_birth ?? talent.dateOfBirth
@@ -1721,7 +1736,7 @@ function resetForm() {
     instagramUrl.value = ''
     tiktokUrl.value = ''
     fanClubUrl.value = ''
-    nationalityCode.value = ''
+    nationalityCodes.value = []
     talentNationality.value = 'no'
     dateOfBirth.value = ''
     showAge.value = 'no'
@@ -1782,25 +1797,32 @@ async function handleSubmit() {
     delete extraErrors.date_of_birth
     delete extraErrors.nationality
 
-    if (nationalityCode.value?.trim()) {
+    if (nationalityCodes.value.length > 0) {
         try {
             const countries = await fetchCountries()
-            const resolved = resolveCountryCode(nationalityCode.value, countries)
-            if (!resolved) {
-                extraErrors.nationality = ['Please select a valid nationality from the ISO 3166-1 list.']
-                hasExtraErrors = true
-            } else if (resolved !== nationalityCode.value) {
-                nationalityCode.value = resolved
+            const validated = []
+            for (const code of nationalityCodes.value) {
+                const resolved = resolveCountryCode(code, countries)
+                if (!resolved) {
+                    extraErrors.nationality = ['Please select valid nationalities from the ISO 3166-1 list.']
+                    hasExtraErrors = true
+                    break
+                }
+                validated.push(resolved)
+            }
+            if (validated.length === nationalityCodes.value.length) {
+                nationalityCodes.value = validated
             }
         } catch {
-            if (nationalityCode.value.trim().length !== 2) {
+            const invalid = nationalityCodes.value.some((c) => String(c).trim().length !== 2)
+            if (invalid) {
                 extraErrors.nationality = ['Could not validate nationality. Please try again.']
                 hasExtraErrors = true
             }
         }
     }
 
-    if (talentNationality.value === 'yes' && !nationalityCode.value?.trim()) {
+    if (talentNationality.value === 'yes' && nationalityCodes.value.length === 0) {
         extraErrors.nationality = ['Nationality is required when you choose to show it on your profile.']
         hasExtraErrors = true
     }

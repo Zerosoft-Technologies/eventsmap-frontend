@@ -44,14 +44,16 @@
             :class="{ 'country-select__option--active': idx === highlightIndex }"
             @mousedown.prevent="selectCountry(country)"
           >
-            {{ country.name }}
+            {{ country.flag ? `${country.flag} ` : '' }}{{ country.name }}
           </button>
         </li>
       </ul>
     </div>
     <p v-if="loading" class="country-select__hint">Loading countries…</p>
     <p v-else-if="loadError" class="country-select__error">{{ loadError }}</p>
-    <p v-else-if="selectedLabel" class="country-select__hint">Selected: {{ selectedLabel }} ({{ modelValue }})</p>
+    <p v-else-if="selectedLabel" class="country-select__hint">
+      Selected: {{ selectedFlag }} {{ selectedLabel }} ({{ modelValue }})
+    </p>
   </div>
 </template>
 
@@ -59,6 +61,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { fetchCountries, type CountryOption } from '@/api/referenceData'
 import { resolveCountryCode } from '@/utils/countryIso3166'
+import { countryCodeToFlagEmoji } from '@/utils/countryFlag'
 
 const props = withDefaults(
   defineProps<{
@@ -92,6 +95,12 @@ const fieldWrap = ref<HTMLElement | null>(null)
 const selectedLabel = computed(() => {
   if (!props.modelValue) return ''
   return countries.value.find((c) => c.code === props.modelValue)?.name ?? ''
+})
+
+const selectedFlag = computed(() => {
+  if (!props.modelValue) return ''
+  const hit = countries.value.find((c) => c.code === props.modelValue)
+  return hit?.flag || countryCodeToFlagEmoji(props.modelValue)
 })
 
 const filteredOptions = computed(() => {

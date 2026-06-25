@@ -275,10 +275,19 @@
                 <p class="tw:text-sm tw:text-gray-800">{{ talentAgeLabel }}</p>
               </div>
             </div>
-            <div v-if="profile.nationality" class="tw:flex tw:items-center tw:gap-3">
+            <div v-if="talentNationalityItems.length" class="tw:flex tw:items-center tw:gap-3">
               <div>
-                <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-0.5">Nationality</p>
-                <p class="tw:text-sm tw:text-gray-800">{{ profile.nationality_name || profile.nationality }}</p>
+                <p class="tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-gray-400 tw:mb-0.5">Talent Nationality</p>
+                <div class="tw:flex tw:flex-wrap tw:gap-2">
+                  <span
+                    v-for="item in talentNationalityItems"
+                    :key="item.code"
+                    class="tw:inline-flex tw:items-center tw:gap-1.5 tw:text-sm tw:text-gray-800"
+                  >
+                    <span v-if="item.flag" class="tw:text-base tw:leading-none" aria-hidden="true">{{ item.flag }}</span>
+                    <span>{{ item.name || item.code }}</span>
+                  </span>
+                </div>
               </div>
             </div>
             <div v-if="profile.languages?.length">
@@ -401,19 +410,13 @@
 
         <!-- Opening Hours Tab (venues) -->
         <div v-else-if="activeTab === 'hours'" class="tw:px-4 tw:py-4">
-          <div class="tw:space-y-1.5">
-            <div
-              v-for="slot in profile.opening_hours"
-              :key="slot.day"
-              class="tw:flex tw:items-center tw:justify-between tw:py-1.5 tw:border-b tw:border-gray-100 last:tw:border-0"
-            >
-              <span class="tw:w-28 tw:text-sm tw:font-medium tw:text-gray-800">{{ slot.day }}</span>
-              <span v-if="slot.is_open && slot.open && slot.close" class="tw:text-sm tw:text-gray-600">
-                {{ slot.open }} – {{ slot.close }}
-              </span>
-              <span v-else class="tw:text-sm tw:text-gray-400 tw:italic">Closed</span>
-            </div>
-          </div>
+          <VenueOpeningHoursDisplay
+            v-if="profile.opening_hours?.length"
+            :opening-hours="profile.opening_hours"
+          />
+          <p v-else class="tw:text-sm tw:text-gray-500 tw:text-center tw:py-6">
+            {{ t('discoveryProfile.openingHoursEmpty') }}
+          </p>
         </div>
 
         <!-- Amenities Tab (venues) -->
@@ -648,6 +651,7 @@ import { displayProfileLocationLine } from '@/utils/nominatimCityDisplay'
 import { XIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next'
 import DirectionsPanel from './DirectionsPanel.vue'
 import ExpandableText from '@/components/common/ExpandableText.vue'
+import VenueOpeningHoursDisplay from '@/components/venue/VenueOpeningHoursDisplay.vue'
 import {
   resolveAllowanceOfDogsLabel,
   resolveVenueDescriptionItems,
@@ -656,6 +660,7 @@ import {
 } from '@/utils/venueDiscoveryDisplay'
 import { fetchPublicProfileDetail } from '@/api/discoveryProfiles'
 import { showPastEventsOnProfile, showUpcomingEventsOnProfile } from '@/utils/profileEventVisibility'
+import { countryCodeToFlagEmoji, parseNationalityCodes } from '@/utils/countryFlag'
 
 const EventCard = defineAsyncComponent(() => import('./Event.vue'))
 
@@ -841,6 +846,32 @@ const talentAgeLabel = computed(() => {
 
   const fromDob = getAgeFromDob(p.date_of_birth ?? p.dateOfBirth ?? p.dob)
   return fromDob != null ? String(fromDob) : ''
+})
+
+const talentNationalityItems = computed(() => {
+  const p = profile.value
+  if (!p || props.profileType !== 'talents') return []
+
+  const showFlag = p.show_nationality
+  if (showFlag === false || showFlag == '0' || showFlag == 'no') return []
+
+  if (Array.isArray(p.nationality_list) && p.nationality_list.length > 0) {
+    return p.nationality_list.slice(0, 2)
+  }
+
+  const codes = parseNationalityCodes(p.nationalities ?? p.nationality)
+  if (codes.length === 0) return []
+
+  const names = String(p.nationality_name ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+
+  return codes.map((code, index) => ({
+    code,
+    name: names[index] || code,
+    flag: countryCodeToFlagEmoji(code),
+  }))
 })
 
 // ── Profile URL ────────────────────────────────────────────────

@@ -138,4 +138,19 @@ onMounted(() => {
   width: 1.1rem;
   height: 1.1rem;
 }
+
+/* Apply button: brand orange with white label */
+.eventmap-datepicker :deep(button.bg-vtd-primary-600),
+.eventmap-datepicker :deep(.bg-vtd-primary-600) {
+  background-color: #ff7700 !important;
+  color: #fff !important;
+  border-color: #ff7700 !important;
+}
+
+.eventmap-datepicker :deep(button.bg-vtd-primary-600:hover),
+.eventmap-datepicker :deep(.hover\:bg-vtd-primary-700:hover) {
+  background-color: #ea580c !important;
+  border-color: #ea580c !important;
+  color: #fff !important;
+}
 </style>

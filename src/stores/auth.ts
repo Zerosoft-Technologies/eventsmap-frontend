@@ -269,21 +269,35 @@ export const useAuthStore = defineStore('auth', () => {
 
   /**
    * Initialize auth state on app startup.
-   * Must be called before router is ready.
-   * For token-based auth, check if token exists and fetch user.
+   * Safe to call from bootstrap and router guards concurrently.
    */
-  async function initializeAuth(): Promise<void> {
-    if (authReady.value) return // Already initialized
-    
-    // For token-based auth, only fetch if token exists
-    if (token.value) {
-      try {
-        await fetchUser()
-      } catch {
-        // Token invalid - already handled in fetchUser
-      }
-    }
+  let authInitPromise: Promise<void> | null = null
+
+  function markAuthReady() {
     authReady.value = true
+    authInitPromise = null
+  }
+
+  async function initializeAuth(): Promise<void> {
+    if (authReady.value) return
+    if (authInitPromise) return authInitPromise
+
+    authInitPromise = (async () => {
+      try {
+        if (token.value) {
+          try {
+            await fetchUser()
+          } catch {
+            // Invalid token — already handled in fetchUser
+          }
+        }
+      } finally {
+        authReady.value = true
+        authInitPromise = null
+      }
+    })()
+
+    return authInitPromise
   }
 
   return {
@@ -311,5 +325,6 @@ export const useAuthStore = defineStore('auth', () => {
     resetPassword,
     clearErrors,
     initializeAuth,
+    markAuthReady,
   }
 })

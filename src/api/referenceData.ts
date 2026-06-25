@@ -3,6 +3,7 @@ import { getApiUrl } from './config'
 export interface CountryOption {
   code: string
   name: string
+  flag?: string
 }
 
 export interface ReferenceListResponse<T> {

@@ -338,7 +338,8 @@
     "accessibility": "Toegankelijkheid",
     "featureYes": "Ja",
     "featureNo": "Nee",
-    "amenitiesEmpty": "Geen voorzieningen vermeld."
+    "amenitiesEmpty": "Geen voorzieningen vermeld.",
+    "openingHoursEmpty": "Geen openingstijden vermeld."
   },
   "mapListingFilter": {
     "timeRange": "Tijdsvenster",

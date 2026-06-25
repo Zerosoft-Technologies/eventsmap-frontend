@@ -178,7 +178,8 @@
     "accessibility": "Accessibility",
     "featureYes": "Yes",
     "featureNo": "No",
-    "amenitiesEmpty": "No venue amenities listed."
+    "amenitiesEmpty": "No venue amenities listed.",
+    "openingHoursEmpty": "No opening hours listed."
   },
   "mapListingFilter": {
     "timeRange": "Time range",

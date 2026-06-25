@@ -238,18 +238,16 @@
           <div v-if="activeTab === 'overview'" class="tw:px-4 tw:py-4">
             <!-- Event details: label above value; checkmarks on first three rows only -->
             <div class="tw:space-y-6">
-              <!-- Event title -->
-              <!-- <div>
+              <!-- Event date (from Date & Location) -->
+              <div>
                 <p class="tw:text-base tw:font-semibold tw:text-gray-900">
-                  {{ $t('eventDetails.overviewEventTitle') }}
+                  {{ $t('dateLocation.eventDate') }}
                 </p>
-                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2">
-                  <svg class="tw:w-5 tw:h-5 tw:flex-shrink-0 tw:text-[#1a73e8]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewTitleDisplay }}</span>
+                <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2.5">
+                  <span class="tw:h-2 tw:w-2 tw:rounded-full tw:bg-[#1a237e] tw:flex-shrink-0" aria-hidden="true" />
+                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewEventDateDisplay }}</span>
                 </div>
-              </div> -->
+              </div>
 
               <!-- Description -->
               <div>
@@ -673,8 +671,9 @@ import { useRouter } from 'vue-router'
 import { buildEventGalleryImageUrls } from '@/utils/eventGalleryImages'
 import { parseSocialMediaUrlEntries } from '@/utils/socialMediaUrls'
 import { getUserProfileImageUrl } from '@/utils/userProfileImage'
+import { formatOverviewLongEventDate } from '@/utils/eventSchedule'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const router = useRouter()
 const wishlistStore = useWishlistStore()
 const authStore = useAuthStore()
@@ -979,6 +978,10 @@ const overviewTitleDisplay = computed(() => {
   if (raw == null || String(raw).trim() === '') return t('eventDetails.untitled')
   return String(raw).trim()
 })
+
+const overviewEventDateDisplay = computed(() =>
+  formatOverviewLongEventDate(props.event, locale.value, t('eventDetails.notSpecified')),
+)
 
 const overviewDescriptionDisplay = computed(() => {
   const raw = props.event?.description

@@ -136,7 +136,7 @@
           </svg>
           <div
             v-if="dateTimeRangeDisplay"
-            class="tw:flex tw:flex-col tw:gap-0.5 tw:min-w-0 tw:text-sm tw:text-[var(--primary-color)] tw:leading-snug"
+            class="tw:flex tw:flex-col tw:gap-0.5 tw:min-w-0 tw:text-xs tw:text-[var(--primary-color)] tw:leading-snug"
           >
             <p class="tw:m-0">{{ dateTimeRangeDisplay }}</p>
           </div>
@@ -148,7 +148,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
-          <span class="tw:text-sm tw:text-[var(--primary-color)] tw:cursor-pointer tw:leading-snug tw:line-clamp-2">{{ event.venue_name }}</span>
+          <span class="tw:text-xs tw:text-[var(--primary-color)] tw:cursor-pointer tw:leading-snug tw:line-clamp-2">{{ event.venue_name }}</span>
         </div>
 
         <!-- Category + Price (2-col) -->
@@ -209,7 +209,7 @@
           type="button"
           :disabled="!hasMapCoordinates"
           @click.stop="handleRouteClick"
-          class="tw:flex-1 tw:text-sm tw:px-2 tw:py-1.5 tw:rounded-lg tw:border tw:border-[var(--primary-color)]/35 tw:text-[var(--primary-color)] tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 hover:tw:bg-[#FFFAF5] hover:tw:border-[var(--primary-color)]/50 disabled:tw:opacity-40 disabled:tw:pointer-events-none disabled:hover:tw:bg-white"
+          class="tw:flex-1 tw:text-xs tw:px-2 tw:py-1.5 tw:rounded-lg tw:border tw:border-[var(--primary-color)]/35 tw:text-[var(--primary-color)] tw:bg-white tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 hover:tw:bg-[#FFFAF5] hover:tw:border-[var(--primary-color)]/50 disabled:tw:opacity-40 disabled:tw:pointer-events-none disabled:hover:tw:bg-white"
         >
           <svg class="tw:w-3.5 tw:h-3.5 tw:shrink-0 tw:text-[var(--primary-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -220,7 +220,7 @@
           v-if="!hideViewEvent"
           type="button"
           @click="emit('viewEvent', event)"
-          class="event-card-view-btn no-hover tw:flex-1 tw:text-sm tw:px-2 tw:py-1.5 tw:rounded-lg tw:bg-orange-500 tw:text-white tw:border tw:border-orange-500 tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 hover:tw:bg-orange-600 hover:tw:border-orange-600 active:tw:bg-orange-700 active:tw:border-orange-700"
+          class="event-card-view-btn no-hover tw:flex-1 tw:text-xs tw:px-2 tw:py-1.5 tw:rounded-lg tw:bg-orange-500 tw:text-white tw:border tw:border-orange-500 tw:flex tw:items-center tw:justify-center tw:gap-1 tw:transition-all tw:duration-200 hover:tw:bg-orange-600 hover:tw:border-orange-600 active:tw:bg-orange-700 active:tw:border-orange-700"
         >
           {{ $t('eventCard.viewEvent') }}
           <svg class="tw:w-3.5 tw:h-3.5 tw:shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

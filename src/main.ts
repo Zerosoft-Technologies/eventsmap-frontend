@@ -34,18 +34,39 @@ async function bootstrap() {
   // Register router and i18n first
   app.use(router)
   app.use(i18n)
-  
+
   // Mount the app immediately so FullPageLoader is visible
   app.mount('#app')
-  
-  // Show auth checking state (FullPageLoader will be visible now)
+
   loadingStore.setAuthChecking(true)
-  
-  // Wait for auth initialization to complete
-  await authStore.initializeAuth()
-  
-  // Hide auth checking state
-  loadingStore.setAuthChecking(false)
+
+  const AUTH_INIT_TIMEOUT_MS = 20_000
+
+  try {
+    await Promise.race([
+      authStore.initializeAuth(),
+      new Promise<void>((_, reject) => {
+        setTimeout(() => reject(new Error('Auth initialization timed out')), AUTH_INIT_TIMEOUT_MS)
+      }),
+    ])
+    await router.isReady()
+  } catch (error) {
+    console.error('Auth initialization failed:', error)
+    // Never block the UI on a stuck /auth/me call
+    authStore.setToken(null)
+    authStore.markAuthReady()
+    try {
+      await router.isReady()
+    } catch {
+      // ignore
+    }
+  } finally {
+    loadingStore.setAuthChecking(false)
+  }
 }
 
-bootstrap()
+bootstrap().catch((error) => {
+  console.error('App bootstrap failed:', error)
+  useAuthStore().markAuthReady()
+  loadingStore.setAuthChecking(false)
+})

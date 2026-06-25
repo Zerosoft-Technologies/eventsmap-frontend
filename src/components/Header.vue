@@ -746,7 +746,7 @@
     </div>
   </transition>
 
-  <div v-if="showResults">
+  <div v-if="showListingOnHome">
     <AllEvents
       ref="allEventsRef"
       :events="viewportFilteredEvents"
@@ -843,6 +843,7 @@ const notificationStore = useNotificationStore()
 const chatStore = useChatStore()
 const mapStore = useMapStore()
 const router = useRouter()
+const route = useRoute()
 
 const userCreatePath = computed(() =>
   getCreateRoute(authStore.user?.profile_type, authStore.user?.account_type)
@@ -867,6 +868,7 @@ const galleryRoute = computed(() => {
 })
 
 function goToLogin() {
+  dismissMapOverlays()
   closeMobileHeader()
   const path = route.path.toLowerCase()
   if (path === '/login' || path === '/register') {
@@ -955,13 +957,16 @@ function formatInvitationMessage(n) {
 }
 
 function closeHomePanelsForNav() {
-  if (route.name !== 'Home') return
   showResults.value = false
   showEventDetailsPanel.value = false
   showProfileDetailsPanel.value = false
   selectedEvent.value = null
   selectedProfile.value = null
   homeListingDockLayout.value = 'hidden'
+}
+
+function dismissMapOverlays() {
+  closeHomePanelsForNav()
 }
 
 function onHeaderProfileNav() {
@@ -1022,12 +1027,28 @@ const isCalendarOpen = computed(() => isMobileMenuOpen.value && activeField.valu
 watch(isMobileMenuOpen, (val) => { document.body.style.overflow = val ? 'hidden' : '' })
 
 const showResults = ref(false)
+const isHomePage = computed(() => route.name === 'Home')
+const isGuestAuthPage = computed(() => {
+  const name = route.name
+  return name === 'Login' || name === 'Register' || name === 'ForgotPassword' || name === 'ResetPassword' || name === 'VerifyEmail' || name === 'EmailVerified'
+})
+/** Map list panel is only relevant on the home map — never on login/profile routes. */
+const showListingOnHome = computed(() => showResults.value && isHomePage.value && !isGuestAuthPage.value)
+
+watch(
+  () => route.fullPath,
+  () => {
+    if (!isHomePage.value) {
+      dismissMapOverlays()
+    }
+  },
+)
+
 const allEventsRef = ref(null)
 /** Suppress list auto-open during cold start / logo reset; enabled after mount. */
 let suppressListingOpenUntil = 0
 const listingUserActionsReady = ref(false)
 const searchInput = ref(null)
-const route = useRoute()
 const city = ref("")
 const searchLocation = ref("")
 const searchTerm = ref('')
@@ -1813,6 +1834,20 @@ export default {
     0 0 0 3px color-mix(in srgb, var(--secondary-color, #FF7700) 12%, transparent);
 }
 
+.header-date-field :deep(button.bg-vtd-primary-600),
+.header-date-field :deep(.bg-vtd-primary-600) {
+  background-color: #ff7700 !important;
+  color: #fff !important;
+  border-color: #ff7700 !important;
+}
+
+.header-date-field :deep(button.bg-vtd-primary-600:hover),
+.header-date-field :deep(.hover\:bg-vtd-primary-700:hover) {
+  background-color: #ea580c !important;
+  border-color: #ea580c !important;
+  color: #fff !important;
+}
+
 /* ─── Icon buttons (wishlist, notifications, language) ─── */
 .icon-btn {
   border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 42%, rgba(0, 0, 0, 0.08));
@@ -2139,5 +2174,19 @@ export default {
 .mobile-datepicker-panel :deep(.text-vtd-orange svg) {
   width: 1.1rem;
   height: 1.1rem;
+}
+
+.mobile-datepicker-panel :deep(button.bg-vtd-primary-600),
+.mobile-datepicker-panel :deep(.bg-vtd-primary-600) {
+  background-color: #ff7700 !important;
+  color: #fff !important;
+  border-color: #ff7700 !important;
+}
+
+.mobile-datepicker-panel :deep(button.bg-vtd-primary-600:hover),
+.mobile-datepicker-panel :deep(.hover\:bg-vtd-primary-700:hover) {
+  background-color: #ea580c !important;
+  border-color: #ea580c !important;
+  color: #fff !important;
 }
 </style>

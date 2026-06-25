@@ -250,3 +250,16 @@ details.maplibregl-ctrl.maplibregl-ctrl-attrib.maplibregl-compact.maplibregl-com
   border-right: 6px solid transparent;
   border-top: 8px solid var(--pin-accent, #ff7700);
 }
+
+.away-apply-picker {
+  background-color: var(--secondary-color, #ff7700);
+  border-color: var(--secondary-color, #ff7700);
+  color: #fff;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--secondary-color, #ff7700) 35%, transparent);
+}
+
+.away-apply-picker:hover {
+  color: var(--primary-color, #0061ff);
+  background-color: color-mix(in srgb, var(--secondary-color, #ff7700) 90%, #fff);
+  border-color: color-mix(in srgb, var(--secondary-color, #ff7700) 90%, #fff);
+}

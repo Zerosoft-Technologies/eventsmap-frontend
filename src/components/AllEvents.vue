@@ -209,7 +209,7 @@ const props = defineProps({
 
 const isEventsMode = computed(() => props.profileType === 'events')
 
-const panelLabel = computed(() => t('map.listView'))
+const panelLabel = computed(() => t('map.list'))
 
 const emptyTitle = computed(() =>
   isEventsMode.value ? t('allEvents.noEventsFound') : t('allEvents.noProfilesFound')
