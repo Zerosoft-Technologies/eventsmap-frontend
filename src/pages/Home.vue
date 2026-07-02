@@ -1,5 +1,31 @@
 <template>
-  <div ref="mapContainer" class="map-container tw:w-full tw:h-screen"></div>
+  <div class="tw:relative tw:w-full tw:h-screen">
+    <div ref="mapContainer" class="map-container tw:w-full tw:h-full"></div>
+
+    <button
+      v-if="mapReady"
+      type="button"
+      class="map-geolocate-btn"
+      :title="$t('map.centerOnLocation')"
+      :aria-label="$t('map.centerOnLocation')"
+      @click="requestGeolocation"
+    >
+      <svg class="map-geolocate-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <circle cx="12" cy="12" r="3" stroke-width="2" />
+        <path stroke-width="2" stroke-linecap="round" d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+      </svg>
+    </button>
+
+    <transition name="map-hint-fade">
+      <div
+        v-if="mapStore.showZoomOutHint"
+        class="map-zoom-out-hint"
+        role="status"
+      >
+        {{ $t('map.noEventsNearbyZoomOut') }}
+      </div>
+    </transition>
+  </div>
 </template>
 
 <script setup>
@@ -16,11 +42,14 @@ import {
   MAP_RESTORE_EVENT_POPUP,
   MAP_POPUP_CLOSED,
   MAP_RESET_HOME,
+  MAP_USER_GEOLOCATION,
+  MAP_REQUEST_GEOLOCATION,
 } from '@/utils/mapPopupBridge'
+import { createUserLocationMarkerElement, MAP_NEIGHBOURHOOD_ZOOM } from '@/utils/geolocation'
 import { pickProfileLatLng } from '@/api/discoveryProfiles'
 import { useMapStore } from '@/stores/mapStore'
 import { clusterPrecisionForZoom, createMapClusterMarkerElement } from '@/utils/mapClustering'
-import { attachMarkerPopupClick } from '@/utils/mapMarkerPopup'
+import { attachMarkerPopupClick, attachClusterMarkerClick } from '@/utils/mapMarkerPopup'
 import { groupEventsIntoClusters } from '@/utils/eventMapClustering'
 import { groupProfilesIntoClusters } from '@/utils/profileMapClustering'
 import { eventMapFocusPulse } from '@/utils/mapEventFocus'
@@ -41,14 +70,16 @@ import { circlePolygonFeature } from '@/utils/mapCircleGeo'
 import i18n from '../i18n'
 
 /** Default talent address region radius on the discovery map (km). */
-const TALENT_REGION_RADIUS_KM = 5
+const TALENT_REGION_RADIUS_KM = 1.5
 
 /** City / neighbourhood zoom (~1 km visible area at equator). */
 const MAP_CITY_ZOOM = 13
 
 const mapContainer = ref(null)
+const mapReady = ref(false)
 
 let map
+let userLocationMarker = null
 const mapStore = useMapStore()
 const markerPool = new Map()
 const profileMarkerPool = new Map()
@@ -74,6 +105,12 @@ function getMapVisibleEvents() {
   return filterItemsByMapViewport(active, mapStore.mapViewportBounds)
 }
 
+/** All loaded events for map markers — not clipped to viewport (avoids losing pins while zooming). */
+function getMapEventsForMarkers() {
+  const all = dedupeMapItemsById(mapStore.mapEventItems)
+  return filterActiveDiscoveryEvents(all)
+}
+
 function normalizeMapProfileType(profileType) {
   if (!profileType) return null
   const pt = String(profileType).toLowerCase()
@@ -92,6 +129,20 @@ function getMapVisibleProfiles() {
   return filterItemsByMapViewport(filtered, mapStore.mapViewportBounds)
 }
 
+/** All loaded profiles for map markers — not clipped to viewport (avoids losing pins while zooming). */
+function getMapProfilesForMarkers() {
+  const all = dedupeMapItemsById(mapStore.mapProfileItems)
+  const activeType = mapStore.mapProfileType
+  return activeType
+    ? all.filter((p) => normalizeMapProfileType(p.profileType ?? p.profile_type) === activeType)
+    : all
+}
+
+function profileClusterColor(profileType) {
+  const pt = normalizeMapProfileType(profileType) ?? 'talents'
+  return PROFILE_MARKER_COLORS[pt] ?? '#6b7280'
+}
+
 function syncActiveMapMarkers() {
   if (!map?.loaded()) return
   if (mapStore.mapMarkerMode === 'events') {
@@ -101,7 +152,7 @@ function syncActiveMapMarkers() {
   syncProfileMarkers()
 }
 
-function syncTalentRegionCircles() {
+function syncTalentRegionCircles(visibleTalentIds = null) {
   if (!map?.loaded()) return
   if (mapStore.mapMarkerMode !== 'profiles' || mapStore.mapProfileType !== 'talents') {
     clearTalentRegionCircles()
@@ -111,12 +162,16 @@ function syncTalentRegionCircles() {
   const fillLayerId = 'talent-regions-fill'
   const lineLayerId = 'talent-regions-line'
 
-  const talents = getMapVisibleProfiles().filter((p) => {
+  const talents = getMapProfilesForMarkers().filter((p) => {
     const type = p.profileType ?? p.profile_type
     return type === 'talents' || type === 'talent'
   })
 
   const features = talents
+    .filter((p) => {
+      if (!visibleTalentIds) return true
+      return visibleTalentIds.has(String(p.id ?? ''))
+    })
     .map((p) => {
       const ll = pickProfileLatLng(p)
       if (!ll) return null
@@ -178,21 +233,90 @@ function eventLngLat(ev) {
 function collectMapPoints() {
   const points = []
   if (mapStore.mapMarkerMode === 'events') {
-    for (const ev of getMapVisibleEvents()) {
+    for (const ev of getMapEventsForMarkers()) {
       const ll = eventLngLat(ev)
       if (ll) points.push(ll)
     }
     return points
   }
-  for (const p of getMapVisibleProfiles()) {
+  for (const p of getMapProfilesForMarkers()) {
     const ll = pickProfileLatLng(p)
     if (ll) points.push({ lat: ll.latitude, lng: ll.longitude })
   }
   return points
 }
 
+function countVisibleMarkersInViewport() {
+  if (mapStore.mapMarkerMode === 'events') {
+    return getMapVisibleEvents().filter((ev) => eventLngLat(ev)).length
+  }
+  return getMapVisibleProfiles().filter((p) => pickProfileLatLng(p)).length
+}
+
+function updateZoomOutHint() {
+  if (!mapStore.geolocationActive) {
+    mapStore.setShowZoomOutHint(false)
+    return
+  }
+  const zoom = map?.getZoom() ?? 0
+  const visible = countVisibleMarkersInViewport()
+  mapStore.setShowZoomOutHint(visible === 0 && zoom >= MAP_NEIGHBOURHOOD_ZOOM - 1)
+}
+
+function syncUserLocationMarker() {
+  if (!map?.loaded()) return
+  const geo = mapStore.userGeolocation
+  if (!geo) {
+    if (userLocationMarker) {
+      userLocationMarker.remove()
+      userLocationMarker = null
+    }
+    return
+  }
+  if (!userLocationMarker) {
+    userLocationMarker = new maplibregl.Marker({
+      element: createUserLocationMarkerElement(),
+    })
+      .setLngLat([geo.lng, geo.lat])
+      .addTo(map)
+    return
+  }
+  userLocationMarker.setLngLat([geo.lng, geo.lat])
+}
+
+function flyToUserGeolocation() {
+  const geo = mapStore.userGeolocation
+  if (!map || !geo) return
+  map.flyTo({
+    center: [geo.lng, geo.lat],
+    zoom: MAP_NEIGHBOURHOOD_ZOOM,
+    speed: 1.2,
+    curve: 1.42,
+    essential: true,
+  })
+}
+
+function requestGeolocation() {
+  window.dispatchEvent(new CustomEvent(MAP_REQUEST_GEOLOCATION))
+}
+
+function onUserGeolocation() {
+  syncUserLocationMarker()
+  flyToUserGeolocation()
+  updateZoomOutHint()
+}
+
 function fitMapToResults() {
   if (!map) return
+
+  if (mapStore.geolocationActive && mapStore.userGeolocation) {
+    flyToUserGeolocation()
+    syncUserLocationMarker()
+    publishMapViewportBounds()
+    updateZoomOutHint()
+    return
+  }
+
   const points = collectMapPoints()
   const loc = mapStore.appliedLocation
 
@@ -207,6 +331,7 @@ function fitMapToResults() {
       })
     }
     publishMapViewportBounds()
+    updateZoomOutHint()
     return
   }
 
@@ -219,6 +344,7 @@ function fitMapToResults() {
       essential: true,
     })
     publishMapViewportBounds()
+    updateZoomOutHint()
     return
   }
 
@@ -231,6 +357,7 @@ function fitMapToResults() {
     essential: true,
   })
   publishMapViewportBounds()
+  updateZoomOutHint()
 }
 
 /** Event listing pins — branded image or premium photo circle marker */
@@ -378,11 +505,46 @@ function easeMapToPoint(lng, lat) {
   })
 }
 
+function easeMapToCluster(lng, lat, members) {
+  if (!map) return
+  const points = (members ?? []).filter(
+    (m) => Number.isFinite(m.latitude) && Number.isFinite(m.longitude),
+  )
+  if (points.length <= 1) {
+    easeMapToPoint(lng, lat)
+    return
+  }
+
+  const bounds = new maplibregl.LngLatBounds()
+  for (const m of points) {
+    bounds.extend([m.longitude, m.latitude])
+  }
+
+  const currentZoom = map.getZoom()
+  const targetZoom = Math.min(Math.max(currentZoom + 2, 14), 18)
+
+  map.fitBounds(bounds, {
+    padding: { top: 96, bottom: 120, left: 72, right: 72 },
+    maxZoom: targetZoom,
+    duration: 600,
+  })
+}
+
 function wireMapMarker(marker, el, lng, lat) {
   attachMarkerPopupClick(marker, el, lng, lat, {
     flyOnClick: true,
     easeTo: easeMapToPoint,
     markerPools: [markerPool, profileMarkerPool],
+  })
+}
+
+function wireClusterMarker(marker, el, lng, lat, memberPoints) {
+  attachClusterMarkerClick(marker, el, lng, lat, {
+    getMemberPoints: () => memberPoints,
+    easeToCluster: easeMapToCluster,
+    getZoom: () => map.getZoom(),
+    markerPools: [markerPool, profileMarkerPool],
+    maxZoomBeforePopup: 17,
   })
 }
 
@@ -503,6 +665,12 @@ function dismissAllMapPopups() {
 function onMapResetHome() {
   dismissAllMapPopups()
   if (!map) return
+  if (mapStore.geolocationActive && mapStore.userGeolocation) {
+    flyToUserGeolocation()
+    publishMapViewportBounds()
+    updateZoomOutHint()
+    return
+  }
   const loc = mapStore.appliedLocation
   if (loc?.lat != null && loc?.lng != null) {
     map.flyTo({
@@ -564,7 +732,7 @@ function syncEventMarkers() {
   eventMarkerSyncRunning = true
 
   try {
-    const events = getMapVisibleEvents()
+    const events = getMapEventsForMarkers()
     const points = events
       .map((ev) => {
         const ll = eventLngLat(ev)
@@ -624,18 +792,30 @@ function syncEventMarkers() {
       }
 
       const key = `ec-${cluster.key}`
-      if (markerPool.has(key)) continue
+      const existingCluster = markerPool.get(key)
+      if (existingCluster?.count === cluster.events.length) continue
+      if (existingCluster) {
+        existingCluster.marker.remove()
+        markerPool.delete(key)
+      }
 
       const el = createMapClusterMarkerElement(cluster.events.length, 'event')
       const popup = mountEventClusterPopup(cluster.events)
+      const memberPoints = cluster.events
+        .map((ev) => {
+          const ll = eventLngLat(ev)
+          if (!ll) return null
+          return { latitude: ll.lat, longitude: ll.lng }
+        })
+        .filter(Boolean)
 
       const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat([lng, lat])
         .setPopup(popup)
         .addTo(map)
 
-      wireMapMarker(marker, el, lng, lat)
-      markerPool.set(key, { marker, el })
+      wireClusterMarker(marker, el, lng, lat, memberPoints)
+      markerPool.set(key, { marker, el, count: cluster.events.length })
     }
   } finally {
     eventMarkerSyncRunning = false
@@ -661,7 +841,7 @@ function syncProfileMarkers() {
   profileMarkerSyncRunning = true
 
   try {
-    const profiles = getMapVisibleProfiles()
+    const profiles = getMapProfilesForMarkers()
     const activeProfileType = mapStore.mapProfileType
     const points = profiles
       .map((p) => {
@@ -678,11 +858,14 @@ function syncProfileMarkers() {
     const precision = clusterPrecisionForZoom(map.getZoom())
     const clusters = groupProfilesIntoClusters(points, precision)
 
+    const soloTalentIds = new Set()
     const nextKeys = new Set()
     for (const cluster of clusters) {
       if (cluster.profiles.length === 1) {
         const p = cluster.profiles[0]
         nextKeys.add(profileMarkerPoolKey(p.id, p.profileType ?? activeProfileType))
+        const pt = normalizeMapProfileType(p.profileType ?? activeProfileType)
+        if (pt === 'talents') soloTalentIds.add(String(p.id ?? ''))
       } else {
         nextKeys.add(profileClusterPoolKey(cluster.key, activeProfileType))
       }
@@ -728,24 +911,33 @@ function syncProfileMarkers() {
 
       const key = profileClusterPoolKey(cluster.key, activeProfileType)
       const existingCluster = profileMarkerPool.get(key)
+      if (existingCluster?.count === cluster.profiles.length) continue
       if (existingCluster) {
         existingCluster.marker.remove()
         profileMarkerPool.delete(key)
       }
 
-      const el = createMapClusterMarkerElement(cluster.profiles.length, 'profile')
+      const el = createMapClusterMarkerElement(
+        cluster.profiles.length,
+        'profile',
+        profileClusterColor(activeProfileType),
+      )
       const popup = mountProfileClusterPopup(cluster.profiles)
+      const memberPoints = cluster.profiles.map((p) => ({
+        latitude: p.latitude,
+        longitude: p.longitude,
+      }))
 
       const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat([lng, lat])
         .setPopup(popup)
         .addTo(map)
 
-      wireMapMarker(marker, el, lng, lat)
-      profileMarkerPool.set(key, { marker, el })
+      wireClusterMarker(marker, el, lng, lat, memberPoints)
+      profileMarkerPool.set(key, { marker, el, count: cluster.profiles.length })
     }
 
-    syncTalentRegionCircles()
+    syncTalentRegionCircles(soloTalentIds)
   } finally {
     profileMarkerSyncRunning = false
     if (profileMarkerSyncQueued) {
@@ -771,6 +963,7 @@ function publishMapViewportBounds() {
 function scheduleMapClusterResync() {
   if (!map) return
   publishMapViewportBounds()
+  updateZoomOutHint()
   if (mapStore.mapMarkerMode === 'events' && mapStore.mapEventItems.length === 0) return
   if (mapStore.mapMarkerMode === 'profiles' && mapStore.mapProfileItems.length === 0) return
   if (mapClusterResyncTimer) clearTimeout(mapClusterResyncTimer)
@@ -812,7 +1005,9 @@ onMounted(() => {
   })
 
   map.on('load', () => {
+    mapReady.value = true
     publishMapViewportBounds()
+    syncUserLocationMarker()
     refreshMapFromStore()
   })
   map.on('moveend', scheduleMapClusterResync)
@@ -821,13 +1016,19 @@ onMounted(() => {
   window.addEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetail)
   window.addEventListener(MAP_RESTORE_EVENT_POPUP, onMapRestoreEventPopup)
   window.addEventListener(MAP_RESET_HOME, onMapResetHome)
+  window.addEventListener(MAP_USER_GEOLOCATION, onUserGeolocation)
 })
 
 onUnmounted(() => {
   window.removeEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetail)
   window.removeEventListener(MAP_RESTORE_EVENT_POPUP, onMapRestoreEventPopup)
   window.removeEventListener(MAP_RESET_HOME, onMapResetHome)
+  window.removeEventListener(MAP_USER_GEOLOCATION, onUserGeolocation)
   suspendedEventPopupMarker = null
+  if (userLocationMarker) {
+    userLocationMarker.remove()
+    userLocationMarker = null
+  }
   if (mapClusterResyncTimer) clearTimeout(mapClusterResyncTimer)
   eventMarkerSyncRunning = false
   eventMarkerSyncQueued = false
@@ -843,6 +1044,10 @@ watch(
   () => mapStore.appliedLocation,
   (loc) => {
     if (!map || !loc) return
+    if (mapStore.geolocationActive && mapStore.userGeolocation) {
+      flyToUserGeolocation()
+      return
+    }
     const hasResults =
       mapStore.mapEventItems.length > 0 || mapStore.mapProfileItems.length > 0
     if (hasResults) return
@@ -854,6 +1059,15 @@ watch(
       easing: (t) => t,
       essential: true,
     })
+  },
+  { deep: true },
+)
+
+watch(
+  () => mapStore.userGeolocation,
+  () => {
+    syncUserLocationMarker()
+    updateZoomOutHint()
   },
   { deep: true },
 )
@@ -928,5 +1142,63 @@ watch(
   filter: brightness(1.08);
   transform: scale(1.06);
   transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.map-geolocate-btn {
+  position: absolute;
+  right: 16px;
+  bottom: 24px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  color: #1a73e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.map-geolocate-btn:hover {
+  background: #f0f7ff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+.map-geolocate-btn__icon {
+  width: 22px;
+  height: 22px;
+}
+
+.map-zoom-out-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 88px;
+  z-index: 5;
+  max-width: min(92vw, 360px);
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+}
+
+.map-hint-fade-enter-active,
+.map-hint-fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.map-hint-fade-enter-from,
+.map-hint-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
 }
 </style>

@@ -118,13 +118,14 @@
     "onlineEvents": "Online Evenementen"
   },
   "invite": {
+    "sectionIntro": "Voeg geregistreerde deelnemers toe of nodig iemand per e-mail uit die nog niet ingeschreven staat op The Events Map.",
     "guestTitle": "Uitnodigen per e-mail (nog niet geregistreerd)",
-    "guestHint": "Stuur een uitnodiging naar iemand die nog geen EventsMap-account heeft.",
+    "guestHint": "Stuur een uitnodiging naar iemand die nog niet ingeschreven staat op The Events Map.",
     "guestEmailPlaceholder": "E-mailadres",
     "guestNamePlaceholder": "Naam (optioneel)",
     "guestSend": "Uitnodiging versturen",
     "guestSending": "Verzenden…",
-    "guestUserExists": "Dit e-mailadres is al geregistreerd bij EventsMap.",
+    "guestUserExists": "Dit e-mailadres is al geregistreerd op The Events Map.",
     "guestAlreadyInvited": "Er is al een uitnodiging naar dit e-mailadres verstuurd.",
     "guestSendSuccess": "Uitnodiging succesvol verzonden.",
     "guestSendError": "Uitnodiging kon niet worden verzonden. Probeer het opnieuw.",
@@ -136,6 +137,9 @@
   "map": {
     "searchThisArea": "Zoeken",
     "centerOnLocation": "Centreer op mijn locatie",
+    "geolocationRequiresHttps": "Locatie werkt alleen via HTTPS (of localhost). Open de site via een beveiligde verbinding om je huidige positie te gebruiken.",
+    "geolocationDenied": "Locatietoegang is geweigerd. Sta locatie toe in je browserinstellingen of kies handmatig een stad.",
+    "noEventsNearbyZoomOut": "Geen evenementen in de buurt op deze zoom. Zoom uit om meer op de kaart te ontdekken.",
     "list": "Lijst",
     "listView": "Lijstweergave",
     "showList": "Toon Lijst",
@@ -172,6 +176,8 @@
     "overviewDressCode": "Dresscode",
     "overviewAge": "Doelgroep",
     "overviewEntranceFee": "Toegangsprijs",
+    "dressCodeNone": "Geen dresscode",
+    "dressCodeSelected": "Dresscode",
     "overviewVenueName": "Locatienaam",
     "dateTime": "Datum & Tijd",
     "location": "Locatie",
@@ -206,8 +212,9 @@
       "websiteHint": "FAQ's & evenementdetails",
       "notProvided": "Niet opgegeven",
       "sendMessageTitle": "Stuur ons een bericht",
+      "loginToChat": "Log in om een bericht te sturen naar de organisator van het evenement.",
       "formCardTitle": "Contactformulier",
-      "formCardSubtitle": "Vul het formulier in; we nemen zo snel mogelijk contact met je op.",
+      "formCardSubtitle": "Schrijf uw bericht hieronder en we openen de chat voor u.",
       "fullName": "Volledige naam",
       "fullNamePlaceholder": "Vul je volledige naam in",
       "phoneLabel": "Telefoonnummer",
@@ -397,6 +404,10 @@
     "empty": "Geen opgeslagen evenementen",
     "emptyHint": "Klik op het hart-icoon op evenementen om ze hier op te slaan",
     "clearAll": "Alles Wissen",
-    "clearing": "Wissen..."
+    "clearing": "Wissen...",
+    "loginRequired": "Log eerst in om evenementen op te slaan in uw verlanglijstje.",
+    "loginRequiredToMessage": "Log eerst in om berichten te verzenden.",
+    "loginRequiredToInvite": "Log eerst in om uitnodigingen te verzenden.",
+    "loginRequiredToBlock": "Log eerst in om profielen te blokkeren."
   }
 }

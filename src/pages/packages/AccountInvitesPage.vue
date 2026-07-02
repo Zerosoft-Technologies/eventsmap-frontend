@@ -71,7 +71,7 @@
                 All Invitations
               </h1>
               <p class="tw:text-sm tw:text-gray-600 tw:mt-2 tw:max-w-2xl">
-                Add registered participants or invite someone by email who hasn't joined The Events Map yet.
+                {{ $t('invite.sectionIntro') }}
               </p>
             </div>
             <!-- <button

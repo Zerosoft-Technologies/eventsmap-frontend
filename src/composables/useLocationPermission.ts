@@ -1,4 +1,5 @@
 import { ref, readonly, computed } from 'vue'
+import { isGeolocationSecureContext } from '@/utils/geolocation'
 
 // Store coords at module level for one-location-per-session
 let sessionCoords: GeolocationPosition | null = null
@@ -109,6 +110,16 @@ const requestLocation = async (): Promise<LocationCoords | null> => {
     error.value = {
       code: 0,
       message: 'Geolocation is not supported by this browser',
+      isPermissionDenied: false
+    }
+    permissionStatus.value = 'unsupported'
+    return null
+  }
+
+  if (!isGeolocationSecureContext()) {
+    error.value = {
+      code: 0,
+      message: 'Geolocation requires a secure connection (HTTPS or localhost).',
       isPermissionDenied: false
     }
     permissionStatus.value = 'unsupported'
@@ -271,6 +282,7 @@ export function useLocationPermission() {
     
     // Utilities
     getBrowserInstructions,
-    detectBrowser
+    detectBrowser,
+    isGeolocationSecureContext,
   }
 }

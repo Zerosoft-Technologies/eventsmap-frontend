@@ -601,7 +601,7 @@
           </div>
 
           <p class="tw:text-sm tw:text-[var(--text-primary)]">
-            Add registered participants or invite someone by email who is not on EventsMap yet.
+            {{ $t('invite.sectionIntro') }}
           </p>
 
           <div class="tw:space-y-3">

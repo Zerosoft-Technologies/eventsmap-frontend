@@ -1181,8 +1181,8 @@ const profileOwnerUserId = computed(() => {
 })
 
 const canMessageProfile = computed(() => {
-  if (!showContactBox.value) return false
-  if (props.profileType !== 'talents') return false
+  if (authStore?.user?.account_type !== 'premium') return false
+  if (props.profileType == 'events') return false
   const uid = profileOwnerUserId.value
   if (uid == null || !Number.isFinite(uid)) return false
   if (authStore.user?.id != null && Number(authStore.user.id) === uid) return false

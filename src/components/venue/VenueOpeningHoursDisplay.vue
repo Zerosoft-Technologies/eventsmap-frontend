@@ -40,6 +40,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import {
+  normalizeTimeForInput,
   parseVenueOpeningHoursFromApi,
 } from '@/utils/venueOpeningHours'
 
@@ -65,13 +66,7 @@ function dayAbbrev(day: string): string {
 }
 
 function formatTimeLabel(value: string): string {
-  const [hRaw, mRaw] = value.split(':')
-  const h = Number(hRaw)
-  const m = Number(mRaw)
-  if (Number.isNaN(h) || Number.isNaN(m)) return value
-  const period = h >= 12 ? 'PM' : 'AM'
-  const hour12 = h % 12 === 0 ? 12 : h % 12
-  return `${hour12}:${String(m).padStart(2, '0')} ${period}`
+  return normalizeTimeForInput(value)
 }
 </script>
 
@@ -83,9 +78,9 @@ function formatTimeLabel(value: string): string {
 }
 
 .venue-hours__row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(8.5rem, 1fr) minmax(7.5rem, auto);
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
   padding: 0.875rem 1rem;
   border-radius: 1rem;
@@ -157,9 +152,10 @@ function formatTimeLabel(value: string): string {
 
 .venue-hours__slots {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.5rem;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.35rem;
   min-width: 0;
 }
 
@@ -171,6 +167,7 @@ function formatTimeLabel(value: string): string {
   border-radius: 9999px;
   font-size: 0.8125rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: #1d4ed8;
   background: #eff6ff;
   border: 1px solid #dbeafe;

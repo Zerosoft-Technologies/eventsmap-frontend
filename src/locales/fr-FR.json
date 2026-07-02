@@ -118,13 +118,14 @@
     "onlineEvents": "Événements en Ligne"
   },
   "invite": {
+    "sectionIntro": "Ajoutez des participants inscrits ou invitez quelqu'un par e-mail qui n'est pas encore inscrit sur The Events Map.",
     "guestTitle": "Inviter par e-mail (pas encore inscrit)",
-    "guestHint": "Envoyez une invitation à une personne qui n'a pas encore de compte EventsMap.",
+    "guestHint": "Envoyez une invitation à quelqu'un qui n'est pas encore inscrit sur The Events Map.",
     "guestEmailPlaceholder": "Adresse e-mail",
     "guestNamePlaceholder": "Nom (facultatif)",
     "guestSend": "Envoyer l'invitation",
     "guestSending": "Envoi…",
-    "guestUserExists": "Cette adresse e-mail est déjà enregistrée sur EventsMap.",
+    "guestUserExists": "Cette adresse e-mail est déjà enregistrée sur The Events Map.",
     "guestAlreadyInvited": "Une invitation a déjà été envoyée à cette adresse e-mail.",
     "guestSendSuccess": "Invitation envoyée avec succès.",
     "guestSendError": "Impossible d'envoyer l'invitation. Veuillez réessayer.",
@@ -136,6 +137,9 @@
   "map": {
     "searchThisArea": "Rechercher",
     "centerOnLocation": "Centrer sur ma position",
+    "geolocationRequiresHttps": "La géolocalisation nécessite HTTPS (ou localhost). Ouvrez le site via une connexion sécurisée pour utiliser votre position.",
+    "geolocationDenied": "L'accès à la position a été refusé. Autorisez la localisation dans votre navigateur ou choisissez une ville manuellement.",
+    "noEventsNearbyZoomOut": "Aucun événement à proximité à ce niveau de zoom. Dézoomez pour en découvrir plus sur la carte.",
     "list": "Liste",
     "listView": "Vue liste",
     "showList": "Afficher la Liste",
@@ -172,6 +176,8 @@
     "overviewDressCode": "Code vestimentaire",
     "overviewAge": "Public",
     "overviewEntranceFee": "Prix d'entrée",
+    "dressCodeNone": "Pas de code vestimentaire",
+    "dressCodeSelected": "Code vestimentaire",
     "overviewVenueName": "Nom du lieu",
     "dateTime": "Date & Heure",
     "location": "Lieu",
@@ -206,8 +212,9 @@
       "websiteHint": "FAQ et détails de l'événement",
       "notProvided": "Non renseigné",
       "sendMessageTitle": "Envoyez-nous un message",
+      "loginToChat": "Connectez-vous pour envoyer un message à l'organisateur de l'événement.",
       "formCardTitle": "Formulaire de contact",
-      "formCardSubtitle": "Remplissez le formulaire ci-dessous et nous vous répondrons dès que possible.",
+      "formCardSubtitle": "Écrivez votre message ci-dessous et nous ouvrirons le chat pour vous.",
       "fullName": "Nom complet",
       "fullNamePlaceholder": "Saisissez votre nom complet",
       "phoneLabel": "Numéro de téléphone",
@@ -397,6 +404,10 @@
     "empty": "Aucun événement sauvegardé",
     "emptyHint": "Cliquez sur l'icône cœur sur les événements pour les sauvegarder ici",
     "clearAll": "Tout Supprimer",
-    "clearing": "Suppression..."
+    "clearing": "Suppression...",
+    "loginRequired": "Veuillez d'abord vous connecter pour enregistrer des événements dans votre liste de souhaits.",
+    "loginRequiredToMessage": "Veuillez d'abord vous connecter pour envoyer des messages.",
+    "loginRequiredToInvite": "Veuillez d'abord vous connecter pour envoyer des invitations.",
+    "loginRequiredToBlock": "Veuillez d'abord vous connecter pour bloquer des profils."
   }
 }

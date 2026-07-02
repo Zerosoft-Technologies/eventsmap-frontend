@@ -1,11 +1,12 @@
 /** Decimal places for grouping — fewer decimals at lower zoom merges nearby pins. */
 export function clusterPrecisionForZoom(zoom: number): number {
-  if (zoom >= 17) return 7
-  if (zoom >= 15) return 6
-  if (zoom >= 13) return 5
-  if (zoom >= 11) return 4
-  if (zoom >= 9) return 3
-  return 2
+  if (zoom >= 18) return 6
+  if (zoom >= 16) return 5
+  if (zoom >= 14) return 4
+  if (zoom >= 12) return 3
+  if (zoom >= 10) return 2
+  if (zoom >= 8) return 1
+  return 0
 }
 
 export interface MapCluster<T> {
@@ -64,6 +65,7 @@ export type MapClusterMarkerVariant = 'profile' | 'event'
 export function createMapClusterMarkerElement(
   count: number,
   variant: MapClusterMarkerVariant = 'profile',
+  fillColor?: string,
 ): HTMLDivElement {
   const el = document.createElement('div')
   const variantClass =
@@ -80,7 +82,7 @@ export function createMapClusterMarkerElement(
     variant === 'event' ? `${count} events at this location` : `${count} profiles at this location`,
   )
 
-  const fill = variant === 'event' ? '#FF7700' : '#0061FF'
+  const fill = fillColor ?? (variant === 'event' ? '#FF7700' : '#0061FF')
   const label = count > 99 ? '99+' : String(count)
 
   el.innerHTML = `

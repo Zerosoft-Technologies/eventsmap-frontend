@@ -1,5 +1,11 @@
 <template>
-  <header :class="fixedMenu ? 'tw:fixed tw:top-0 tw:left-0 z-50': ''" class="tw:w-full tw:bg-transparent tw:py-2 tw:px-4 tw:md:py-3 tw:md:px-8 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-y-2 header-root">
+  <header
+    :class="[
+      fixedMenu ? 'tw:fixed tw:top-0 tw:left-0 tw:z-50' : '',
+      stickyProfileHeader ? 'tw:sticky tw:top-0 tw:z-50 header-root--profile-sticky' : '',
+    ]"
+    class="tw:w-full tw:bg-transparent tw:py-2 tw:px-4 tw:md:py-3 tw:md:px-8 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-y-2 header-root"
+  >
     <h1 class="tw:font-bold tw:leading-[1.4] tw:tracking-[-0.5px] tw:text-lg">
       <RouterLink to="/" @click.prevent="goToHomeMap">
         <img src="../assets/logo.png" alt="Logo" style="width: 80px;" />
@@ -45,7 +51,7 @@
       <!-- Browse-as (desktop): organisers / talents / venues — kept outside search so search stays events-only -->
       <div v-if="!isProfilePage" class="tw:hidden tw:lg:block">
         <select
-          class="header-profile-type-select tw:h-10 tw:rounded-lg tw:border tw:border-gray-200 tw:bg-white tw:py-2 tw:pl-3 tw:pr-8 tw:text-sm tw:font-medium tw:text-[var(--primary-color)]"
+          class="header-profile-type-select tw:h-10 tw:rounded-lg tw:bg-white tw:py-2 tw:pl-3 tw:pr-8 tw:text-sm tw:font-medium tw:text-[var(--primary-color)]"
           :aria-label="$t('header.profileType.ariaLabel')"
           :value="discoveryProfileType"
           @change="onDesktopProfileTypeChange"
@@ -606,7 +612,7 @@
               {{ $t('header.profileType.ariaLabel') }}
             </span>
             <select
-              class="header-profile-type-select tw:w-full tw:rounded-lg tw:border tw:border-gray-200 tw:bg-white tw:py-2.5 tw:pl-3 tw:pr-8 tw:text-sm tw:font-medium tw:text-[var(--primary-color)]"
+              class="header-profile-type-select tw:w-full tw:rounded-lg tw:bg-white tw:py-2.5 tw:pl-3 tw:pr-8 tw:text-sm tw:font-medium tw:text-[var(--primary-color)]"
               :aria-label="$t('header.profileType.ariaLabel')"
               :value="discoveryProfileType"
               @change="onMobileProfileTypeChange"
@@ -819,7 +825,10 @@ import {
   MAP_RESTORE_EVENT_POPUP,
   MAP_POPUP_CLOSED,
   MAP_RESET_HOME,
+  MAP_USER_GEOLOCATION,
+  MAP_REQUEST_GEOLOCATION,
 } from '@/utils/mapPopupBridge'
+import { reverseGeocodeCity, isGeolocationSecureContext } from '@/utils/geolocation'
 import { filterItemsByMapViewport } from '@/utils/mapViewportFilter'
 import { filterActiveDiscoveryEvents } from '@/utils/eventSchedule'
 import {
@@ -1293,11 +1302,8 @@ onMounted(() => {
   suppressListingAutoOpen(1200)
   const storedSession = parseStoredSessionFilter(localStorage.getItem('datepicker-session'))
   if (storedSession) sessionFilter.value = storedSession
-  getLocation({ openList: false })
+  void getLocation({ openList: false })
   loadCategories()
-  if (route.name === 'Home') {
-    void loadListingFromApi(searchTerm.value.trim(), { openList: false })
-  }
   nextTick(() => {
     listingUserActionsReady.value = true
   })
@@ -1305,6 +1311,7 @@ onMounted(() => {
   window.addEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetailFromHome)
   window.addEventListener(MAP_OPEN_PROFILE_DETAIL, onMapOpenProfileDetailFromHome)
   window.addEventListener(MAP_POPUP_CLOSED, onMapPopupClosedFromHome)
+  window.addEventListener(MAP_REQUEST_GEOLOCATION, onMapRequestGeolocation)
 
   const pendingProfileRaw = sessionStorage.getItem('pendingDiscoveryProfile')
   if (pendingProfileRaw) {
@@ -1325,6 +1332,7 @@ onBeforeUnmount(() => {
   window.removeEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetailFromHome)
   window.removeEventListener(MAP_OPEN_PROFILE_DETAIL, onMapOpenProfileDetailFromHome)
   window.removeEventListener(MAP_POPUP_CLOSED, onMapPopupClosedFromHome)
+  window.removeEventListener(MAP_REQUEST_GEOLOCATION, onMapRequestGeolocation)
   document.body.style.overflow = ''
 })
 
@@ -1359,6 +1367,11 @@ function filterBy(action) {
 }
 
 const fixedMenu = computed(() => route.name === 'Home')
+
+const stickyProfileHeader = computed(() => {
+  if (fixedMenu.value || isGuestAuthPage.value) return false
+  return isProfilePage.value
+})
 
 const isProfilePage = computed(() => {
   const path = route.path.toLowerCase()
@@ -1448,32 +1461,53 @@ function clearListFilters() {
   void loadListingFromApi('', { openList: true })
 }
 
+function onMapRequestGeolocation() {
+  void getLocation({ openList: false })
+}
+
 async function getLocation(options = { openList: false }) {
   const location = await getCurrentLocation()
+
   if (location) {
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${location.latitude}&lon=${location.longitude}&format=json`)
-      const data = await res.json()
-      const cityName = data.address.city || data.address.town || data.address.village || "Amsterdam"
-      city.value = cityName
-      selectedLocation.value = { lat: location.latitude, lng: location.longitude, name: cityName }
-      mapStore.setPendingLocation({ lat: location.latitude, lng: location.longitude, name: cityName })
-    } catch (e) {
-      city.value = "Amsterdam"
-      selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" }
-      mapStore.setPendingLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
+    const coordsLabel = `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
+    const cityName =
+      (await reverseGeocodeCity(location.latitude, location.longitude)) ?? coordsLabel
+    city.value = cityName
+    searchLocation.value = cityName
+    selectedLocation.value = {
+      lat: location.latitude,
+      lng: location.longitude,
+      name: cityName,
     }
+    mapStore.setUserGeolocation({
+      lat: location.latitude,
+      lng: location.longitude,
+      accuracy: location.accuracy,
+    })
   } else {
-    city.value = "Amsterdam"
-    selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: "Amsterdam" }
-    mapStore.setPendingLocation({ lat: 52.3676, lng: 4.9041, name: 'Amsterdam' })
+    mapStore.clearUserGeolocation()
+    if (!isGeolocationSecureContext()) {
+      alert(t('map.geolocationRequiresHttps'))
+    } else if (locationError.value?.isPermissionDenied) {
+      alert(t('map.geolocationDenied'))
+    }
+    if (!city.value) {
+      city.value = 'Amsterdam'
+      selectedLocation.value = { lat: 52.3676, lng: 4.9041, name: 'Amsterdam' }
+    }
   }
+
   if (route.name === 'Home') {
     mapStore.setAppliedLocation({
       lat: selectedLocation.value.lat,
       lng: selectedLocation.value.lng,
       name: selectedLocation.value.name,
     })
+    if (mapStore.userGeolocation) {
+      window.dispatchEvent(
+        new CustomEvent(MAP_USER_GEOLOCATION, { detail: { ...mapStore.userGeolocation } }),
+      )
+    }
     void loadListingFromApi(searchTerm.value.trim(), { openList: options.openList })
   }
   if (isMobileMenuOpen.value) closeMobileHeader()
@@ -1626,8 +1660,10 @@ const selectCity = (place) => {
   const lng = parseFloat(place.lon)
   const name = place.display_name.split(',')[0]
   city.value = name
+  searchLocation.value = name
   searchResults.value = []
   selectedLocation.value = { lat, lng, name }
+  mapStore.clearUserGeolocation()
   mapStore.setAppliedLocation({ lat, lng, name })
   void loadListingFromApi(searchTerm.value.trim(), { openList: true })
   if (isMobileMenuOpen.value) closeMobileHeader()
@@ -1727,6 +1763,22 @@ export default {
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   cursor: pointer;
+  border: 1.5px solid color-mix(in srgb, var(--secondary-color, #FF7700) 42%, rgba(0, 0, 0, 0.08)) !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(255, 119, 0, 0.06);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.header-profile-type-select:hover {
+  border-color: var(--secondary-color, #FF7700) !important;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 0 0 2px color-mix(in srgb, var(--secondary-color, #FF7700) 10%, transparent);
+}
+.header-profile-type-select:focus {
+  outline: none;
+  border-color: var(--secondary-color, #FF7700) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--secondary-color, #FF7700) 12%, transparent);
 }
 
 /* ─── Search bar ─── */

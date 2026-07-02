@@ -298,7 +298,7 @@
                 </p>
                 <div class="tw:mt-2 tw:flex tw:items-center tw:gap-2.5">
                   <span class="tw:h-2 tw:w-2 tw:rounded-full tw:bg-[#1a237e] tw:flex-shrink-0" aria-hidden="true" />
-                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8] tw:uppercase">{{ overviewDresscodeDisplay }}</span>
+                  <span class="tw:text-base tw:font-medium tw:text-[#1a73e8]">{{ overviewDresscodeDisplay }}</span>
                 </div>
               </div>
 
@@ -667,16 +667,20 @@ import ContactTab from './ContactTab.vue'
 import ExpandableText from '@/components/common/ExpandableText.vue'
 import { useWishlistStore } from '@/stores/wishlistStore'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { useToast } from '@/composables/useToast'
 import { buildEventGalleryImageUrls } from '@/utils/eventGalleryImages'
 import { parseSocialMediaUrlEntries } from '@/utils/socialMediaUrls'
 import { getUserProfileImageUrl } from '@/utils/userProfileImage'
 import { formatOverviewLongEventDate } from '@/utils/eventSchedule'
+import { formatDressCodeForDisplay } from '@/utils/dressCodeDisplay'
 
 const { t, locale } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const wishlistStore = useWishlistStore()
 const authStore = useAuthStore()
+const toast = useToast()
 
 /** Below md breakpoint: bottom sheet + backdrop; desktop keeps side panel */
 const isMobile = ref(false)
@@ -745,7 +749,8 @@ const detailsWishlistIconClass = computed(() => {
 // Wishlist toggle (optimistic UI + rollback + toast in store)
 async function handleWishlistToggle() {
   if (!authStore.isAuthenticated) {
-    router.push({ name: 'Login' })
+    toast.info(t('wishlist.loginRequired'))
+    router.push({ name: 'Login', query: { redirect: route.fullPath } })
     return
   }
   if (!props.event) return
@@ -947,10 +952,7 @@ const overviewVenueDisplay = computed(() => {
 const overviewDresscodeDisplay = computed(() => {
   const raw = props.event?.dresscode
   if (raw == null || String(raw).trim() === '') return t('eventDetails.notSpecified')
-  const s = String(raw).trim()
-  if (s === 'no_dress_code') return t('eventDetails.dressCodeNone')
-  if (s === 'Dress Code') return t('eventDetails.dressCodeFormal')
-  return String(s).replace(/_/g, ' ')
+  return formatDressCodeForDisplay(raw, t)
 })
 
 const overviewAgeDisplay = computed(() => {

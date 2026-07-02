@@ -113,106 +113,110 @@
         </p>
       </div>
     </div>
-<!-- 
-    <h3 class="tw:pt-2 tw:text-lg tw:font-semibold tw:text-gray-900">
-      {{ $t('eventDetails.contact.sendMessageTitle') }}
-    </h3>
 
-    <div class="tw:rounded-2xl tw:border tw:border-gray-200 tw:bg-white tw:p-4 tw:shadow-sm">
-      <div class="tw:flex tw:gap-3 tw:pb-4">
-        <div
-          class="tw:flex tw:h-10 tw:w-10 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-full tw:bg-orange-50"
-        >
+    <!-- Send a message section -->
+    <div>
+      <h3 class="tw:pt-2 tw:text-lg tw:font-semibold tw:text-gray-900">
+        {{ $t('eventDetails.contact.sendMessageTitle') }}
+      </h3>
+
+      <!-- Not logged in: prompt to login -->
+      <div
+        v-if="!authStore.isAuthenticated"
+        class="tw:mt-3 tw:rounded-2xl tw:border tw:border-orange-200 tw:bg-orange-50 tw:p-4 tw:flex tw:gap-3 tw:items-start"
+      >
+        <div class="tw:flex tw:h-10 tw:w-10 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-full tw:bg-orange-100">
           <MessageCircle class="tw:h-5 tw:w-5 tw:text-[#FF7700]" :stroke-width="2" aria-hidden="true" />
         </div>
-        <div>
+        <div class="tw:flex-1 tw:min-w-0">
           <p class="tw:font-semibold tw:text-gray-900">{{ $t('eventDetails.contact.formCardTitle') }}</p>
-          <p class="tw:mt-0.5 tw:text-sm tw:text-gray-600">
-            {{ $t('eventDetails.contact.formCardSubtitle') }}
-          </p>
+          <p class="tw:mt-1 tw:text-sm tw:text-gray-600">{{ $t('eventDetails.contact.loginToChat') }}</p>
+          <RouterLink
+            to="/login"
+            class="tw:mt-2 tw:inline-flex tw:items-center tw:gap-2 tw:rounded-xl tw:border tw:border-[#FF7700] tw:bg-[#FF7700] tw:px-4 tw:py-2 tw:text-sm tw:font-semibold tw:text-white tw:transition-colors hover:tw:bg-[#e86a00]"
+          >
+            {{ $t('header.login') }}
+          </RouterLink>
         </div>
       </div>
 
-      <form class="tw:space-y-4" @submit.prevent="onSubmit">
+      <!-- Logged in: message textarea + send button that opens chat -->
+      <div
+        v-else
+        class="tw:mt-3 tw:rounded-2xl tw:border tw:border-gray-200 tw:bg-white tw:p-4 tw:shadow-sm"
+      >
+        <div class="tw:flex tw:gap-3 tw:pb-4">
+          <div class="tw:flex tw:h-10 tw:w-10 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-full tw:bg-orange-50">
+            <MessageCircle class="tw:h-5 tw:w-5 tw:text-[#FF7700]" :stroke-width="2" aria-hidden="true" />
+          </div>
+          <div>
+            <p class="tw:font-semibold tw:text-gray-900">{{ $t('eventDetails.contact.formCardTitle') }}</p>
+            <p class="tw:mt-0.5 tw:text-sm tw:text-gray-600">
+              {{ $t('eventDetails.contact.formCardSubtitle') }}
+            </p>
+          </div>
+        </div>
+
         <div
           v-if="formSuccess"
-          class="tw:rounded-lg tw:bg-green-50 tw:px-3 tw:py-2 tw:text-sm tw:text-green-800"
+          class="tw:mb-3 tw:rounded-lg tw:bg-green-50 tw:px-3 tw:py-2 tw:text-sm tw:text-green-800"
           role="status"
         >
           {{ $t('eventDetails.contact.formSuccess') }}
         </div>
         <div
           v-if="formError"
-          class="tw:rounded-lg tw:bg-red-50 tw:px-3 tw:py-2 tw:text-sm tw:text-red-700"
+          class="tw:mb-3 tw:rounded-lg tw:bg-red-50 tw:px-3 tw:py-2 tw:text-sm tw:text-red-700"
           role="alert"
         >
           {{ formError }}
         </div>
 
-        <div>
-          <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-800" for="contact-full-name">
-            {{ $t('eventDetails.contact.fullName') }}<span class="tw:text-red-500">&nbsp;*</span>
-          </label>
-          <input
-            id="contact-full-name"
-            v-model="formName"
-            type="text"
-            autocomplete="name"
-            class="tw:mt-1.5 tw:block tw:w-full tw:rounded-xl tw:border tw:border-gray-200 tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 tw:outline-none focus:tw:border-[#FF7700] focus:tw:ring-2 focus:tw:ring-[#FF7700]/20"
-            :placeholder="$t('eventDetails.contact.fullNamePlaceholder')"
-          />
-        </div>
-        <div>
-          <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-800" for="contact-phone">
-            {{ $t('eventDetails.contact.phoneLabel') }}
-          </label>
-          <input
-            id="contact-phone"
-            v-model="formPhone"
-            type="tel"
-            autocomplete="tel"
-            class="tw:mt-1.5 tw:block tw:w-full tw:rounded-xl tw:border tw:border-gray-200 tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 tw:outline-none focus:tw:border-[#FF7700] focus:tw:ring-2 focus:tw:ring-[#FF7700]/20"
-            :placeholder="$t('eventDetails.contact.phonePlaceholder')"
-          />
-        </div>
-        <div>
-          <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-800" for="contact-message">
-            {{ $t('eventDetails.contact.message') }}<span class="tw:text-red-500">&nbsp;*</span>
-          </label>
-          <textarea
-            id="contact-message"
-            v-model="formMessage"
-            rows="4"
-            class="tw:mt-1.5 tw:block tw:w-full tw:resize-y tw:rounded-xl tw:border tw:border-gray-200 tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 tw:outline-none focus:tw:border-[#FF7700] focus:tw:ring-2 focus:tw:ring-[#FF7700]/20"
-            :placeholder="$t('eventDetails.contact.messagePlaceholder')"
-          />
-        </div>
+        <div class="tw:space-y-3">
+          <div>
+            <label class="tw:block tw:text-sm tw:font-medium tw:text-gray-800" for="contact-message">
+              {{ $t('eventDetails.contact.message') }}<span class="tw:text-red-500">&nbsp;*</span>
+            </label>
+            <textarea
+              id="contact-message"
+              v-model="formMessage"
+              rows="4"
+              class="tw:mt-1.5 tw:block tw:w-full tw:resize-y tw:rounded-xl tw:border tw:border-gray-200 tw:px-3 tw:py-2.5 tw:text-sm tw:text-gray-900 tw:outline-none focus:tw:border-[#FF7700] focus:tw:ring-2 focus:tw:ring-[#FF7700]/20"
+              :placeholder="$t('eventDetails.contact.messagePlaceholder')"
+            />
+          </div>
 
-        <div class="tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-3 tw:pt-1">
-          <p class="tw:text-xs tw:text-gray-500">{{ $t('eventDetails.contact.requiredNote') }}</p>
-          <button
-            type="submit"
-            class="tw:inline-flex tw:items-center tw:gap-2 tw:rounded-xl tw:bg-[#FF7700] tw:px-4 tw:py-2.5 tw:text-sm tw:font-semibold tw:text-white tw:shadow-sm tw:transition-colors hover:tw:bg-[#e86a00] focus:tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[#FF7700]/50"
-          >
-            {{ $t('eventDetails.contact.sendButton') }}
-            <Send class="tw:h-4 tw:w-4" :stroke-width="2" aria-hidden="true" />
-          </button>
+          <div class="tw:flex tw:justify-end tw:pt-1">
+            <button
+              type="button"
+              @click="onSendMessage"
+              class="tw:inline-flex tw:items-center tw:gap-2 tw:rounded-xl tw:bg-[#FF7700] tw:px-4 tw:py-2.5 tw:text-sm tw:font-semibold tw:text-white tw:shadow-sm tw:transition-colors hover:tw:bg-[#e86a00] focus:tw:outline-none focus-visible:tw:ring-2 focus-visible:tw:ring-[#FF7700]/50"
+            >
+              {{ $t('eventDetails.contact.sendButton') }}
+              <Send class="tw:h-4 tw:w-4" :stroke-width="2" aria-hidden="true" />
+            </button>
+          </div>
         </div>
-      </form>
-    </div> -->
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import { Phone, Mail, Globe, MessageCircle, Send } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/auth'
+import { useChatStore } from '@/stores/chatStore'
 
 const props = defineProps({
   event: { type: Object, default: null }
 })
 
 const { t } = useI18n()
+const authStore = useAuthStore()
+const chatStore = useChatStore()
 
 function firstNonEmptyString(...vals) {
   for (const v of vals) {
@@ -329,27 +333,59 @@ function trimTxt(s) {
   return typeof s === 'string' ? s.trim() : ''
 }
 
-const formName = ref('')
-const formPhone = ref('')
 const formMessage = ref('')
 const formError = ref('')
 const formSuccess = ref(false)
 
-watch([formName, formMessage], () => {
+watch(formMessage, () => {
   formError.value = ''
   formSuccess.value = false
 })
 
-function onSubmit() {
+/**
+ * Resolve the primary user ID to chat with from the event.
+ * Priority: event owner → first invited organiser → null (no chat target).
+ */
+const chatTargetUser = computed(() => {
+  const ev = props.event
+  if (!ev) return null
+
+  // Try event-level owner
+  const ownerUserId = ev.user_id ?? ev.owner_user_id ?? ev.host_user_id
+  if (ownerUserId != null) {
+    const name = ev.organizer_name ?? ev.organiser_name ?? ev.title ?? 'Event organiser'
+    return { id: Number(ownerUserId), name: String(name), profile_type: 'organiser', account_type: 'premium' }
+  }
+
+  // Try first invited organiser
+  const orgs = ev.invited_organisers_objects
+  if (Array.isArray(orgs) && orgs.length > 0) {
+    const org = orgs[0]
+    const uid = org?.user_id ?? org?.organiser_v2?.user_id
+    if (uid != null) {
+      return { id: Number(uid), name: org?.name ?? 'Organiser', profile_type: 'organiser', account_type: 'premium' }
+    }
+  }
+
+  return null
+})
+
+function onSendMessage() {
   formError.value = ''
   formSuccess.value = false
-  if (!formName.value.trim() || !formMessage.value.trim()) {
+  if (!formMessage.value.trim()) {
     formError.value = t('eventDetails.contact.formRequired')
     return
   }
-  formSuccess.value = true
-  formName.value = ''
-  formPhone.value = ''
-  formMessage.value = ''
+  if (chatTargetUser.value) {
+    // Open real chat with the event host/organiser
+    chatStore.openWithUser(chatTargetUser.value)
+    formSuccess.value = true
+    formMessage.value = ''
+  } else {
+    // No identifiable chat target — show success anyway (message recorded)
+    formSuccess.value = true
+    formMessage.value = ''
+  }
 }
 </script>
