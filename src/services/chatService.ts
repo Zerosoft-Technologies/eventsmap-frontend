@@ -82,6 +82,18 @@ export const chatService = {
   },
 
   /**
+   * Record a delivered chat message in Firestore via the backend (for notification trail).
+   * POST /api/v2/chat/notify-message
+   */
+  async notifyMessage(payload: {
+    receiver_id: number
+    conversation_id: string
+    message: string
+  }): Promise<void> {
+    await api.post('/v2/chat/notify-message', payload)
+  },
+
+  /**
    * Accept or reject an event invitation.
    * POST /api/v2/event-invitations/{id}/respond
    */

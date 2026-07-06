@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { subscribeToConversationsForUser } from '@/services/chatFirestore'
 import { chatService, type ChatUser, type BlockedChatUser } from '@/services/chatService'
+import { useAuthStore } from '@/stores/auth'
+import type { Unsubscribe } from 'firebase/firestore'
 
 export const useChatStore = defineStore('chat', () => {
   const isOpen = ref(false)
@@ -10,6 +13,41 @@ export const useChatStore = defineStore('chat', () => {
   const blockedByUserIds = ref<number[]>([])
   const blockedUsers = ref<BlockedChatUser[]>([])
   const blocksLoaded = ref(false)
+  const unreadCount = ref(0)
+  let unreadUnsubscribe: Unsubscribe | null = null
+
+  function startUnreadListener() {
+    stopUnreadListener()
+    const authStore = useAuthStore()
+    const userId = authStore.user?.id
+    if (userId == null || userId <= 0) {
+      unreadCount.value = 0
+      return
+    }
+    unreadUnsubscribe = subscribeToConversationsForUser(userId, (conversations) => {
+      unreadCount.value = conversations.reduce((sum, conv) => {
+        const n = conv.unread_count?.[String(userId)] ?? 0
+        return sum + (Number(n) || 0)
+      }, 0)
+    })
+  }
+
+  function stopUnreadListener() {
+    if (unreadUnsubscribe) {
+      unreadUnsubscribe()
+      unreadUnsubscribe = null
+    }
+    unreadCount.value = 0
+  }
+
+  watch(
+    () => useAuthStore().isAuthenticated && useAuthStore().user?.id,
+    (active) => {
+      if (active) startUnreadListener()
+      else stopUnreadListener()
+    },
+    { immediate: true },
+  )
 
   const open = () => {
     isOpen.value = true
@@ -102,6 +140,7 @@ export const useChatStore = defineStore('chat', () => {
 
   return {
     isOpen,
+    unreadCount: computed(() => unreadCount.value),
     pendingConversationUser,
     blockedUserIds,
     blockedByUserIds,
@@ -119,5 +158,7 @@ export const useChatStore = defineStore('chat', () => {
     blockUser,
     unblockUser,
     resetBlocks,
+    startUnreadListener,
+    stopUnreadListener,
   }
 })

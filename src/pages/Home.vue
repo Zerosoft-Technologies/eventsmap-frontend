@@ -48,7 +48,7 @@ import {
 import { createUserLocationMarkerElement, MAP_NEIGHBOURHOOD_ZOOM } from '@/utils/geolocation'
 import { pickProfileLatLng } from '@/api/discoveryProfiles'
 import { useMapStore } from '@/stores/mapStore'
-import { clusterPrecisionForZoom, createMapClusterMarkerElement } from '@/utils/mapClustering'
+import { createMapClusterMarkerElement, spiderfyLatLngOffsets, spiderfyRadiusMetersForZoom } from '@/utils/mapClustering'
 import { attachMarkerPopupClick, attachClusterMarkerClick } from '@/utils/mapMarkerPopup'
 import { groupEventsIntoClusters } from '@/utils/eventMapClustering'
 import { groupProfilesIntoClusters } from '@/utils/profileMapClustering'
@@ -80,6 +80,10 @@ const mapReady = ref(false)
 
 let map
 let userLocationMarker = null
+/** Cluster keys currently expanded into spiderfied individual markers. */
+const spiderfiedClusterKeys = new Set()
+/** Markers created by spiderfy (removed on collapse). */
+const spiderfyMarkers = []
 const mapStore = useMapStore()
 const markerPool = new Map()
 const profileMarkerPool = new Map()
@@ -526,7 +530,7 @@ function easeMapToCluster(lng, lat, members) {
   map.fitBounds(bounds, {
     padding: { top: 96, bottom: 120, left: 72, right: 72 },
     maxZoom: targetZoom,
-    duration: 600,
+    duration: 200,
   })
 }
 
@@ -538,13 +542,82 @@ function wireMapMarker(marker, el, lng, lat) {
   })
 }
 
-function wireClusterMarker(marker, el, lng, lat, memberPoints) {
+function collapseSpiderfies() {
+  spiderfiedClusterKeys.clear()
+  for (const marker of spiderfyMarkers) marker.remove()
+  spiderfyMarkers.length = 0
+}
+
+function spiderfyEventCluster(cluster, clusterKey) {
+  if (!map?.loaded()) return
+  collapseSpiderfies()
+  spiderfiedClusterKeys.add(clusterKey)
+
+  const existing = markerPool.get(clusterKey)
+  if (existing) {
+    existing.marker.remove()
+    markerPool.delete(clusterKey)
+  }
+
+  const centerLat = cluster.latitude
+  const centerLng = cluster.longitude
+  const radiusM = spiderfyRadiusMetersForZoom(map.getZoom(), cluster.events.length)
+  const offsets = spiderfyLatLngOffsets(cluster.events.length, centerLat, radiusM)
+
+  cluster.events.forEach((ev, i) => {
+    const lat = centerLat + offsets[i].lat
+    const lng = centerLng + offsets[i].lng
+    const el = createEventMarkerEl(ev)
+    const popup = mountSingleEventPopup(ev)
+    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([lng, lat])
+      .setPopup(popup)
+      .addTo(map)
+    wireMapMarker(marker, el, lng, lat)
+    spiderfyMarkers.push(marker)
+  })
+}
+
+function spiderfyProfileCluster(cluster, clusterKey, profileType) {
+  if (!map?.loaded()) return
+  collapseSpiderfies()
+  spiderfiedClusterKeys.add(clusterKey)
+
+  const existing = profileMarkerPool.get(clusterKey)
+  if (existing) {
+    existing.marker.remove()
+    profileMarkerPool.delete(clusterKey)
+  }
+
+  const centerLat = cluster.latitude
+  const centerLng = cluster.longitude
+  const radiusM = spiderfyRadiusMetersForZoom(map.getZoom(), cluster.profiles.length)
+  const offsets = spiderfyLatLngOffsets(cluster.profiles.length, centerLat, radiusM)
+
+  cluster.profiles.forEach((p, i) => {
+    const lat = centerLat + offsets[i].lat
+    const lng = centerLng + offsets[i].lng
+    const el = createProfileMarkerEl(p)
+    const popup = mountSingleProfilePopup(p)
+    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([lng, lat])
+      .setPopup(popup)
+      .addTo(map)
+    wireMapMarker(marker, el, lng, lat)
+    spiderfyMarkers.push(marker)
+  })
+}
+
+function wireClusterMarker(marker, el, lng, lat, memberPoints, onSpiderfy) {
+  const memberCount = memberPoints.length
   attachClusterMarkerClick(marker, el, lng, lat, {
     getMemberPoints: () => memberPoints,
     easeToCluster: easeMapToCluster,
     getZoom: () => map.getZoom(),
     markerPools: [markerPool, profileMarkerPool],
     maxZoomBeforePopup: 17,
+    shouldSpiderfy: () => memberCount > 1,
+    onSpiderfy,
   })
 }
 
@@ -741,8 +814,8 @@ function syncEventMarkers() {
       })
       .filter(Boolean)
 
-    const precision = clusterPrecisionForZoom(map.getZoom())
-    const clusters = groupEventsIntoClusters(points, precision)
+    const zoom = map.getZoom()
+    const clusters = groupEventsIntoClusters(points, zoom)
 
     const nextKeys = new Set()
     for (const cluster of clusters) {
@@ -792,14 +865,23 @@ function syncEventMarkers() {
       }
 
       const key = `ec-${cluster.key}`
+      if (spiderfiedClusterKeys.has(key)) continue
+
       const existingCluster = markerPool.get(key)
-      if (existingCluster?.count === cluster.events.length) continue
       if (existingCluster) {
+        if (
+          existingCluster.count === cluster.events.length &&
+          existingCluster.lat === lat &&
+          existingCluster.lng === lng
+        ) {
+          continue
+        }
         existingCluster.marker.remove()
         markerPool.delete(key)
       }
 
-      const el = createMapClusterMarkerElement(cluster.events.length, 'event')
+      const fillColor = '#FF7700'
+      const el = createMapClusterMarkerElement(cluster.events.length, 'event', fillColor)
       const popup = mountEventClusterPopup(cluster.events)
       const memberPoints = cluster.events
         .map((ev) => {
@@ -814,8 +896,10 @@ function syncEventMarkers() {
         .setPopup(popup)
         .addTo(map)
 
-      wireClusterMarker(marker, el, lng, lat, memberPoints)
-      markerPool.set(key, { marker, el, count: cluster.events.length })
+      wireClusterMarker(marker, el, lng, lat, memberPoints, () =>
+        spiderfyEventCluster(cluster, key),
+      )
+      markerPool.set(key, { marker, el, count: cluster.events.length, lat, lng })
     }
   } finally {
     eventMarkerSyncRunning = false
@@ -855,8 +939,8 @@ function syncProfileMarkers() {
       })
       .filter(Boolean)
 
-    const precision = clusterPrecisionForZoom(map.getZoom())
-    const clusters = groupProfilesIntoClusters(points, precision)
+    const zoom = map.getZoom()
+    const clusters = groupProfilesIntoClusters(points, zoom)
 
     const soloTalentIds = new Set()
     const nextKeys = new Set()
@@ -910,31 +994,41 @@ function syncProfileMarkers() {
       }
 
       const key = profileClusterPoolKey(cluster.key, activeProfileType)
+      if (spiderfiedClusterKeys.has(key)) continue
+
+      const fillColor = profileClusterColor(activeProfileType)
       const existingCluster = profileMarkerPool.get(key)
-      if (existingCluster?.count === cluster.profiles.length) continue
       if (existingCluster) {
+        if (
+          existingCluster.count === cluster.profiles.length &&
+          existingCluster.lat === lat &&
+          existingCluster.lng === lng
+        ) {
+          continue
+        }
         existingCluster.marker.remove()
         profileMarkerPool.delete(key)
       }
 
-      const el = createMapClusterMarkerElement(
-        cluster.profiles.length,
-        'profile',
-        profileClusterColor(activeProfileType),
-      )
+      const el = createMapClusterMarkerElement(cluster.profiles.length, 'profile', fillColor)
       const popup = mountProfileClusterPopup(cluster.profiles)
-      const memberPoints = cluster.profiles.map((p) => ({
-        latitude: p.latitude,
-        longitude: p.longitude,
-      }))
+      const memberPoints = cluster.profiles
+        .map((p) => {
+          const ll = pickProfileLatLng(p)
+          if (!ll) return null
+          return { latitude: ll.latitude, longitude: ll.longitude }
+        })
+        .filter(Boolean)
 
       const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat([lng, lat])
         .setPopup(popup)
         .addTo(map)
 
-      wireClusterMarker(marker, el, lng, lat, memberPoints)
-      profileMarkerPool.set(key, { marker, el, count: cluster.profiles.length })
+      wireClusterMarker(marker, el, lng, lat, memberPoints, () =>
+        spiderfyProfileCluster(cluster, key, activeProfileType),
+      )
+      profileMarkerPool.set(key, { marker, el, count: cluster.profiles.length, lat, lng })
     }
 
     syncTalentRegionCircles(soloTalentIds)
@@ -971,7 +1065,11 @@ function scheduleMapClusterResync() {
     mapClusterResyncTimer = null
     publishMapViewportBounds()
     syncActiveMapMarkers()
-  }, 200)
+  }, 80)
+}
+
+function onUserMapGestureStart(e) {
+  if (e?.originalEvent) collapseSpiderfies()
 }
 
 function refreshMapFromStore() {
@@ -1012,6 +1110,8 @@ onMounted(() => {
   })
   map.on('moveend', scheduleMapClusterResync)
   map.on('zoomend', scheduleMapClusterResync)
+  map.on('movestart', onUserMapGestureStart)
+  map.on('zoomstart', onUserMapGestureStart)
 
   window.addEventListener(MAP_OPEN_EVENT_DETAIL, onMapOpenEventDetail)
   window.addEventListener(MAP_RESTORE_EVENT_POPUP, onMapRestoreEventPopup)
@@ -1029,6 +1129,7 @@ onUnmounted(() => {
     userLocationMarker.remove()
     userLocationMarker = null
   }
+  collapseSpiderfies()
   if (mapClusterResyncTimer) clearTimeout(mapClusterResyncTimer)
   eventMarkerSyncRunning = false
   eventMarkerSyncQueued = false

@@ -147,6 +147,7 @@
           :aria-label="$t('header.chat')"
         >
           <MessageSquareText class="tw:w-5 tw:h-5 tw:text-(--primary-color)" />
+          <span v-if="chatStore.unreadCount > 0" class="badge badge--red">{{ chatStore.unreadCount > 99 ? '99+' : chatStore.unreadCount }}</span>
         </button>
       </div>
       <!-- Invitation notifications (authenticated only) -->
@@ -373,6 +374,7 @@
             :aria-label="$t('header.chat')"
           >
             <MessageSquareText class="tw:w-5 tw:h-5 tw:text-(--primary-color)" />
+            <span v-if="chatStore.unreadCount > 0" class="badge badge--red">{{ chatStore.unreadCount > 99 ? '99+' : chatStore.unreadCount }}</span>
           </button>
 
           <!-- Invitation notifications icon (authenticated only) -->

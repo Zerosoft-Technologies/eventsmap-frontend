@@ -204,12 +204,13 @@ import PlanManagement from '@/components/PlanManagement.vue';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter()
+const { tab } = router.currentRoute.value.query;
 const authStore = useAuthStore()
 const mobileSidebarOpen = ref(false)
 function toggleMobileSidebar() { mobileSidebarOpen.value = !mobileSidebarOpen.value }
 function closeMobileSidebar() { mobileSidebarOpen.value = false }
 
-const activeTab = ref('profile');
+const activeTab = ref(tab || 'profile');
 const tabs = [
     { id: 'profile', label: 'Venue profile' },
     { id: 'notification', label: 'Notification' },

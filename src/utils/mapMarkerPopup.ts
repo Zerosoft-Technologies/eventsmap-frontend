@@ -38,6 +38,9 @@ export type AttachClusterMarkerOptions = {
   markerPools?: MapMarkerPool[]
   /** At this zoom and above, cluster click opens the popup instead of zooming further. */
   maxZoomBeforePopup?: number
+  /** When true, expand colocated members into a spiderfy ring instead of zoom/popup. */
+  shouldSpiderfy?: () => boolean
+  onSpiderfy?: () => void
 }
 
 /**
@@ -100,6 +103,8 @@ export function attachClusterMarkerClick(
     getZoom,
     markerPools = [],
     maxZoomBeforePopup = 17,
+    shouldSpiderfy,
+    onSpiderfy,
   } = options
 
   el.classList.add('no-hover', 'map-marker-interactive')
@@ -110,6 +115,11 @@ export function attachClusterMarkerClick(
     e?.stopPropagation?.()
 
     closeOtherMapPopups(markerPools, marker)
+
+    if (shouldSpiderfy?.()) {
+      onSpiderfy?.()
+      return
+    }
 
     const popup = marker.getPopup()
     const zoom = getZoom()

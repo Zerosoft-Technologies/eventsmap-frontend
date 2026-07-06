@@ -661,6 +661,7 @@ import {
 import { fetchPublicProfileDetail } from '@/api/discoveryProfiles'
 import { showPastEventsOnProfile, showUpcomingEventsOnProfile } from '@/utils/profileEventVisibility'
 import { countryCodeToFlagEmoji, parseNationalityCodes } from '@/utils/countryFlag'
+import { useToast } from '@/composables/useToast.ts'
 
 const EventCard = defineAsyncComponent(() => import('./Event.vue'))
 
@@ -722,6 +723,8 @@ watch(
 )
 
 const activeTab = ref('overview')
+
+const toast = useToast()
 
 // ── Images ─────────────────────────────────────────────────────
 const currentImageIndex = ref(0)
@@ -1181,7 +1184,7 @@ const profileOwnerUserId = computed(() => {
 })
 
 const canMessageProfile = computed(() => {
-  if (authStore?.user?.account_type !== 'premium') return false
+  // if (authStore?.user?.account_type !== 'premium') return false
   if (props.profileType == 'events') return false
   const uid = profileOwnerUserId.value
   if (uid == null || !Number.isFinite(uid)) return false
@@ -1192,6 +1195,23 @@ const canMessageProfile = computed(() => {
 function openProfileChat() {
   if (!authStore.isAuthenticated) {
     void router.push({ name: 'Login' })
+    return
+  }
+  if (authStore.user?.account_type !== 'premium') {
+    toast.info('You need to be a premium member to chat with talent.')
+    // redirect to profile settings page based on the current user profile type (talent, organiser, venue)
+    // and account type
+    const profileType = authStore.user?.profile_type
+    console.log('profileType', profileType)
+    if (profileType === 'talent') {
+      void router.push({ name: 'TalentsSettings', query: { tab: 'plan' } })
+    } else if (profileType === 'organizer') {
+      void router.push({ name: 'EventOrganiserSettings', query: { tab: 'plan' }})
+    } else if (profileType === 'venue') {
+      void router.push({ name: 'VenueSettings', query: { tab: 'plan' } })
+    } else if (profileType === 'event') {
+      void router.push({ name: 'EventSettings', query: { tab: 'plan' } })
+    }
     return
   }
   const uid = profileOwnerUserId.value

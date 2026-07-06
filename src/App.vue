@@ -76,7 +76,9 @@
         chatService.getFirebaseToken().then((token) =>
           import('firebase/auth').then(({ signInWithCustomToken }) =>
             import('@/services/firebase').then(({ firebaseAuth }) =>
-              signInWithCustomToken(firebaseAuth, token).catch(() => {})
+              signInWithCustomToken(firebaseAuth, token)
+                .then(() => chatStore.startUnreadListener())
+                .catch(() => {})
             )
           )
         ).catch(() => {})

@@ -3,7 +3,7 @@ import { getEventCardScheduleDisplay } from '@/utils/eventSchedule'
 
 export function groupEventsIntoClusters(
   points: Array<{ event: Record<string, unknown>; latitude: number; longitude: number }>,
-  precision: number,
+  zoom: number,
 ) {
   return groupIntoMapClusters(
     points.map((p) => ({
@@ -11,7 +11,7 @@ export function groupEventsIntoClusters(
       longitude: p.longitude,
       item: p.event,
     })),
-    precision,
+    zoom,
   ).map((c) => ({
     key: c.key,
     latitude: c.latitude,

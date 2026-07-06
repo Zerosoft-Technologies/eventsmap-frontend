@@ -1,4 +1,13 @@
-/** Decimal places for grouping — fewer decimals at lower zoom merges nearby pins. */
+/** Web Mercator pixel size (px) per screen cell — markers in the same cell become one cluster. */
+export function pixelCellSizeForZoom(zoom: number): number {
+  if (zoom <= 3) return 90
+  if (zoom <= 6) return 75
+  if (zoom <= 10) return 65
+  if (zoom <= 14) return 55
+  return 45
+}
+
+/** @deprecated Kept for callers that still reference zoom precision; clustering uses pixels now. */
 export function clusterPrecisionForZoom(zoom: number): number {
   if (zoom >= 18) return 6
   if (zoom >= 16) return 5
@@ -9,57 +18,148 @@ export function clusterPrecisionForZoom(zoom: number): number {
   return 0
 }
 
+function lngLatToWorldPixel(lng: number, lat: number, zoom: number): { x: number; y: number } {
+  const scale = 256 * 2 ** zoom
+  const x = ((lng + 180) / 360) * scale
+  const clampedLat = Math.max(-85.05112878, Math.min(85.05112878, lat))
+  const sinLat = Math.sin((clampedLat * Math.PI) / 180)
+  const y = (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * scale
+  return { x, y }
+}
+
+function haversineDistanceM(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
+  const R = 6371000
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLng = ((lng2 - lng1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
 export interface MapCluster<T> {
-  /** Stable bucket key from rounded coordinates */
+  /** Stable screen-cell bucket key */
   key: string
   latitude: number
   longitude: number
   items: T[]
 }
 
-export function groupIntoMapClusters<T>(
-  points: Array<{ latitude: number; longitude: number; item: T }>,
-  precision: number,
-): MapCluster<T>[] {
-  const buckets = new Map<string, MapCluster<T>>()
+export type MapPoint<T> = { latitude: number; longitude: number; item: T }
 
-  type Bucket = MapCluster<T> & { sumLat: number; sumLng: number; count: number }
-  const internal = new Map<string, Bucket>()
+/**
+ * Group markers by screen pixel grid at the current zoom (Leaflet/Supercluster style).
+ * Markers that overlap visually always share one cluster with the correct total count.
+ */
+export function groupIntoMapClusters<T>(
+  points: Array<MapPoint<T>>,
+  zoom: number,
+): MapCluster<T>[] {
+  const cellSize = pixelCellSizeForZoom(zoom)
+
+  type Bucket = { key: string; items: T[]; sumLat: number; sumLng: number; count: number }
+  const buckets = new Map<string, Bucket>()
 
   for (const pt of points) {
     const lat = Number(pt.latitude)
     const lng = Number(pt.longitude)
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue
 
-    const key = `${lng.toFixed(precision)},${lat.toFixed(precision)}`
-    let cluster = internal.get(key)
-    if (!cluster) {
-      cluster = { key, latitude: lat, longitude: lng, items: [], sumLat: 0, sumLng: 0, count: 0 }
-      internal.set(key, cluster)
+    const { x, y } = lngLatToWorldPixel(lng, lat, zoom)
+    const cellX = Math.floor(x / cellSize)
+    const cellY = Math.floor(y / cellSize)
+    const key = `${cellX}:${cellY}`
+
+    let bucket = buckets.get(key)
+    if (!bucket) {
+      bucket = { key, items: [], sumLat: 0, sumLng: 0, count: 0 }
+      buckets.set(key, bucket)
     }
-    cluster.items.push(pt.item)
-    cluster.sumLat += lat
-    cluster.sumLng += lng
-    cluster.count += 1
+    bucket.items.push(pt.item)
+    bucket.sumLat += lat
+    bucket.sumLng += lng
+    bucket.count += 1
   }
 
-  for (const cluster of internal.values()) {
-    if (cluster.count > 1) {
-      cluster.latitude = cluster.sumLat / cluster.count
-      cluster.longitude = cluster.sumLng / cluster.count
-    }
-    buckets.set(cluster.key, {
-      key: cluster.key,
-      latitude: cluster.latitude,
-      longitude: cluster.longitude,
-      items: cluster.items,
+  const clusters: MapCluster<T>[] = []
+  for (const bucket of buckets.values()) {
+    clusters.push({
+      key: bucket.key,
+      latitude: bucket.sumLat / bucket.count,
+      longitude: bucket.sumLng / bucket.count,
+      items: bucket.items,
     })
   }
+  return clusters
+}
 
-  return Array.from(buckets.values())
+export type ClusterMemberPoint = {
+  latitude: number
+  longitude: number
+}
+
+/** True when every member is within thresholdM of the cluster centre (or each other). */
+export function areMembersColocated(
+  members: ClusterMemberPoint[],
+  centerLat: number,
+  centerLng: number,
+  thresholdM = 80,
+): boolean {
+  if (members.length <= 1) return true
+  return members.every(
+    (m) =>
+      haversineDistanceM(centerLat, centerLng, m.latitude, m.longitude) <= thresholdM,
+  )
+}
+
+/** Ring radius (m) — wider at lower zoom so spiderfied pins stay visible. */
+export function spiderfyRadiusMetersForZoom(zoom: number, count: number): number {
+  const base = zoom >= 16 ? 50 : zoom >= 14 ? 90 : zoom >= 10 ? 160 : 280
+  return base + Math.min(count, 12) * 8
+}
+
+/** Radial offsets (degrees) for spiderfied markers around a centre. */
+export function spiderfyLatLngOffsets(
+  count: number,
+  centerLat: number,
+  radiusM = 40,
+): Array<{ lat: number; lng: number }> {
+  if (count <= 0) return []
+  if (count === 1) return [{ lat: 0, lng: 0 }]
+  const latScale = radiusM / 111320
+  const lngScale = radiusM / (111320 * Math.cos((centerLat * Math.PI) / 180))
+  const offsets: Array<{ lat: number; lng: number }> = []
+  for (let i = 0; i < count; i++) {
+    const angle = (2 * Math.PI * i) / count - Math.PI / 2
+    offsets.push({
+      lat: latScale * Math.cos(angle),
+      lng: lngScale * Math.sin(angle),
+    })
+  }
+  return offsets
 }
 
 export type MapClusterMarkerVariant = 'profile' | 'event'
+
+/** Update count label on an existing cluster marker element. */
+export function updateMapClusterMarkerCount(el: HTMLElement, count: number, fillColor: string) {
+  const label = count > 99 ? '99+' : String(count)
+  const text = el.querySelector('text')
+  if (text) {
+    text.textContent = label
+    text.setAttribute('fill', fillColor)
+    return
+  }
+  const path = el.querySelector('path')
+  if (path) path.setAttribute('fill', fillColor)
+}
 
 /** Pin-shaped cluster marker with count (tip anchors to map coordinate). */
 export function createMapClusterMarkerElement(

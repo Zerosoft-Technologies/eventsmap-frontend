@@ -19,7 +19,7 @@ export interface ProfileMapCluster {
 
 export function groupProfilesIntoClusters(
   points: ProfileMapPoint[],
-  precision: number,
+  zoom: number,
 ): ProfileMapCluster[] {
   return groupIntoMapClusters(
     points.map((p) => ({
@@ -27,7 +27,7 @@ export function groupProfilesIntoClusters(
       longitude: p.longitude,
       item: p.profile,
     })),
-    precision,
+    zoom,
   ).map((c) => ({
     key: c.key,
     latitude: c.latitude,

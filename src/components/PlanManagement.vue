@@ -165,7 +165,7 @@
 
           <!-- Current Plan (Free) -->
           <div class="tw:col-span-1 tw:md:col-span-7">
-            <h2 class="tw:text-base tw:font-semibold tw:text-gray-900 tw:mb-4">Event Package</h2>
+            <h2 class="tw:text-base tw:font-semibold tw:text-gray-900 tw:mb-4">Package</h2>
             <div class="tw:bg-white tw:border tw:border-gray-200 tw:rounded-xl tw:p-6 tw:flex tw:flex-col tw:min-h-[200px]">
               <span class="tw:inline-block tw:bg-blue-100 tw:text-blue-700 tw:px-2.5 tw:py-1 tw:rounded-md tw:text-xs tw:font-semibold tw:w-fit tw:mb-3">
                 Current Plan
@@ -532,18 +532,20 @@ const isPremium = computed(() =>
 )
 
 const freeFeatures = [
-  'Unlimited event listings',
+  'Basic event listings',
   'Basic analytics',
   'Standard support',
-  'Up to 500 attendees',
 ]
 
 const premiumFeatures = [
+  'Everything in Free',
   'Advanced analytics & reports',
   'Priority support',
   'Unlimited attendees',
+  'Premium badge',
   'Custom branding',
   'Featured listings',
+  'Chat support',
 ]
 
 const premiumBenefitItems: { label: string; icon: Component }[] = [

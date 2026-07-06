@@ -287,6 +287,17 @@ export async function sendMessage(
   })
 
   await batch.commit()
+
+  try {
+    const { chatService } = await import('@/services/chatService')
+    await chatService.notifyMessage({
+      receiver_id: receiverId,
+      conversation_id: conversationId,
+      message: text,
+    })
+  } catch (err) {
+    console.warn('Chat notify-message failed (non-blocking):', err)
+  }
 }
 
 /** Set typing indicator for current user. */
