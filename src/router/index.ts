@@ -56,6 +56,9 @@ const PaymentCancel = () => import('../pages/payment/PaymentCancel.vue')
 const PaymentRequired     = () => import('../pages/payment/PaymentRequired.vue')
 const InvitationResponse  = () => import('../pages/InvitationResponse.vue')
 const GalleryImagesPage   = () => import('../pages/GalleryImagesPage.vue')
+const RecurringSeriesList = () => import('../pages/packages/RecurringSeriesList.vue')
+const RecurringSeriesForm = () => import('../pages/packages/RecurringSeriesForm.vue')
+const RecurringSeriesDetail = () => import('../pages/packages/RecurringSeriesDetail.vue')
 const ReceivedEventInvitationsPage = () => import('../pages/packages/ReceivedEventInvitationsPage.vue')
 
 const routes: RouteRecordRaw[] = [
@@ -100,6 +103,10 @@ const routes: RouteRecordRaw[] = [
   { path: '/create-event-premium/report', name: 'EventPremiumReport', component: EventPremiumReport, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-event-premium/settings', name: 'EventPremiumSettings', component: EventPremiumSettings, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-event-premium/gallery-images', name: 'EventPremiumGallery', component: GalleryImagesPage, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-event-premium/recurring-series', name: 'RecurringSeriesList', component: RecurringSeriesList, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-event-premium/recurring-series/create', name: 'RecurringSeriesCreate', component: RecurringSeriesForm, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-event-premium/recurring-series/:id/edit', name: 'RecurringSeriesEdit', component: RecurringSeriesForm, meta: { requiresAuth: true, requiresPremium: true } },
+  { path: '/create-event-premium/recurring-series/:id', name: 'RecurringSeriesDetail', component: RecurringSeriesDetail, meta: { requiresAuth: true, requiresPremium: true } },
   { path: '/create-event-premium/invites', name: 'AccountInvitesPremium', component: AccountInvitesPage, meta: { requiresAuth: true, requiresPremium: true } },
 
   { path: '/create-organiser-free', name: 'CreateEventOrganiserFree', component: CreateEventOrganiserFree, meta: { requiresAuth: true } },

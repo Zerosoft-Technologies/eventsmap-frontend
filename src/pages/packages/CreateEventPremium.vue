@@ -110,7 +110,44 @@
                 </div> -->
 
                 <!-- EVENT TITLE SECTION -->
+                <div
+                    v-if="isSeriesOccurrence && isEditMode"
+                    class="tw:bg-amber-50 tw:border tw:border-amber-200 tw:rounded-xl tw:md:rounded-2xl tw:p-4 tw:md:p-5 tw:space-y-2"
+                    role="status"
+                >
+                    <p class="tw:text-sm tw:font-semibold tw:text-amber-900">
+                        Editing this occurrence only
+                    </p>
+                    <p class="tw:text-sm tw:text-amber-800">
+                        Changes apply to this date only and will not update the recurring series.
+                        Saving marks this occurrence as customized (<span class="tw:font-medium">Custom Occurrence</span>).
+                    </p>
+                    <div class="tw:flex tw:flex-wrap tw:items-center tw:gap-3">
+                        <router-link
+                            v-if="seriesId"
+                            :to="`/create-event-premium/recurring-series/${seriesId}/edit`"
+                            class="tw:inline-flex tw:text-sm tw:font-medium tw:text-blue-600 hover:tw:underline"
+                        >
+                            Edit recurring series instead
+                        </router-link>
+                        <button
+                            type="button"
+                            class="tw:inline-flex tw:text-sm tw:font-medium tw:text-red-600 hover:tw:underline disabled:tw:opacity-50"
+                            :disabled="cancellingOccurrence"
+                            @click="openCancelOccurrence"
+                        >
+                            {{ cancellingOccurrence ? 'Cancelling...' : 'Cancel this occurrence' }}
+                        </button>
+                    </div>
+                </div>
+
                 <div class="tw:bg-white tw:rounded-xl tw:md:rounded-2xl tw:shadow-sm tw:p-4 tw:md:p-6 tw:space-y-4">
+                    <div
+                        v-if="isSeriesOccurrence && isEditMode"
+                        class="tw:flex tw:flex-wrap tw:items-center tw:gap-2"
+                    >
+                        <RecurringOccurrenceBadge :event="currentOccurrenceEvent" />
+                    </div>
                     <div class="tw:flex tw:justify-between tw:items-center">
                         <h3 class="tw:text-xl tw:font-bold tw:text-gray-900">
                             Event Title <span class="tw:text-red-500">*</span>
@@ -990,19 +1027,50 @@
                         Event Options
                     </h3>
 
-                    <div class="tw:flex tw:gap-3">
-                        <!-- Recurring Event — only after date/time is set -->
+                    <div class="tw:flex tw:flex-col tw:gap-4">
+                        <!-- Recurring event — opt-in; schedule panel expands when checked -->
                         <label
-                            v-if="hasEventScheduleSelected"
-                            class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer"
+                            v-if="!isSeriesOccurrence && hasEventScheduleSelected && isPremiumUser"
+                            class="tw:flex tw:items-start tw:gap-3 tw:cursor-pointer tw:rounded-lg tw:border tw:p-4 tw:transition-colors"
+                            :class="isRecurring
+                                ? 'tw:border-blue-300 tw:bg-blue-50/50'
+                                : 'tw:border-gray-200 hover:tw:border-gray-300'"
                         >
                             <input
-                                type="checkbox"
                                 v-model="isRecurring"
-                                class="tw:w-4 tw:h-4 tw:text-orange-500 tw:border-gray-300 focus:tw:ring-orange-500"
+                                type="checkbox"
+                                class="tw:mt-1 tw:w-4 tw:h-4 tw:text-blue-600 tw:border-gray-300 focus:tw:ring-blue-500 tw:rounded"
                             />
-                            <span class="tw:text-sm tw:text-gray-700">Recurring Event</span>
+                            <span>
+                                <span class="tw:block tw:text-sm tw:font-semibold tw:text-gray-900">Recurring event</span>
+                                <span class="tw:block tw:text-xs tw:text-gray-600 tw:mt-1">
+                                    Turn this into a weekly series. Your event details above become the template for each occurrence.
+                                </span>
+                            </span>
                         </label>
+
+                        <Transition
+                            enter-active-class="tw:transition-all tw:duration-200 tw:ease-out"
+                            enter-from-class="tw:opacity-0 tw:-translate-y-1"
+                            enter-to-class="tw:opacity-100 tw:translate-y-0"
+                            leave-active-class="tw:transition-all tw:duration-150 tw:ease-in"
+                            leave-from-class="tw:opacity-100"
+                            leave-to-class="tw:opacity-0"
+                        >
+                            <div
+                                v-if="isRecurring && !isSeriesOccurrence"
+                                class="tw:rounded-xl tw:border tw:border-gray-200 tw:bg-gray-50/50 tw:p-4 tw:md:p-5"
+                            >
+                                <RecurringSeriesFromCurrentEvent
+                                    :event-title="eventTitle"
+                                    :event-date="eventDate"
+                                    :loading="creatingRecurringSeries"
+                                    :errors="recurringSeriesErrors"
+                                    :is-premium="isPremiumUser"
+                                    @create="createRecurringSeriesFromCurrentEvent"
+                                />
+                            </div>
+                        </Transition>
 
                         <!-- Copy Event - edit mode only -->
                         <label v-if="isEditMode" class="tw:inline-flex tw:items-center tw:gap-2 tw:cursor-pointer">
@@ -1035,7 +1103,7 @@
                                tw:border tw:border-orange-500 tw:text-blue-600
                                tw:bg-white hover:tw:bg-blue-50 tw:transition-all
                                disabled:tw:opacity-50 disabled:tw:cursor-not-allowed">
-                                {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update' : 'Save Event') }}
+                                {{ isSubmitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? (isSeriesOccurrence ? 'Update Occurrence' : 'Update') : 'Save Event') }}
                             </button>
                         </div>
                     </div>
@@ -1084,15 +1152,22 @@
                 @image-updated="handleImageUpdated"
             />
         </Teleport>
+
+        <ConfirmDialog
+            :visible="cancelOccurrenceVisible"
+            title="Cancel this occurrence?"
+            message="Future invitees with accepted invitations will be notified. Events with accepted invitations are marked cancelled; others are removed. This cannot be undone."
+            confirm-label="Cancel occurrence"
+            variant="danger"
+            :loading="cancellingOccurrence"
+            @cancel="cancelOccurrenceVisible = false"
+            @confirm="confirmCancelOccurrence"
+        />
     </div>
 </template>
 
 <script setup>
 import {
-    Home,
-    FileText,
-    BarChart3,
-    Settings,
     Calendar,
     ChevronDown,
     ChevronLeft,
@@ -1100,14 +1175,11 @@ import {
     Plus,
     MapPin,
     User,
-    SkipBackIcon,
     Clock,
-    MessageSquareText,
     Maximize2,
     X,
-    Images,
-    UserPlus,
     Moon,
+    Repeat,
 } from "lucide-vue-next"
 
 import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch, reactive } from "vue"
@@ -1117,12 +1189,17 @@ import InviteSection from "@/components/invite/InviteSection.vue"
 import PhoneInput from "@/components/common/PhoneInput.vue"
 import MediaPickerModal from "@/components/media/MediaPickerModal.vue"
 import MapPhotoMarkerToggle from "@/components/map/MapPhotoMarkerToggle.vue"
+import ConfirmDialog from "@/components/common/ConfirmDialog.vue"
+import RecurringSeriesFromCurrentEvent from "@/components/recurring/RecurringSeriesFromCurrentEvent.vue"
+import RecurringOccurrenceBadge from "@/components/recurring/RecurringOccurrenceBadge.vue"
+import { recurringSeriesApi } from "@/api/recurringSeries"
 import api from "@/services/api"
 import eventService from "@/services/eventService"
 import { useAuthStore } from "@/stores/auth"
 import { useMyEventStore } from "@/stores/myEventStore"
 import { useChatStore } from "@/stores/chatStore"
 import { useToast } from "@/composables/useToast"
+import { createEventPremiumMenuItems } from "@/utils/menuConfig"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 
@@ -1155,6 +1232,11 @@ function closeMobileSidebar() {
 // Edit mode state
 const isEditMode = ref(false)
 const editingEventId = ref(null)
+const isSeriesOccurrence = ref(false)
+const seriesId = ref(null)
+const seriesOccurrenceModified = ref(false)
+const cancelOccurrenceVisible = ref(false)
+const cancellingOccurrence = ref(false)
 const eventType = ref('premium')
 
 function handleChatboxClick() {
@@ -1427,6 +1509,8 @@ const ticketUrl = ref('');
 
 // Event options
 const isRecurring = ref(false)
+const creatingRecurringSeries = ref(false)
+const recurringSeriesErrors = ref({})
 const isCopyEvent = ref(false)
 // Default visibility: "No"
 const showUpcomingEvents = ref(false)
@@ -1488,6 +1572,17 @@ const endTime = computed(() => {
 const hasEventScheduleSelected = computed(
   () => !!eventDate.value?.trim() && !!startTime.value && !!endTime.value,
 )
+
+const isPremiumUser = computed(
+  () => authStore.user?.account_type === 'premium' && authStore.user?.status === 'active',
+)
+
+const currentOccurrenceEvent = computed(() => ({
+  id: editingEventId.value ?? 0,
+  series_id: seriesId.value,
+  is_modified: seriesOccurrenceModified.value,
+  is_series_instance: isSeriesOccurrence.value,
+}))
 
 const startTimePicker = computed({
     get() {
@@ -1787,17 +1882,7 @@ watch(editingEventId, () => {
     loadInvitationProfiles()
 })
 
-const menuItems = [
-    { id: "home", icon: Home, label: "Home", route: "/create-event-premium" },
-    { id: "details", icon: FileText, label: "Details", route: "/create-event-premium" },
-    { id: "analytics", icon: BarChart3, route: "/create-event-premium/report", label: "Analytics" },
-    { id: 'gallery', label: 'Gallery', icon: Images, route: `/create-event-premium/gallery-images` },
-    { id: "settings", icon: Settings, route: "/create-event-premium/settings", label: "Settings" },
-    { id: "invites", icon: UserPlus, label: "Invites", route: "/create-event-premium/invites" },
-    // { id: "calendar", icon: Calendar, label: "Calendar" },
-    { id: "back", icon: SkipBackIcon, label: "Back" },
-    { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
-]
+const menuItems = createEventPremiumMenuItems
 
 // Fetch categories from API using eventService
 async function fetchCategories() {
@@ -2084,7 +2169,7 @@ const removeMainImage = () => {
 function setGalleryImagesFromEvent(d) {
     const items = []
     const mainId = typeof d.image_path === 'string' ? d.image_path.trim() : ''
-    const mainUrl = d.image_url || d.main_image_url
+    const mainUrl = d.image_url || d.main_image_url || d.cover_image
     if (mainId && mainUrl) {
         items.push({
             image_id: mainId,
@@ -2125,6 +2210,22 @@ function setGalleryImagesFromEvent(d) {
         byId.set(String(item.image_id), item)
     }
     galleryImages.value = Array.from(byId.values())
+}
+
+function normalizeAdditionalImageIds(additionalImages) {
+    if (!Array.isArray(additionalImages)) return []
+
+    return additionalImages
+        .map((item) => {
+            if (item == null || item === '') return null
+            if (typeof item === 'string' || typeof item === 'number') return String(item)
+            if (typeof item === 'object') {
+                const rawId = item.image_id ?? item.id ?? item.image_path ?? null
+                return rawId != null && rawId !== '' ? String(rawId) : null
+            }
+            return null
+        })
+        .filter(Boolean)
 }
 
 watch(eventDate, () => {
@@ -2296,17 +2397,73 @@ async function handleSubmit() {
     }
 }
 
+async function persistCurrentEvent() {
+    if (!validateForm()) {
+        await scrollToFirstError()
+        return null
+    }
+    if (isEditMode.value && editingEventId.value) {
+        return updateEvent({ skipReset: true })
+    }
+    return createEvent({ skipReset: true })
+}
+
+async function createRecurringSeriesFromCurrentEvent(schedule) {
+    if (creatingRecurringSeries.value) return
+
+    if (!isPremiumUser.value) {
+        toast.error('Recurring events are available for Premium users only.')
+        return
+    }
+
+    recurringSeriesErrors.value = {}
+    creatingRecurringSeries.value = true
+
+    try {
+        const eventId = await persistCurrentEvent()
+        if (!eventId) return
+
+        const res = await recurringSeriesApi.create({
+            recurrence_type: 'weekly',
+            recurrence_rules: schedule.recurrence_rules,
+            timezone: schedule.timezone,
+            start_date: schedule.start_date,
+            end_date: schedule.end_date || null,
+            source_event_id: eventId,
+        })
+
+        if (res.success) {
+            if (res.generation_queued) {
+                toast.success('Event saved and recurring series created. Occurrences are being generated.')
+            } else {
+                toast.success('Event saved and recurring series created.')
+            }
+            router.push('/create-event-premium/recurring-series')
+        } else {
+            toast.error(res.message || 'Failed to create recurring series')
+        }
+    } catch (e) {
+        const err = e
+        if (err.response?.data?.errors) {
+            recurringSeriesErrors.value = err.response.data.errors
+        }
+        toast.error(err.response?.data?.message || 'Failed to create recurring series')
+    } finally {
+        creatingRecurringSeries.value = false
+    }
+}
+
 async function refreshMyEventsAfterCreate() {
     await myEvtStore.fetchMyEvents()
 }
 
 // Create Event function using eventService
-async function createEvent() {
-    if (isSubmitting.value) return
+async function createEvent(options = {}) {
+    if (isSubmitting.value) return null
 
     // Validate form
     if (!validateForm()) {
-        return
+        return null
     }
 
     try {
@@ -2362,7 +2519,8 @@ async function createEvent() {
         appendValidatedOptionalUrl(formData, 'ticket_url', ticketUrl.value)
         if (bookingInstructions.value) formData.append('booking_instructions', bookingInstructions.value)
         // Backend boolean flags
-        formData.append('is_recurring', isRecurring.value ? '1' : '0')
+        // Legacy flag — recurring series use dedicated workflow; do not mark standalone event
+        formData.append('is_recurring', '0')
         formData.append('is_copy_event', isCopyEvent.value ? '1' : '0')
         formData.append('show_upcoming_events', showUpcomingEvents.value === null ? '' : (showUpcomingEvents.value ? '1' : '0'))
         formData.append('show_past_events', showPastEvents.value === null ? '' : (showPastEvents.value ? '1' : '0'))
@@ -2394,10 +2552,17 @@ async function createEvent() {
             if (newEventId) {
                 await flushPendingGuestInvites(newEventId)
             }
-            toast.success('Event created successfully!')
-            resetForm()
-            pendingGuestInvites.value = []
-            await refreshMyEventsAfterCreate()
+            if (!options.skipReset) {
+                toast.success('Event created successfully!')
+                resetForm()
+                pendingGuestInvites.value = []
+                await refreshMyEventsAfterCreate()
+            } else {
+                editingEventId.value = newEventId ?? null
+                isEditMode.value = !!newEventId
+                await refreshMyEventsAfterCreate()
+            }
+            return newEventId ?? null
         } else {
             // Handle API validation errors
             if (response.errors) {
@@ -2407,6 +2572,7 @@ async function createEvent() {
             } else {
                 toast.error(response.message || 'Failed to create event. Please try again.')
             }
+            return null
         }
 
     } catch (error) {
@@ -2422,6 +2588,7 @@ async function createEvent() {
         } else {
             toast.error('An error occurred while creating the event. Please try again.')
         }
+        return null
     } finally {
         isSubmitting.value = false
     }
@@ -2583,14 +2750,16 @@ onMounted(async () => {
         myEvtStore.takePendingEditorEventId() ?? route.query.edit ?? route.params.id
     if (rawId != null && String(rawId).trim() !== '') {
         await clickEvent(Number(rawId))
-        if (route.query.edit != null && String(route.query.edit) !== '') {
-            const q = { ...route.query }
+        const q = { ...route.query }
+        let shouldReplace = false
+        if (q.edit != null && String(q.edit) !== '') {
             delete q.edit
-            if (Object.keys(q).length) {
-                router.replace({ path: route.path, query: q })
-            } else {
-                router.replace({ path: route.path })
-            }
+            shouldReplace = true
+        }
+        if (Object.keys(q).length) {
+            if (shouldReplace) router.replace({ path: route.path, query: q })
+        } else if (shouldReplace) {
+            router.replace({ path: route.path })
         }
     }
 })
@@ -2604,12 +2773,23 @@ async function loadEvent(id) {
         if (!categories.value.length) {
             await fetchCategories()
         }
-        const response = await eventService.getEventById(id)
+        const listEvent = myEvtStore.events.find((e) => Number(e.id) === Number(id))
+        const useOccurrenceEndpoint =
+            route.query.occurrence === '1'
+            || !!(listEvent?.series_id || listEvent?.is_series_instance)
+        const response = useOccurrenceEndpoint
+            ? await eventService.getEventOccurrenceById(id)
+            : await eventService.getEventById(id)
         if (!response.success || !response.data) {
             toast.error(response.message || 'Failed to load event.')
             return
         }
         const d = response.data
+        const occurrenceMeta = d.occurrence ?? null
+        const resolvedSeriesId = d.series_id ?? occurrenceMeta?.series_id ?? null
+        isSeriesOccurrence.value = !!(d.is_series_instance || resolvedSeriesId)
+        seriesId.value = resolvedSeriesId
+        seriesOccurrenceModified.value = !!(d.is_modified ?? occurrenceMeta?.is_modified)
 
         eventTitle.value = d.title ?? ''
         eventType.value = d.event_type ?? 'premium'
@@ -2702,11 +2882,18 @@ async function loadEvent(id) {
 
         validateEndAfterStartDateTime()
 
-        if (categories.value.length && d.category_id) {
-            const cat = categories.value.find(c => String(c.id) === String(d.category_id))
+        const resolvedCategoryId = d.category_id ?? d.category?.id ?? null
+        const resolvedSubcategoryIds = Array.isArray(d.subcategory_ids)
+            ? d.subcategory_ids
+            : Array.isArray(d.subcategories)
+                ? d.subcategories.map((sub) => sub?.id).filter((id) => id != null)
+                : []
+
+        if (categories.value.length && resolvedCategoryId) {
+            const cat = categories.value.find(c => String(c.id) === String(resolvedCategoryId))
             selectedCategory.value = cat ? cat.name : ''
-            if (cat && Array.isArray(d.subcategory_ids)) {
-                selectedSubcategories.value = d.subcategory_ids
+            if (cat && resolvedSubcategoryIds.length > 0) {
+                selectedSubcategories.value = resolvedSubcategoryIds
                     .map(sid => cat.subcategories.find(s => String(s.id) === String(sid))?.name)
                     .filter(Boolean)
             } else {
@@ -2718,7 +2905,8 @@ async function loadEvent(id) {
         }
 
         // Event options / visibility (with sensible defaults)
-        isRecurring.value = !!d.is_recurring
+        // Recurring series is configured separately; do not restore legacy is_recurring flag
+        isRecurring.value = false
         isCopyEvent.value = !!d.is_copy_event
         showUpcomingEvents.value = d.show_upcoming_events !== undefined
             ? !!d.show_upcoming_events
@@ -2753,10 +2941,7 @@ async function loadEvent(id) {
 
         // Load image_ids from event
         form.image_path = d.image_path || ''
-        // form.additional_images = Array.isArray(d.additional_images) ? d.additional_images : []
-        form.additional_images = Array.isArray(d.additional_images)
-            ? d.additional_images.filter(id => id !== null && id !== '').map((id) => String(id))
-            : []
+        form.additional_images = normalizeAdditionalImageIds(d.additional_images)
 
         // Clear file refs when loading existing event (avoid stale Files forcing main_image binary on save)
         mainImageFile.value = null
@@ -2778,7 +2963,36 @@ async function loadEvent(id) {
 function cancelEdit() {
     isEditMode.value = false
     editingEventId.value = null
+    isSeriesOccurrence.value = false
+    seriesId.value = null
+    seriesOccurrenceModified.value = false
+    cancelOccurrenceVisible.value = false
     resetForm()
+}
+
+function openCancelOccurrence() {
+    if (!editingEventId.value || !isSeriesOccurrence.value) return
+    cancelOccurrenceVisible.value = true
+}
+
+async function confirmCancelOccurrence() {
+    if (!editingEventId.value || cancellingOccurrence.value) return
+    cancellingOccurrence.value = true
+    try {
+        const res = await eventService.cancelEventOccurrence(editingEventId.value)
+        if (res.success) {
+            toast.success(res.message || 'Occurrence cancelled.')
+            cancelOccurrenceVisible.value = false
+            cancelEdit()
+            await myEvtStore.fetchMyEvents()
+        } else {
+            toast.error(res.message || 'Failed to cancel occurrence.')
+        }
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to cancel occurrence.')
+    } finally {
+        cancellingOccurrence.value = false
+    }
 }
 
 function resetForm() {
@@ -2863,11 +3077,11 @@ function resetForm() {
     document.querySelectorAll('input[type="file"]').forEach(el => { el.value = '' })
 }
 
-async function updateEvent() {
-    if (isSubmitting.value || !editingEventId.value) return
+async function updateEvent(options = {}) {
+    if (isSubmitting.value || !editingEventId.value) return null
     if (!validateForm()) {
         await scrollToFirstError()
-        return
+        return null
     }
     try {
         isSubmitting.value = true
@@ -2922,7 +3136,10 @@ async function updateEvent() {
         if (bookingInstructions.value) formData.append('booking_instructions', bookingInstructions.value)
         
         // Boolean fields
-        formData.append('is_recurring', isRecurring.value ? '1' : '0')
+        if (!isSeriesOccurrence.value) {
+            // Legacy flag — recurring series use dedicated workflow; do not mark standalone event
+        formData.append('is_recurring', '0')
+        }
         formData.append('is_copy_event', isCopyEvent.value ? '1' : '0')
         formData.append('show_upcoming_events', showUpcomingEvents.value === null ? '' : (showUpcomingEvents.value ? '1' : '0'))
         formData.append('show_past_events', showPastEvents.value === null ? '' : (showPastEvents.value ? '1' : '0'))
@@ -2964,26 +3181,41 @@ async function updateEvent() {
         }
         
         // Send update request
-        const response = await api.post(`/v2/events/${editingEventId.value}`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
+        const updateRequest = isSeriesOccurrence.value
+            ? eventService.updateEventOccurrence(editingEventId.value, formData)
+            : api.post(`/v2/events/${editingEventId.value}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
 
-        if (response.data.success) {
-            toast.success('Event updated successfully.')
-            isEditMode.value = false
-            editingEventId.value = null
-            resetForm()
-            await myEvtStore.fetchMyEvents()
+        const response = await updateRequest
+
+        const payload = response.data ?? response
+
+        if (payload.success) {
+            if (!options.skipReset) {
+                toast.success(isSeriesOccurrence.value ? 'Event occurrence updated successfully.' : 'Event updated successfully.')
+                isEditMode.value = false
+                editingEventId.value = null
+                isSeriesOccurrence.value = false
+                seriesId.value = null
+                seriesOccurrenceModified.value = false
+                resetForm()
+                await myEvtStore.fetchMyEvents()
+            } else {
+                await myEvtStore.fetchMyEvents()
+            }
+            return editingEventId.value
         } else {
-            if (response.data.errors) {
-                fieldErrors.value = response.data.errors
-                toast.error(response.data.message || 'Please correct the errors in the form.')
+            if (payload.errors) {
+                fieldErrors.value = payload.errors
+                toast.error(payload.message || 'Please correct the errors in the form.')
                 await scrollToFirstError()
             } else {
-                toast.error(response.data.message || 'Failed to update event.')
+                toast.error(payload.message || 'Failed to update event.')
             }
+            return null
         }
     } catch (error) {
         console.error('Error updating event:', error)
@@ -2994,6 +3226,7 @@ async function updateEvent() {
         } else {
             toast.error(error.response?.data?.message || 'Failed to update event.')
         }
+        return null
     } finally {
         isSubmitting.value = false
     }

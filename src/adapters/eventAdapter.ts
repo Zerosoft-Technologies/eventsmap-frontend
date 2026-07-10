@@ -100,6 +100,11 @@ export interface EventV2Raw {
   status?: string
   computed_status?: string
   is_approved?: boolean
+
+  // Recurring series occurrence linkage
+  series_id?: number | null
+  is_modified?: boolean
+  is_series_instance?: boolean
   
   // Time of day
   morning?: boolean
@@ -457,6 +462,11 @@ export function mapEventV2ToUI(event: EventV2Raw): Event {
     invited_venues_objects: (Array.isArray(event.invited_venues_objects)
       ? event.invited_venues_objects
       : []) as InvitedVenueObject[],
+
+    // Recurring series occurrence linkage
+    series_id: event.series_id ?? null,
+    is_modified: pickBool(event.is_modified),
+    is_series_instance: pickBool(event.is_series_instance) || event.series_id != null,
     
     // Timestamps
     created_at: event.created_at || '',

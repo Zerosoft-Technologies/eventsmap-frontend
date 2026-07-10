@@ -120,6 +120,7 @@ import EditAltTextModal from '@/components/gallery/EditAltTextModal.vue'
 import EventSidebar from './packages/eventsidebar/Eventsidebar.vue'
 import OrganiserSidebar from './packages/eventsidebar/OrganiserSidebar.vue'
 import { eventInvitationsNavItem } from '@/utils/eventInvitationsNavItem'
+import { createEventPremiumMenuItems } from '@/utils/menuConfig'
 import { 
   Home, 
   Calendar, 
@@ -210,6 +211,10 @@ const menuItems = computed(() => {
   const isEventOwnerRoute =
     route.path.includes('create-event-free') ||
     route.path.includes('create-event-premium')
+
+  if (route.path.includes('create-event-premium')) {
+    return createEventPremiumMenuItems
+  }
 
   const isTalentOrVenueProfile =
     route.path.includes('create-talents-') || route.path.includes('create-venue-')

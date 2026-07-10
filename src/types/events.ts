@@ -393,6 +393,11 @@ export interface Event {
   invited_talents_objects?: InvitedEventProfile[]
   invited_organisers_objects?: InvitedEventProfile[]
   invited_venues_objects?: InvitedVenueObject[]
+
+  /** Recurring series occurrence (discovery + detail) */
+  series_id?: number | null
+  is_modified?: boolean
+  is_series_instance?: boolean
 }
 
 /**

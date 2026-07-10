@@ -323,9 +323,6 @@ import {
   Users,
   Search,
   Loader2,
-  MessageSquareText,
-  Images,
-  SkipBackIcon,
   LayoutGrid,
   Mic2,
   Briefcase,
@@ -333,6 +330,7 @@ import {
 } from "lucide-vue-next"
 import EventSidebar from "./eventsidebar/Eventsidebar.vue"
 import { useChatStore } from "@/stores/chatStore"
+import { createEventPremiumMenuItems } from "@/utils/menuConfig"
 import {
   fetchProfiles,
   type ProfileType,
@@ -370,30 +368,10 @@ const createBase = computed(() =>
 const invitesRoute = computed(() => `${createBase.value}/invites`)
 
 const menuItems = computed(() => {
-  const b = createBase.value
   if (isPremium.value) {
-    return [
-      { id: "home", icon: Home, label: "Home", route: b },
-      { id: "details", icon: FileText, label: "Details", route: b },
-      {
-        id: "analytics",
-        icon: BarChart3,
-        route: `${b}/report`,
-        label: "Analytics",
-      },
-      {
-        id: "gallery",
-        label: "Gallery",
-        icon: Images,
-        route: `${b}/gallery-images`,
-      },
-      { id: "settings", icon: Settings, route: `${b}/settings`, label: "Settings" },
-      { id: "invites", icon: UserPlus, label: "Invites", route: invitesRoute.value },
-      // { id: "calendar", icon: Calendar, label: "Calendar" },
-      { id: "back", icon: SkipBackIcon, label: "Back" },
-      { id: "chatbox", icon: MessageSquareText, label: "Chatbox" },
-    ]
+    return createEventPremiumMenuItems
   }
+  const b = createBase.value
   return [
     { id: "home", icon: Home, label: "Home", route: b },
     { id: "details", icon: FileText, label: "Details", route: b },

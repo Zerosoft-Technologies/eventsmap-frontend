@@ -112,6 +112,13 @@
                   </h2>
 
                   <div
+                    v-if="sidebarKind === 'events' && (item.series_id || item.is_series_instance)"
+                    class="tw:flex tw:flex-wrap tw:gap-1.5"
+                  >
+                    <RecurringOccurrenceBadge :event="item" />
+                  </div>
+
+                  <div
                     v-if="sidebarKind === 'events' && item.event_date"
                     class="tw:flex tw:items-center tw:text-sm tw:text-[#1E3A8A] tw:gap-2"
                   >
@@ -164,6 +171,7 @@ import { useMyTalentStore } from "@/stores/myTalentStore"
 import { useMyVenueStore } from "@/stores/myVenueStore"
 import { useMyOrganiserStore } from "@/stores/myOrganiserStore"
 import ProfileSidebarPublicationStatus from "@/components/profile/ProfileSidebarPublicationStatus.vue"
+import RecurringOccurrenceBadge from "@/components/recurring/RecurringOccurrenceBadge.vue"
 import { profileSidebarInitials } from "@/utils/profilePublicationStatusStyles"
 import { useProfilePublicationMeta } from "@/composables/useProfilePublicationMeta"
 
@@ -178,6 +186,11 @@ const props = defineProps({
   menuItems: {
     type: Array,
     required: true
+  },
+  /** When true, clicking a list item only emits selection (no navigation). */
+  templatePickerMode: {
+    type: Boolean,
+    default: false,
   },
   /** 'events' (default) uses GET /v2/my-events; 'talents' → /v2/my-talents; 'venues' → /v2/my-venues; 'organisers' → /v2/my-organisers */
   sidebarKind: {
@@ -279,6 +292,15 @@ function formatEventDateTime(date, time) {
 }
 
 function handleListItemClick(item) {
+  if (props.templatePickerMode) {
+    if (props.sidebarKind === 'talents') myTalentStore.selectTalent(item.id)
+    else if (props.sidebarKind === 'venues') myVenueStore.selectVenue(item.id)
+    else if (props.sidebarKind === 'organisers') myOrganiserStore.selectOrganiser(item.id)
+    else myEventStore.selectEvent(item.id)
+    emit('event-selected', item.id)
+    return
+  }
+
   if (props.sidebarKind === 'talents') myTalentStore.selectTalent(item.id)
   else if (props.sidebarKind === 'venues') myVenueStore.selectVenue(item.id)
   else if (props.sidebarKind === 'organisers') myOrganiserStore.selectOrganiser(item.id)
@@ -289,7 +311,11 @@ function handleListItemClick(item) {
     const home = props.menuItems.find((i) => i.id === 'home' && i.route)
     if (home && route.path !== home.route) {
       myEventStore.setPendingEditorEventId(item.id)
-      router.push({ path: home.route })
+      const isSeriesInstance = !!(item.series_id || item.is_series_instance)
+      router.push({
+        path: home.route,
+        ...(isSeriesInstance ? { query: { occurrence: '1' } } : {}),
+      })
     }
   }
 
@@ -358,6 +384,7 @@ function isActive(item) {
             !currentPath.includes('/gallery-images') &&
             !currentPath.includes('/invites') &&
             !currentPath.includes('/event-invitations') &&
+            !currentPath.includes('/recurring-series') &&
             !currentPath.includes('/calendar'))
   }
   
@@ -366,8 +393,8 @@ function isActive(item) {
     return false
   }
   
-  // For analytics/settings/other routes with sub-paths
-  if (item.id === 'analytics' || item.id === 'settings') {
+  // For analytics/settings/recurring/gallery routes with sub-paths
+  if (item.id === 'analytics' || item.id === 'settings' || item.id === 'recurring' || item.id === 'gallery') {
     return currentPath === item.route || currentPath.startsWith(item.route + '/')
   }
 

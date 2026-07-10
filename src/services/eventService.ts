@@ -277,6 +277,38 @@ const eventService = {
   },
 
   /**
+   * Fetch a recurring series occurrence (owner edit view).
+   */
+  async getEventOccurrenceById(id: number): Promise<EventDetailResponse> {
+    const response: AxiosResponse<EventDetailResponse> = await api.get(`/v2/events/${id}/occurrence`)
+    return response.data
+  },
+
+  /**
+   * Update a single recurring series occurrence without affecting the series.
+   */
+  async updateEventOccurrence(id: number, formData: FormData): Promise<EventResponse> {
+    const response: AxiosResponse<EventResponse> = await api.post(
+      `/v2/events/${id}/occurrence`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    )
+    return response.data
+  },
+
+  /**
+   * Cancel a single recurring series occurrence.
+   */
+  async cancelEventOccurrence(id: number): Promise<{ success: boolean; message: string }> {
+    const response = await api.post(`/v2/events/${id}/occurrence/cancel`, { confirm: true })
+    return response.data
+  },
+
+  /**
    * Update an existing event by id (PUT)
    */
   async updateEventById(id: number, payload: UpdateEventPayload): Promise<EventResponse> {

@@ -22,6 +22,8 @@
       </span>
     </div>
 
+    <RecurringOccurrenceBadge :event="event" discovery class="tw:mt-1.5" />
+
     <!-- Category -->
     <p class="tw:text-sm tw:text-gray-600 tw:mt-1 tw:capitalize">{{ event.category }}</p>
 
@@ -77,6 +79,7 @@
 import { computed } from 'vue'
 import { CalendarIcon, MapPinIcon, NavigationIcon, TicketIcon, ChevronRightIcon } from 'lucide-vue-next'
 import type { Event } from '../../types/events'
+import RecurringOccurrenceBadge from '@/components/recurring/RecurringOccurrenceBadge.vue'
 
 const props = defineProps<{
   event: Event

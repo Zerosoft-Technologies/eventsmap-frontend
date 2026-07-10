@@ -126,6 +126,13 @@
         </button>
       </div>
 
+      <RecurringOccurrenceBadge
+        v-if="event"
+        :event="event"
+        discovery
+        class="tw:self-start"
+      />
+
       <!-- Detail rows -->
       <div class="tw:space-y-1.5 tw:flex-1">
 
@@ -290,6 +297,7 @@ import { buildEventGalleryImageUrls } from '@/utils/eventGalleryImages'
 import { getUserProfileImageUrl } from '@/utils/userProfileImage'
 import DirectionsPanel from './DirectionsPanel.vue'
 import { formatEventCardDateTimeRange } from '@/utils/eventSchedule'
+import RecurringOccurrenceBadge from '@/components/recurring/RecurringOccurrenceBadge.vue'
 
 const { t, locale } = useI18n()
 const wishlistStore = useWishlistStore()
